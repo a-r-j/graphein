@@ -1,7 +1,15 @@
+"""Class for working with Protein Structure Graphs"""
+
+# Graphein
+# Author: Arian Jamasb <arian@jamasb.io>
+# License: BSD 3 clause
+# Project Website:
+# Code Repository: https://github.com/a-r-j/graphein
+
 import pandas as pd
 import numpy as np
-# from sklear
 import dgl
+import subprocess
 import networkx as nx
 import torch as torch
 from biopandas.pdb import PandasPdb
@@ -9,11 +17,15 @@ from biopandas.pdb import PandasPdb
 
 class ProteinGraph(object):
 
-    def __init__(self, pdb_path, granularity, keep_hets, insertions):
+    def __init__(self, pdb_code, granularity, keep_hets, insertions, node_featuriser):
         # self.seq_length =
         # self.mol_wt
-        self.dgl_graph = create_dgl_graph(pdb_path, granularity, keep_hets)
-        self.nx_graph = create_nx_graph(pdb_path, granularity, keep_hets)
+        # self.dgl_graph = self.dgl_graph(pdb_code, granularity, keep_hets)
+        # self.nx_graph = self.create_nx_graph(pdb_code, granularity, keep_hets)
+        self.granularity = granularity
+        self.keep_hets = keep_hets
+        self.insertions = insertions
+        self.node_featuriser = node_featuriser
 
         self.embedding_dict = {
             'meiler': {
@@ -75,30 +87,43 @@ class ProteinGraph(object):
                        }
         }
 
-    def create_dgl_graph(self, pdb_path, granularity, keep_hets=False):
-        df = self.parse_pdb(pdb_path, granularity, insertions, keep_hets)
-        df = self.get_chains(df)
-        df = pd.concat(df)
-        g = self.add_protein_nodes(df)
-        e = self.get_protein_edges(pdb_path, granularity)
-        g = self.add_edges(g, e)
-
-        return dgl_graph
-
-    def create_nx_graph(self, pdb_path, granularity, insertions, keep_hets):
-
-        return nx_graph
-
     @staticmethod
-    def parse_pdb(pdb_path, granularity, insertions, keep_hets):
-        protein = PandasPdb().read_pdb(pdb_path)
-        atoms = protein.df['ATOM']
-        hetatms = protein.df['HETATM']
+    def compute_protein_contacts(pdb_code):
+        subprocess.popen()
 
-        if granularity != 'atom':
-            atoms = atoms.loc[atoms['atom_name'] == granularity]
+    def dgl_graph(self, pdb_code, chain_selection):
+        df = self.protein_df(pdb_code)
+        chains = self.get_chains(df, chain_selection)
+        #print(chains)
+        #nodes = get_nodes_from_df(chains)
+        # print(chains)
+        df = pd.concat(chains)
+        g = self.add_protein_nodes(df)
+        print(g)
+        #e = self.get_protein_edges(pdb_path, granularity)
+        # g = self.add_edges(g, e)
 
-        if keep_hets:
+        return g #dgl_graph
+
+    # def nx_graph(self, pdb_path, granularity, insertions, keep_hets):
+    # todo impl
+    #    return nx_graph
+
+    def protein_df(self, pdb_code):
+        """
+        :param protein_df: Biopandas protein dataframe
+        :param granularity: 'residue' or 'atom' -> dictates level of granularity in graph representations
+        :param keep_hets: 'keep or discard het atoms'
+        :return: 'cleaned protein dataframe'
+        """
+        protein_df = PandasPdb().fetch_pdb(pdb_code)
+        atoms = protein_df.df['ATOM']
+        hetatms = protein_df.df['HETATM']
+
+        if self.granularity != 'atom':
+            atoms = atoms.loc[atoms['atom_name'] == self.granularity]
+
+        if self.keep_hets:
             protein_df = pd.concat([atoms, hetatms])
         else:
             protein_df = atoms
@@ -106,43 +131,41 @@ class ProteinGraph(object):
         return protein_df
 
     @staticmethod
-    def get_chains(protein_df):
-        '''
+    def get_chains(protein_df, chain_selection):
+        """
         Args:
             protein_df (df): pandas dataframe of PDB subsetted to CA atoms
         Returns:
             chains (list): list of dataframes corresponding to each chain in protein
-        '''
-        chains = [protein_df.loc[protein_df['chain_id'] == chain] for chain in protein_df['chain_id'].unique()]
+        """
+        if chain_selection != 'all':
+            chains = [protein_df.loc[protein_df['chain_id'] == chain] for chain in chain_selection]
+        else:
+            chains = [protein_df.loc[protein_df['chain_id'] == chain] for chain in protein_df['chain_id'].unique()]
         return chains
 
-    def add_protein_nodes(self, chain, granularity, embedding):
-        '''
+    def add_protein_nodes(self, chain):
+        """
         Input:
             chain (list of dataframes): Contains a dataframe for each chain in the protein
         Output:
             g (DGLGraph): Graph of protein only populated by the nodes
-        '''
+        """
         g = dgl.DGLGraph()
 
-        residues = chain['chain_id'] + ':' + chain['residue_name'] + ':' + chain['residue_number'].apply(str)
+        nodes = chain['chain_id'] + ':' + chain['residue_name'] + ':' + chain['residue_number'].apply(str)
 
-        if granularity == 'atom':
-            atoms = residues + ':' + chain['atom_name']
+        if self.granularity == 'atom':
+            nodes = nodes + ':' + chain['atom_name']
 
-        if embedding:
-            embedding = [self.aa_features(residue, embedding) for residue in chain['residue_name']]
+        node_features = [self.aa_features(residue, self.node_featuriser) for residue in chain['residue_name']]
+        print(node_features)
 
-            g.add_nodes(len(residues),
-                        {'residue_id': residues,
-                         'residue_name': chain['residue_name'],
-                         'h': torch.stack(embedding).type('torch.FloatTensor')
-                         })
-        else:
-            g.add_nodes(len(residues),
-                        {'atom_id': atoms,
-                         'node_name': chain['residue_name']
-                         })
+        g.add_nodes(len(nodes),
+                    {'residue_id': nodes,
+                     'residue_name': chain['residue_name'],
+                     'h': torch.stack(node_features).type('torch.FloatTensor')
+                     })
         return g
 
     def aa_features(self, residue, embedding):
@@ -150,3 +173,14 @@ class ProteinGraph(object):
             residue = 'UNKNOWN'
         features = torch.Tensor(self.embedding_dict[embedding][residue]).double()
         return features
+
+
+if __name__ == "__main__":
+    #pg = ProteinGraph(pdb_code='3eiy', granularity='atom', insertions=False, keep_hets=True, node_featuriser='meiler')
+    #print(pg.protein_df('3eiy'))
+
+    pg = ProteinGraph(pdb_code='3eiy', granularity='CA', insertions=False, keep_hets=True,
+                      node_featuriser='meiler')
+
+    #print(pg.protein_df('3eiy'))
+    print(pg.dgl_graph('3eiy', chain_selection='A'))
