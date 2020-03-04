@@ -5,7 +5,8 @@
 # License: BSD 3 clause
 # Project Website:
 # Code Repository: https://github.com/a-r-j/graphein
-
+import os
+import re
 import pandas as pd
 import numpy as np
 import dgl
@@ -13,11 +14,21 @@ import subprocess
 import networkx as nx
 import torch as torch
 from biopandas.pdb import PandasPdb
-
+from Bio.PDB import *
 
 class ProteinGraph(object):
 
-    def __init__(self, pdb_code, granularity, keep_hets, insertions, node_featuriser):
+    def __init__(self, pdb_code, granularity, keep_hets, insertions, node_featuriser, get_contacts_path, pdb_dir, contacts_dir):
+        """
+        Initialise ProteinGraph Generator Class
+        :param pdb_code:
+        :param granularity:
+        :param keep_hets:
+        :param insertions:
+        :param node_featuriser:
+        :param pdb_dir:
+        :param contacts_dir:
+        """
         # self.seq_length =
         # self.mol_wt
         # self.dgl_graph = self.dgl_graph(pdb_code, granularity, keep_hets)
@@ -26,7 +37,6 @@ class ProteinGraph(object):
         self.keep_hets = keep_hets
         self.insertions = insertions
         self.node_featuriser = node_featuriser
-
         self.embedding_dict = {
             'meiler': {
                 'ALA': [1.28, 0.05, 1.00, 0.31, 6.11, 0.42, 0.23],
@@ -86,10 +96,92 @@ class ProteinGraph(object):
                         'UNKNOWN': [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00]
                        }
         }
+        self.pdb_dir = pdb_dir
+        self.contacts_dir = contacts_dir
+        self.get_contacts_path = get_contacts_path
 
-    @staticmethod
-    def compute_protein_contacts(pdb_code):
-        subprocess.popen()
+        self.INTERACTION_TYPES = ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb', 'hbb', 'hbsb',
+                                  'hbss', 'wb', 'wb2', 'hblb', 'hbls', 'lwb', 'lwb2', 'hp']
+        self.INTERACTION_FDIM = len(self.INTERACTION_TYPES)
+
+    def download_pdb(self, pdb_code):
+        pdbl = PDBList()
+        pdbl.retrieve_pdb_file(pdb_code, pdir=self.pdb_dir, overwrite=True, file_format='pdb')
+        # Rename file to .pdb from .ent
+        os.rename(self.pdb_dir + 'pdb' + pdb_code + '.ent', self.pdb_dir + 'pdb' + pdb_code + '.pdb')
+        assert os.path.isfile(self.pdb_dir + 'pdb' + pdb_code + '.pdb')
+        print(f'Downloaded PDB file for: {pdb_code}')
+
+
+    def compute_protein_contacts(self, pdb_code):
+        """Computes contacts from .pdb file using GetContacts - https://www.github.com/getcontacts/getcontacs
+        :param: pdb_code """
+        # Download PDB file
+        self.download_pdb(pdb_code)
+
+        command = f'{self.get_contacts_path}/get_static_contacts.py '
+        command += f'--structure {self.pdb_dir + "pdb" + pdb_code + ".pdb"} '
+        command += f'--output {self.contacts_dir + pdb_code + "_contacts.tsv"} '
+        command += '--itypes all' #--sele "protein"'
+        #print(command)
+        subprocess.run(command, shell=True)
+        assert os.path.isfile(self.contacts_dir + pdb_code + "_contacts.tsv")
+        print(f'Computed Contacts for: {pdb_code}')
+
+    def get_protein_edges(self, pdb_code):
+        contact_file = self.contacts_dir + pdb_code + '_contacts' + '.tsv'
+        edges = set()
+        # Read Contacts File
+        with open(contact_file, 'r') as f:
+            next(f)
+            next(f)
+            for line in f:
+                linfo = line.strip().split('\t')
+                interaction_type = linfo[1]
+                # Select interacting Residues
+                if self.granularity == 'CA' or 'CB':
+                    res1 = linfo[2]
+                    res1 = re.search(r'.\:(.*?)\:(.*?):', res1)[0][:-1]
+                    res2 = linfo[3]
+                    res2 = re.search(r'.\:(.*?)\:(.*?):', res2)[0][:-1]
+                    edges.add((res1, res2, interaction_type))
+                # Select Interacting Atoms
+                elif self.granularity == 'atom':
+                    #todo impl
+                    return
+        edges = pd.DataFrame(list(edges), columns=['res1', 'res2', 'interaction_type'])
+        # Filter out interactions for disordered/unassigned residues
+        edges = edges.loc[~edges['res1'].str.contains("[A-Z]$")]
+        edges = edges.loc[~edges['res2'].str.contains("[A-Z]$")]
+        edges = edges.loc[~edges['res1'].str.contains(":0$")]
+        edges = edges.loc[~edges['res2'].str.contains(":0$")]
+        edges = edges.loc[~edges['res1'].str.contains('^X:')]
+        edges = edges.loc[~edges['res2'].str.contains('^X:')]
+        print(edges)
+        return edges
+
+
+    def add_protein_edges_to_graph(self, g, e):
+        if self.granularity == 'dense':
+            g.add_edges(
+                [i for i in range(g.number_of_nodes()) for j in range(g.number_of_nodes() - 1)], [
+                    j for i in range(g.number_of_nodes())
+                    for j in range(g.number_of_nodes()) if i != j
+                ])
+            return g
+        else:
+            index = dict(zip(list(g.ndata['residue_id']),
+                             list(range(len(g.ndata['residue_id'])))
+                             ))
+            res1_ind = [index[res] for res in e['res1']]
+            res2_ind = [index[res] for res in e['res2']]
+            interactions = [self.onek_encoding_unk(interaction, self.INTERACTION_TYPES) for interaction in
+                            e['interaction_type']]
+            g.add_edges(res1_ind, res2_ind, {'rel_type': torch.Tensor(interactions).double(),
+                                             'norm': torch.ones(len(interactions))})
+            print(g)
+            return g
+
 
     def dgl_graph(self, pdb_code, chain_selection):
         df = self.protein_df(pdb_code)
@@ -99,9 +191,8 @@ class ProteinGraph(object):
         # print(chains)
         df = pd.concat(chains)
         g = self.add_protein_nodes(df)
-        print(g)
-        #e = self.get_protein_edges(pdb_path, granularity)
-        # g = self.add_edges(g, e)
+        e = self.get_protein_edges(pdb_code)
+        g = self.add_protein_edges_to_graph(g, e)
 
         return g #dgl_graph
 
@@ -159,7 +250,7 @@ class ProteinGraph(object):
             nodes = nodes + ':' + chain['atom_name']
 
         node_features = [self.aa_features(residue, self.node_featuriser) for residue in chain['residue_name']]
-        print(node_features)
+        #print(node_features)
 
         g.add_nodes(len(nodes),
                     {'residue_id': nodes,
@@ -174,13 +265,26 @@ class ProteinGraph(object):
         features = torch.Tensor(self.embedding_dict[embedding][residue]).double()
         return features
 
+    def get_atomic_connectivity(self, pdb_code):
+        # Todo impl
+        pass
+
+    @staticmethod
+    def onek_encoding_unk(x, allowable_set):
+        if x not in allowable_set:
+            x = allowable_set[-1]
+        return [x == s for s in allowable_set]
+
 
 if __name__ == "__main__":
-    #pg = ProteinGraph(pdb_code='3eiy', granularity='atom', insertions=False, keep_hets=True, node_featuriser='meiler')
-    #print(pg.protein_df('3eiy'))
+    # pg = ProteinGraph(pdb_code='3eiy', granularity='atom', insertions=False, keep_hets=True, node_featuriser='meiler')
+    # print(pg.protein_df('3eiy'))
 
     pg = ProteinGraph(pdb_code='3eiy', granularity='CA', insertions=False, keep_hets=True,
-                      node_featuriser='meiler')
+                      node_featuriser='meiler', get_contacts_path='/Users/arianjamasb/github/getcontacts',
+                      pdb_dir='/Users/arianjamasb/test/pdb/', contacts_dir='/Users/arianjamasb/test/contacts/')
 
-    #print(pg.protein_df('3eiy'))
+    # print(pg.protein_df('3eiy'))
     print(pg.dgl_graph('3eiy', chain_selection='A'))
+    # pg.compute_protein_contacts('3eiy')
+    #pg.get_protein_edges('3eiy')
