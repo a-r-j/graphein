@@ -1,0 +1,7 @@
+pandas==1.0.1
+bio==0.1.0
+biopandas==0.2.4
+torch==1.4.0
+dgl==0.4.2
+numpy==1.18.1
+networkx==2.4
