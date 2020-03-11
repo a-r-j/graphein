@@ -3,6 +3,23 @@ Protein Graph Library
 
 This pckage provides functionality for producing a number of types of graph-based representations of proteins. We provide compatibility with standard formats, as well as graph objects designed for ease of use in deep learning.
 
+## Example usage
+```
+# Initialise ProteinGraph class
+pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
+                  node_featuriser='meiler', get_contacts_path='/Users/arianjamasb/github/getcontacts',
+                  pdb_dir='/Users/arianjamasb/github/DeepConf/data/pdbs/',
+                  contacts_dir='/Users/arianjamasb/github/DeepConf/data/contacts/',
+                  exclude_waters=True, covalent_bonds=False)
+
+# Create graph. Chain selection is either 'all' or a list e.g. ['A', 'B', 'D'] specifying the polypeptide chains to capture
+graph = pg.dgl_graph('3eiy', chain_selection='all')
+
+```
+
+
+
+
 ## Installation
 ### MacOS
 Create env
