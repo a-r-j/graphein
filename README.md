@@ -8,8 +8,8 @@ This package provides functionality for producing a number of types of graph-bas
 # Initialise ProteinGraph class
 pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
                   node_featuriser='meiler', get_contacts_path='/Users/arianjamasb/github/getcontacts',
-                  pdb_dir='/Users/arianjamasb/github/DeepConf/data/pdbs/',
-                  contacts_dir='/Users/arianjamasb/github/DeepConf/data/contacts/',
+                  pdb_dir='examples/pdbs/',
+                  contacts_dir='examples/contacts/',
                   exclude_waters=True, covalent_bonds=False)
 
 # Create graph. Chain selection is either 'all' or a list e.g. ['A', 'B', 'D'] specifying the polypeptide chains to capture
