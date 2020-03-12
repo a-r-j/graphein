@@ -14,17 +14,24 @@ import dgl
 import subprocess
 import networkx as nx
 import torch as torch
+import torch.nn.functional as F
 from biopandas.pdb import PandasPdb
 from Bio.PDB import *
+from Bio.PDB.DSSP import residue_max_acc
+from Bio.PDB.DSSP import dssp_dict_from_pdb_file
+from Bio.PDB.Polypeptide import aa1
+from Bio.PDB.Polypeptide import one_to_three
 
 
-# TODO adding edges broken with chain selection != all as program looks through edge list from get contacts and can't identify it
+# Todo add SS featuriser
+# Todo atom featuriser
+# string fatures break pickling. Need numeric indexing of nodes
 
 
 class ProteinGraph(object):
 
     def __init__(self, granularity, keep_hets, insertions, node_featuriser, get_contacts_path, pdb_dir,
-                 contacts_dir, exclude_waters=True, covalent_bonds=True):
+                 contacts_dir, exclude_waters=True, covalent_bonds=True, include_ss=True):
         """
         Initialise ProteinGraph Generator Class
         :param pdb_code:
@@ -35,6 +42,7 @@ class ProteinGraph(object):
         :param pdb_dir:
         :param contacts_dir:
         """
+        self.include_ss = include_ss
         self.granularity = granularity
         self.keep_hets = keep_hets
         self.insertions = insertions
@@ -127,6 +135,12 @@ class ProteinGraph(object):
         self.compute_protein_contacts(pdb_code)
         e = self.get_protein_edges(pdb_code, chain_selection)
         g = self.add_protein_edges_to_graph(g, e)
+
+        if self.include_ss:
+            dssp = self.get_protein_features(pdb_code)
+            feats = self.compute_protein_feature_representations(dssp)
+            g = self.add_protein_features(g, feats)
+        print(g)
         return g
 
     def nx_graph(self, pdb_code, chain_selection='all'):
@@ -219,7 +233,7 @@ class ProteinGraph(object):
         pdbl = PDBList()
         pdbl.retrieve_pdb_file(pdb_code, pdir=self.pdb_dir, overwrite=True, file_format='pdb')
         # Rename file to .pdb from .ent
-        os.rename(self.pdb_dir + 'pdb' + pdb_code + '.ent', self.pdb_dir + 'pdb' + pdb_code + '.pdb')
+        os.rename(self.pdb_dir + "pdb" + pdb_code + '.ent', self.pdb_dir + pdb_code + '.pdb')
         assert any(pdb_code in s for s in os.listdir(self.pdb_dir))
         print(f'Downloaded PDB file for: {pdb_code}')
 
@@ -290,7 +304,6 @@ class ProteinGraph(object):
         edges = edges.loc[~edges['res1'].str.contains('^X:')]
         edges = edges.loc[~edges['res2'].str.contains('^X:')]
 
-        print(edges)
         return edges
 
     def add_protein_edges_to_graph(self, g, e):
@@ -345,13 +358,87 @@ class ProteinGraph(object):
         # Todo impl write to pdb file
         pass
 
+    def get_protein_features(self, pdb_code):
+        """
+        Input:
+            protein (string): String containing four letter PDB accession
+        Output:
+            df (pd.DataFrame): Dataframe containing output of DSSP (Solvent accessibility, secondary structure for each residue)
+        """
+
+        # Run DSSP on relevant PDB file
+        d = dssp_dict_from_pdb_file(self.pdb_dir + pdb_code + '.pdb')
+
+        # Parse DSSP output
+        appender = []
+        for k in d[1]:
+            to_append = []
+            y = d[0][k]
+            chain = k[0]
+            residue = k[1]
+            het = residue[0]
+            resnum = residue[1]
+            icode = residue[2]
+            to_append.extend([chain, resnum, icode])
+            to_append.extend(y)
+            appender.append(to_append)
+
+        cols = ['chain', 'resnum', 'icode', 'aa', 'ss', 'exposure_rsa',
+                'phi', 'psi', 'dssp_index', 'NH_O_1_relidx', 'NH_O_1_energy',
+                'O_NH_1_relidx', 'O_NH_1_energy', 'NH_O_2_relidx', 'NH_O_2_energy',
+                'O_NH_2_relidx', 'O_NH_2_energy']
+
+        df = pd.DataFrame.from_records(appender, columns=cols)
+        # Rename cysteines to 'C'
+        df['aa'] = df['aa'].str.replace('[a-z]', 'C')
+        df = df[df['aa'].isin(list(aa1))]
+
+        # Drop alt_loc residues
+        df = df.loc[df['icode'] == ' ']
+
+        # Add additional Columns
+        df['aa_three'] = df['aa'].apply(one_to_three)
+        df['max_acc'] = df['aa_three'].map(residue_max_acc['Sander'].get)
+        df[['exposure_rsa', 'max_acc']] = df[['exposure_rsa', 'max_acc']].astype(float)
+        df['exposure_asa'] = df['exposure_rsa'] * df['max_acc']
+        df['index'] = df['chain'] + ':' + df['aa_three'] + ':' + df['resnum'].apply(str)
+        return df
+
+    def compute_protein_feature_representations(self, dssp_df):
+        """
+        Input:
+            dssp_df (pd.DataFrame): Df containing parsed output of DSSP
+        Output:
+            feature_dict (dict): Dictionary of tensorized features
+        """
+        ss_set = ['G', 'H', 'I', 'E', 'B', 'T', 'S', 'C', '-']
+        ss = [self.onek_encoding_unk(ss, ss_set) for ss in dssp_df['ss']]
+        feature_dict = {'ss': torch.Tensor(ss),
+                        'asa': torch.Tensor(np.asarray(dssp_df['exposure_asa'])).reshape(len(dssp_df), 1),
+                        'rsa': torch.Tensor(np.asarray(dssp_df['exposure_rsa'])).reshape(len(dssp_df), 1)
+                        }
+        return feature_dict
+
+    @staticmethod
+    def add_protein_features(g, feature_dict):
+        # 0 Pad Tensors for Proteins with HETATMS that DSSP Can't Deal with
+        pad_length = len(g.ndata['h']) - len(feature_dict['ss'])
+        if pad_length > 0:
+            pad = [0, 0, 0, pad_length]
+            feature_dict['ss'] = F.pad(feature_dict['ss'], pad, 'constant', 0)
+            feature_dict['asa'] = F.pad(feature_dict['asa'], pad, 'constant', 0)
+            feature_dict['rsa'] = F.pad(feature_dict['rsa'], pad, 'constant', 0)
+        g.ndata['ss'] = feature_dict['ss']
+        g.ndata['asa'] = feature_dict['asa']
+        g.ndata['rsa'] = feature_dict['rsa']
+        return g
 
 if __name__ == "__main__":
 
-    pg = ProteinGraph(granularity='atom', insertions=False, keep_hets=True,
+    pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
                       node_featuriser='meiler', get_contacts_path='/Users/arianjamasb/github/getcontacts',
                       pdb_dir='/Users/arianjamasb/test/pdb/', contacts_dir='/Users/arianjamasb/test/contacts/',
-                      exclude_waters=True, covalent_bonds=False)
+                      exclude_waters=True, covalent_bonds=False, include_ss=True)
 
-    print(pg.get_protein_edges('3fdw'))
-
+    g = pg.dgl_graph('2rb4', chain_selection='all')
+    print(g.ndata['h'])
