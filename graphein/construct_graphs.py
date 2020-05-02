@@ -28,7 +28,6 @@ from rdkit.Chem import MolFromPDBFile
 
 # Todo add SS featuriser
 # Todo atom featuriser
-# Todo subset interactions
 # string features break pickling. Need numeric indexing of nodes
 
 
@@ -46,10 +45,7 @@ class ProteinGraph(object):
         :param pdb_dir:
         :param contacts_dir:
         """
-        if not allowed_interactions:
-            self.allowed_interactions = ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb',
-                                         'hbb', 'hbsb', 'hbss', 'wb', 'wb2',
-                                         'hblb', 'hbls', 'lwb', 'lwb2', 'hp']
+
         self.include_ligand = include_ligand
         self.include_ss = include_ss
         self.granularity = granularity
@@ -119,8 +115,12 @@ class ProteinGraph(object):
         self.contacts_dir = contacts_dir
         self.get_contacts_path = get_contacts_path
         self.covalent_bonds = covalent_bonds
-        self.INTERACTION_TYPES = ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb', 'hbb', 'hbsb',
-                                  'hbss', 'wb', 'wb2', 'hblb', 'hbls', 'lwb', 'lwb2', 'hp']
+
+        if not allowed_interactions:
+            self.INTERACTION_TYPES = ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb', 'hbb', 'hbsb',
+                                      'hbss', 'wb', 'wb2', 'hblb', 'hbls', 'lwb', 'lwb2', 'hp']
+        else:
+            self.INTERACTION_TYPES = allowed_interactions
         self.INTERACTION_FDIM = len(self.INTERACTION_TYPES)
 
         # DGL Graph Constructors
@@ -135,13 +135,14 @@ class ProteinGraph(object):
 
         self.exclude_waters = exclude_waters
 
-    def dgl_graph_from_pdb_code(self, pdb_code, chain_selection, contact_file):
+    def dgl_graph_from_pdb_code(self, pdb_code, chain_selection, contact_file=None, edges=None):
         """
         Produces a DGL graph from a PDB code and a selection of polypeptide chains
         :param pdb_code: 4 character PDB accession code
         :param chain_selection: string indicating which chains to select {'A', 'B', 'AB', ..., 'all}
         :return: DGLGraph object, nodes populated by residues or atoms as specified in class initialisation
         """
+
         if self.granularity == 'atom':
             # g = self.make_atom_graph(file_path)
             pass
@@ -151,9 +152,11 @@ class ProteinGraph(object):
             chains = self.get_chains(df, chain_selection)
             df = pd.concat(chains)
             g = self.add_protein_nodes(df)
-            self.compute_protein_contacts(pdb_code)
-            e = self.get_protein_edges(pdb_code, chain_selection, contact_file=None)
-            g = self.add_protein_edges_to_graph(g, e)
+            if not contact_file:
+                self.compute_protein_contacts(pdb_code)
+            if not edges:
+                edges = self.get_protein_edges(pdb_code, chain_selection, contact_file=None)
+            g = self.add_protein_edges_to_graph(g, edges)
 
             if self.include_ss:
                 dssp = self.get_protein_features(pdb_code, file_path=None)
@@ -162,7 +165,7 @@ class ProteinGraph(object):
         print(g)
         return g
 
-    def dgl_graph_from_pdb_file(self, file_path, chain_selection, contact_file):
+    def dgl_graph_from_pdb_file(self, file_path, chain_selection, contact_file, edges=None):
         """
         Produces a DGL graph from a PDB file and a selection of polypeptide chains
         :param pdb_code: 4 character PDB accession code
@@ -180,8 +183,9 @@ class ProteinGraph(object):
             g = self.add_protein_nodes(df)
             if not contact_file:
                 self.compute_protein_contacts(file_path)
-            e = self.get_protein_edges(file_path, chain_selection, contact_file)
-            g = self.add_protein_edges_to_graph(g, e)
+            if not edges:
+                edges = self.get_protein_edges(file_path, chain_selection, contact_file)
+            g = self.add_protein_edges_to_graph(g, edges)
 
             if self.include_ss:
                 dssp = self.get_protein_features(file_path=file_path, pdb_code=None)
@@ -374,9 +378,11 @@ class ProteinGraph(object):
                         res2 = re.search(r'.\:(.*?)\:(.*?)(?=:)', res2)[0]
 
                 edges.add((res1, res2, interaction_type))
-        # todo atomic connectivity rules
 
         edges = pd.DataFrame(list(edges), columns=['res1', 'res2', 'interaction_type'])
+        # Remove all unallowed interactions
+        edges = edges.loc[edges['interaction_type'].isin(self.INTERACTION_TYPES)]
+
         if chain_selection != 'all':
             edges = edges.loc[edges['res1'].str.startswith(tuple(chain_selection))]
             edges = edges.loc[edges['res2'].str.startswith(tuple(chain_selection))]
@@ -519,26 +525,24 @@ class ProteinGraph(object):
         g.ndata['rsa'] = feature_dict['rsa']
         return g
 
-    def make_custom_edges(self, edge_dict):
-        # Todo impl
-        pass
-
-    def distance_based_edges(self, protein):
+    def distance_based_edges(self, protein_df, cutoff):
         # todo impl
         pass
 
 
 if __name__ == "__main__":
     pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
-                      # node_featuriser='meiler',
+                      node_featuriser='meiler',
+                      allowed_interactions=None,
                       get_contacts_path='/home/arj39/Documents/github/getcontacts',
                       pdb_dir='/home/arj39/Documents/test/pdb/', contacts_dir='/home/arj39/Documents/test/contacts/',
                       exclude_waters=True, covalent_bonds=False, include_ss=True, include_ligand=False,
-                      node_featuriser=dgl.data.chem.atom_type_one_hot(),
-                      edge_featuriser=dgl.data.chem.bond_type_one_hot(),
-                      graph_constructor=dgl.data.chem.mol_to_graph())
+                      #node_featuriser=dgl.data.chem.atom_type_one_hot(),
+                      #edge_featuriser=dgl.data.chem.bond_type_one_hot(),
+                      #graph_constructor=dgl.data.chem.mol_to_graph())
+                      )
 
-    # g = pg.dgl_graph_from_pdb_code('3eiy', chain_selection='all')
+    g = pg.dgl_graph_from_pdb_code('3eiy', chain_selection='all')
 
     # h = pg.dgl_graph_from_pdb_file('../examples/pdbs/pdb3eiy.pdb', chain_selection='all',
     #                               contact_file='../examples/contacts/3eiy_contacts.tsv')
@@ -548,5 +552,4 @@ if __name__ == "__main__":
 
     # g = pg.nx_graph_from_pdb_code('3eiy', chain_selection='all')
 
-    g = pg.make_atom_graph('3eiy')
-    print(g)
+    #g = pg.make_atom_graph('3eiy')
