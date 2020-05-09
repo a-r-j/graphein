@@ -17,25 +17,27 @@ import torch as torch
 import torch.nn.functional as F
 from biopandas.pdb import PandasPdb
 from Bio.PDB import *
-from Bio.PDB.DSSP import residue_max_acc
-from Bio.PDB.DSSP import dssp_dict_from_pdb_file
-from Bio.PDB.Polypeptide import aa1
-from Bio.PDB.Polypeptide import one_to_three
+from Bio.PDB.DSSP import residue_max_acc, dssp_dict_from_pdb_file
+from Bio.PDB.Polypeptide import aa1, one_to_three
 # from dgl.data.chem import mol_to_graph
 import dgl.data.chem
 from rdkit.Chem import MolFromPDBFile
 from sklearn.metrics import pairwise_distances
 from sklearn import preprocessing
+from sklearn.neighbors import kneighbors_graph
+from scipy import spatial
 
 
 # Todo add SS featuriser for Mol Graph?
 # Todo atom featuriser
 
+
 class ProteinGraph(object):
 
     def __init__(self, granularity, keep_hets, insertions, node_featuriser, get_contacts_path, pdb_dir,
                  contacts_dir, exclude_waters=True, covalent_bonds=True, include_ss=True, include_ligand=False,
-                 allowed_interactions=None, graph_constructor=None, edge_featuriser=None, edge_distance_cutoff=None):
+                 intramolecular_interactions=None, graph_constructor=None, edge_featuriser=None,
+                 edge_distance_cutoff=None, verbose=True):
         """
         Initialise ProteinGraph Generator Class
         :param granularity:
@@ -45,7 +47,7 @@ class ProteinGraph(object):
         :param pdb_dir:
         :param contacts_dir:
         """
-
+        self.verbose = verbose
         self.edge_distance_cutoff = edge_distance_cutoff
         self.include_ligand = include_ligand
         self.include_ss = include_ss
@@ -117,11 +119,11 @@ class ProteinGraph(object):
         self.get_contacts_path = get_contacts_path
         self.covalent_bonds = covalent_bonds
 
-        if not allowed_interactions:
+        if not intramolecular_interactions:
             self.INTERACTION_TYPES = ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb', 'hbb', 'hbsb',
                                       'hbss', 'wb', 'wb2', 'hblb', 'hbls', 'lwb', 'lwb2', 'hp']
         else:
-            self.INTERACTION_TYPES = allowed_interactions
+            self.INTERACTION_TYPES = intramolecular_interactions
         self.INTERACTION_FDIM = len(self.INTERACTION_TYPES)
 
         # DGL Graph Constructors
@@ -136,10 +138,12 @@ class ProteinGraph(object):
 
         self.exclude_waters = exclude_waters
 
-    def dgl_graph_from_pdb_code(self, pdb_code, chain_selection, contact_file=None, edge_construction=['contacts'],
-                                edges=None, encoding=False):
+    def dgl_graph_from_pdb_code(self, pdb_code=None, file_path=None, chain_selection='all', contact_file=None,
+                                edge_construction=['contacts'], edges=None, encoding=False, k_nn=None):
         """
         Produces a DGL graph from a PDB code and a selection of polypeptide chains
+        :param k_nn: (int) specifies number of nearest neighbours to make edges with
+        :param encoding:
         :param edges: {'contact', 'distance', 'custom'}
         :param contact_file:
         :param pdb_code: 4 character PDB accession code
@@ -147,8 +151,16 @@ class ProteinGraph(object):
         :return: DGLGraph object, nodes populated by residues or atoms as specified in class initialisation
         """
         # Todo Error Handling
-        # if contact_file and 'contacts' not in edge_construction:
-        #    raise Exception
+        if pdb_code:
+            assert not file_path, "Do not provide both a PDB file and a file path"
+        if file_path:
+            assert not pdb_code, "Do not provide both a PDB file and a file path"
+        if k_nn:
+            assert 'knn' in edge_construction, "If providing KNN edges, include 'knn' in the edgge_construction list"
+
+        if contact_file:
+            assert 'contacts' not in edge_construction, \
+                'do not provide a contacts file if not using contacts-based edge construction'
 
         if self.granularity == 'atom':
             g = self.make_atom_graph(file_path)
@@ -156,12 +168,21 @@ class ProteinGraph(object):
 
         if self.granularity == 'CA' or 'CB':
             self.download_pdb(pdb_code)
-            df = self.protein_df(pdb_path=self.pdb_dir + pdb_code + '.pdb')
 
+            # Create Relevant protein dataframes
+            df = self.protein_df(pdb_path=self.pdb_dir + pdb_code + '.pdb')
             chains = self.get_chains(df, chain_selection)
             df = pd.concat(chains)
 
+            # Populate graph with nodes
             g = self.add_protein_nodes(df)
+
+            # Edge construction:
+            if k_nn:
+                edges = self.k_nn_edges(df, k_nn)
+                g.add_edges(edges['res1'],
+                            edges['res2'],
+                            data={'k_nn_dist': torch.Tensor(list(edges['distance']))})
 
             if not (contact_file and 'contacts' in edge_construction):
                 self.compute_protein_contacts(pdb_code)
@@ -173,11 +194,27 @@ class ProteinGraph(object):
             if self.edge_distance_cutoff and 'distance' in edge_construction:
                 # Get distance-based edges
                 edges = self.distance_based_edges(df, self.edge_distance_cutoff)
-                print(edges.shape)
                 # Add edges
                 g.add_edges(list(edges['level_0']),
                             list(edges['level_1']),
                             data={'dist': torch.Tensor(list(edges[0]))})
+
+            # if 'voronoi' in edge_construction:
+            #    edges = self.get_voronoi_edges(df, furthest_site=False, incremental=False)
+            #    g.add_edges(list(edges['res1']),
+            #                list(edges['res2']))
+
+            if 'delaunay' in edge_construction:
+                edges = self.get_delaunay_edges(df, furthest_site=False, incremental=False)
+                g.add_edges(list(edges['res1']),
+                            list(edges['res2']),
+                            data={'delaunay_euclidean_distance': torch.Tensor(list(edges['distance']))})
+
+            # Add user supplied edges
+            if self.edges:
+                g.add_edges(list(self.edges['res1']),
+                            list(self.edges['res2']),
+                            data={'user_edge_data': torch.Tensor(list(self.edges['data']))})
 
             if self.include_ss:
                 dssp = self.get_protein_features(pdb_code, file_path=None)
@@ -196,7 +233,8 @@ class ProteinGraph(object):
             g.ndata['id'] = residue_id_encoder.fit_transform(residue_id)
             return g, resiude_name_encoder, residue_id_encoder
 
-        print(g)
+        if self.verbose:
+            print(g)
         return g
 
     def dgl_graph_from_pdb_file(self, file_path, chain_selection, contact_file, edges=None):
@@ -293,8 +331,15 @@ class ProteinGraph(object):
         atoms = protein_df.df['ATOM']
         hetatms = protein_df.df['HETATM']
 
+        # if self.granularity == 'centroid':
+        #    centroids = self.calculate_centroid_positions(atoms)
+
         if self.granularity != 'atom':
             atoms = atoms.loc[atoms['atom_name'] == self.granularity]
+
+        # if centroids:
+        #    atoms[['x_coord', 'y_coord', 'z_coord']] = centroids
+        #    print(atoms)
 
         if self.keep_hets:
             if self.exclude_waters:
@@ -306,15 +351,16 @@ class ProteinGraph(object):
 
         return protein_df
 
+    def calculate_centroid_positions(self, atoms):
+        centroids = atoms.groupby('residue_number').mean()[['x_coord', 'y_coord', 'z_coord']]
+        return centroids
+
     @staticmethod
     def get_chains(protein_df, chain_selection):
         """
-        Args:
-            protein_df (df): pandas dataframe of PDB subsetted to CA atoms
-        Returns:
-            chains (list): list of dataframes corresponding to each chain in protein
-            :param protein_df:
-            :param chain_selection:
+        :param protein_df: pandas dataframe of PDB subsetted to relevant atoms (CA, CB)
+        :param chain_selection:
+        :return
         """
 
         if chain_selection != 'all':
@@ -326,6 +372,7 @@ class ProteinGraph(object):
 
     def add_protein_nodes(self, chain):
         """
+        Add protein nodes to graph from list of PandasPDB dataframes for each chain
         :param chain: (list of dataframes) Contains a dataframe for each chain in the protein
         :return: g (DGLGraph): Graph of protein only populated by the nodes
         """
@@ -359,8 +406,8 @@ class ProteinGraph(object):
 
     def download_pdb(self, pdb_code):
         """
-        Download PDB structure
-        :param pdb_code: 4 character PD accession code
+        Download PDB structure from PDB
+        :param pdb_code: 4 character PDB accession code
         :return: # todo impl return
         """
         # Initialise class and download pdb file
@@ -368,15 +415,14 @@ class ProteinGraph(object):
         pdbl.retrieve_pdb_file(pdb_code, pdir=self.pdb_dir, overwrite=True, file_format='pdb')
         # Rename file to .pdb from .ent
         os.rename(self.pdb_dir + "pdb" + pdb_code + '.ent', self.pdb_dir + pdb_code + '.pdb')
+        # Assert file has been downloaded
         assert any(pdb_code in s for s in os.listdir(self.pdb_dir))
         print(f'Downloaded PDB file for: {pdb_code}')
 
     def compute_protein_contacts(self, pdb_code, file_name=False):
         """Computes contacts from .pdb file using GetContacts - https://www.github.com/getcontacts/getcontacs
         :param: pdb_code - 4 character PDB accession code
-        :return: # todo impl return
         """
-
         # Check for existence of contacts file
         if file_name:
             contacts_file = glob.glob(self.contacts_dir + file_name)
@@ -431,7 +477,7 @@ class ProteinGraph(object):
                     if self.granularity != 'atom':
                         res1 = re.search(r'.\:(.*?)\:(.*?)(?=:)', res1)[0]
                         res2 = re.search(r'.\:(.*?)\:(.*?)(?=:)', res2)[0]
-
+                # Add edge to set of edges
                 edges.add((res1, res2, interaction_type))
 
         edges = pd.DataFrame(list(edges), columns=['res1', 'res2', 'interaction_type'])
@@ -441,6 +487,7 @@ class ProteinGraph(object):
         if chain_selection != 'all':
             edges = edges.loc[edges['res1'].str.startswith(tuple(chain_selection))]
             edges = edges.loc[edges['res2'].str.startswith(tuple(chain_selection))]
+
         # Filter out interactions for disordered/unassigned residues
         edges = edges.loc[~edges['res1'].str.contains("[A-Z]$")]
         edges = edges.loc[~edges['res2'].str.contains("[A-Z]$")]
@@ -448,6 +495,9 @@ class ProteinGraph(object):
         edges = edges.loc[~edges['res2'].str.contains(":0$")]
         edges = edges.loc[~edges['res1'].str.contains('^X:')]
         edges = edges.loc[~edges['res2'].str.contains('^X:')]
+
+        if self.verbose:
+            print(f'Calculated {len(edges)} intramolecular interaction-based edges')
         return edges
 
     def add_protein_edges_to_graph(self, g, e):
@@ -489,22 +539,11 @@ class ProteinGraph(object):
             x = allowable_set[-1]
         return [x == s for s in allowable_set]
 
-    def write_to_pdb(self, features, fname):
-        """
-        writes PandasPDB to PDB file. Features specify node features by replacing b factor
-        :param fname:
-        :param features:
-        :return:
-        """
-        # Todo impl write to pdb file
-        pass
-
     def get_protein_features(self, pdb_code, file_path):
         """
-        Input:
-            protein (string): String containing four letter PDB accession
-        Output:
-            df (pd.DataFrame): Dataframe containing output of DSSP (Solvent accessibility, secondary structure for each residue)
+        :param file_path: (str) file path to PDB file
+        :param pdb_code: (str) String containing four letter PDB accession
+        :return df (pd.DataFrame): Dataframe containing output of DSSP (Solvent accessibility, secondary structure for each residue)
         """
 
         # Run DSSP on relevant PDB file
@@ -550,11 +589,13 @@ class ProteinGraph(object):
 
     def compute_protein_feature_representations(self, dssp_df):
         """
-        :param dssp_df (pd.DataFrame): Df containing parsed output of DSSP
+        :param dssp_df: (pd.DataFrame): Df containing parsed output of DSSP
         :return feature_dict (dict): Dictionary of tensorized features
         """
+        # One hot encoded secondary structure assignments
         ss_set = ['G', 'H', 'I', 'E', 'B', 'T', 'S', 'C', '-']
         ss = [self.onek_encoding_unk(ss, ss_set) for ss in dssp_df['ss']]
+        # Create feature dictionary
         feature_dict = {'ss': torch.Tensor(ss),
                         'asa': torch.Tensor(np.asarray(dssp_df['exposure_asa'])).reshape(len(dssp_df), 1),
                         'rsa': torch.Tensor(np.asarray(dssp_df['exposure_rsa'])).reshape(len(dssp_df), 1)
@@ -581,8 +622,41 @@ class ProteinGraph(object):
         g.ndata['rsa'] = feature_dict['rsa']
         return g
 
-    @staticmethod
-    def distance_based_edges(protein_df, cutoff):
+    def k_nn_edges(self, protein_df, k, mode='connectivity', metric='minkowski', p=2, include_self=False):
+        """
+        Construct edges based on K nearest neighbours
+        :param protein_df: PandasPDB DF of protein structure
+        :param k: number of nearest neighbour edges for each node
+        :param mode: {'connectivity', 'distance'}
+        :param metric: {'minkowskii}
+        :param p:
+        :param include_self: bool - whether or not to include self-loops
+        :return:
+        """
+        # Create distance matrix
+        coords = protein_df[['x_coord', 'y_coord', 'z_coord']]
+        # dists = pairwise_distances(np.asarray(coords))
+        dists = np.asarray(coords)
+        # Perform K-NN on coordinates
+        nn = kneighbors_graph(X=dists,
+                              n_neighbors=k,
+                              mode=mode,
+                              metric=metric,
+                              p=p,
+                              include_self=include_self
+                              )
+        # Create dataframe
+        outgoing = np.repeat(np.array(range(len(coords))), k)
+        incoming = nn.indices
+        edge_df = pd.DataFrame({'res1': outgoing,
+                                'res2': incoming,
+                                'distance': nn.data
+                                })
+        if self.verbose:
+            print(f'Calculated {len(edge_df)} K-nearest neighbour edges')
+        return edge_df
+
+    def distance_based_edges(self, protein_df, cutoff):
         """
         Produce Edge list dataframe based on pairwise distance matrix calculation
         :param protein_df: PandasPDB Dataframe
@@ -592,7 +666,6 @@ class ProteinGraph(object):
         # Create distance matrix
         coords = protein_df[['x_coord', 'y_coord', 'z_coord']]
         dists = pairwise_distances(np.asarray(coords))
-
         # Filter distance matrix and select lower triangle
         dists = pd.DataFrame(np.tril(np.where(dists < cutoff, dists, 0)))
         # Reshape to produce edge list
@@ -600,7 +673,64 @@ class ProteinGraph(object):
         dists = dists.stack().reset_index()
         # Filter to remove edges that exceed cutoff
         dists = dists.loc[dists[0] != 0]
+        if self.verbose:
+            print(f'Calcuclated {len(dists)} distance-based edges')
         return dists
+
+    """"
+    @staticmethod
+    def get_voronoi_edges(protein_df, furthest_site=False, incremental=False):
+        
+        #Calculate Voronoi edges from protein dataframe
+        #:param protein_df:
+        #:param furthest_site:
+        ##:param incremental:
+        #:return:
+        
+        coord = protein_df[['x_coord', 'y_coord', 'z_coord']]
+        vor = spatial.Voronoi(points=coord, furthest_site=furthest_site, incremental=incremental)
+        edges = pd.DataFrame(vor.ridge_points)
+        print(edges)
+        edges.columns = ['res1', 'res2']
+        print(f'Calculated {len(edges)} voronoi-ridge edges')
+        return edges
+    """
+
+    def get_delaunay_edges(self, protein_df, furthest_site=False, incremental=False):
+        """
+
+        :param protein_df:
+        :param furthest_site:
+        :param incremental:
+        :return:
+        """
+        coord = protein_df[['x_coord', 'y_coord', 'z_coord']]
+        delaunay = spatial.Delaunay(coord, furthest_site=furthest_site, incremental=incremental)
+
+        # Turn simplices into edgelist
+        edges = []
+        indices, indptr = delaunay.vertex_neighbor_vertices
+        for i in range(indices.shape[0] - 1):
+            for j in indptr[indices[i]:indices[i + 1]]:
+                try:
+                    edges.append([i, j])
+                except IndexError:
+                    pass
+
+        edges = pd.DataFrame(edges)
+        edges.columns = ['res1', 'res2']
+
+        # Get distances between edges
+        distances = []
+        for row in range(len(edges)):
+            a = coord.iloc[edges.iloc[row]['res1']]
+            b = coord.iloc[edges.iloc[row]['res2']]
+            distances.append(spatial.distance.euclidean(a, b))
+
+        edges['distance'] = distances
+        if self.verbose:
+            print(f'Calculated {len(edges)} delaunay edges')
+        return edges
 
 
 if __name__ == "__main__":
@@ -617,6 +747,7 @@ if __name__ == "__main__":
                       # graph_constructor=dgl.data.chem.mol_to_graph())
                       )
     """
+    """
     pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
                       node_featuriser='meiler',
                       allowed_interactions=None,
@@ -628,9 +759,26 @@ if __name__ == "__main__":
                       # edge_featuriser=dgl.data.chem.bond_type_one_hot(),
                       # graph_constructor=dgl.data.chem.mol_to_graph())
                       )
+    """
+    pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
+                      node_featuriser='meiler',
+                      intramolecular_interactions=None,
+                      get_contacts_path='/Users/arianjamasb/github/getcontacts',
+                      pdb_dir='../examples/pdbs/',
+                      contacts_dir='../examples/contacts/',
+                      exclude_waters=True,
+                      covalent_bonds=False,
+                      include_ss=True,
+                      include_ligand=False,
+                      verbose=True
+                      )
 
-    g = pg.dgl_graph_from_pdb_code('3eiy', chain_selection='all', edge_construction=['distance'], encoding=False)
-    print(type(g.ndata['residue_name']))
-    g, resiude_name_encoder, residue_id_encoder = pg.nx_graph_from_pdb_code('3eiy', chain_selection='all',
-                                                                            edge_construction=['distance'],
-                                                                            encoding=True)
+    g = pg.dgl_graph_from_pdb_code('3eiy',
+                                   chain_selection='all',
+                                   edge_construction=['distance', 'contacts', 'delaunay', 'k_nn'],
+                                   encoding=False,
+                                   k_nn=3)
+
+    # g, resiude_name_encoder, residue_id_encoder = pg.nx_graph_from_pdb_code('3eiy', chain_selection='all',
+    #                                                                        edge_construction=['distance', 'contacts'],
+    #                                                                        encoding=True)
