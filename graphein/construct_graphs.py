@@ -139,7 +139,7 @@ class ProteinGraph(object):
         self.exclude_waters = exclude_waters
 
     def dgl_graph_from_pdb_code(self, pdb_code=None, file_path=None, chain_selection='all', contact_file=None,
-                                edge_construction=['contacts'], edges=None, encoding=False, k_nn=None):
+                                edge_construction=['contacts'], encoding=False, k_nn=None, custom_edges=None):
         """
         Produces a DGL graph from a PDB code and a selection of polypeptide chains
         :param k_nn: (int) specifies number of nearest neighbours to make edges with
@@ -156,7 +156,7 @@ class ProteinGraph(object):
         if file_path:
             assert not pdb_code, "Do not provide both a PDB file and a file path"
         if k_nn:
-            assert 'knn' in edge_construction, "If providing KNN edges, include 'knn' in the edgge_construction list"
+            assert 'k_nn' in edge_construction, "If providing KNN edges, include 'k_nn' in the edgge_construction list"
 
         if contact_file:
             assert 'contacts' not in edge_construction, \
@@ -166,7 +166,7 @@ class ProteinGraph(object):
             g = self.make_atom_graph(file_path)
             return g
 
-        if self.granularity == 'CA' or 'CB':
+        if self.granularity == 'CA' or 'CB' or 'centroids':
             self.download_pdb(pdb_code)
 
             # Create Relevant protein dataframes
@@ -211,10 +211,10 @@ class ProteinGraph(object):
                             data={'delaunay_euclidean_distance': torch.Tensor(list(edges['distance']))})
 
             # Add user supplied edges
-            if self.edges:
-                g.add_edges(list(self.edges['res1']),
-                            list(self.edges['res2']),
-                            data={'user_edge_data': torch.Tensor(list(self.edges['data']))})
+            if custom_edges:
+                g.add_edges(list(custom_edges['res1']),
+                            list(scustom_edges['res2']),
+                            data={'user_edge_data': torch.Tensor(list(custom_edges['data']))})
 
             if self.include_ss:
                 dssp = self.get_protein_features(pdb_code, file_path=None)
@@ -331,28 +331,32 @@ class ProteinGraph(object):
         atoms = protein_df.df['ATOM']
         hetatms = protein_df.df['HETATM']
 
-        # if self.granularity == 'centroid':
-        #    centroids = self.calculate_centroid_positions(atoms)
-
-        if self.granularity != 'atom':
+        if self.granularity == 'centroids':
+            centroids = self.calculate_centroid_positions(atoms)
+            atoms = atoms.loc[atoms['atom_name'] == 'CA'].reset_index()
+            atoms['x_coord'] = centroids['x_coord']
+            atoms['y_coord'] = centroids['y_coord']
+            atoms['z_coord'] = centroids['z_coord']
+        else:
             atoms = atoms.loc[atoms['atom_name'] == self.granularity]
-
-        # if centroids:
-        #    atoms[['x_coord', 'y_coord', 'z_coord']] = centroids
-        #    print(atoms)
 
         if self.keep_hets:
             if self.exclude_waters:
                 hetatms = hetatms.loc[hetatms['residue_name'] != 'HOH']
-
+            if self.verbose:
+                print(f'Detected {len(hetatms)} HETATOM nodes')
             protein_df = pd.concat([atoms, hetatms])
         else:
             protein_df = atoms
 
+        if self.verbose:
+            print(f'Detected {len(protein_df)} total nodes')
         return protein_df
 
     def calculate_centroid_positions(self, atoms):
-        centroids = atoms.groupby('residue_number').mean()[['x_coord', 'y_coord', 'z_coord']]
+        centroids = atoms.groupby('residue_number').mean()[['x_coord', 'y_coord', 'z_coord']].reset_index()
+        if self.verbose:
+            print(f'Calculated {len(centroids)} centroid nodes')
         return centroids
 
     @staticmethod
@@ -760,7 +764,7 @@ if __name__ == "__main__":
                       # graph_constructor=dgl.data.chem.mol_to_graph())
                       )
     """
-    pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
+    pg = ProteinGraph(granularity='centroids', insertions=False, keep_hets=True,
                       node_featuriser='meiler',
                       intramolecular_interactions=None,
                       get_contacts_path='/Users/arianjamasb/github/getcontacts',
