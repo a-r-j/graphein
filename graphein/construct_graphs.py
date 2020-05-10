@@ -37,7 +37,7 @@ class ProteinGraph(object):
     def __init__(self, granularity, keep_hets, insertions, node_featuriser, get_contacts_path, pdb_dir,
                  contacts_dir, exclude_waters=True, covalent_bonds=True, include_ss=True, include_ligand=False,
                  intramolecular_interactions=None, graph_constructor=None, edge_featuriser=None,
-                 edge_distance_cutoff=None, verbose=True):
+                 edge_distance_cutoff=None, verbose=True, deprotonate=False):
         """
         Initialise ProteinGraph Generator Class
         :param granularity:
@@ -118,6 +118,7 @@ class ProteinGraph(object):
         self.contacts_dir = contacts_dir
         self.get_contacts_path = get_contacts_path
         self.covalent_bonds = covalent_bonds
+        self.deprotonate = deprotonate
 
         if not intramolecular_interactions:
             self.INTERACTION_TYPES = ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb', 'hbb', 'hbsb',
@@ -166,6 +167,13 @@ class ProteinGraph(object):
             g = self.make_atom_graph(file_path)
             return g
 
+        if self.granularity == 'ss':
+            # get secondary structure nodes
+            # add secondary stucture nodes
+            # get secondary stucture edges
+            # add secondary structure edges
+            pass
+
         if self.granularity == 'CA' or 'CB' or 'centroids':
             self.download_pdb(pdb_code)
 
@@ -173,7 +181,6 @@ class ProteinGraph(object):
             df = self.protein_df(pdb_path=self.pdb_dir + pdb_code + '.pdb')
             chains = self.get_chains(df, chain_selection)
             df = pd.concat(chains)
-
             # Populate graph with nodes
             g = self.add_protein_nodes(df)
 
@@ -213,11 +220,11 @@ class ProteinGraph(object):
             # Add user supplied edges
             if custom_edges:
                 g.add_edges(list(custom_edges['res1']),
-                            list(scustom_edges['res2']),
+                            list(custom_edges['res2']),
                             data={'user_edge_data': torch.Tensor(list(custom_edges['data']))})
 
             if self.include_ss:
-                dssp = self.get_protein_features(pdb_code, file_path=None)
+                dssp = self.get_protein_features(pdb_code, file_path=None, chain_selection=chain_selection)
                 feats = self.compute_protein_feature_representations(dssp)
                 g = self.add_protein_features(g, feats)
 
@@ -332,6 +339,8 @@ class ProteinGraph(object):
         hetatms = protein_df.df['HETATM']
 
         if self.granularity == 'centroids':
+            if self.deprotonate:
+                atoms = atoms.loc[atoms['atom_name'] != 'H'].reset_index()
             centroids = self.calculate_centroid_positions(atoms)
             atoms = atoms.loc[atoms['atom_name'] == 'CA'].reset_index()
             atoms['x_coord'] = centroids['x_coord']
@@ -349,8 +358,12 @@ class ProteinGraph(object):
         else:
             protein_df = atoms
 
+        # Remove alt_loc resdiues
+        protein_df = protein_df.loc[protein_df['alt_loc'].isin(['', 'A'])]
+
         if self.verbose:
             print(f'Detected {len(protein_df)} total nodes')
+
         return protein_df
 
     def calculate_centroid_positions(self, atoms):
@@ -371,7 +384,6 @@ class ProteinGraph(object):
             chains = [protein_df.loc[protein_df['chain_id'] == chain] for chain in chain_selection]
         else:
             chains = [protein_df.loc[protein_df['chain_id'] == chain] for chain in protein_df['chain_id'].unique()]
-
         return chains
 
     def add_protein_nodes(self, chain):
@@ -522,10 +534,16 @@ class ProteinGraph(object):
             index = dict(zip(list(g.ndata['id']),
                              list(range(len(g.ndata['id'])))
                              ))
+
+            # Remove interactions for edges between nodes not in graph. E.g hetatms
+            e = e.loc[e['res1'].isin(index.keys())]
+            e = e.loc[e['res2'].isin(index.keys())]
+
             res1_ind = [index[res] for res in e['res1']]
             res2_ind = [index[res] for res in e['res2']]
             interactions = [self.onek_encoding_unk(interaction, self.INTERACTION_TYPES) for interaction in
                             e['interaction_type']]
+
 
             g.add_edges(res1_ind, res2_ind, {'rel_type': torch.Tensor(interactions).double(),
                                              'norm': torch.ones(len(interactions))})
@@ -543,7 +561,7 @@ class ProteinGraph(object):
             x = allowable_set[-1]
         return [x == s for s in allowable_set]
 
-    def get_protein_features(self, pdb_code, file_path):
+    def get_protein_features(self, pdb_code, file_path, chain_selection):
         """
         :param file_path: (str) file path to PDB file
         :param pdb_code: (str) String containing four letter PDB accession
@@ -576,6 +594,9 @@ class ProteinGraph(object):
                 'O_NH_2_relidx', 'O_NH_2_energy']
 
         df = pd.DataFrame.from_records(appender, columns=cols)
+        # Subset dataframe to those in chain_selection
+        if chain_selection != 'all':
+            df = df.loc[df['chain'].isin(chain_selection)]
         # Rename cysteines to 'C'
         df['aa'] = df['aa'].str.replace('[a-z]', 'C')
         df = df[df['aa'].isin(list(aa1))]
@@ -764,7 +785,7 @@ if __name__ == "__main__":
                       # graph_constructor=dgl.data.chem.mol_to_graph())
                       )
     """
-    pg = ProteinGraph(granularity='centroids', insertions=False, keep_hets=True,
+    pg = ProteinGraph(granularity='centroids', insertions=False, keep_hets=False,
                       node_featuriser='meiler',
                       intramolecular_interactions=None,
                       get_contacts_path='/Users/arianjamasb/github/getcontacts',
@@ -777,11 +798,12 @@ if __name__ == "__main__":
                       verbose=True
                       )
 
-    g = pg.dgl_graph_from_pdb_code('3eiy',
-                                   chain_selection='all',
-                                   edge_construction=['distance', 'contacts', 'delaunay', 'k_nn'],
+    g = pg.dgl_graph_from_pdb_code('1c1y',
+                                   chain_selection=['B'],
+                                   edge_construction=['distance', 'contacts'],#, 'delaunay', 'k_nn'],
                                    encoding=False,
-                                   k_nn=3)
+                                   k_nn=None)
+    # Check KNN
 
     # g, resiude_name_encoder, residue_id_encoder = pg.nx_graph_from_pdb_code('3eiy', chain_selection='all',
     #                                                                        edge_construction=['distance', 'contacts'],
