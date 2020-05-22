@@ -1,12 +1,13 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-# Graphein
+
+![banner](imgs/graphein.png)
 Protein Graph Library
 
-This package provides functionality for producing a number of types of graph-based representations of proteins. We provide compatibility with standard formats, as well as graph objects designed for ease of use in deep learning.
+This package provides functionality for producing a number of types of graph-based representations of proteins. We provide compatibility with standard formats, as well as graph objects designed for ease of use with popular deep learning libraries.
 
 ## Example usage
 ```python
-from graphein.construct_graphs import  ProteinGraph
+from graphein.construct_graphs import  ProteinGraph, ProteinMesh
 
 # Initialise ProteinGraph class
 pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
@@ -16,7 +17,19 @@ pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
                   exclude_waters=True, covalent_bonds=False, include_ss=True)
 
 # Create graph. Chain selection is either 'all' or a list e.g. ['A', 'B', 'D'] specifying the polypeptide chains to capture
-graph = pg.dgl_graph('3eiy', chain_selection='all')
+
+# DGLGraph From PDB Accession Number
+graph = pg.dgl_graph_from_pdb_code('3eiy', chain_selection='all')
+# DGLGraph From PDB file
+graph = pg.dgl_graph_from_pdb_file('examples/pdbs/3eiy.pdb', chain_selection='all')
+
+# Initialise ProteinMesh class
+pm = ProteinMesh()
+
+# Pytorch3D Mesh Object from PDB Code
+verts, faces, aux = pm.create_mesh(pdb_code='3eiy', out_dir='examples/meshes/')
+# Pytorch3D Mesh Object from PDB File
+verts, faces, aux = pm.create_mesh(pdb_file='examples/pdbs/pdb3eiy.pdb')
 ```
 
 ## Parameters
@@ -34,17 +47,21 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
 ```
 
 ## Installation
-Create env
-```
-conda create --name graphein
-conda activate graphein
-```
-1. Install `vmd-python`
+1. Create env
 
-    `conda install -c conda-forge vmd-python`
-  
-2. Install Get Contacts
+    ```bash
+    conda create --name graphein
+    conda activate graphein
     ```
+   
+2. Install `vmd-python`
+
+   ```bash
+    conda install -c conda-forge vmd-python
+   ```
+  
+3. Install Get Contacts
+    ```bash
      # Install get_contact_ticc.py dependencies
      $ conda install scipy numpy scikit-learn matplotlib pandas cython seaborn
      $ pip install ticc==0.1.4
@@ -65,22 +82,38 @@ conda activate graphein
      $ echo "export PATH=`pwd`/getcontacts:\$PATH" >> ~/.bash_profile
      $ source ~/.bash_profile
     
-      # Test installation
-      $ cd getcontacts/example/5xnd
-      $ get_dynamic_contacts.py --topology 5xnd_topology.pdb \
-                                --trajectory 5xnd_trajectory.dcd \
-                                --itypes hb \
-                                --output 5xnd_hbonds.tsv
+     # Test installation
+     $ cd getcontacts/example/5xnd
+     $ get_dynamic_contacts.py --topology 5xnd_topology.pdb \
+                               --trajectory 5xnd_trajectory.dcd \
+                               --itypes hb \
+                               --output 5xnd_hbonds.tsv
     ```
 
-3. Install [DSSP](https://github.com/cmbi/hssp)
+4. Install [DSSP](https://github.com/cmbi/hssp)
 
-`conda install -c salilab dssp`
+    We use DSSP for computing some protein features
+    
+    ```bash
+    conda install -c salilab dssp
+    ```
 
-4. Install graphein
+5. Install graphein
 
-```
-$ git clone https://www.github.com/a-r-j/graphein
-$ cd graphein
-$ pip install -e .
-```
+    ```bash
+    $ git clone https://www.github.com/a-r-j/graphein
+    $ cd graphein
+    $ pip install -e .
+    ```
+   
+6. Install Blender
+
+   ```bash
+   $ sudo apt install blender
+   $ conda install -c kitsune.one python-blender
+
+   # NB, you may have to configure libpng
+   $ sudo wget -q -O /tmp/libpng12.deb http://mirrors.kernel.org/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1_amd64.deb
+   $ sudo dpkg -i /tmp/libpng12.deb
+   $ rm /tmp/libpng12.deb
+   ```
