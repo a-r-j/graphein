@@ -22,7 +22,7 @@ from Bio.PDB.DSSP import residue_max_acc
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file
 from Bio.PDB.Polypeptide import aa1
 from Bio.PDB.Polypeptide import one_to_three
-# from dgl.data.chem import mol_to_graph
+from dgl.data.chem import mol_to_graph
 import dgl.data.chem
 from rdkit.Chem import MolFromPDBFile
 from vmd import molecule
