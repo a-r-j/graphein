@@ -1,5 +1,5 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
 ![banner](imgs/graphein.png)
 Protein Graph Library
 
@@ -53,14 +53,8 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     conda create --name graphein
     conda activate graphein
     ```
-   
-2. Install `vmd-python`
-
-   ```bash
-    conda install -c conda-forge vmd-python
-   ```
   
-3. Install Get Contacts
+2. Install Get Contacts
     ```bash
      # Install get_contact_ticc.py dependencies
      $ conda install scipy numpy scikit-learn matplotlib pandas cython seaborn
@@ -97,6 +91,16 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     ```bash
     conda install -c salilab dssp
     ```
+   
+4. Install PyTorch Geometric
+```bash
+pip install torch-scatter
+pip install torch-sparse
+pip install torch-spline-conv
+pip install torch XXX
+pip install torch-geometric
+
+```
 
 5. Install graphein
 
@@ -105,15 +109,3 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     $ cd graphein
     $ pip install -e .
     ```
-   
-6. Install Blender
-
-   ```bash
-   $ sudo apt install blender
-   $ conda install -c kitsune.one python-blender
-
-   # NB, you may have to configure libpng
-   $ sudo wget -q -O /tmp/libpng12.deb http://mirrors.kernel.org/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1_amd64.deb
-   $ sudo dpkg -i /tmp/libpng12.deb
-   $ rm /tmp/libpng12.deb
-   ```
