@@ -1,5 +1,5 @@
 """Class for working with Protein Structure Graphs"""
-#%%
+# %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: BSD 3 clause
@@ -12,10 +12,11 @@ import pandas as pd
 import numpy as np
 import dgl
 import subprocess
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import networkx as nx
 import torch as torch
 import torch.nn.functional as F
+from torch_geometric.data import Data
 from biopandas.pdb import PandasPdb
 from Bio.PDB import *
 from Bio.PDB.DSSP import residue_max_acc, dssp_dict_from_pdb_file
@@ -126,8 +127,9 @@ class ProteinGraph(object):
         self.deprotonate = deprotonate
 
         if not intramolecular_interactions:
-            self.INTERACTION_TYPES = ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb', 'hbb', 'hbsb',
-                                      'hbss', 'wb', 'wb2', 'hblb', 'hbls', 'lwb', 'lwb2', 'hp']
+            self.INTERACTION_TYPES = ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb', 'hbb', 'hbsb', 'hbbb'
+                                                                                          'hbss', 'wb', 'wb2', 'hblb',
+                                      'hbls', 'lwb', 'lwb2', 'hp']
         else:
             self.INTERACTION_TYPES = intramolecular_interactions
         self.INTERACTION_FDIM = len(self.INTERACTION_TYPES)
@@ -182,7 +184,7 @@ class ProteinGraph(object):
         if self.granularity == 'CA' or 'CB' or 'centroids':
             # Download PDB if file not found
             if pdb_code:
-                pdb_path = self.pdb_dir+pdb_code+'.pdb'
+                pdb_path = self.pdb_dir + pdb_code + '.pdb'
                 if not os.path.isfile(pdb_path):
                     self.download_pdb(pdb_code)
 
@@ -322,25 +324,40 @@ class ProteinGraph(object):
         edge_attrs = g.edge_attr_schemes().keys()
         return dgl.to_networkx(g, node_attrs, edge_attrs), resiude_name_encoder, residue_id_encoder
 
-    def torch_geometric_graph_from_pdb_code(self, pdb_code, chain_selection='all', contact_file=None):
+    def torch_geometric_graph_from_pdb_code(self, pdb_code, chain_selection='all', edge_construction=['contacts'],
+                                            contact_file=None, encoding=False, k_nn=None, custom_edges=None):
         """
         :param pdb_code:
         :param chain_sellection:
         :param contact_file:
         :return:
         """
-        g, resiude_name_encoder, residue_id_encoder = self.dgl_graph_from_pdb_file(pdb_code, chain_selection,
-                                                                                   contact_file)
+        assert encoding, 'Non-numeric feature encoding must be True'
+        if encoding:
+            g, resiude_name_encoder, residue_id_encoder = self.dgl_graph_from_pdb_code(pdb_code=pdb_code,
+                                                                                       chain_selection=chain_selection,
+                                                                                       contact_file=contact_file,
+                                                                                       edge_construction=edge_construction,
+                                                                                       custom_edges=custom_edges,
+                                                                                       encoding=encoding,
+                                                                                       k_nn=k_nn)
 
+        node_feature_names = g.node_attr_schemes().keys()
+        dgl_graph_features = [g.ndata[feat].float() for feat in node_feature_names]
+        dgl_graph_features = [f.unsqueeze(dim=1) if len(f.shape) == 1 else f for f in dgl_graph_features]
+        node_features = torch.cat(dgl_graph_features, dim=1)
 
-        node_features = torch.cat((g.ndata['h'], g.ndata['ss'], g.data['asa'], g.ndata['rsa']), dim=1)
+        edge_types = g.edge_attr_schemes().keys()
+        edge_feats = [g.edata[e].float() for e in edge_types]
+        edge_feats = [e.unsqueeze(dim=1) if len(e.shape) == 1 else e for e in edge_feats]
+        edge_feats = torch.cat(edge_feats, dim=1)
 
         geom_graph = (Data(x=node_features,
                            edge_index=torch.stack(g.edges(), dim=1),
-                           edge_attr=g.edata['rel_type']
+                           edge_attr=edge_feats
                            ))
-
-        pass
+        print(geom_graph)
+        return geom_graph
 
     def make_atom_graph(self, pdb_code, pdb_path, graph_constructor, node_featurizer, edge_featurizer):
         # Read in protein as mol
@@ -576,7 +593,6 @@ class ProteinGraph(object):
             interactions = [self.onek_encoding_unk(interaction, self.INTERACTION_TYPES) for interaction in
                             e['interaction_type']]
 
-
             g.add_edges(res1_ind, res2_ind, {'rel_type': torch.Tensor(interactions).double(),
                                              'norm': torch.ones(len(interactions))})
             return g
@@ -589,7 +605,7 @@ class ProteinGraph(object):
         :param allowable_set: set of options to encode
         :return: one-hot encoding as torch tensor
         """
-        #if x not in allowable_set:
+        # if x not in allowable_set:
         #    x = allowable_set[-1]
         return [x == s for s in allowable_set]
 
@@ -848,16 +864,20 @@ if __name__ == "__main__":
 
     g = pg.dgl_graph_from_pdb_code('3eiy',
                                    chain_selection='all',
-                                   edge_construction=['distance'],#, 'delaunay', 'k_nn'],
+                                   edge_construction=['distance', 'delaunay'],  # , 'delaunay', 'k_nn'],
                                    encoding=False,
-                                   k_nn=None,)
+                                   k_nn=None)
 
+    pg.torch_geometric_graph_from_pdb_code('3eiy',
+                                           chain_selection='all',
+                                           edge_construction=['distance', 'delaunay'],
+                                           encoding=True,
+                                           k_nn=None)
 
-
-    #g, _, __ = pg.nx_graph_from_pdb_code(pdb_code='3eiy',
-    #                              chain_selection='all',
-    #                              edge_construction=['contacts'],
-    #                              encoding=True)
+    g, _, __ = pg.nx_graph_from_pdb_code(pdb_code='3eiy',
+                                         chain_selection='all',
+                                         edge_construction=['contacts'],
+                                         encoding=True)
     # Check KNN
 
     # g, resiude_name_encoder, residue_id_encoder = pg.nx_graph_from_pdb_code('3eiy', chain_selection='all',
