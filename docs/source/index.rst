@@ -10,14 +10,22 @@ This package provides functionality for producing a number of types of graph-bas
 .. note::
    This is an early-stage project and a lot more documentation and functionality is planned to be included. If you are a structural biologist or machine learning researcher in computational biology, my inbox is always open for suggestions and assistance!
 
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :caption: Getting Started:
+
+   getting_started/installation
+   getting_started/introduction
+   license
 
 
 .. toctree::
    :maxdepth: 2
-
    :caption: Package Reference:
-   modules/graphein.construct_graphs
-   modules/graphein.construct_meshes
+
+   modules/construct_graphs
+   modules/construct_meshes
 
 
 

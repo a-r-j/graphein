@@ -2,8 +2,8 @@
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
-# License: BSD 3 clause
-# Project Website:
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import os
 import glob
@@ -12,7 +12,6 @@ import pandas as pd
 import numpy as np
 import dgl
 import subprocess
-# import matplotlib.pyplot as plt
 import networkx as nx
 import torch as torch
 import torch.nn.functional as F
@@ -21,8 +20,8 @@ from biopandas.pdb import PandasPdb
 from Bio.PDB import *
 from Bio.PDB.DSSP import residue_max_acc, dssp_dict_from_pdb_file
 from Bio.PDB.Polypeptide import aa1, one_to_three
-# from dgl.data.chem import mol_to_graph
-import dgl.data.chem
+from dgllife.utils import mol_to_bigraph, mol_to_complete_graph, mol_to_nearest_neighbor_graph
+from dgllife.utils import BaseBondFeaturizer, BaseAtomFeaturizer, CanonicalAtomFeaturizer, CanonicalBondFeaturizer
 from rdkit.Chem import MolFromPDBFile
 from sklearn.metrics import pairwise_distances
 from sklearn import preprocessing
@@ -32,7 +31,8 @@ from scipy import spatial
 
 # Todo add SS featuriser for Mol Graph?
 # Todo atom featuriser
-# Todo add torch geometric
+# Todo create SS element-level graph
+# Mol graph Nearest Neighbour
 
 
 class ProteinGraph(object):
@@ -127,9 +127,8 @@ class ProteinGraph(object):
         self.deprotonate = deprotonate
 
         if not intramolecular_interactions:
-            self.INTERACTION_TYPES = ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb', 'hbb', 'hbsb', 'hbbb'
-                                                                                          'hbss', 'wb', 'wb2', 'hblb',
-                                      'hbls', 'lwb', 'lwb2', 'hp']
+            self.INTERACTION_TYPES = ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb', 'hbb', 'hbsb', 'hbbb', 'hbss', 'wb', 'wb2',
+                                      'hblb', 'hbls', 'lwb', 'lwb2', 'hp']
         else:
             self.INTERACTION_TYPES = intramolecular_interactions
         self.INTERACTION_FDIM = len(self.INTERACTION_TYPES)
@@ -150,6 +149,9 @@ class ProteinGraph(object):
                                 edge_construction=['contacts'], encoding=False, k_nn=None, custom_edges=None):
         """
         Produces a DGL graph from a PDB code and a selection of polypeptide chains
+        :param file_path:
+        :param custom_edges:
+        :param edge_construction:
         :param k_nn: (int) specifies number of nearest neighbours to make edges with
         :param encoding:
         :param edges: {'contact', 'distance', 'custom'}
@@ -327,31 +329,37 @@ class ProteinGraph(object):
     def torch_geometric_graph_from_pdb_code(self, pdb_code, chain_selection='all', edge_construction=['contacts'],
                                             contact_file=None, encoding=False, k_nn=None, custom_edges=None):
         """
+        :param k_nn:
+        :param custom_edges:
+        :param encoding:
+        :param edge_construction:
         :param pdb_code:
-        :param chain_sellection:
+        :param chain_selection:
         :param contact_file:
         :return:
         """
         assert encoding, 'Non-numeric feature encoding must be True'
-        if encoding:
-            g, resiude_name_encoder, residue_id_encoder = self.dgl_graph_from_pdb_code(pdb_code=pdb_code,
-                                                                                       chain_selection=chain_selection,
-                                                                                       contact_file=contact_file,
-                                                                                       edge_construction=edge_construction,
-                                                                                       custom_edges=custom_edges,
-                                                                                       encoding=encoding,
-                                                                                       k_nn=k_nn)
 
+        g, resiude_name_encoder, residue_id_encoder = self.dgl_graph_from_pdb_code(pdb_code=pdb_code,
+                                                                                   chain_selection=chain_selection,
+                                                                                   contact_file=contact_file,
+                                                                                   edge_construction=edge_construction,
+                                                                                   custom_edges=custom_edges,
+                                                                                   encoding=encoding,
+                                                                                   k_nn=k_nn)
+        # Get node features from DGL graph and concatenate them
         node_feature_names = g.node_attr_schemes().keys()
         dgl_graph_features = [g.ndata[feat].float() for feat in node_feature_names]
         dgl_graph_features = [f.unsqueeze(dim=1) if len(f.shape) == 1 else f for f in dgl_graph_features]
         node_features = torch.cat(dgl_graph_features, dim=1)
 
+        # Get edge features from DGL graph and concatenate them
         edge_types = g.edge_attr_schemes().keys()
         edge_feats = [g.edata[e].float() for e in edge_types]
         edge_feats = [e.unsqueeze(dim=1) if len(e.shape) == 1 else e for e in edge_feats]
         edge_feats = torch.cat(edge_feats, dim=1)
 
+        # Create the Torch Geometric graph
         geom_graph = (Data(x=node_features,
                            edge_index=torch.stack(g.edges(), dim=1),
                            edge_attr=edge_feats
@@ -359,7 +367,23 @@ class ProteinGraph(object):
         print(geom_graph)
         return geom_graph
 
-    def make_atom_graph(self, pdb_code, pdb_path, graph_constructor, node_featurizer, edge_featurizer):
+    def make_atom_graph(self, pdb_code=None, pdb_path=None, node_featurizer=None, edge_featurizer=None,
+                        graph_type='bigraph'):
+        """
+
+        :param graph_type:
+        :param pdb_code:
+        :param pdb_path:
+        :param node_featurizer:
+        :param edge_featurizer:
+        :return:
+        """
+
+        if node_featurizer is None:
+            node_featurizer = CanonicalAtomFeaturizer()
+        if edge_featurizer is None:
+            edge_featurizer = CanonicalBondFeaturizer()
+
         # Read in protein as mol
         # if pdb_path:
         if pdb_code:
@@ -371,10 +395,18 @@ class ProteinGraph(object):
         mol = MolFromPDBFile(pdb_path)
 
         # DGL mol to graph
-        g = dgl.data.chem.mol_to_graph(graph_constructor=self.graph_constructor,
-                                       node_featurizer=self.node_featurizer,
-                                       edge_featurizer=self.edge_featurizer
-                                       )
+        if graph_type == 'bigraph':
+            g = mol_to_bigraph(mol,
+                               node_featurizer=node_featurizer,
+                               edge_featurizer=edge_featurizer
+                               )
+        elif graph_type == 'complete':
+            g = mol_to_complete_graph(mol,
+                                      node_featurizer=node_featurizer,
+                                      )
+        elif graph_type == 'k_nn':
+            raise NotImplementedError
+        print(g)
         return g
 
     def protein_df(self, pdb_path):
@@ -417,6 +449,11 @@ class ProteinGraph(object):
         return protein_df
 
     def calculate_centroid_positions(self, atoms):
+        """
+        Calculates position of sidechain centroids
+        :param atoms: ATOM df of protein structure
+        :return: centroids (df)
+        """
         centroids = atoms.groupby('residue_number').mean()[['x_coord', 'y_coord', 'z_coord']].reset_index()
         if self.verbose:
             print(f'Calculated {len(centroids)} centroid nodes')
@@ -561,8 +598,12 @@ class ProteinGraph(object):
         edges = edges.loc[~edges['res1'].str.contains('^X:')]
         edges = edges.loc[~edges['res2'].str.contains('^X:')]
 
+        if self.long_interaction_threshold:
+            edges = edges.loc[abs(abs(edges['res1']) - abs(edges['res2'])) > self.long_interaction_threshold]
+
         if self.verbose:
             print(f'Calculated {len(edges)} intramolecular interaction-based edges')
+
         return edges
 
     def add_protein_edges_to_graph(self, g, e):
@@ -861,7 +902,7 @@ if __name__ == "__main__":
                       long_interaction_threshold=5,
                       edge_distance_cutoff=10
                       )
-
+    """
     g = pg.dgl_graph_from_pdb_code('3eiy',
                                    chain_selection='all',
                                    edge_construction=['distance', 'delaunay'],  # , 'delaunay', 'k_nn'],
@@ -878,6 +919,9 @@ if __name__ == "__main__":
                                          chain_selection='all',
                                          edge_construction=['contacts'],
                                          encoding=True)
+    """
+    pg.make_atom_graph(pdb_code='3eiy')
+
     # Check KNN
 
     # g, resiude_name_encoder, residue_id_encoder = pg.nx_graph_from_pdb_code('3eiy', chain_selection='all',
