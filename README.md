@@ -1,5 +1,7 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Documentation Status](https://readthedocs.com/projects/graphein-graphein/badge/?version=latest&token=e0e095fecfd2f1e2448613c1bc4676cb6c22851d7a5cfde0ea35ce822887bc3b)](https://graphein-graphein.readthedocs-hosted.com/en/latest/?badge=latest)
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![banner](imgs/graphein.png)
 Protein Graph Library
 
@@ -7,7 +9,8 @@ This package provides functionality for producing a number of types of graph-bas
 
 ## Example usage
 ```python
-from graphein.construct_graphs import  ProteinGraph, ProteinMesh
+from graphein.construct_graphs import  ProteinGraph
+from graphein.construct_meshes import  ProteinMesh
 
 # Initialise ProteinGraph class
 pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
@@ -16,12 +19,15 @@ pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
                   contacts_dir='examples/contacts/',
                   exclude_waters=True, covalent_bonds=False, include_ss=True)
 
-# Create graph. Chain selection is either 'all' or a list e.g. ['A', 'B', 'D'] specifying the polypeptide chains to capture
+# Create residue-level graphs. Chain selection is either 'all' or a list e.g. ['A', 'B', 'D'] specifying the polypeptide chains to capture
 
 # DGLGraph From PDB Accession Number
 graph = pg.dgl_graph_from_pdb_code('3eiy', chain_selection='all')
 # DGLGraph From PDB file
 graph = pg.dgl_graph_from_pdb_file('examples/pdbs/3eiy.pdb', chain_selection='all')
+
+# Create atom-level graphs
+graph = pg.make_atom_graph(pdb_code='3eiy', graph_type='bigraph')
 
 # Initialise ProteinMesh class
 pm = ProteinMesh()
@@ -33,6 +39,8 @@ verts, faces, aux = pm.create_mesh(pdb_file='examples/pdbs/pdb3eiy.pdb')
 ```
 
 ## Parameters
+Graphs can be constructed according to walks through the graph in the figure below.
+![banner](imgs/graph_construction_overview.png)
 ```
 granularity: {'CA', 'CB', 'atom'} - specifies node-level granularity of graph
 insertions: bool - keep atoms with multiple insertion positions
@@ -50,7 +58,7 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
 1. Create env
 
     ```bash
-    conda create --name graphein
+    conda create --name graphein python=3.7
     conda activate graphein
     ```
   
@@ -64,12 +72,8 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
      $ conda install netcdf4 numpy pandas seaborn  expat tk=8.5  # Alternatively use pip
      $ brew install netcdf pyqt # Assumes https://brew.sh/ is installed
     
-     # Set up vmd-python library
-     $ git clone https://github.com/Eigenstate/vmd-python.git
-     $ cd vmd-python
-     $ python setup.py build
-     $ python setup.py install
-     $ cd ..
+     # Install vmd-python library
+     $ conda install vmd-python
     
      # Set up getcontacts library
      $ git clone https://github.com/getcontacts/getcontacts.git
@@ -84,25 +88,53 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
                                --output 5xnd_hbonds.tsv
     ```
 
+4. Install Biopython
+    ```bash
+    conda install biopython
+    ``` 
+   
+5. Install RDKit
+    ```bash
+    conda install -c conda-forge rdkit==2018.09.3
+   ```
+
 4. Install [DSSP](https://github.com/cmbi/hssp)
 
     We use DSSP for computing some protein features
     
     ```bash
-    conda install -c salilab dssp
+    $ conda install -c salilab dssp
+    ```
+
+6. Install PyTorch Geometric
+
+    ```bash
+    $ pip install torch-scatter
+    $ pip install torch-sparse
+    $ pip install torch-spline-conv
+    $ pip install torch-cluster
+    $ pip install torch-geometric
     ```
    
-4. Install PyTorch Geometric
-```bash
-pip install torch-scatter
-pip install torch-sparse
-pip install torch-spline-conv
-pip install torch XXX
-pip install torch-geometric
+   N.B. Follow the instructions in the Torch-Geometric Docs to install the versions appropriate to your CUDA version.
 
-```
+7. Install [IPyMol](https://github.com/cxhernandez/ipymol)
 
-5. Install graphein
+    ```bash
+   $ git clone https://github.com/cxhernandez/ipymol
+   $ cd ipymol
+   $ pip install . 
+   ```
+   
+   N.B. The PyPi package seems to be behind the github repo. We require functionality that is not present in the PyPi package.
+   
+8. Install DGL and associated libraries
+    ```bash
+    $ conda install -c dglteam dgl
+    $ conda install -c dglteam dgllife
+   ```
+
+8. Install graphein
 
     ```bash
     $ git clone https://www.github.com/a-r-j/graphein
