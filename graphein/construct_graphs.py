@@ -44,29 +44,34 @@ class ProteinGraph(object):
                  long_interaction_threshold=None):
         """
         Initialise ProteinGraph Generator Class
-        :param granularity: Specifies granularity of the graph construction. {'atom', 'CA', 'CB'}
-        :type granularity: str
-        :param keep_hets: Keep heteroatoms in the PDB file
-        :type keep_hets: bool
-        :param insertions: Keep atoms/residues with multiple insertion positions
-        :type insertions: bool
-        :param node_featuriser: DGL Node featuriser for atom-level graphs
-        :type node_featuriser: DGL Node Featuriser
-        :param pdb_dir: Directory where PDB files are kept
-        :type pdb_dir: str
-        :param contacts_dir: Directory where GetContacts contact files are kept
-        :type contacts_dir: str
-        :param exclude_waters:
-        :type exclude_waters:
-        :param covalent_bonds:
-        :type covalent_bonds:
-        :param include_ss:
-        :type include_ss: bool
-        :param include_ligand: Not yet implemented.
-        :type include_ligand: bool
-        :param intramolecular_interactions: List of allowable intramolecular interactions
-        :type intramolecular_interactions: list
 
+        :param granularity: Specifies granularity of the graph construction. {'atom', 'CA', 'CB'}. CA = Alpha Carbon, CB = Beta Carbon
+        :type granularity: str
+        :param keep_hets: Keep heteroatoms present in the PDB file. Typically, these correspond to metal ions or modified residues (e.g. MSE)
+        :type keep_hets: bool
+        :param insertions: Keep atoms/residues with multiple insertion positions. Multiple insertions exist when the electron density is too vague to define a single insertion
+        :type insertions: bool
+        :param node_featuriser: DGL Node featuriser for atom-level graphs. Canonical Featurises recommended.
+        :type node_featuriser: DGL Node Featuriser
+        :param pdb_dir: Directory to PDB files. We will download .PDB files to this folder if you don't have an existing local copy of the requisite structure
+        :type pdb_dir: str
+        :param contacts_dir: Directory to GetContacts files
+        :type contacts_dir: str
+        :param exclude_waters: Specifies inclusion of water molecules. Not yet fully operational.
+        :type exclude_waters: bool
+        :param covalent_bonds: Specifies inclusion of covalent backbone. E.g. joins adjacent residues in the sequence
+        :type covalent_bonds: bool
+        :param include_ss: Specifies inclusion of secondary structure features computed by DSSP. Future warning: this will be changed in a subsequent update for managing feature selection.
+        :type include_ss: bool
+        :param include_ligand: Not yet implemented. Will specify option to include bound ligand(s) in the graph.
+        :type include_ligand: bool
+        :param intramolecular_interactions: List of allowable intramolecular interactions to include from GetContacts. ['sb', 'pc', 'ps', 'ts', 'vdw', 'hb', 'hbb', 'hbsb', 'hbbb', 'hbss', 'wb', 'wb2',
+                                      'hblb', 'hbls', 'lwb', 'lwb2', 'hp']. See https://getcontacts.github.io/interactions.html for details.
+        :type intramolecular_interactions: list
+        :param edge_distance_cutoff: Distance in angstroms specifying cutoff distance for constructing an edge when using distance construction
+        :type edge_distance_cutoff: float
+        :param long_interaction_threshold: Specifies minimum distance in sequence for two nodes to be connected
+        :type long_interaction_threshold: int
         """
         self.long_interaction_threshold = long_interaction_threshold
         self.remove_string_labels = remove_string_labels
@@ -166,15 +171,23 @@ class ProteinGraph(object):
                                 edge_construction=['contacts'], encoding=False, k_nn=None, custom_edges=None):
         """
         Produces a DGL graph from a PDB code and a selection of polypeptide chains
+
         :param file_path:
-        :param custom_edges:
-        :param edge_construction:
-        :param k_nn: (int) specifies number of nearest neighbours to make edges with
-        :param encoding:
-        :param edges: {'contact', 'distance', 'custom'}
-        :param contact_file:
+        :type file_path: str
+        :param custom_edges: Pass user-defined custom edges to use in edge construction, defaults to None
+        :type custom_edges: Pandas DataFrame, optional
+        :param edge_construction: Specifies edge construction methods. {'contact', 'distance', 'custom'}, defaults to ['contacts']
+        :type edge_construction: list
+        :param k_nn: Specifies number of nearest neighbours to make K_NN edges with
+        :type k_nn: int
+        :param encoding: Indicates whether or not node names and labels should be encoded
+        :type encoding: bool
+        :param contact_file: Path to local GetContacts output file, defaults to None
+        :type contact_file: str
         :param pdb_code: 4 character PDB accession code
-        :param chain_selection: string indicating which chains to select {'A', 'B', 'AB', ..., 'all}
+        :type pdb_code: str
+        :param chain_selection: string indicating which chains to select {'A', 'B', 'AB', ..., 'all'}, defaults to 'all'
+        :type chain_selection: list
         :return: DGLGraph object, nodes populated by residues or atoms as specified in class initialisation
         """
         # Todo Error Handling
@@ -194,6 +207,8 @@ class ProteinGraph(object):
             return g
 
         if self.granularity == 'ss':
+            raise NotImplementedError
+            # todo SS granularity
             # get secondary structure nodes
             # add secondary stucture nodes
             # get secondary stucture edges
@@ -276,21 +291,33 @@ class ProteinGraph(object):
     def dgl_graph_from_pdb_file(self, file_path, chain_selection, contact_file, edges=None):
         """
         Produces a DGL graph from a PDB file and a selection of polypeptide chains
-        :param edges:
-        :param contact_file:
+
+        :param edges: User-defined custom edges, defaults to None
+        :type edges: Pandas DataFram, optional
+        :param contact_file: Path to local GetContacts output file
+        :type contact_file: str
         :param file_path: 4 character PDB accession code
-        :param chain_selection: string indicating which chains to select {'A', 'B', 'AB', ..., 'all}
+        :type file_path: str
+        :param chain_selection:  Polypeptide chains in structure to select {'A', 'B', 'AB', ..., 'all}
+        :type chain_selection: str
         :return: DGLGraph object, nodes populated by residues or atoms as specified in class initialisation
+        :rtype: DGLGraph
         """
         # Atom-level Graph
         if self.granularity == 'atom':
             g = self._make_atom_graph(file_path)
 
+        # Residue-level graph
         if self.granularity == 'CA' or 'CB':
+            # Pre-process protein Df
             df = self._protein_df(pdb_path=file_path)
             chains = self._get_chains(df, chain_selection)
             df = pd.concat(chains)
+
+            # Create Graph
             g = self._add_protein_nodes(df)
+
+            # Add edges
             if not contact_file:
                 self._compute_protein_contacts(file_path)
             if not edges:
@@ -301,19 +328,25 @@ class ProteinGraph(object):
                 dssp = self._get_protein_features(file_path=file_path, pdb_code=None)
                 feats = self._compute_protein_feature_representations(dssp)
                 g = self._add_protein_features(g, feats)
-        # print(g)
         return g
 
     def nx_graph_from_pdb_code(self, pdb_code, chain_selection='all', contact_file=None, edge_construction=['contacts'],
                                encoding=False, k_nn=None, custom_edges=None):
         """
         Produces a NetworkX Graph Object
+
         :param encoding:
-        :param edges:
+        :type bool:
+        :param edges: User-supplied edges, defaults to None
+        :type edges: Pandas DataFrame, optional
         :param pdb_code: 4 character PDB accession code
-        :param chain_selection: string indicating chain selection {'A', 'B', 'AB', ..., 'all'}
-        :param contact_file
+        :type pdb_code: str
+        :param chain_selection: string indicating chain selection {'A', 'B', 'AB', ..., 'all'}, defaults to 'all'
+        :type chain_selection: str
+        :param contact_file: Path to GetContacts output file.
+        :type contact_file: str, optional
         :return: NetworkX graph object of protein
+        :rtype: NetworkX graph
         """
         assert encoding, 'Non-numeric feature encoding must be True'
         g, resiude_name_encoder, residue_id_encoder = self.dgl_graph_from_pdb_code(pdb_code=pdb_code,
@@ -332,9 +365,13 @@ class ProteinGraph(object):
     def nx_graph_from_pdb_file(self, pdb_code, chain_selection='all', contact_file=None):
         """
         Produces a NetworkX Graph Object
+
         :param pdb_code: 4 character PDB accession code
+        :type pdb_code: str
         :param chain_selection: string indicating chain selection {'A', 'B', 'AB', ..., 'all'}
-        :param contact_file
+        :type chain_selection: str
+        :param contact_file: Path to GetContacts output file.
+        :type contact_file: str, optional
         :return: NetworkX graph object of protein
         """
         g, resiude_name_encoder, residue_id_encoder = self.dgl_graph_from_pdb_file(pdb_code, chain_selection,
@@ -346,14 +383,24 @@ class ProteinGraph(object):
     def torch_geometric_graph_from_pdb_code(self, pdb_code, chain_selection='all', edge_construction=['contacts'],
                                             contact_file=None, encoding=False, k_nn=None, custom_edges=None):
         """
-        :param k_nn:
-        :param custom_edges:
+        Produces a PyToch Geometric Data object from a protein structure
+
+        :param k_nn: Specifies  K nearest neighbours to use in KNN edge construction, defaults to None
+        :type k_nn: int, optional
+        :param custom_edges: User-supplied edges to use, defaults to None
+        :type custom_edges: Pandas DataFrame, optional
         :param encoding:
-        :param edge_construction:
-        :param pdb_code:
-        :param chain_selection:
-        :param contact_file:
-        :return:
+        :type encoding: bool
+        :param edge_construction: List containing edge construction to be used. ['contacts', 'distance', 'delaunay'], defaults to ['contacts']
+        :type edge_construction: list
+        :param pdb_code: 4-character PDB accession code
+        :type pdb_code: str
+        :param chain_selection: Specifies polypeptide chains to include. e.g. one of {'A', 'B' ,'AB', 'BC'}, defaults to 'all'
+        :type chain_selection: str
+        :param contact_file: Path to contact file if using local file.
+        :type contact_file: str
+        :return: Pytorch Geometric Graph of protein structure.
+        :rtype: PyTorch Geometric Data object
         """
         assert encoding, 'Non-numeric feature encoding must be True'
 
@@ -387,6 +434,7 @@ class ProteinGraph(object):
     def _make_atom_graph(self, pdb_code=None, pdb_path=None, node_featurizer=None, edge_featurizer=None,
                         graph_type='bigraph'):
         """
+        Create atom-level graph from PDB structure
 
         :param graph_type:
         :param pdb_code:
@@ -428,11 +476,12 @@ class ProteinGraph(object):
 
     def _protein_df(self, pdb_path):
         """
+        Pre-processes protein structure dataframe.
+
         :param pdb_path:
         :param pdb_code - 4 letter PDB accession code
         :return: 'cleaned protein dataframe'
         """
-        # protein_df = PandasPdb().fetch_pdb(pdb_code)
         protein_df = PandasPdb().read_pdb(pdb_path)
 
         atoms = protein_df.df['ATOM']
@@ -479,6 +528,8 @@ class ProteinGraph(object):
     @staticmethod
     def _get_chains(protein_df, chain_selection):
         """
+        Extracts relevant chains from protein_df
+
         :param protein_df: pandas dataframe of PDB subsetted to relevant atoms (CA, CB)
         :param chain_selection:
         :return
@@ -526,6 +577,7 @@ class ProteinGraph(object):
     def _download_pdb(self, pdb_code):
         """
         Download PDB structure from PDB
+
         :param pdb_code: 4 character PDB accession code
         :return: # todo impl return
         """
@@ -540,6 +592,7 @@ class ProteinGraph(object):
 
     def _compute_protein_contacts(self, pdb_code, file_name=False):
         """Computes contacts from .pdb file using GetContacts - https://www.github.com/getcontacts/getcontacs
+
         :param: pdb_code - 4 character PDB accession code
         """
         # Check for existence of contacts file
@@ -563,6 +616,7 @@ class ProteinGraph(object):
             pdb_file = pdb_file[0]
             print(f'PDB file detected: {pdb_file}')
 
+        # Run GetContacts
         command = f'{self.get_contacts_path}/get_static_contacts.py '
         command += f'--structure {pdb_file} '
         command += f'--output {self.contacts_dir + pdb_code + "_contacts.tsv"} '
@@ -573,6 +627,8 @@ class ProteinGraph(object):
 
     def _get_protein_edges(self, pdb_code, chain_selection, contact_file):
         """
+        Compute protein edges
+
         :param contact_file:
         :param chain_selection:
         :param pdb_code: 4 character pdb accession code
@@ -616,7 +672,6 @@ class ProteinGraph(object):
         edges = edges.loc[~edges['res2'].str.contains('^X:')]
 
         if self.long_interaction_threshold:
-            #raise NotImplementedError
             res1 = edges['res1'].str.extract('(\d+)').astype(int)
             res2 = edges['res2'].str.extract('(\d+)').astype(int)
             inds = abs(res1 - res2) > self.long_interaction_threshold
@@ -630,6 +685,7 @@ class ProteinGraph(object):
     def _add_protein_edges_to_graph(self, g, e):
         """
         Add protein edges from dataframe of edges
+
         :param g: Dgl graph of protein
         :param e: Pandas dataframe of edges
         :return: g DGL Graph with edges added
@@ -741,6 +797,8 @@ class ProteinGraph(object):
     @staticmethod
     def _add_protein_features(g, feature_dict):
         """
+        Add computed protein features to graph
+
         :param g: DGL Graph of protein.
         :param feature_dict: Dictionary of features calculated by DSSP
         :return: g DGL Graph of protein with SS and solvent accessibility features added to node data
@@ -761,6 +819,7 @@ class ProteinGraph(object):
     def _k_nn_edges(self, protein_df, k, mode='connectivity', metric='minkowski', p=2, include_self=False):
         """
         Construct edges based on K nearest neighbours
+
         :param protein_df: PandasPDB DF of protein structure
         :param k: number of nearest neighbour edges for each node
         :param mode: {'connectivity', 'distance'}
@@ -798,6 +857,8 @@ class ProteinGraph(object):
 
     def _distance_based_edges(self, protein_df, cutoff):
         """
+        Calculate distance-based edges from coordinates in 3D structure.
+
         Produce Edge list dataframe based on pairwise distance matrix calculation
         :param protein_df: PandasPDB Dataframe
         :param cutoff: Distance threshold to create an edge (Angstroms)
@@ -944,7 +1005,6 @@ if __name__ == "__main__":
     #pg.make_atom_graph(pdb_code='3eiy')
 
     # Check KNN
-
     # g, resiude_name_encoder, residue_id_encoder = pg.nx_graph_from_pdb_code('3eiy', chain_selection='all',
     #                                                                        edge_construction=['distance', 'contacts'],
     #                                                                        encoding=True)
