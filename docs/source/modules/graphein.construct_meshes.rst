@@ -4,5 +4,5 @@ graphein.construct_meshes
 graphein.construct\_meshes.ProteinMesh
 --------------------------------------
 
-.. automodule:: graphein.construct_meshes
+.. autoclass:: graphein.construct_meshes.ProteinMesh
    :members:

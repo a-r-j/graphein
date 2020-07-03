@@ -18,6 +18,17 @@ class ProteinMesh(object):
         """
 
     def get_obj_file(self, pdb_file=None, pdb_code=None, out_dir=None):
+        """
+        Produces .Obj file from PDB structure through IPyMol. pdb_code and pdb_file are optional arguments. Use one as suits your purposes
+
+        :param pdb_file: Path to local .PDB file
+        :type pdb_file: str
+        :param pdb_code: 4 character PDB accession code
+        :type pdb_code: str
+        :param out_dir: Path to output directory
+        :type out_dir: str
+        :return:
+        """
         file_name = "a"
         pymol.start()
         if not pdb_code and not pdb_file:
@@ -39,6 +50,17 @@ class ProteinMesh(object):
         return file_name
 
     def create_mesh(self, pdb_code=None, pdb_file=None, out_dir=None):
+        """
+        Creates a PyTorch3D Mesh from an .Obj file. pdb_code and pdb_file are optional arguments. Use one as suits your purposes
+
+        :param pdb_code: 4-character PDB accession code
+        :type pdb_code: str
+        :param pdb_file: Path to local .PDB file
+        :type pdb_file: str
+        :param out_dir: Path to output directory
+        :type out_dir: str
+        :return: verts, faces, aux
+        """
         obj_file = self.get_obj_file(pdb_code=pdb_code, pdb_file=pdb_file, out_dir=out_dir)
         verts, faces, aux = load_obj(obj_file)
         return verts, faces, aux

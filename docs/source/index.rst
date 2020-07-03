@@ -21,11 +21,12 @@ This package provides functionality for producing a number of types of graph-bas
 
 
 .. toctree::
+   :glob:
    :maxdepth: 2
    :caption: Package Reference:
 
-   modules/construct_graphs
-   modules/construct_meshes
+   modules/graphein.construct_graphs
+   modules/graphein.construct_meshes
 
 
 
