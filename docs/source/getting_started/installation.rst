@@ -1,5 +1,5 @@
 Installation
-===========
+============
 Graphein depends on a number of other libraries for constructing protein graphs and meshes. These should be installed in advance.
 
 .. note::
