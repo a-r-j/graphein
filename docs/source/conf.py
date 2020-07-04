@@ -35,8 +35,6 @@ extensions = ['sphinx.ext.autodoc',
 
 
 autodoc_default_options = {
-    'members': True,
-    'member-order': 'bysource',
     'special-members': '__init__',
 }
 # Add any paths that contain templates here, relative to this directory.
