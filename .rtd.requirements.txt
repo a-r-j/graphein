@@ -10,10 +10,8 @@ pandas==1.0.1
 networkx==2.4
 scikit_learn==0.23.1
 ipymol==0.5
-torch-cluster==1.5.4
-torch-scatter==2.0.4
-torch-sparse==0.6.4
-torch-spline-conv==1.2.0
+https://s3.eu-central-1.amazonaws.com/pytorch-geometric.com/whl/torch-1.4.0/torch_scatter-latest%2Bcpu-cp37-cp37m-linux_x86_64.whl
+https://s3.eu-central-1.amazonaws.com/pytorch-geometric.com/whl/torch-1.4.0/torch_sparse-latest%2Bcpu-cp37-cp37m-linux_x86_64.whl
 biopython==1.76
 dgllife==0.2.2
 rdkit
