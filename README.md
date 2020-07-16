@@ -3,6 +3,9 @@
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![banner](imgs/graphein.png)
+
+[Documentation](https://graphein-graphein.readthedocs-hosted.com/en/latest/) | [Paper](https://www.biorxiv.org/content/10.1101/2020.07.15.204701v1)
+
 Protein Graph Library
 
 This package provides functionality for producing a number of types of graph-based representations of proteins. We provide compatibility with standard formats, as well as graph objects designed for ease of use with popular deep learning libraries.
@@ -141,3 +144,19 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     $ cd graphein
     $ pip install -e .
     ```
+   
+## Citing Graphein
+
+Please consider citing graphein if it proves useful in your work.
+
+```
+@article{Jamasb2020,
+  doi = {10.1101/2020.07.15.204701},
+  url = {https://doi.org/10.1101/2020.07.15.204701},
+  year = {2020},
+  month = jul,
+  publisher = {Cold Spring Harbor Laboratory},
+  author = {Arian Rokkum Jamasb and Pietro Lio and Tom Blundell},
+  title = {Graphein - a Python Library for Geometric Deep Learning and Network Analysis on Protein Structures}
+}
+```
