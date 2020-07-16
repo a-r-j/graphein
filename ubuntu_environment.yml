@@ -86,6 +86,7 @@ dependencies:
   - tabulate=0.8.3=py37_0
   - termcolor=1.1.0=py37_1
   - tk=8.6.10=hed695b0_0
+  - pytorch=1.5.0=py3.7_0
   - torchvision=0.6.0
   - tqdm=4.45.0=py_0
   - traitlets=4.3.3=py37_0
@@ -124,11 +125,10 @@ dependencies:
     - pipreqs==0.4.10
     - pyparsing==2.4.7
     - requests==2.23.0
-    - torch==1.4.0
     - torch-cluster==1.5.4
     - torch-geometric==1.5.0
-    - https://s3.eu-central-1.amazonaws.com/pytorch-geometric.com/whl/torch-1.4.0/torch_scatter-latest%2Bcpu-cp37-cp37m-linux_x86_64.whl
-    - https://s3.eu-central-1.amazonaws.com/pytorch-geometric.com/whl/torch-1.4.0/torch_sparse-latest%2Bcpu-cp37-cp37m-linux_x86_64.whl
+    - https://s3.eu-central-1.amazonaws.com/pytorch-geometric.com/whl/torch-1.5.0/torch_scatter-latest%2Bcpu-cp37-cp37m-linux_x86_64.whl
+    - https://s3.eu-central-1.amazonaws.com/pytorch-geometric.com/whl/torch-1.5.0/torch_sparse-latest%2Bcpu-cp37-cp37m-linux_x86_64.whl
     - torch-spline-conv==1.2.0
     - urllib3==1.25.8
     - vmd==0.1.1
