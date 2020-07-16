@@ -89,6 +89,7 @@ dependencies:
   - torchvision=0.6.0=py37_cu102
   - tqdm=4.45.0=py_0
   - traitlets=4.3.3=py37_0
+  - vmd-python=3.0.6
   - wcwidth=0.1.9=py_0
   - wheel=0.34.2=py37_0
   - xorg-kbproto=1.0.7=h14c3975_1002
@@ -126,7 +127,6 @@ dependencies:
     - torch==1.4.0
     - urllib3==1.25.8
     - vmd==0.1.1
-    - vmd-python==3.0.6
     - yarg==0.1.9
 prefix: /home/arj39/anaconda3/envs/graphein
 
