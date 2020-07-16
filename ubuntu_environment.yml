@@ -73,7 +73,7 @@ dependencies:
   - python=3.7.0=h6e4f718_3
   - python-dateutil=2.8.1=py_0
   - python_abi=3.7=1_cp37m
-  - pytorch3d=0.2.0=py37_cpu_pyt15
+  - pytorch3d=0.2.0
   - pytz=2019.3=py_0
   - pyyaml=5.3.1=py37h7b6447c_0
   - rdkit=2020.03.1=py37hdd87690_1
@@ -86,7 +86,7 @@ dependencies:
   - tabulate=0.8.3=py37_0
   - termcolor=1.1.0=py37_1
   - tk=8.6.10=hed695b0_0
-  - torchvision=0.6.0=py37_cpu
+  - torchvision=0.6.0
   - tqdm=4.45.0=py_0
   - traitlets=4.3.3=py37_0
   - vmd-python=3.0.6
