@@ -6,7 +6,7 @@
 version: 2
 
 conda:
-  environment: environment.yml
+  environment: ubuntu_environment.yml
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
