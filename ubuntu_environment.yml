@@ -22,7 +22,7 @@ dependencies:
   - cpuonly
   - curl=7.61.0=h84994c4_0
   - decorator=4.4.2=py_0
-  - dgl=0.4.2
+  - dgl=0.4.3
   - expat=2.2.6=he6710b0_0
   - fontconfig=2.13.1=h86ecdb6_1001
   - freetype=2.9.1=h8a8886c_1
