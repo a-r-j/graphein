@@ -7,6 +7,7 @@ channels:
   - pytorch3d
   - defaults
   - conda-forge
+  - dglteam
 dependencies:
   - _libgcc_mutex=0.1=main
   - backcall=0.1.0=py37_0
@@ -18,9 +19,10 @@ dependencies:
   - ca-certificates=2020.1.1=0
   - cairo=1.16.0=hcf35c78_1003
   - certifi=2020.4.5.1=py37_0
-  - cudatoolkit=10.2.89=hfd86e86_1
+  - cpuonly
   - curl=7.61.0=h84994c4_0
   - decorator=4.4.2=py_0
+  - dgl=0.4.2
   - expat=2.2.6=he6710b0_0
   - fontconfig=2.13.1=h86ecdb6_1001
   - freetype=2.9.1=h8a8886c_1
@@ -112,7 +114,6 @@ dependencies:
     - biopandas==0.2.5
     - chardet==3.0.4
     - cycler==0.10.0
-    - dgl==0.4.2
     - docopt==0.6.2
     - idna==2.9
     - ipymol==0.5
