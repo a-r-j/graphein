@@ -125,7 +125,7 @@ dependencies:
     - pandas==1.0.1
     - pipreqs==0.4.10
     - pyparsing==2.4.7
-    - pytorch3d=0.2.0
+    - pytorch3d==0.2.0
     - requests==2.23.0
     - torch-cluster==1.5.4
     - torch-geometric==1.5.0
