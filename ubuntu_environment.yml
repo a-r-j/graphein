@@ -114,7 +114,7 @@ dependencies:
     - chardet==3.0.4
     - cycler==0.10.0
     - docopt==0.6.2
-    - dgllige==0.2.3
+    - dgllife==0.2.3
     - idna==2.9
     - ipymol==0.5
     - kiwisolver==1.2.0
