@@ -65,8 +65,13 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     conda activate graphein
     ```
   
-2. Install Get Contacts
+2. Install [GetContacts](https://getcontacts.github.io/index.html)
+
+    [Installation Instructions](https://getcontacts.github.io/getting_started.html)
+    #### MacOS
+    
     ```bash
+   
      # Install get_contact_ticc.py dependencies
      $ conda install scipy numpy scikit-learn matplotlib pandas cython seaborn
      $ pip install ticc==0.1.4
@@ -90,13 +95,34 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
                                --itypes hb \
                                --output 5xnd_hbonds.tsv
     ```
+    
+    #### Linux
+    ```bash
+       
+      # Make sure you have git and conda installed and then run
+    
+      # Install get_contact_ticc.py dependencies
+      conda install scipy numpy scikit-learn matplotlib pandas cython
+      pip install ticc==0.1.4
+      
+      # Set up vmd-python library
+      conda install -c https://conda.anaconda.org/rbetz vmd-python
+      
+      # Set up getcontacts library
+      git clone https://github.com/getcontacts/getcontacts.git
+      echo "export PATH=`pwd`/getcontacts:\$PATH" >> ~/.bashrc
+      source ~/.bashrc
 
+    ```
+    
 4. Install Biopython
     ```bash
     conda install biopython
     ``` 
    
-5. Install RDKit
+5. Install [RDKit](http://rdkit.org/docs/)
+
+    [Installation instructions](http://rdkit.org/docs/Install.html)
     ```bash
     conda install -c conda-forge rdkit==2018.09.3
    ```
@@ -109,7 +135,7 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     $ conda install -c salilab dssp
     ```
 
-6. Install PyTorch Geometric
+6. Install [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/)
 
     ```bash
     $ pip install torch-scatter
@@ -119,7 +145,7 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     $ pip install torch-geometric
     ```
    
-   N.B. Follow the instructions in the Torch-Geometric Docs to install the versions appropriate to your CUDA version.
+   N.B. Follow the [instructions in the Torch-Geometric Docs](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html) to install the versions appropriate to your CUDA version.
 
 7. Install [IPyMol](https://github.com/cxhernandez/ipymol)
 
@@ -131,7 +157,7 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
    
    N.B. The PyPi package seems to be behind the github repo. We require functionality that is not present in the PyPi package.
    
-8. Install DGL and associated libraries
+8. Install [DGL](https://docs.dgl.ai) and associated libraries
     ```bash
     $ conda install -c dglteam dgl
     $ conda install -c dglteam dgllife
