@@ -27,10 +27,10 @@ pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
 # DGLGraph From PDB Accession Number
 graph = pg.dgl_graph_from_pdb_code('3eiy', chain_selection='all')
 # DGLGraph From PDB file
-graph = pg.dgl_graph_from_pdb_file('examples/pdbs/3eiy.pdb', chain_selection='all')
+graph = pg.dgl_graph_from_pdb_file(file_path='examples/pdbs/pdb3eiy.pdb', contact_file='examples/contacts/3eiy_contacts.tsv', chain_selection='all')
 
 # Create atom-level graphs
-graph = pg.make_atom_graph(pdb_code='3eiy', graph_type='bigraph')
+graph = pg._make_atom_graph(pdb_code='3eiy', graph_type='bigraph')
 
 # Initialise ProteinMesh class
 pm = ProteinMesh()
@@ -147,9 +147,10 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
    
    N.B. Follow the [instructions in the Torch-Geometric Docs](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html) to install the versions appropriate to your CUDA version.
 
-7. Install [IPyMol](https://github.com/cxhernandez/ipymol)
+7. Install [PyMol](https://pymol.org/2/) and [IPyMol](https://github.com/cxhernandez/ipymol)
 
     ```bash
+   $ conda install -c schrodinger pymol
    $ git clone https://github.com/cxhernandez/ipymol
    $ cd ipymol
    $ pip install . 
