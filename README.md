@@ -7,6 +7,9 @@ Protein Graph Library
 
 This package provides functionality for producing a number of types of graph-based representations of proteins. We provide compatibility with standard formats, as well as graph objects designed for ease of use with popular deep learning libraries.
 
+## What's New?
+* RNA Graph Construction from Dotbracket notation
+
 ## Example usage
 ```python
 from graphein.construct_graphs import  ProteinGraph
@@ -36,6 +39,11 @@ pm = ProteinMesh()
 verts, faces, aux = pm.create_mesh(pdb_code='3eiy', out_dir='examples/meshes/')
 # Pytorch3D Mesh Object from PDB File
 verts, faces, aux = pm.create_mesh(pdb_file='examples/pdbs/pdb3eiy.pdb')
+
+# RNA Graph Construction
+from graphein.construct_graphs import RNAGraph
+rg = RNAGraph()
+rna = rg.dgl_graph_from_dotbracket('((((((....))))))', sequence='AUGCAUGCAUGCAUGC')
 ```
 
 ## Parameters
