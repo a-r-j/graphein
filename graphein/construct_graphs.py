@@ -28,7 +28,7 @@ from sklearn import preprocessing
 from sklearn.neighbors import kneighbors_graph
 from scipy import spatial
 
-import utils
+from graphein import utils
 
 # Todo add SS featuriser for Mol Graph?
 # Todo atom featuriser
