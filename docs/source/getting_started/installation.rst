@@ -92,7 +92,7 @@ Install Graphein
 
 .. code-block:: bash
 
-    git clone https://github.com/a-r-j/grahein
+    git clone https://github.com/a-r-j/graphein
     cd graphein
     pip install -e .
 
