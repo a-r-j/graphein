@@ -438,9 +438,11 @@ class ProteinGraph(object):
             g = self._add_protein_edges_to_graph(g, edges)
 
             if self.include_ss:
+
                 dssp = self._get_protein_features(
                     file_path=file_path, pdb_code=None, chain_selection=chain_selection
                 )
+
                 feats = self._compute_protein_feature_representations(dssp)
                 g = self._add_protein_features(g, feats)
 

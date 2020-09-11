@@ -4,6 +4,9 @@
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![banner](imgs/graphein.png)
+
+[Documentation](https://graphein-graphein.readthedocs-hosted.com/en/latest/) | [Paper](https://www.biorxiv.org/content/10.1101/2020.07.15.204701v1)
+
 Protein Graph Library
 
 This package provides functionality for producing a number of types of graph-based representations of proteins. We provide compatibility with standard formats, as well as graph objects designed for ease of use with popular deep learning libraries.
@@ -28,10 +31,10 @@ pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
 # DGLGraph From PDB Accession Number
 graph = pg.dgl_graph_from_pdb_code('3eiy', chain_selection='all')
 # DGLGraph From PDB file
-graph = pg.dgl_graph_from_pdb_file('examples/pdbs/3eiy.pdb', chain_selection='all')
+graph = pg.dgl_graph_from_pdb_file(file_path='examples/pdbs/pdb3eiy.pdb', contact_file='examples/contacts/3eiy_contacts.tsv', chain_selection='all')
 
 # Create atom-level graphs
-graph = pg.make_atom_graph(pdb_code='3eiy', graph_type='bigraph')
+graph = pg._make_atom_graph(pdb_code='3eiy', graph_type='bigraph')
 
 # Initialise ProteinMesh class
 pm = ProteinMesh()
@@ -71,8 +74,13 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     conda activate graphein
     ```
   
-2. Install [GetContacts](https://getcontacts.github.io):
+2. Install [GetContacts](https://getcontacts.github.io/index.html)
+
+    [Installation Instructions](https://getcontacts.github.io/getting_started.html)
+    #### MacOS
+
     ```bash
+   
      # Install get_contact_ticc.py dependencies
      $ conda install scipy numpy scikit-learn matplotlib pandas cython seaborn
      $ pip install ticc==0.1.4
@@ -96,16 +104,37 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
                                --itypes hb \
                                --output 5xnd_hbonds.tsv
     ```
+    
+    #### Linux
+    ```bash
+       
+      # Make sure you have git and conda installed and then run
+    
+      # Install get_contact_ticc.py dependencies
+      conda install scipy numpy scikit-learn matplotlib pandas cython
+      pip install ticc==0.1.4
+      
+      # Set up vmd-python library
+      conda install -c https://conda.anaconda.org/rbetz vmd-python
+      
+      # Set up getcontacts library
+      git clone https://github.com/getcontacts/getcontacts.git
+      echo "export PATH=`pwd`/getcontacts:\$PATH" >> ~/.bashrc
+      source ~/.bashrc
+
 
 3. Install [Biopython](https://biopython.org) & [RDKit](https://www.rdkit.org/docs/):
 
     N.B. DGLLife *requires* `rdkit==2018.09.3`
+
     ```bash
     conda install biopython
     conda install -c conda-forge rdkit==2018.09.3
     ``` 
    
+
 4. Install [DSSP](https://github.com/cmbi/hssp):
+
 
     We use DSSP for computing some protein features
     
@@ -133,7 +162,10 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     $ conda install -c dglteam dgllife
     ```
 
+
 5. Install [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html):
+
+
 
     ```bash
     $ pip install torch-scatter==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-${TORCH}.html
@@ -144,17 +176,21 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     ```
    Where `${CUDA}` and `${TORCH}` should be replaced by your specific CUDA version (`cpu`, `cu92`, `cu101`, `cu102`) and PyTorch version (`1.4.0`, `1.5.0`, `1.6.0`), respectively 
    
-   N.B. Follow the instructions in the Torch-Geometric Docs to install the versions appropriate to your CUDA version.
+   N.B. Follow the [instructions in the Torch-Geometric Docs](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html) to install the versions appropriate to your CUDA version.
 
-7. Install [IPyMol](https://github.com/cxhernandez/ipymol):
+
+7. Install [PyMol](https://pymol.org/2/) and [IPyMol](https://github.com/cxhernandez/ipymol)
 
     ```bash
+   $ conda install -c schrodinger pymol
    $ git clone https://github.com/cxhernandez/ipymol
    $ cd ipymol
    $ pip install . 
    ```
    
+
    N.B. The PyPi package seems to be behind the github repo. We require functionality that is not present in the PyPi package in order to construct meshes.
+
 
 8. Install graphein:
 
@@ -163,3 +199,19 @@ include_ss: bool - calculate protein SS and surface features using DSSP and assi
     $ cd graphein
     $ pip install -e .
     ```
+   
+## Citing Graphein
+
+Please consider citing graphein if it proves useful in your work.
+
+```
+@article{Jamasb2020,
+  doi = {10.1101/2020.07.15.204701},
+  url = {https://doi.org/10.1101/2020.07.15.204701},
+  year = {2020},
+  month = jul,
+  publisher = {Cold Spring Harbor Laboratory},
+  author = {Arian Rokkum Jamasb and Pietro Lio and Tom Blundell},
+  title = {Graphein - a Python Library for Geometric Deep Learning and Network Analysis on Protein Structures}
+}
+```

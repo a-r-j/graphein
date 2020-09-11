@@ -1,5 +1,5 @@
 Installation
-===========
+============
 Graphein depends on a number of other libraries for constructing protein graphs and meshes. These should be installed in advance.
 
 .. note::
@@ -9,7 +9,7 @@ Graphein depends on a number of other libraries for constructing protein graphs 
 .. note::
     Some of these packages have more involved setup depending on your requirements (i.e. CUDA). Please refer to the original packages for more detailed information
 
-.. code-block::
+.. code-block:: bash
 
     conda create -n graphein python=3.7
 
@@ -92,7 +92,7 @@ Install Graphein
 
 .. code-block:: bash
 
-    git clone https://github.com/a-r-j/grahein
+    git clone https://github.com/a-r-j/graphein
     cd graphein
     pip install -e .
 
