@@ -8,3 +8,8 @@ graphein.construct\_graphs.ProteinGraph
     :members:
 
 
+.. autoclass:: graphein.construct_graphs.RNAGraph
+    :members:
+.. autometod:: __init__
+    :show-inheritance:
+

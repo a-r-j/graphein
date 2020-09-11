@@ -28,6 +28,7 @@ from sklearn import preprocessing
 from sklearn.neighbors import kneighbors_graph
 from scipy import spatial
 
+from graphein import utils
 
 # Todo add SS featuriser for Mol Graph?
 # Todo atom featuriser
@@ -943,6 +944,67 @@ class ProteinGraph(object):
         return edge_df
 
 
+class RNAGraph():
+
+
+    def __init__(self, verbose=True):
+        """
+        This class handles graph construction from RNA structures
+
+        :param verbose: Specifies whether or not to print a summary of the graph constructed.
+        :type verbose: bool, optional
+        """
+        self.verbose = verbose
+        self.RNA_bases = ['A', 'U', 'G', 'C', 'I']
+
+    def dgl_graph_from_dotbracket(self, dotbracket, sequence=None):
+        """
+        This function builds a DGL Graph from dotbracket notation of RNA secondary structure.
+
+        :param dotbracket: RNA Structure in dotbracket notation
+        :type dotbracket: str, required
+        :param sequence: RNA Sequence. If provided, it is used to featurise nodes if
+        :type sequence: str, optional
+        :return: DGLGraph
+        """
+
+        # Todo: pairing in pseudoknots
+
+        # Initialise graph with number of nodes
+        g = dgl.DGLGraph()
+        g.add_nodes(len(dotbracket))
+
+        # Add encoding of bases, if a sequence is provided
+        if sequence:
+            assert len(sequence) == len(dotbracket), "Sequence and dotbracket lengths must match"
+            features= []
+            for c in sequence:
+                features.append(torch.Tensor(utils.onek_encoding_unk(c, self.RNA_bases)))
+            features = torch.stack(features, dim=0)
+            g.ndata['x'] = features
+
+        # Iterate over dotbracket to build connectivity
+        bases = []
+        for i, c in enumerate(dotbracket):
+            # Add adjacent edges
+            if i > 0:
+                g.add_edge(i, i - 1, {'rel_type': torch.Tensor(0)})
+            if c == '(':
+                bases.append(i)
+            elif c == ')':
+                neighbor = bases.pop()
+                g.add_edge(i, neighbor, {'rel_type': torch.Tensor(1)})
+            elif c == '.':
+                continue
+            else:
+                print("Input is not in dot-bracket notation!")
+                return None
+        if self.verbose:
+            print(g)
+        return g
+
+
+
 if __name__ == "__main__":
     """   
     pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
@@ -970,6 +1032,7 @@ if __name__ == "__main__":
                       # graph_constructor=dgl.data.chem.mol_to_graph())
                       )
     """
+
     pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=False,
                       node_featuriser='meiler',
                       intramolecular_interactions=None,
@@ -984,7 +1047,8 @@ if __name__ == "__main__":
                       long_interaction_threshold=5,
                       edge_distance_cutoff=10
                       )
-    """
+
+
     g = pg.dgl_graph_from_pdb_code('3eiy',
                                    chain_selection='all',
                                    edge_construction=['distance', 'delaunay'],  # , 'delaunay', 'k_nn'],
@@ -996,12 +1060,16 @@ if __name__ == "__main__":
                                            edge_construction=['distance', 'delaunay'],
                                            encoding=True,
                                            k_nn=None)
-    """
+
+
     g, _, __ = pg.nx_graph_from_pdb_code(pdb_code='3eiy',
                                          chain_selection='all',
                                          edge_construction=['contacts'],
                                          encoding=True)
 
+
+    rg = RNAGraph()
+    g = rg.dgl_graph_from_dotbracket('((((((....))))))', sequence='AUGCAUGCAUGCAUGC')
     #pg.make_atom_graph(pdb_code='3eiy')
 
     # Check KNN
