@@ -1,3 +1,4 @@
+[![DOI:10.1101/2020.07.15.204701](https://zenodo.org/badge/DOI/10.1101/2020.07.15.204701.svg)](https://doi.org/10.1101/2020.07.15.204701)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Documentation Status](https://readthedocs.com/projects/graphein-graphein/badge/?version=latest&token=e0e095fecfd2f1e2448613c1bc4676cb6c22851d7a5cfde0ea35ce822887bc3b)](https://graphein-graphein.readthedocs-hosted.com/en/latest/?badge=latest)
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
