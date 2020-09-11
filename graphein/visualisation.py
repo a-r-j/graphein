@@ -1,19 +1,17 @@
 import dgl
 from graphein.construct_graphs import ProteinGraph
-import matplotlib.pyplot as plt
 
 # import plotly.plotly as py
 # import plotly.graph_objs as go
 
 import networkx as nx
-import random
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import Any, Dict, Tuple, List, Optional, Union
 
 
-def network_plot_3d(
+def protein_graph_plot_3d(
     g: dgl.DGLGraph,
     angle: int,
     out_path: str = None,
@@ -29,15 +27,31 @@ def network_plot_3d(
 ) -> None:
     """
     Plots Protein Graphs as flattened 3D projections. Requires 3D coordinates to be present in the graph object
-    :param G: DGLGraph
-    :param angle: angle of view
+    :param g:
+    :type g: dgl.DGLGraph
+    :param angle:
     :param out_path:
+    :param figsize:
+    :param node_alpha:
+    :param node_size_min:
+    :param node_size_multiplier:
+    :param bg_col:
+    :param out_format:
+    :param colour_by: Indicates way to colour graph: {"degree", "seq_position"}
+    :param edge_col: Colour to draw edges with
+    :param edge_alpha: Alpha (transparancy for edges)
+    :type edge_alpha: float
     :return:
     """
 
     # Todo assertions
     if type(g) is dgl.DGLGraph:
-        g = g.to_networkx(node_attrs=["coords"])
+        node_attrs = ["coords"]
+        g = g.to_networkx(node_attrs=node_attrs)
+    else:
+        assert nx.get_node_attributes(
+            g, "coords"
+        ), "We require coordinate features to draw a 3D plot"
 
     # Get node positions
     pos = nx.get_node_attributes(g, "coords")
@@ -47,8 +61,14 @@ def network_plot_3d(
     n = g.number_of_nodes()
     # Get the maximum number of edges adjacent to a single node
     edge_max = max([g.degree(i) for i in range(n)])
+
     # Define color range proportional to number of edges adjacent to a single node
-    colors = [plt.cm.plasma(g.degree(i) / edge_max) for i in range(n)]
+    if colour_by == "degree":
+        colors = [plt.cm.plasma(g.degree(i) / edge_max) for i in range(n)]
+
+    if colour_by == "seq_position":
+        colors = [plt.cm.plasma(i / n) for i in range(n)]
+
     # 3D network plot
     with plt.style.context(("ggplot")):
 
@@ -154,4 +174,6 @@ if __name__ == "__main__":
         k_nn=None,
     )
 
-    network_plot_3d(g, angle=30, out_path=None, figsize=(10, 7))
+    protein_graph_plot_3d(
+        g, angle=30, out_path=None, figsize=(10, 7), colour_by="seq_position"
+    )
