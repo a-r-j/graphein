@@ -1,3 +1,4 @@
+[![DOI:10.1101/2020.07.15.204701](https://zenodo.org/badge/DOI/10.1101/2020.07.15.204701.svg)](https://doi.org/10.1101/2020.07.15.204701)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Documentation Status](https://readthedocs.com/projects/graphein-graphein/badge/?version=latest&token=e0e095fecfd2f1e2448613c1bc4676cb6c22851d7a5cfde0ea35ce822887bc3b)](https://graphein-graphein.readthedocs-hosted.com/en/latest/?badge=latest)
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
@@ -11,12 +12,13 @@ Protein Graph Library
 This package provides functionality for producing a number of types of graph-based representations of proteins. We provide compatibility with standard formats, as well as graph objects designed for ease of use with popular deep learning libraries.
 
 ## What's New?
+* Protein Graph Visualisation!
 * RNA Graph Construction from Dotbracket notation
 
 ## Example usage
+### Creating a Protein Graph
 ```python
 from graphein.construct_graphs import  ProteinGraph
-from graphein.construct_meshes import  ProteinMesh
 
 # Initialise ProteinGraph class
 pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
@@ -34,7 +36,10 @@ graph = pg.dgl_graph_from_pdb_file(file_path='examples/pdbs/pdb3eiy.pdb', contac
 
 # Create atom-level graphs
 graph = pg._make_atom_graph(pdb_code='3eiy', graph_type='bigraph')
-
+```
+### Creating a Protein Mesh
+```python
+from graphein.construct_meshes import  ProteinMesh
 # Initialise ProteinMesh class
 pm = ProteinMesh()
 
@@ -42,12 +47,18 @@ pm = ProteinMesh()
 verts, faces, aux = pm.create_mesh(pdb_code='3eiy', out_dir='examples/meshes/')
 # Pytorch3D Mesh Object from PDB File
 verts, faces, aux = pm.create_mesh(pdb_file='examples/pdbs/pdb3eiy.pdb')
-
-# RNA Graph Construction
-from graphein.construct_graphs import RNAGraph
-rg = RNAGraph()
-rna = rg.dgl_graph_from_dotbracket('((((((....))))))', sequence='AUGCAUGCAUGCAUGC')
 ```
+### Creating an RNA Graph
+```python
+from graphein.construct_graphs import RNAGraph
+# Initialise RNAGraph Constructor
+rg = RNAGraph()
+# Build the graph from a dotbracket & optional sequence
+rna = rg.dgl_graph_from_dotbracket('..(((((..(((...)))..)))))...', sequence='UUGGAGUACACAACCUGUACACUCUUUC')
+```
+
+
+
 
 ## Parameters
 Graphs can be constructed according to walks through the graph in the figure below.
