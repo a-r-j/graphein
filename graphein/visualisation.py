@@ -30,6 +30,7 @@ def protein_graph_plot_3d(
     :param g:
     :type g: dgl.DGLGraph
     :param angle:
+    :type angle: int
     :param out_path:
     :param figsize:
     :param node_alpha:
@@ -45,9 +46,12 @@ def protein_graph_plot_3d(
     """
 
     # Todo assertions
+    assert out_format is ".png" or ".svg", "We require either '.png' or '.svg' for saving plots"
+
     if type(g) is dgl.DGLGraph:
         node_attrs = ["coords"]
-        g = g.to_networkx(node_attrs=node_attrs)
+        edge_attrs = ['contacts']
+        g = g.to_networkx(node_attrs=node_attrs, edge_attrs=edge_attrs)
     else:
         assert nx.get_node_attributes(
             g, "coords"
@@ -55,7 +59,6 @@ def protein_graph_plot_3d(
 
     # Get node positions
     pos = nx.get_node_attributes(g, "coords")
-    # print(pos)
 
     # Get number of nodes
     n = g.number_of_nodes()
@@ -68,6 +71,9 @@ def protein_graph_plot_3d(
 
     if colour_by == "seq_position":
         colors = [plt.cm.plasma(i / n) for i in range(n)]
+
+    if colour_by == "residue_type":
+        raise NotImplementedError
 
     # 3D network plot
     with plt.style.context(("ggplot")):
@@ -105,6 +111,7 @@ def protein_graph_plot_3d(
     # Set the initial view
     ax.view_init(30, angle)
     # Hide the axes
+    ax.set_facecolor('white')
     ax.set_axis_off()
     if out_path is not None:
         plt.savefig(out_path + str(angle).zfill(3) + out_format)
@@ -118,25 +125,6 @@ def protein_graph_plot_3d(
 def plot_protein(
     pdb_code: Optional[str] = None, pdb_file: Optional[str] = None
 ) -> None:
-    raise NotImplementedError
-
-
-def plot_protein_graph_2d(g):
-
-    if type(g) is nx.Graph or nx.DiGraph:
-        nx.draw_networkx(g)
-
-        return
-
-    elif type(g) is dgl.DGLGraph:
-        # Convert DGL graph to NX for plotting
-        next
-
-    raise NotImplementedError
-
-
-def plot_protein_graph_3d(g):
-
     raise NotImplementedError
 
 
@@ -169,7 +157,7 @@ if __name__ == "__main__":
     g = pg.dgl_graph_from_pdb_code(
         "3eiy",
         chain_selection="all",
-        edge_construction=["distance", "delaunay"],  # , 'delaunay', 'k_nn'],
+        edge_construction=["contacts"],  # , 'delaunay', 'k_nn'],
         encoding=False,
         k_nn=None,
     )
@@ -177,3 +165,4 @@ if __name__ == "__main__":
     protein_graph_plot_3d(
         g, angle=30, out_path=None, figsize=(10, 7), colour_by="seq_position"
     )
+
