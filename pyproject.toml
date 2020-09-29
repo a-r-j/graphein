@@ -1,0 +1,43 @@
+# Sanely format your code with no heated arguments! :)
+[tool.black]
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | env
+  | venv
+)/
+'''
+include = '\.pyi?$'
+line-length = 79
+target-version = ['py38']
+
+# A tool for automatically formatting imports correctly!
+[tool.isort]
+ensure_newline_before_comments = true
+force_grid_wrap = 0
+include_trailing_comma = true
+line_length = 79 # match our custom config above
+multi_line_output = 3
+src_paths = ["graphein", "test"]
+use_parentheses = true
+
+# Can reinstate later: Measures docstring coverage,
+# super good for guaranteeing that there's docs!
+# [tool.interrogate]
+# exclude = ["setup.py", "docs", "build", "nbconvert_config.py"]
+# fail-under = 43
+# ignore-init-method = true
+# ignore-init-module = true
+# ignore-module = false
+# ignore-private = false
+# ignore-semiprivate = false
+# quiet = false
+# verbose = 2

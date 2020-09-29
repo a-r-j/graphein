@@ -1,0 +1,23 @@
+name: graphein-dev
+channels:
+- conda-forge
+dependencies:
+- python=3.8
+- black
+- conda
+- flake8
+- isort
+- mamba
+- matplotlib
+- mypy
+- nbstripout
+- numpy
+- pandas
+- pip
+- pre-commit
+- pycodestyle
+- pydocstyle
+- pytest
+- pytest-cov
+- pytest-xdist
+- scipy
