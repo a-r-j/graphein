@@ -5,47 +5,45 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import os
 import glob
+import os
 import re
-import pandas as pd
-import numpy as np
-import dgl
 import subprocess
+from functools import partial
+from typing import Any, Dict, List, NamedTuple, Optional, Union
+
+import dgl
 import networkx as nx
+import numpy as np
+import pandas as pd
 import torch as torch
 import torch.nn.functional as F
-from torch_geometric.data import Data
-from biopandas.pdb import PandasPdb
 from Bio.PDB import *
-from Bio.PDB.DSSP import residue_max_acc, dssp_dict_from_pdb_file
+from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 from Bio.PDB.Polypeptide import aa1, one_to_three
+from biopandas.pdb import PandasPdb
 from dgllife.utils import (
+    BaseAtomFeaturizer,
+    BaseBondFeaturizer,
+    CanonicalAtomFeaturizer,
+    CanonicalBondFeaturizer,
     mol_to_bigraph,
     mol_to_complete_graph,
     mol_to_nearest_neighbor_graph,
 )
-from dgllife.utils import (
-    BaseBondFeaturizer,
-    BaseAtomFeaturizer,
-    CanonicalAtomFeaturizer,
-    CanonicalBondFeaturizer,
-)
-from rdkit.Chem import MolFromPDBFile
-from sklearn.metrics import pairwise_distances
-from sklearn import preprocessing
-from sklearn.neighbors import kneighbors_graph
-from scipy import spatial
-
-from functools import partial
-from typing import Any, Dict, NamedTuple, List, Optional, Union
 from pydantic import BaseModel
+from rdkit.Chem import MolFromPDBFile
+from scipy import spatial
+from sklearn import preprocessing
+from sklearn.metrics import pairwise_distances
+from sklearn.neighbors import kneighbors_graph
+from torch_geometric.data import Data
 
 from graphein import utils
 
 
 class Config(BaseModel):
-    granularity: str = 'CA'
+    granularity: str = "CA"
     keep_hets: bool = False
     insertions: bool = False
     """
@@ -72,7 +70,9 @@ class Config(BaseModel):
     """
 
 
-def read_pdb_to_dataframe(pdb_path: str, verbose: bool = False) -> pd.DataFrame:
+def read_pdb_to_dataframe(
+    pdb_path: str, verbose: bool = False
+) -> pd.DataFrame:
     """Reads PDB file to PandasPDB object
     :param pdb_path: path to PDB file
     :type pdb_path: str
@@ -88,14 +88,16 @@ def read_pdb_to_dataframe(pdb_path: str, verbose: bool = False) -> pd.DataFrame:
     return protein_df
 
 
-def process_dataframe(protein_df: pd.DataFrame,
-                      granularity: str = 'centroids',
-                      chain_selection: str = 'all',
-                      insertions: bool = False,
-                      deprotonate: bool = True,
-                      keep_hets: bool = False,
-                      exclude_waters: bool = True,
-                      verbose: bool = False) -> pd.DataFrame:
+def process_dataframe(
+    protein_df: pd.DataFrame,
+    granularity: str = "centroids",
+    chain_selection: str = "all",
+    insertions: bool = False,
+    deprotonate: bool = True,
+    keep_hets: bool = False,
+    exclude_waters: bool = True,
+    verbose: bool = False,
+) -> pd.DataFrame:
     """
     Process ATOM and HETATM dataframes to produce singular dataframe used for graph construction
     :param protein_df:
@@ -136,7 +138,9 @@ def process_dataframe(protein_df: pd.DataFrame,
         protein_df = protein_df.loc[protein_df["alt_loc"].isin(["", "A"])]
 
     # perform chain selection
-    protein_df = select_chains(protein_df, chain_selection=chain_selection, verbose=verbose)
+    protein_df = select_chains(
+        protein_df, chain_selection=chain_selection, verbose=verbose
+    )
 
     if verbose:
         print(f"Detected {len(protein_df)} total nodes")
@@ -173,20 +177,16 @@ def select_chains(
     return protein_df
 
 
-def add_nodes_to_graph(protein_df: pd.DataFrame, granularity: str = 'CA', verbose: bool = False) -> nx.Graph:
+def add_nodes_to_graph(
+    protein_df: pd.DataFrame, granularity: str = "CA", verbose: bool = False
+) -> nx.Graph:
     G = nx.Graph()
 
     residue_name = protein_df["residue_name"]
     residue_number = protein_df["residue_number"].apply(str)
     coords = np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]])
 
-    nodes = (
-            protein_df["chain_id"]
-            + ":"
-            + residue_name
-            + ":"
-            + residue_number
-    )
+    nodes = protein_df["chain_id"] + ":" + residue_name + ":" + residue_number
 
     if granularity == "atom":
         nodes = nodes + ":" + protein_df["atom_name"]
@@ -200,7 +200,9 @@ def add_nodes_to_graph(protein_df: pd.DataFrame, granularity: str = 'CA', verbos
     # Set intrinsic node attributes
     nx.set_node_attributes(G, residue_name_dict, "residue_name")
     nx.set_node_attributes(G, residue_number_dict, "residue_number")
-    nx.set_node_attributes(G, coords_dict, "coords") # Todo, maybe split into x_coord, y_coord, z_coord
+    nx.set_node_attributes(
+        G, coords_dict, "coords"
+    )  # Todo, maybe split into x_coord, y_coord, z_coord
     # Todo include charge, B factor, line_idx for traceability?
 
     if verbose:
@@ -210,7 +212,9 @@ def add_nodes_to_graph(protein_df: pd.DataFrame, granularity: str = 'CA', verbos
     return G
 
 
-def calculate_centroid_positions(atoms: pd.DataFrame, verbose: bool = False) -> pd.DataFrame:
+def calculate_centroid_positions(
+    atoms: pd.DataFrame, verbose: bool = False
+) -> pd.DataFrame:
     """
     Calculates position of sidechain centroids
     :param atoms: ATOM df of protein structure
@@ -242,12 +246,14 @@ def construct_graph():
     pass
 
 
-
 if __name__ == "__main__":
-    configs = {'granularity': 'CA', 'keep_hets': False, 'insertions': False}
+    configs = {"granularity": "CA", "keep_hets": False, "insertions": False}
     config = Config(**configs)
 
-    df = read_pdb_to_dataframe('/Users/arianjamasb/github/graphein/examples/pdbs/3eiy.pdb', verbose=True)
+    df = read_pdb_to_dataframe(
+        "/Users/arianjamasb/github/graphein/examples/pdbs/3eiy.pdb",
+        verbose=True,
+    )
     df = process_dataframe(df)
     g = add_nodes_to_graph(df, config.granularity, verbose=True)
     print(nx.info(g))

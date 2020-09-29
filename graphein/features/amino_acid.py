@@ -1,8 +1,10 @@
 """
 Featurization functions for amino acids.
 """
-import pandas as pd
 from functools import lru_cache
+from pathlib import Path
+
+import pandas as pd
 
 
 @lru_cache
@@ -15,7 +17,9 @@ def load_expasy_scales() -> pd.DataFrame:
     The function is LRU-cached in memory for fast access
     on each function call.
     """
-    df = pd.read_csv("amino_acid_properties.csv", index_col=0)
+    df = pd.read_csv(
+        Path(__file__).parent / "amino_acid_properties.csv", index_col=0
+    )
     return df
 
 

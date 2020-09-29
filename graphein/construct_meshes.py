@@ -6,9 +6,10 @@
 # Project Website:
 # Code Repository: https://github.com/a-r-j/graphein
 
-from pytorch3d.io import load_obj, save_obj
+from typing import Any, Dict, List, NamedTuple, Optional, Union
+
 from ipymol import viewer as pymol
-from typing import Any, Dict, NamedTuple, List, Optional, Union
+from pytorch3d.io import load_obj, save_obj
 
 
 class ProteinMesh(object):

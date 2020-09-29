@@ -1,14 +1,15 @@
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import dgl
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+
 from graphein.construct_graphs import ProteinGraph
 
 # import plotly.plotly as py
 # import plotly.graph_objs as go
-
-import networkx as nx
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-import numpy as np
-from typing import Any, Dict, Tuple, List, Optional, Union
 
 
 def protein_graph_plot_3d(
@@ -46,11 +47,13 @@ def protein_graph_plot_3d(
     """
 
     # Todo assertions
-    assert out_format is ".png" or ".svg", "We require either '.png' or '.svg' for saving plots"
+    assert (
+        out_format is ".png" or ".svg"
+    ), "We require either '.png' or '.svg' for saving plots"
 
     if type(g) is dgl.DGLGraph:
         node_attrs = ["coords"]
-        edge_attrs = ['contacts']
+        edge_attrs = ["contacts"]
         g = g.to_networkx(node_attrs=node_attrs, edge_attrs=edge_attrs)
     else:
         assert nx.get_node_attributes(
@@ -111,7 +114,7 @@ def protein_graph_plot_3d(
     # Set the initial view
     ax.view_init(30, angle)
     # Hide the axes
-    ax.set_facecolor('white')
+    ax.set_facecolor("white")
     ax.set_axis_off()
     if out_path is not None:
         plt.savefig(out_path + str(angle).zfill(3) + out_format)
@@ -165,4 +168,3 @@ if __name__ == "__main__":
     protein_graph_plot_3d(
         g, angle=30, out_path=None, figsize=(10, 7), colour_by="seq_position"
     )
-

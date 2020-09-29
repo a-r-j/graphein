@@ -5,41 +5,39 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import os
 import glob
+import os
 import re
-import pandas as pd
-import numpy as np
-import dgl
 import subprocess
+from typing import Any, Dict, List, NamedTuple, Optional, Union
+
+import dgl
 import networkx as nx
+import numpy as np
+import pandas as pd
 import torch as torch
 import torch.nn.functional as F
-from torch_geometric.data import Data
-from biopandas.pdb import PandasPdb
 from Bio.PDB import *
-from Bio.PDB.DSSP import residue_max_acc, dssp_dict_from_pdb_file
+from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 from Bio.PDB.Polypeptide import aa1, one_to_three
+from biopandas.pdb import PandasPdb
 from dgllife.utils import (
+    BaseAtomFeaturizer,
+    BaseBondFeaturizer,
+    CanonicalAtomFeaturizer,
+    CanonicalBondFeaturizer,
     mol_to_bigraph,
     mol_to_complete_graph,
     mol_to_nearest_neighbor_graph,
 )
-from dgllife.utils import (
-    BaseBondFeaturizer,
-    BaseAtomFeaturizer,
-    CanonicalAtomFeaturizer,
-    CanonicalBondFeaturizer,
-)
 from rdkit.Chem import MolFromPDBFile
-from sklearn.metrics import pairwise_distances
-from sklearn import preprocessing
-from sklearn.neighbors import kneighbors_graph
 from scipy import spatial
-from typing import Any, Dict, NamedTuple, List, Optional, Union
+from sklearn import preprocessing
+from sklearn.metrics import pairwise_distances
+from sklearn.neighbors import kneighbors_graph
+from torch_geometric.data import Data
 
 from graphein import utils
-
 
 # Todo add SS featuriser for Mol Graph?
 # Todo atom featuriser
@@ -165,19 +163,162 @@ class ProteinGraph(object):
                     0.21,
                     -0.48,
                 ],
-                "C": [0.12, -0.89, 0.45, -1.05, -0.71, 2.41, 1.52, -0.69, 1.13, 1.1],
-                "E": [-1.45, 0.19, -1.61, 1.17, -1.31, 0.4, 0.04, 0.38, -0.35, -0.12],
-                "D": [0.58, -0.22, -1.58, 0.81, -0.92, 0.15, -1.52, 0.47, 0.76, 0.7],
-                "G": [1.46, -1.96, -0.23, -0.16, 0.1, -0.11, 1.32, 2.36, -1.66, 0.46],
-                "F": [-0.21, 0.98, -0.36, -1.43, 0.22, -0.81, 0.67, 1.1, 1.71, -0.44],
-                "I": [-0.73, -0.16, 1.79, -0.77, -0.54, 0.03, -0.83, 0.51, 0.66, -1.78],
-                "H": [-0.41, 0.52, -0.28, 0.28, 1.61, 1.01, -1.85, 0.47, 1.13, 1.63],
-                "K": [-0.34, 0.82, -0.23, 1.7, 1.54, -1.62, 1.15, -0.08, -0.48, 0.6],
-                "M": [-1.4, 0.18, -0.42, -0.73, 2.0, 1.52, 0.26, 0.11, -1.27, 0.27],
-                "L": [-1.04, 0.0, -0.24, -1.1, -0.55, -2.05, 0.96, -0.76, 0.45, 0.93],
-                "N": [1.14, -0.07, -0.12, 0.81, 0.18, 0.37, -0.09, 1.23, 1.1, -1.73],
-                "Q": [-0.47, 0.24, 0.07, 1.1, 1.1, 0.59, 0.84, -0.71, -0.03, -2.33],
-                "P": [2.06, -0.33, -1.15, -0.75, 0.88, -0.45, 0.3, -2.3, 0.74, -0.28],
+                "C": [
+                    0.12,
+                    -0.89,
+                    0.45,
+                    -1.05,
+                    -0.71,
+                    2.41,
+                    1.52,
+                    -0.69,
+                    1.13,
+                    1.1,
+                ],
+                "E": [
+                    -1.45,
+                    0.19,
+                    -1.61,
+                    1.17,
+                    -1.31,
+                    0.4,
+                    0.04,
+                    0.38,
+                    -0.35,
+                    -0.12,
+                ],
+                "D": [
+                    0.58,
+                    -0.22,
+                    -1.58,
+                    0.81,
+                    -0.92,
+                    0.15,
+                    -1.52,
+                    0.47,
+                    0.76,
+                    0.7,
+                ],
+                "G": [
+                    1.46,
+                    -1.96,
+                    -0.23,
+                    -0.16,
+                    0.1,
+                    -0.11,
+                    1.32,
+                    2.36,
+                    -1.66,
+                    0.46,
+                ],
+                "F": [
+                    -0.21,
+                    0.98,
+                    -0.36,
+                    -1.43,
+                    0.22,
+                    -0.81,
+                    0.67,
+                    1.1,
+                    1.71,
+                    -0.44,
+                ],
+                "I": [
+                    -0.73,
+                    -0.16,
+                    1.79,
+                    -0.77,
+                    -0.54,
+                    0.03,
+                    -0.83,
+                    0.51,
+                    0.66,
+                    -1.78,
+                ],
+                "H": [
+                    -0.41,
+                    0.52,
+                    -0.28,
+                    0.28,
+                    1.61,
+                    1.01,
+                    -1.85,
+                    0.47,
+                    1.13,
+                    1.63,
+                ],
+                "K": [
+                    -0.34,
+                    0.82,
+                    -0.23,
+                    1.7,
+                    1.54,
+                    -1.62,
+                    1.15,
+                    -0.08,
+                    -0.48,
+                    0.6,
+                ],
+                "M": [
+                    -1.4,
+                    0.18,
+                    -0.42,
+                    -0.73,
+                    2.0,
+                    1.52,
+                    0.26,
+                    0.11,
+                    -1.27,
+                    0.27,
+                ],
+                "L": [
+                    -1.04,
+                    0.0,
+                    -0.24,
+                    -1.1,
+                    -0.55,
+                    -2.05,
+                    0.96,
+                    -0.76,
+                    0.45,
+                    0.93,
+                ],
+                "N": [
+                    1.14,
+                    -0.07,
+                    -0.12,
+                    0.81,
+                    0.18,
+                    0.37,
+                    -0.09,
+                    1.23,
+                    1.1,
+                    -1.73,
+                ],
+                "Q": [
+                    -0.47,
+                    0.24,
+                    0.07,
+                    1.1,
+                    1.1,
+                    0.59,
+                    0.84,
+                    -0.71,
+                    -0.03,
+                    -2.33,
+                ],
+                "P": [
+                    2.06,
+                    -0.33,
+                    -1.15,
+                    -0.75,
+                    0.88,
+                    -0.45,
+                    0.3,
+                    -2.3,
+                    0.74,
+                    -0.28,
+                ],
                 "S": [
                     0.81,
                     -1.08,
@@ -190,12 +331,78 @@ class ProteinGraph(object):
                     -0.97,
                     -0.23,
                 ],
-                "R": [0.22, 1.27, 1.37, 1.87, -1.7, 0.46, 0.92, -0.39, 0.23, 0.93],
-                "T": [0.26, -0.7, 1.21, 0.63, -0.1, 0.21, 0.24, -1.15, -0.56, 0.19],
-                "W": [0.3, 2.1, -0.72, -1.57, -1.16, 0.57, -0.48, -0.4, -2.3, -0.6],
-                "V": [-0.74, -0.71, 2.04, -0.4, 0.5, -0.81, -1.07, 0.06, -0.46, 0.65],
-                "Y": [1.38, 1.48, 0.8, -0.56, -0.0, -0.68, -0.31, 1.03, -0.05, 0.53],
-                "UNKNOWN": [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00],
+                "R": [
+                    0.22,
+                    1.27,
+                    1.37,
+                    1.87,
+                    -1.7,
+                    0.46,
+                    0.92,
+                    -0.39,
+                    0.23,
+                    0.93,
+                ],
+                "T": [
+                    0.26,
+                    -0.7,
+                    1.21,
+                    0.63,
+                    -0.1,
+                    0.21,
+                    0.24,
+                    -1.15,
+                    -0.56,
+                    0.19,
+                ],
+                "W": [
+                    0.3,
+                    2.1,
+                    -0.72,
+                    -1.57,
+                    -1.16,
+                    0.57,
+                    -0.48,
+                    -0.4,
+                    -2.3,
+                    -0.6,
+                ],
+                "V": [
+                    -0.74,
+                    -0.71,
+                    2.04,
+                    -0.4,
+                    0.5,
+                    -0.81,
+                    -1.07,
+                    0.06,
+                    -0.46,
+                    0.65,
+                ],
+                "Y": [
+                    1.38,
+                    1.48,
+                    0.8,
+                    -0.56,
+                    -0.0,
+                    -0.68,
+                    -0.31,
+                    1.03,
+                    -0.05,
+                    0.53,
+                ],
+                "UNKNOWN": [
+                    0.00,
+                    0.00,
+                    0.00,
+                    0.00,
+                    0.00,
+                    0.00,
+                    0.00,
+                    0.00,
+                    0.00,
+                    0.00,
+                ],
             },
         }
         self.pdb_dir = pdb_dir
@@ -274,9 +481,13 @@ class ProteinGraph(object):
         """
         # Todo Error Handling
         if pdb_code:
-            assert not file_path, "Do not provide both a PDB file and a file path"
+            assert (
+                not file_path
+            ), "Do not provide both a PDB file and a file path"
         if file_path:
-            assert not pdb_code, "Do not provide both a PDB file and a file path"
+            assert (
+                not pdb_code
+            ), "Do not provide both a PDB file and a file path"
         if k_nn:
             assert (
                 "k_nn" in edge_construction
@@ -334,7 +545,9 @@ class ProteinGraph(object):
 
             if self.edge_distance_cutoff and "distance" in edge_construction:
                 # Get distance-based edges
-                edges = self._distance_based_edges(df, self.edge_distance_cutoff)
+                edges = self._distance_based_edges(
+                    df, self.edge_distance_cutoff
+                )
                 # Add edges
                 g.add_edges(
                     list(edges["level_0"]),
@@ -361,7 +574,11 @@ class ProteinGraph(object):
                 g.add_edges(
                     list(custom_edges["res1"]),
                     list(custom_edges["res2"]),
-                    data={"user_edge_data": torch.Tensor(list(custom_edges["data"]))},
+                    data={
+                        "user_edge_data": torch.Tensor(
+                            list(custom_edges["data"])
+                        )
+                    },
                 )
 
             if self.include_ss:
@@ -379,7 +596,9 @@ class ProteinGraph(object):
             residue_names = g.ndata["residue_name"]
             residue_id = g.ndata["id"]
 
-            g.ndata["residue_name"] = resiude_name_encoder.fit_transform(residue_names)
+            g.ndata["residue_name"] = resiude_name_encoder.fit_transform(
+                residue_names
+            )
             g.ndata["id"] = residue_id_encoder.fit_transform(residue_id)
 
             return g, resiude_name_encoder, residue_id_encoder
@@ -440,7 +659,9 @@ class ProteinGraph(object):
             if self.include_ss:
 
                 dssp = self._get_protein_features(
-                    file_path=file_path, pdb_code=None, chain_selection=chain_selection
+                    file_path=file_path,
+                    pdb_code=None,
+                    chain_selection=chain_selection,
                 )
 
                 feats = self._compute_protein_feature_representations(dssp)
@@ -475,7 +696,11 @@ class ProteinGraph(object):
         :rtype: NetworkX graph
         """
         assert encoding, "Non-numeric feature encoding must be True"
-        g, resiude_name_encoder, residue_id_encoder = self.dgl_graph_from_pdb_code(
+        (
+            g,
+            resiude_name_encoder,
+            residue_id_encoder,
+        ) = self.dgl_graph_from_pdb_code(
             pdb_code=pdb_code,
             chain_selection=chain_selection,
             contact_file=contact_file,
@@ -510,7 +735,11 @@ class ProteinGraph(object):
         :type contact_file: str, optional
         :return: NetworkX graph object of protein
         """
-        g, resiude_name_encoder, residue_id_encoder = self.dgl_graph_from_pdb_file(
+        (
+            g,
+            resiude_name_encoder,
+            residue_id_encoder,
+        ) = self.dgl_graph_from_pdb_file(
             pdb_code, chain_selection, contact_file
         )
         node_attrs = g.node_attr_schemes().keys()
@@ -553,7 +782,11 @@ class ProteinGraph(object):
         """
         assert encoding, "Non-numeric feature encoding must be True"
 
-        g, resiude_name_encoder, residue_id_encoder = self.dgl_graph_from_pdb_code(
+        (
+            g,
+            resiude_name_encoder,
+            residue_id_encoder,
+        ) = self.dgl_graph_from_pdb_code(
             pdb_code=pdb_code,
             chain_selection=chain_selection,
             contact_file=contact_file,
@@ -564,9 +797,12 @@ class ProteinGraph(object):
         )
         # Get node features from DGL graph and concatenate them
         node_feature_names = g.node_attr_schemes().keys()
-        dgl_graph_features = [g.ndata[feat].float() for feat in node_feature_names]
         dgl_graph_features = [
-            f.unsqueeze(dim=1) if len(f.shape) == 1 else f for f in dgl_graph_features
+            g.ndata[feat].float() for feat in node_feature_names
+        ]
+        dgl_graph_features = [
+            f.unsqueeze(dim=1) if len(f.shape) == 1 else f
+            for f in dgl_graph_features
         ]
         node_features = torch.cat(dgl_graph_features, dim=1)
 
@@ -628,7 +864,9 @@ class ProteinGraph(object):
         # DGL mol to graph
         if graph_type == "bigraph":
             g = mol_to_bigraph(
-                mol, node_featurizer=node_featurizer, edge_featurizer=edge_featurizer
+                mol,
+                node_featurizer=node_featurizer,
+                edge_featurizer=edge_featurizer,
             )
         elif graph_type == "complete":
             g = mol_to_complete_graph(
@@ -680,7 +918,9 @@ class ProteinGraph(object):
             print(f"Detected {len(protein_df)} total nodes")
         return protein_df
 
-    def _calculate_centroid_positions(self, atoms: pd.DataFrame) -> pd.DataFrame:
+    def _calculate_centroid_positions(
+        self, atoms: pd.DataFrame
+    ) -> pd.DataFrame:
         """
         Calculates position of sidechain centroids
         :param atoms: ATOM df of protein structure
@@ -754,7 +994,9 @@ class ProteinGraph(object):
         )
         return g
 
-    def _aa_features(self, residue: str, embedding: str = "meiler") -> torch.Tensor:
+    def _aa_features(
+        self, residue: str, embedding: str = "meiler"
+    ) -> torch.Tensor:
         """
         Retrieves amino acid embeddings
         :param residue: str specifying the amino acid
@@ -763,7 +1005,9 @@ class ProteinGraph(object):
         """
         if residue not in self.embedding_dict[embedding].keys():
             residue = "UNKNOWN"
-        features = torch.Tensor(self.embedding_dict[embedding][residue]).double()
+        features = torch.Tensor(
+            self.embedding_dict[embedding][residue]
+        ).double()
         return features
 
     def _download_pdb(self, pdb_code: str) -> None:
@@ -780,7 +1024,8 @@ class ProteinGraph(object):
         )
         # Rename file to .pdb from .ent
         os.rename(
-            self.pdb_dir + "pdb" + pdb_code + ".ent", self.pdb_dir + pdb_code + ".pdb"
+            self.pdb_dir + "pdb" + pdb_code + ".ent",
+            self.pdb_dir + pdb_code + ".pdb",
         )
         # Assert file has been downloaded
         assert any(pdb_code in s for s in os.listdir(self.pdb_dir))
@@ -798,7 +1043,9 @@ class ProteinGraph(object):
         if file_name is not None:
             contacts_file = glob.glob(self.contacts_dir + file_name)
         else:
-            contacts_file = glob.glob(self.contacts_dir + "*" + pdb_code + "*.tsv")
+            contacts_file = glob.glob(
+                self.contacts_dir + "*" + pdb_code + "*.tsv"
+            )
         if contacts_file:
             print(f"Contact file found: {contacts_file}")
             return
@@ -818,7 +1065,9 @@ class ProteinGraph(object):
         # Run GetContacts
         command = f"{self.get_contacts_path}/get_static_contacts.py "
         command += f"--structure {pdb_file} "
-        command += f'--output {self.contacts_dir + pdb_code + "_contacts.tsv"} '
+        command += (
+            f'--output {self.contacts_dir + pdb_code + "_contacts.tsv"} '
+        )
         command += "--itypes all"  # --sele "protein"'
         subprocess.run(command, shell=True)
         assert os.path.isfile(self.contacts_dir + pdb_code + "_contacts.tsv")
@@ -856,13 +1105,21 @@ class ProteinGraph(object):
                 # Add edge to set of edges
                 edges.add((res1, res2, interaction_type))
 
-        edges = pd.DataFrame(list(edges), columns=["res1", "res2", "interaction_type"])
+        edges = pd.DataFrame(
+            list(edges), columns=["res1", "res2", "interaction_type"]
+        )
         # Remove all unallowed interactions
-        edges = edges.loc[edges["interaction_type"].isin(self.INTERACTION_TYPES)]
+        edges = edges.loc[
+            edges["interaction_type"].isin(self.INTERACTION_TYPES)
+        ]
 
         if chain_selection != "all":
-            edges = edges.loc[edges["res1"].str.startswith(tuple(chain_selection))]
-            edges = edges.loc[edges["res2"].str.startswith(tuple(chain_selection))]
+            edges = edges.loc[
+                edges["res1"].str.startswith(tuple(chain_selection))
+            ]
+            edges = edges.loc[
+                edges["res2"].str.startswith(tuple(chain_selection))
+            ]
 
         # Filter out interactions for disordered/unassigned residues
         edges = edges.loc[~edges["res1"].str.contains("[A-Z]$")]
@@ -879,7 +1136,9 @@ class ProteinGraph(object):
             edges = edges[inds]
 
         if self.verbose:
-            print(f"Calculated {len(edges)} intramolecular interaction-based edges")
+            print(
+                f"Calculated {len(edges)} intramolecular interaction-based edges"
+            )
 
         return edges
 
@@ -911,7 +1170,9 @@ class ProteinGraph(object):
             )
             return g
         else:
-            index = dict(zip(list(g.ndata["id"]), list(range(len(g.ndata["id"])))))
+            index = dict(
+                zip(list(g.ndata["id"]), list(range(len(g.ndata["id"]))))
+            )
 
             # Remove interactions for edges between nodes not in graph. E.g hetatms
             e = e.loc[e["res1"].isin(index.keys())]
@@ -947,7 +1208,10 @@ class ProteinGraph(object):
         return [x == s for s in allowable_set]
 
     def _get_protein_features(
-        self, pdb_code: Optional[str], file_path: Optional[str], chain_selection: str
+        self,
+        pdb_code: Optional[str],
+        file_path: Optional[str],
+        chain_selection: str,
     ) -> pd.DataFrame:
         """
         :param file_path: (str) file path to PDB file
@@ -1009,9 +1273,13 @@ class ProteinGraph(object):
         # Add additional Columns
         df["aa_three"] = df["aa"].apply(one_to_three)
         df["max_acc"] = df["aa_three"].map(residue_max_acc["Sander"].get)
-        df[["exposure_rsa", "max_acc"]] = df[["exposure_rsa", "max_acc"]].astype(float)
+        df[["exposure_rsa", "max_acc"]] = df[
+            ["exposure_rsa", "max_acc"]
+        ].astype(float)
         df["exposure_asa"] = df["exposure_rsa"] * df["max_acc"]
-        df["index"] = df["chain"] + ":" + df["aa_three"] + ":" + df["resnum"].apply(str)
+        df["index"] = (
+            df["chain"] + ":" + df["aa_three"] + ":" + df["resnum"].apply(str)
+        )
         return df
 
     def _compute_protein_feature_representations(
@@ -1054,8 +1322,12 @@ class ProteinGraph(object):
         if pad_length > 0:
             pad = [0, 0, 0, pad_length]
             feature_dict["ss"] = F.pad(feature_dict["ss"], pad, "constant", 0)
-            feature_dict["asa"] = F.pad(feature_dict["asa"], pad, "constant", 0)
-            feature_dict["rsa"] = F.pad(feature_dict["rsa"], pad, "constant", 0)
+            feature_dict["asa"] = F.pad(
+                feature_dict["asa"], pad, "constant", 0
+            )
+            feature_dict["rsa"] = F.pad(
+                feature_dict["rsa"], pad, "constant", 0
+            )
         # Assign Features
         g.ndata["ss"] = feature_dict["ss"]
         g.ndata["asa"] = feature_dict["asa"]
@@ -1350,7 +1622,9 @@ if __name__ == "__main__":
     )
 
     rg = RNAGraph()
-    g = rg.dgl_graph_from_dotbracket("((((((....))))))", sequence="AUGCAUGCAUGCAUGC")
+    g = rg.dgl_graph_from_dotbracket(
+        "((((((....))))))", sequence="AUGCAUGCAUGCAUGC"
+    )
     # pg.make_atom_graph(pdb_code='3eiy')
 
     # Check KNN

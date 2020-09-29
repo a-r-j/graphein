@@ -12,11 +12,12 @@ Reference is here: https://web.expasy.org/protscale/protscale-ref.html.
 Credit must be due properly.
 """
 
+import re
+
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-import pandas as pd
 from tqdm.autonotebook import tqdm
-import re
 
 urls = requests.get("https://web.expasy.org/protscale/")
 urls_list = urls.text.split("<PRE>")[1].split("</PRE>")[0]
@@ -33,7 +34,11 @@ wanted = [
 urls = ["https://web.expasy.org" + path for path in wanted]
 
 property_names = [
-    path.split("/")[-1].replace(".html", "").replace(".", "_").replace("-", "_").lower()
+    path.split("/")[-1]
+    .replace(".html", "")
+    .replace(".", "_")
+    .replace("-", "_")
+    .lower()
     for path in wanted
 ]
 
@@ -182,8 +187,9 @@ isoelectric_points = pd.Series(
     dict(zip(AMINO_ACIDS, ISOELECTRIC_POINTS)), name="isoelectric_points"
 )
 
-basic_aa_feats = pd.DataFrame([pka_cooh_alpha, pka_nh3, pka_rgroup, isoelectric_points])
+basic_aa_feats = pd.DataFrame(
+    [pka_cooh_alpha, pka_nh3, pka_rgroup, isoelectric_points]
+)
 
 aa_feats = pd.concat([basic_aa_feats, expasy_aa_feats])
 aa_feats.to_csv("amino_acid_properties.csv")
-
