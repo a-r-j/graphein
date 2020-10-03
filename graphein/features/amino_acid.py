@@ -26,7 +26,7 @@ def load_expasy_scales() -> pd.DataFrame:
 @lru_cache
 def load_meiler_embeddings() -> pd.DataFrame:
     """
-    Load pre-downloaded EXPASY scales.
+    Load pre-downloaded Meiler embeddings.
 
     This helps with node featurization.
 
