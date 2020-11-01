@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 import dgl
 import subprocess
+import requests
 import networkx as nx
 import torch as torch
 import torch.nn.functional as F
@@ -1279,6 +1280,399 @@ class RNAGraph:
         return g
 
 
+class PPIGraph:
+    def __init__(
+            self,
+            protein_list: List[str],
+            sources: Optional[Union[List[str], None]],
+            verbose: bool = True,
+            paginate: bool = True,
+            **kwargs
+    ) -> None:
+        """
+        Initialise PPIGraph.
+        See also [1] STRING: https://string-db.org/help/api
+                 [2] BIOGRID: https://wiki.thebiogrid.org/doku.php/biogridrest
+
+        :param protein_list: Proteins to include in the graph
+        :param sources: List of sources (databases) to retrieve the data from.
+                        By default it includes interactions from all sources (STRING, BIOGRID)
+        :param paginate: Whether to paginate the API calls for the sources that require it. Default is True
+        :param kwargs: Parameters of the API calls, used to select and filter the results. The parameter names
+                       are of the form <SOURCE>_<param>, where <SOURCE> is the database name and <param> is
+                       the name of the parameter. Information about these parameters is documented at the websites
+                       of the API REST providers (e.g. [1] and [2])
+        """
+        self.protein_list = np.unique(protein_list)
+        self.verbose = verbose
+        self.ncbi_taxon_id = 9606  # 9606 corresponds to humans. TODO: allow other organisms?
+        self.paginate = paginate
+        self.kwargs = kwargs
+
+        # Check sources
+        self.valid_sources = ["STRING", "BIOGRID"]
+        self.sources = self.valid_sources
+        if sources is not None:
+            self.sources = np.unique(sources)
+            self._validate_sources()
+
+    def _validate_sources(
+            self
+    ) -> None:
+        """
+        Ensures that all the input sources are valid
+        """
+        for s in self.sources:
+            if s.upper() not in self.valid_sources:
+                raise ValueError("Source '{}' is not supported".format(s))
+
+    @staticmethod
+    def _params_STRING(
+            params: Dict[str, Union[str, int, List[str], List[int]]],
+            **kwargs
+    ) -> Dict[str, Union[str, int]]:
+        """
+        Updates default parameters with user parameters for the method "network" of the STRING API REST.
+        See also https://string-db.org/help/api/
+        :param params: Dictionary of default parameters
+        :param kwargs: User parameters for the method "network" of the STRING API REST. The key must start with "STRING"
+        :return: Dictionary of parameters
+        """
+        # TODO: Might be possible to generalise this function for all sources
+        fields = ["species",  # NCBI taxon identifiers
+                  "required_score",  # threshold of significance to include a interaction, a number between 0 and 1000
+                  # (default depends on the network)
+                  "network_type",  # network type: functional (default), physical
+                  "add_nodes",  # adds a number of proteins to the network based on their confidence score,
+                  # e.g., extends the interaction neighborhood of selected proteins to desired value
+                  "show_query_node_labels"  # when available use submitted names in the preferredName column when
+                  # (0 or 1) (default:0)
+                  ]
+        for p in fields:
+            kwarg_name = "STRING_" + p
+            if kwarg_name in kwargs:
+                value = kwargs[kwarg_name]
+                if type(value) is list:
+                    value = "%0d".join(value)
+                params[p] = value
+        return params
+
+    @staticmethod
+    def _parse_STRING(
+            protein_list: List[str],
+            ncbi_taxon_id: Union[int, str, List[int], List[str]],
+            **kwargs
+    ) -> pd.DataFrame:
+        """
+        Makes STRING API call and returns a source specific Pandas dataframe.
+        See also [1] STRING: https://string-db.org/help/api/
+        :param protein_list: Proteins to include in the graph
+        :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism. Default is 9606 (Homo Sapiens)
+        :param kwargs: Parameters of the "network" method of the STRING API REST, used to select the results. The
+                       parameter names are of the form STRING_<param>, where <param> is the name of the parameter.
+                       Information about these parameters can be found at [1].
+        :return: Source specific Pandas dataframe.
+        """
+        # Prepare call to STRING API
+        string_api_url = "https://string-db.org/api"
+        output_format = "json"  # "tsv-no-header"
+        method = "network"
+        request_url = "/".join([string_api_url, output_format, method])
+        if type(ncbi_taxon_id) is list:
+            ncbi_taxon_id = "%0d".join(ncbi_taxon_id)
+        params = {
+            "identifiers": "%0d".join(protein_list),
+            "species": ncbi_taxon_id,  # 9606 is human
+            "caller_identity": "graphein"
+        }
+        params = PPIGraph._params_STRING(params, **kwargs)
+
+        # Call STRING
+        response = requests.post(request_url, data=params)
+        df = pd.read_json(response.text.strip())
+
+        return df
+
+    @staticmethod
+    def _filter_STRING(
+            df: pd.DataFrame,
+            **kwargs
+    ) -> pd.DataFrame:
+        """
+        Filters results of the STRING API call according to user kwargs, keeping rows where the input parameters are
+        greater or equal than the input thresholds
+        :param df: Source specific Pandas dataframe (STRING) with results of the API call
+        :param kwargs: User thresholds used to filter the results. The parameter names are of the form STRING_<param>,
+                       where <param> is the name of the parameter. All the parameters are numerical values.
+        :return: Source specific Pandas dataframe with filtered results
+        """
+        scores = ["score",  # combined score
+                  "nscore",  # gene neighborhood score
+                  "fscore",  # gene fusion score
+                  "pscore",  # phylogenetic profile score
+                  "ascore",  # coexpression score
+                  "escore",  # experimental score
+                  "dscore",  # database score
+                  "tscore"]  # textmining score]
+        for s in scores:
+            kwarg_name = "STRING_" + s
+            if kwarg_name in kwargs:
+                threshold = kwargs[kwarg_name]
+                df = df[df[s] >= threshold]
+        return df
+
+    @staticmethod
+    def _standardise_STRING(
+            df: pd.DataFrame
+    ) -> pd.DataFrame:
+        """
+        Standardises STRING dataframe, e.g. puts everything into a common format
+        :param df: Source specific Pandas dataframe
+        :return: Standardised dataframe
+        """
+        # Rename & delete columns
+        df = df.rename(columns={"preferredName_A": "p1",
+                                "preferredName_B": "p2"})
+        df = df[["p1", "p2"]]
+
+        # Add source column
+        df["source"] = "STRING"
+
+        return df
+
+    def _STRING_df(
+            self
+    ) -> pd.DataFrame:
+        """
+        Generates standardised dataframe with STRING protein-protein interactions, filtered according to user's input
+        :return: Standardised dataframe with STRING interactions
+        """
+        df = self._parse_STRING(protein_list=self.protein_list,
+                                ncbi_taxon_id=self.ncbi_taxon_id)
+        df = self._filter_STRING(df, **self.kwargs)
+        df = self._standardise_STRING(df)
+
+        return df
+
+    @staticmethod
+    def _params_BIOGRID(
+            params: Dict[str, Union[str, int, List[str], List[int]]],
+            **kwargs
+    ) -> Dict[str, Union[str, int]]:
+        """
+        Updates default parameters with user parameters for the method "interactions" of the BIOGRID API REST.
+        See also https://wiki.thebiogrid.org/doku.php/biogridrest
+        :param params: Dictionary of default parameters
+        :param kwargs: User parameters for the method "network" of the BIOGRID API REST. The key must start with "BIOGRID"
+        :return: Dictionary of parameters
+        """
+        fields = ["searchNames",  # If ‘true’, the interactor OFFICIAL_SYMBOL will be examined for a match
+                  # with the geneList.
+                  "max",  # Number of results to fetch
+                  "interSpeciesExcluded",  # If ‘true’, interactions with interactors from different species will
+                  # be excluded.
+                  "selfInteractionsExcluded",  # If ‘true’, interactions with one interactor will be excluded.
+                  "evidenceList",  # Any interaction evidence with its Experimental System in the list will be excluded
+                  # from the results unless includeEvidence is set to true.
+                  "includeEvidence",  # If set to true, any interaction evidence with its Experimental System in the
+                  # evidenceList will be included in the result
+                  "searchIds",  # If ‘true’, the interactor ENTREZ_GENE, ORDERED LOCUS and SYSTEMATIC_NAME (orf) will
+                  # be examined for a match with the geneList.
+                  "searchNames",  # If ‘true’, the interactor OFFICIAL_SYMBOL will be examined for a match with
+                  # the geneList.
+                  "searchSynonyms",  # If ‘true’, the interactor SYNONYMS will be examined for a match with
+                  # the geneList.
+                  "searchBiogridIds",  # If ‘true’, the entries in 'GENELIST' will be compared to BIOGRID internal IDS
+                  # which are provided in all Tab2 formatted files.
+                  "additionalIdentifierTypes",  # Identifier types on this list are examined for a match with
+                  # the geneList.
+                  "excludeGenes",  # If ‘true’, interactions containing genes in the geneList will be excluded from the
+                  # results.
+                  "includeInteractors",  # If ‘true’, in addition to interactions between genes on the geneList,
+                  # interactions will also be fetched which have only one interactor on
+                  # the geneList
+                  "includeInteractorInteractions",  # If ‘true’ interactions between the geneList’s first order
+                  # interactors will be included.
+                  "pubmedList",  # Interactions will be fetched whose Pubmed Id is/ is not in this list, depending on
+                  # the value of excludePubmeds.
+                  "excludePubmeds",  # If ‘false’, interactions with Pubmed ID in pubmedList will be included in the
+                  # results; if ‘true’ they will be excluded.
+                  "htpThreshold",  # Interactions whose Pubmed ID has more than this number of interactions will be
+                  # excluded from the results. Ignored if excludePubmeds is ‘false’.
+                  "throughputTag"  # If set to 'low or 'high', only interactions with 'Low throughput' or
+                  # 'High throughput' in the 'throughput' field will be returned.
+                  ]
+        for p in fields:
+            kwarg_name = "BIOGRID_" + p
+            if kwarg_name in kwargs:
+                value = kwargs[kwarg_name]
+                if type(value) is list:
+                    value = "|".join(value)
+                params[p] = value
+        return params
+
+    @staticmethod
+    def _parse_BIOGRID(
+            protein_list: List[str],
+            ncbi_taxon_id: Union[int, str, List[int], List[str]],
+            paginate: bool = True,
+            **kwargs
+    ) -> pd.DataFrame:
+        """
+        Makes BIOGRID API call and returns a source specific Pandas dataframe.
+        See also [1] BIOGRID: https://wiki.thebiogrid.org/doku.php/biogridrest
+        :param protein_list: Proteins to include in the graph
+        :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism. Default is 9606 (Homo Sapiens)
+        :param paginate: boolean indicating whether to paginate the calls (for BIOGRID, the maximum number of rows per
+                         call is 10000). Defaults to True
+        :param kwargs: Parameters of the "interactions" method of the BIOGRID API REST, used to select the results.
+                       The parameter names are of the form BIOGRID_<param>, where <param> is the name of the parameter.
+                       Information about these parameters can be found at [1].
+        :return: Source specific Pandas dataframe.
+        """
+        # Prepare call to BIOGRID API
+        string_api_url = "https://webservice.thebiogrid.org"
+        method = "interactions"
+        request_url = "/".join([string_api_url, method])
+        if type(ncbi_taxon_id) is list:
+            ncbi_taxon_id = "|".join(ncbi_taxon_id)
+        params = {  # Default parameters
+            "geneList": "|".join(protein_list),
+            "accesskey": "c4ab86373e0bb921a878bb6d15ee4fb4",
+            "taxId": ncbi_taxon_id,  # 9606 is human
+            "format": "json",
+            "max": 10000,  # Number of results to fetch
+            "searchNames": "true",
+            "includeInteractors": "false",  # Set to true to get any interaction involving EITHER gene,
+            # set to false to get interactions between genes
+            "selfInteractionsExcluded": "true"  # If ‘true’, interactions with one interactor will be excluded
+        }
+        params = PPIGraph._params_BIOGRID(params, **kwargs)
+
+        # Call BIOGRID
+        def make_call(request_url, params, start=0, max=10000, paginate=paginate):
+            params["start"] = start
+            response = requests.post(request_url, data=params)
+            df = pd.read_json(response.text.strip()).transpose()
+
+            # Maximum number of results is limited to 10k. Paginate to retrieve everything
+            if paginate and df.shape[0] == max:
+                next_df = make_call(request_url, params, start + max, max)
+                df = pd.concat([df, next_df])
+
+            return df
+
+        return make_call(request_url=request_url,
+                         params=params,
+                         start=0,
+                         max=params['max'])
+
+    @staticmethod
+    def _filter_BIOGRID(
+            df: pd.DataFrame,
+            **kwargs
+    ) -> pd.DataFrame:
+        """
+        Filters results of the BIOGRID API call according to user kwargs.
+        :param df: Source specific Pandas dataframe (BIOGRID) with results of the API call
+        :param kwargs: User thresholds used to filter the results. The parameter names are of the form BIOGRID_<param>,
+                       where <param> is the name of the parameter. All the parameters are numerical values.
+        :return: Source specific Pandas dataframe with filtered results
+        """
+        # Note: To filter BIOGRID interactions, use parameters from https://wiki.thebiogrid.org/doku.php/biogridrest
+        # TODO: Make sure that user can filter results of API call via the parameters.
+        #       Otherwise implement filtering here.
+        # TODO: Perhaps can filter by EXPERIMENTAL_SYSTEM (e.g. Co-fractionation)
+        #       and EXPERIMENTAL_SYSTEM_TYPE (e.g. physical)
+        return df
+
+    @staticmethod
+    def _standardise_BIOGRID(
+            df: pd.DataFrame
+    ) -> pd.DataFrame:
+        """
+        Standardises BIOGRID dataframe, e.g. puts everything into a common format
+        :param df: Source specific Pandas dataframe
+        :return: Standardised dataframe
+        """
+        # Rename & delete columns
+        df = df.rename(columns={"OFFICIAL_SYMBOL_A": "p1",
+                                "OFFICIAL_SYMBOL_B": "p2"})
+        df = df[["p1", "p2"]]
+
+        # Add source column
+        df["source"] = "BIOGRID"
+
+        return df
+
+    def _BIOGRID_df(
+            self
+    ) -> pd.DataFrame:
+        """
+        Generates standardised dataframe with BIOGRID protein-protein interactions, filtered according to user's input
+        :return: Standardised dataframe with BIOGRID interactions
+        """
+        df = self._parse_BIOGRID(protein_list=self.protein_list,
+                                 ncbi_taxon_id=self.ncbi_taxon_id,
+                                 **self.kwargs)
+        df = self._filter_BIOGRID(df, **self.kwargs)
+        df = self._standardise_BIOGRID(df)
+        return df
+
+    def _source_df(
+            self,
+            source: str
+    ) -> pd.DataFrame:
+        """
+        Loads standardised dataframe for specified source
+        :param source: string indicating the source
+        :return: Standardised dataframe with the source interactions
+        """
+        df = None
+        if source.upper() == "STRING":
+            df = self._STRING_df()
+            if self.verbose:
+                print('Selected {} STRING interactions'.format(df.shape[0]))
+        elif source.upper() == "BIOGRID":
+            df = self._BIOGRID_df()
+            if self.verbose:
+                print('Selected {} BIOGRID interactions'.format(df.shape[0]))
+        else:
+            raise ValueError("Source '{}' is not supported".format(source))
+        return df
+
+    def _ppi_df(
+            self
+    ) -> pd.DataFrame:
+        """
+        Generates a unified Pandas dataframe with the protein-protein interactions from all the input sources
+        :return: Unified dataframe with all the interactions
+        """
+        # High-level view of the implemented algorithm:
+        # Loop over user sources
+        #   Load interactions from source
+        #   Filter interactions according to user params
+        #   Standardise sources
+        # Merge all sources into single df
+        dfs = [self._source_df(s) for s in self.sources]
+        df = pd.concat(dfs)
+        return df
+
+    def nx_graph(
+            self
+    ) -> nx.Graph:
+        """
+        Produces networkx graph of the PPI interactions
+        :return: nx.Graph
+        """
+        df = self._ppi_df()
+        g = nx.from_pandas_edgelist(df=df,
+                                    source="p1",
+                                    target="p2",
+                                    edge_attr=None)
+        return g
+
+
 if __name__ == "__main__":
     """
     pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
@@ -1357,3 +1751,23 @@ if __name__ == "__main__":
     # g, resiude_name_encoder, residue_id_encoder = pg.nx_graph_from_pdb_code('3eiy', chain_selection='all',
     #                                                                        edge_construction=['distance', 'contacts'],
     #                                                                        encoding=True)
+
+    # Sanity checks for small PPI
+    protein_list = ["CDC42", "CDK1", "KIF23", "PLK1", "RAC2", "RACGAP1", "RHOA", "RHOB"]
+    sources = ["STRING", "BIOGRID"]
+    kwargs = {"STRING_escore": 0.2,  # Keeps STRING interactions with an experimental score >= 0.2
+              "BIOGRID_throughputTag": "high"  # Keeps high throughput BIOGRID interactions
+              }
+    ppi_graph = PPIGraph(protein_list=protein_list,
+                         sources=sources,
+                         **kwargs)
+
+    # BIOGRID
+    df = ppi_graph._parse_BIOGRID(protein_list, 9606, **kwargs)
+    assert (df["THROUGHPUT"] == "High Throughput").all()
+
+    # STRING
+    df = ppi_graph._parse_STRING(protein_list=ppi_graph.protein_list,
+                                 ncbi_taxon_id=ppi_graph.ncbi_taxon_id)
+    df = ppi_graph._filter_STRING(df, **ppi_graph.kwargs)
+    assert (df["escore"] >= 0.2).all()
