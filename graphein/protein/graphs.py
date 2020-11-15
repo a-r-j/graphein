@@ -42,16 +42,19 @@ from torch_geometric.data import Data
 import matplotlib.pyplot as plt
 
 from graphein import utils
+from graphein.features.edges import *
+from graphein.protein.visualisation import protein_graph_plot_3d
 
 
 class Config(BaseModel):
     granularity: str = "CA"
     keep_hets: bool = False
     insertions: bool = False
+    get_contacts_path: str = "/Users/arianjamasb/github/getcontacts"
+    pdb_dir: str = "../examples/pdbs/"
+    contacts_dir: str = "../examples/contacts/"
+
     """
-    get_contacts_path: str
-    pdb_dir: str
-    contacts_dir: str
     exclude_waters: bool = True
     covalent_bonds: bool = True
     include_ss: bool = True
@@ -88,6 +91,8 @@ def read_pdb_to_dataframe(
         print(protein_df)
 
     return protein_df
+
+read_pdb_to_dataframe()
 
 
 def process_dataframe(
@@ -180,12 +185,13 @@ def select_chains(
 
 
 def add_nodes_to_graph(
-    protein_df: pd.DataFrame, granularity: str = "CA", verbose: bool = False
+    protein_df: pd.DataFrame, pdb_id: str, granularity: str = "CA", verbose: bool = False
 ) -> nx.Graph:
     G = nx.Graph()
 
     # Assign graph level attributes
 
+    G.graph["pdb_id"] = pdb_id
     G.graph["chain_ids"] = list(protein_df["chain_id"].unique())
     #G.graph["pdb_id"] - Add PDB id as graph name?
 
@@ -253,34 +259,15 @@ def annotate_node_metadata(G, n):
     G.node[n]["metadata_field"] = some_value
     return G
 
-def compute_edges(G, funcs):
+def compute_edges(G, config, funcs):
+
+    G.graph["contacts_df"] = get_contacts_df(config, G.graph["pdb_id"])
+
+    #print(g.graph)
+
     for func in funcs:
         func(G)
     return G
-
-def peptide_bonds(G):
-    """
-    Adds peptide backbone to residues in each chain
-    :param G: networkx protein graph
-    :return
-    """
-
-    # Iterate over every chain
-    for chain_id in g.graph["chain_ids"]:
-
-        # Find chain residues
-        chain_residues = [n for n,v in G.nodes(data=True) if v['chain_id'] == chain_id]
-
-        # Iterate over every residue in chain
-        for i, residue in enumerate(chain_residues):
-
-            # Checks not at chain terminus - is this versatile enough?
-            if i == len(chain_residues)-1:
-                pass
-            else:
-                # PLACE HOLDER EDGE FEATURE
-                # Adds "peptide bond" between current residue and the next
-                G.add_edge(residue, chain_residues[i+1])
 
 
 def construct_graph():
@@ -288,18 +275,22 @@ def construct_graph():
 
 
 if __name__ == "__main__":
-    configs = {"granularity": "CA", "keep_hets": False, "insertions": False}
+    configs = {"granularity": "CA", "keep_hets": False,
+     "insertions": False, "contacts_dir": "../../examples/contacts/"}
     config = Config(**configs)
-
+    #exit()
     df = read_pdb_to_dataframe(
-        "../../examples/pdbs/4hhb.pdb",
+        "../../examples/pdbs/3eiy.pdb",
         verbose=True,
     )
     df = process_dataframe(df)
-    g = add_nodes_to_graph(df, config.granularity, verbose=True)
-    g = compute_edges(g, [partial(peptide_bonds)])
+    g = add_nodes_to_graph(df, "3eiy", config.granularity, verbose=True)
+    g = compute_edges(g, config, [peptide_bonds, salt_bridge, van_der_waals, pi_cation])
     print(nx.info(g))
-    print(g.graph)
+    print(g.edges(data=True))
+    colors = nx.get_edge_attributes(g,'color').values()
+    #protein_graph_plot_3d(g, 0)
+    #print(g.graph)
     #print("---")
     #print(g.nodes())
     #print("---")
@@ -309,5 +300,8 @@ if __name__ == "__main__":
     #print("---")
     #print(g.nodes.data()['A:PHE:173'])
 
-    nx.draw(g, with_labels = True)
+
+    nx.draw(g,
+        #pos = nx.circular_layout(g),
+        edge_color=colors,  with_labels = True)
     plt.show()
