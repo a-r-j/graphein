@@ -1,7 +1,7 @@
 """Functions for working with Protein Structure Graphs"""
 # %%
 # Graphein
-# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma # Todo
+# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
@@ -10,69 +10,30 @@ import os
 import re
 import subprocess
 from functools import partial
-from typing import Any, Dict, List, NamedTuple, Optional, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Union, Callable
+from dataenforce import Dataset
 
-import dgl
 import networkx as nx
 import numpy as np
 import pandas as pd
-import torch as torch
-import torch.nn.functional as F
+
 from Bio.PDB import *
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
-from Bio.PDB.Polypeptide import aa1, one_to_three
+from Bio.PDB.Polypeptide import aa1, one_to_three, three_to_one
 from biopandas.pdb import PandasPdb
-from dgllife.utils import (
-    BaseAtomFeaturizer,
-    BaseBondFeaturizer,
-    CanonicalAtomFeaturizer,
-    CanonicalBondFeaturizer,
-    mol_to_bigraph,
-    mol_to_complete_graph,
-    mol_to_nearest_neighbor_graph,
-)
-from pydantic import BaseModel
+
 from rdkit.Chem import MolFromPDBFile
-from scipy import spatial
-from sklearn import preprocessing
-from sklearn.metrics import pairwise_distances
-from sklearn.neighbors import kneighbors_graph
-from torch_geometric.data import Data
+
 
 import matplotlib.pyplot as plt
+from pydantic import BaseModel
 
 from graphein import utils
-from graphein.features.edges import *
+from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.visualisation import protein_graph_plot_3d
 
-
-class Config(BaseModel):
-    granularity: str = "CA"
-    keep_hets: bool = False
-    insertions: bool = False
-    get_contacts_path: str = "/Users/arianjamasb/github/getcontacts"
-    pdb_dir: str = "../examples/pdbs/"
-    contacts_dir: str = "../examples/contacts/"
-
-    """
-    exclude_waters: bool = True
-    covalent_bonds: bool = True
-    include_ss: bool = True
-    include_ligand: bool = False
-    intramolecular_interactions: Optional[List[str]] = None
-    graph_constructor: Optional[str] = None
-    edge_distance_cutoff: Optional[float] = None
-    verbose: bool = True
-    deprotonate: bool = False
-    remove_string_labels: bool = False
-    long_interaction_threshold: Optional[int] = None
-    node_featuriser: Optional[
-        Union[BaseAtomFeaturizer, CanonicalAtomFeaturizer, str]
-    ] = None
-    edge_featuriser: Optional[
-        Union[BaseBondFeaturizer, CanonicalBondFeaturizer, str]
-    ] = None
-    """
+# Todo dataenforce types
+# AtomicDF = Dataset[]
 
 
 def read_pdb_to_dataframe(
@@ -84,15 +45,11 @@ def read_pdb_to_dataframe(
     :param verbose: print dataframe?
     :type verbose: bool
     """
-
-    protein_df = PandasPdb().read_pdb(pdb_path)
+    atomic_df = PandasPdb().read_pdb(pdb_path)
 
     if verbose:
-        print(protein_df)
-
-    return protein_df
-
-read_pdb_to_dataframe()
+        print(atomic_df)
+    return atomic_df
 
 
 def process_dataframe(
@@ -123,6 +80,7 @@ def process_dataframe(
         if deprotonate:
             atoms = atoms.loc[atoms["atom_name"] != "H"].reset_index()
         centroids = calculate_centroid_positions(atoms)
+        # centroids["residue_id"] =
         atoms = atoms.loc[atoms["atom_name"] == "CA"].reset_index()
         atoms["x_coord"] = centroids["x_coord"]
         atoms["y_coord"] = centroids["y_coord"]
@@ -140,7 +98,7 @@ def process_dataframe(
     else:
         protein_df = atoms
 
-    # Remove alt_loc resdiues
+    # Remove alt_loc residues
     if not insertions:
         protein_df = protein_df.loc[protein_df["alt_loc"].isin(["", "A"])]
 
@@ -185,43 +143,50 @@ def select_chains(
 
 
 def add_nodes_to_graph(
-    protein_df: pd.DataFrame, pdb_id: str, granularity: str = "CA", verbose: bool = False
+    protein_df: pd.DataFrame,
+    pdb_id: str,
+    granularity: str = "CA",
+    verbose: bool = False,
 ) -> nx.Graph:
     G = nx.Graph()
 
-    # Assign graph level attributes
-
+    # Assign graph level attributes todo move to separate function
     G.graph["pdb_id"] = pdb_id
     G.graph["chain_ids"] = list(protein_df["chain_id"].unique())
-    #G.graph["pdb_id"] - Add PDB id as graph name?
+    G.graph["pdb_df"] = protein_df
+    # Add Sequences
+    for c in G.graph["chain_ids"]:
+        G.graph[f"sequence_{c}"] = (
+            protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
+            .apply(three_to_one)
+            .str.cat()
+        )
 
-    # Assign node attributes
-
+    # Assign intrinsic node attributes
     chain_id = protein_df["chain_id"].apply(str)
     residue_name = protein_df["residue_name"]
     residue_number = protein_df["residue_number"].apply(str)
     coords = np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]])
+    b_factor = protein_df["b_factor"]
 
+    # Name nodes
     nodes = protein_df["chain_id"] + ":" + residue_name + ":" + residue_number
-
     if granularity == "atom":
         nodes = nodes + ":" + protein_df["atom_name"]
 
-    chain_id_dict = dict(zip(nodes, chain_id))
-    residue_name_dict = dict(zip(nodes, residue_name))
-    residue_number_dict = dict(zip(nodes, residue_number))
-    coords_dict = dict(zip(nodes, coords))
-
     # add nodes to graph
     G.add_nodes_from(nodes)
+
     # Set intrinsic node attributes
-    nx.set_node_attributes(G, chain_id_dict, "chain_id")
-    nx.set_node_attributes(G, residue_name_dict, "residue_name")
-    nx.set_node_attributes(G, residue_number_dict, "residue_number")
+    nx.set_node_attributes(G, dict(zip(nodes, chain_id)), "chain_id")
+    nx.set_node_attributes(G, dict(zip(nodes, residue_name)), "residue_name")
     nx.set_node_attributes(
-        G, coords_dict, "coords"
-    )  # Todo, maybe split into x_coord, y_coord, z_coord
-    # Todo include charge, B factor, line_idx for traceability?
+        G, dict(zip(nodes, residue_number)), "residue_number"
+    )
+    nx.set_node_attributes(G, dict(zip(nodes, coords)), "coords")
+    nx.set_node_attributes(G, dict(zip(nodes, b_factor)), "b_factor")
+
+    # Todo include charge, line_idx for traceability?
 
     if verbose:
         print(nx.info(G))
@@ -236,6 +201,8 @@ def calculate_centroid_positions(
     """
     Calculates position of sidechain centroids
     :param atoms: ATOM df of protein structure
+    :param verbose: bool
+    :type verbose: bool
     :return: centroids (df)
     """
     centroids = (
@@ -248,60 +215,104 @@ def calculate_centroid_positions(
     return centroids
 
 
-def annotate_node_metadata(G, funcs):
+def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     for func in funcs:
-        for n in G.nodes():
-            func(G, n)
+        for n, d in G.nodes(data=True):
+            func(n, d)
     return G
 
 
-def annotate_node_metadata(G, n):
-    G.node[n]["metadata_field"] = some_value
-    return G
+def compute_node_metadata(G: nx.Graph, funcs: List[Callable]) -> pd.Series:
+    for func in funcs:
+        for n, d in G.nodes(data=True):
+            metadata = func(n, d)
+    return metadata
 
-def compute_edges(G, config, funcs):
 
-    G.graph["contacts_df"] = get_contacts_df(config, G.graph["pdb_id"])
+def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
+    raise NotImplementedError
 
-    #print(g.graph)
 
+def compute_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> pd.Series:
+    raise NotImplementedError
+
+
+def annotate_graph_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     for func in funcs:
         func(G)
     return G
 
 
-def construct_graph():
-    pass
+def compute_edges(
+    G: nx.Graph, config: BaseModel, funcs: List[Callable]
+) -> nx.Graph:
+
+    for func in funcs:
+        func(G)
+
+    return G
+
+
+def construct_graph(config: BaseModel, pdb_path: str, pdb_code: str):
+    df = read_pdb_to_dataframe(pdb_path, verbose=config.verbose)
+    df = process_dataframe(df)
+
+    g = add_nodes_to_graph(df, pdb_code, config.granularity, config.verbose)
+    g = annotate_node_metadata(g, [expasy_protein_scale, meiler_embedding])
+    g = compute_edges(
+        g, config, [peptide_bonds, salt_bridge, van_der_waals, pi_cation]
+    )
+    g = annotate_graph_metadata(g, [esm_sequence_embedding])
+
+    return g
 
 
 if __name__ == "__main__":
-    configs = {"granularity": "CA", "keep_hets": False,
-     "insertions": False, "contacts_dir": "../../examples/contacts/"}
-    config = Config(**configs)
-    #exit()
+    from graphein.features.edges import peptide_bonds, salt_bridge, van_der_waals, pi_cation
+    from graphein.features.amino_acid import expasy_protein_scale, meiler_embedding
+    from graphein.features.sequence import (
+        esm_sequence_embedding,
+        biovec_sequence_embedding,
+        molecular_weight,
+    )
+
+    configs = {
+        "granularity": "CA",
+        "keep_hets": False,
+        "insertions": False,
+        "contacts_dir": "../../examples/contacts/",
+        "verbose": False,
+    }
+    config = ProteinGraphConfig(**configs)
+
     df = read_pdb_to_dataframe(
-        "../../examples/pdbs/3eiy.pdb",
-        verbose=True,
+        pdb_path="../../examples/pdbs/3eiy.pdb",
+        verbose=config.verbose,
     )
     df = process_dataframe(df)
-    g = add_nodes_to_graph(df, "3eiy", config.granularity, verbose=True)
-    g = compute_edges(g, config, [peptide_bonds, salt_bridge, van_der_waals, pi_cation])
+
+    g = add_nodes_to_graph(df, "3eiy", config.granularity, config.verbose)
+
+    g = annotate_node_metadata(g, [expasy_protein_scale, meiler_embedding])
+    g = compute_edges(
+        g, config, [peptide_bonds, salt_bridge, van_der_waals, pi_cation]
+    )
+    g = annotate_graph_metadata(
+        g,
+        [esm_sequence_embedding, biovec_sequence_embedding, molecular_weight],
+    )
+
     print(nx.info(g))
-    print(g.edges(data=True))
-    colors = nx.get_edge_attributes(g,'color').values()
-    #protein_graph_plot_3d(g, 0)
-    #print(g.graph)
-    #print("---")
-    #print(g.nodes())
-    #print("---")
-    #print(nx.get_node_attributes(g, "coords"))
-    #print(nx.get_node_attributes(g, "residue_number"))
-    #print(nx.get_node_attributes(g, "residue_name"))
-    #print("---")
-    #print(g.nodes.data()['A:PHE:173'])
 
+    print(g.graph)
+    colors = nx.get_edge_attributes(g, "color").values()
 
-    nx.draw(g,
-        #pos = nx.circular_layout(g),
-        edge_color=colors,  with_labels = True)
+    """
+    nx.draw(
+        g,
+        # pos = nx.circular_layout(g),
+        edge_color=colors,
+        with_labels=True,
+    )
     plt.show()
+    """
