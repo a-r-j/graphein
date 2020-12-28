@@ -1,13 +1,17 @@
-"""
-Featurization functions for amino acids.
-"""
+"""Featurization functions for amino acids."""
+# Graphein
+# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
+# Code Repository: https://github.com/a-r-j/graphein
+
 from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
 
 
-@lru_cache
+@lru_cache()
 def load_expasy_scales() -> pd.DataFrame:
     """
     Load pre-downloaded EXPASY scales.
@@ -18,12 +22,12 @@ def load_expasy_scales() -> pd.DataFrame:
     on each function call.
     """
     df = pd.read_csv(
-        Path(__file__).parent / "amino_acid_properties.csv", index_col=0
+        Path(__file__).parent / "data" / "amino_acid_properties.csv", index_col=0
     )
     return df
 
 
-@lru_cache
+@lru_cache()
 def load_meiler_embeddings() -> pd.DataFrame:
     """
     Load pre-downloaded Meiler embeddings.
@@ -34,7 +38,7 @@ def load_meiler_embeddings() -> pd.DataFrame:
     on each function call.
     """
     df = pd.read_csv(
-        Path(__file__).parent / "meiler_embeddings.csv", index_col=0
+        Path(__file__).parent / "data" / "meiler_embeddings.csv", index_col=0
     )
     return df
 
@@ -53,9 +57,9 @@ def expasy_protein_scale(n, d) -> pd.Series:
     return df[amino_acid]
 
 
-def meiler_embbeding(n, d) -> pd.Series:
+def meiler_embedding(n, d) -> pd.Series:
     """
-    Return amino acid features that come from the reduced dimensional embeddings of amino acid physicochemical properties.
+    Return amino acid features from reduced dimensional embeddings of amino acid physicochemical properties.
 
     Source: https://link.springer.com/article/10.1007/s008940100038
     doi: https://doi.org/10.1007/s008940100038
@@ -66,3 +70,18 @@ def meiler_embbeding(n, d) -> pd.Series:
     df = load_meiler_embeddings()
     amino_acid = d["residue_name"]
     return df[amino_acid]
+
+
+def load_feature_dataframe(n, d) -> pd.Series:
+    """
+    Generic function for loading features from an on-disk file
+    :param n:
+    :param d:
+    :return:
+    """
+    raise NotImplementedError
+
+
+def load_esm_embedding_residue(n, d) -> pd.Series:
+    raise NotImplementedError
+
