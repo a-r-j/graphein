@@ -3,8 +3,8 @@ name: Code style checks
 on: [pull_request, push]
 
 jobs:
-  code-style:
-    name: "Ensure code style compliance"
+  black:
+    name: "Ensure black compliance"
     runs-on: "ubuntu-18.04"
 
     steps:
@@ -17,10 +17,40 @@ jobs:
           python-version: 3.9
 
       - name: Install code style checking tools
-        run: python -m pip install black interrogate
+        run: python -m pip install black
 
       - name: Run black
         run: black --check .
 
+  interrogate:
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install code style checking tools
+        run: python -m pip install interrogate
+
       - name: Run interrogate
         run: interrogate .
+
+
+  isort :
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install code style checking tools
+        run: python -m pip install isort
+
+      - name: Run isort
+        run: isort . --check-only
