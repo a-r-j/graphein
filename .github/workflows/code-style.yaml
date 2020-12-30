@@ -23,6 +23,8 @@ jobs:
         run: black --check .
 
   interrogate:
+    name: "Ensure docstring coverage"
+    runs-on: "ubuntu-18.04"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -39,7 +41,9 @@ jobs:
         run: interrogate .
 
 
-  isort :
+  isort:
+    name: "Ensure imports are correctly sorted"
+    runs-on: "ubuntu-18.04"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
