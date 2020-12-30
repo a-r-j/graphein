@@ -31,13 +31,13 @@ use_parentheses = true
 
 # Can reinstate later: Measures docstring coverage,
 # super good for guaranteeing that there's docs!
-# [tool.interrogate]
-# exclude = ["setup.py", "docs", "build", "nbconvert_config.py"]
-# fail-under = 43
-# ignore-init-method = true
-# ignore-init-module = true
-# ignore-module = false
-# ignore-private = false
-# ignore-semiprivate = false
-# quiet = false
-# verbose = 2
+[tool.interrogate]
+exclude = ["setup.py", "docs", "build", "nbconvert_config.py"]
+fail-under = 20
+ignore-init-method = true
+ignore-init-module = true
+ignore-module = false
+ignore-private = false
+ignore-semiprivate = false
+quiet = false
+verbose = 2
