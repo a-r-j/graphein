@@ -20,7 +20,7 @@ jobs:
         run: python -m install black interrogate
 
       - name: Run black
-        black --check .
+        run: black --check .
 
       - name: Run interrogate
-        interrogate .
+        run: interrogate .
