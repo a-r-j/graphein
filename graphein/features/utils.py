@@ -35,7 +35,9 @@ def compute_esm_embedding(sequence: str, representation: str):
     elif representation == "sequence":
         sequence_representations = []
         for i, (_, seq) in enumerate(data):
-            sequence_representations.append(token_representations[i, 1: len(seq) + 1].mean(0))
+            sequence_representations.append(
+                token_representations[i, 1 : len(seq) + 1].mean(0)
+            )
         return sequence_representations[0].numpy()
 
 

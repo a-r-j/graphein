@@ -22,7 +22,8 @@ def load_expasy_scales() -> pd.DataFrame:
     on each function call.
     """
     df = pd.read_csv(
-        Path(__file__).parent / "data" / "amino_acid_properties.csv", index_col=0
+        Path(__file__).parent / "data" / "amino_acid_properties.csv",
+        index_col=0,
     )
     return df
 
@@ -84,4 +85,3 @@ def load_feature_dataframe(n, d) -> pd.Series:
 
 def load_esm_embedding_residue(n, d) -> pd.Series:
     raise NotImplementedError
-

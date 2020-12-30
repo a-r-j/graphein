@@ -37,10 +37,7 @@ STANDARD_AMINO_ACIDS: List[str] = [
     "Z",
 ]
 
-NON_STANDARD_AMINO_ACIDS: List[str] = [
-    "O",
-    "U"
-]
+NON_STANDARD_AMINO_ACIDS: List[str] = ["O", "U"]
 
 AMINO_ACIDS: List[str] = [
     "A",
@@ -73,7 +70,7 @@ AMINO_ACIDS: List[str] = [
 
 NON_STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
     "SEC": "U",
-    "PYL": "O"
+    "PYL": "O",
 }
 
 BOND_TYPES: List[str] = [
@@ -159,12 +156,10 @@ NON_STANDARD_RESI_NAMES: List[str] = [
     "PTR",
     "ORN",
     "SEP",
-    "SEC"
-    "TPO",
+    "SEC" "TPO",
     "PCA",
     "PVL",
-    "PYL"
-    "SAR",
+    "PYL" "SAR",
     "CEA",
     "CSO",
     "CSS",
@@ -243,12 +238,10 @@ RESI_NAMES: List[str] = [
     "PTR",
     "ORN",
     "SEP",
-    "SEC"
-    "TPO",
+    "SEC" "TPO",
     "PCA",
     "PVL",
-    "PYL"
-    "SAR",
+    "PYL" "SAR",
     "CEA",
     "CSO",
     "CSS",
@@ -258,7 +251,7 @@ RESI_NAMES: List[str] = [
     "BOC",
     "TPQ",
     "STY",
-    "UNK"
+    "UNK",
 ]
 
 # Non-standard residue info taken from: https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
