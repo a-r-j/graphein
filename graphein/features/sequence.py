@@ -5,22 +5,29 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import os
-import networkx as nx
-from pathlib import Path
 from functools import lru_cache
-from graphein.features.utils import compute_esm_embedding
+from pathlib import Path
+
+import networkx as nx
 from Bio import SeqUtils
+
+from graphein.features.utils import compute_esm_embedding
+
 
 def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
     for c in G.graph["chain_ids"]:
-        G.graph[f"esm_embedding_{c}"] = compute_esm_embedding(G.graph[f"sequence_{c}"], representation="sequence")
+        G.graph[f"esm_embedding_{c}"] = compute_esm_embedding(
+            G.graph[f"sequence_{c}"], representation="sequence"
+        )
     return G
 
 
 def esm_residue_embedding(G: nx.Graph) -> nx.Graph:
     # todo iterate over sequences
     for c in G.graph["chain_id"]:
-        embedding = compute_esm_embedding(G.graph["sequence"], representation="residue")
+        embedding = compute_esm_embedding(
+            G.graph["sequence"], representation="residue"
+        )
         print(embedding)
         for i, n, d in enumerate(G.nodes(data=True)):
             n["esm_embedding"] = embedding[i]
@@ -37,7 +44,11 @@ def _load_biovec_model():
     import biovec
 
     return biovec.models.load_protvec(
-        os.fspath(Path(__file__).parent / "pretrained_models" / "swissprot-reviewed-protvec.model")
+        os.fspath(
+            Path(__file__).parent
+            / "pretrained_models"
+            / "swissprot-reviewed-protvec.model"
+        )
     )
 
 
@@ -52,16 +63,17 @@ def biovec_sequence_embedding(G: nx.Graph) -> nx.Graph:
 def molecular_weight(G: nx.Graph, total: bool = True) -> nx.Graph:
     # Calculate MW for each chain
     for c in G.graph["chain_ids"]:
-        G.graph[f"molecular_weight_{c}"] = SeqUtils.molecular_weight(G.graph[f"sequence_{c}"], "protein")
+        G.graph[f"molecular_weight_{c}"] = SeqUtils.molecular_weight(
+            G.graph[f"sequence_{c}"], "protein"
+        )
 
     # Sum MW for all chains
     if total:
-        G.graph["molecular_weight_total"] = sum(G.graph[f"molecular_weight_{c}"] for c in G.graph["chain_ids"])
+        G.graph["molecular_weight_total"] = sum(
+            G.graph[f"molecular_weight_{c}"] for c in G.graph["chain_ids"]
+        )
     return G
 
 
 if __name__ == "__main__":
     print(len(biovec_sequence_embedding(nx.Graph())))
-
-
-

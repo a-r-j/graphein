@@ -6,28 +6,27 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
+
+import logging
 from functools import partial
-from typing import Any, Dict, List, NamedTuple, Optional, Union, Callable
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
-
 from Bio.PDB import *
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
-
 from rdkit.Chem import MolFromPDBFile
 
 from graphein import utils
-from graphein.protein.config import ProteinGraphConfig
-from graphein.features.edges.intramolecular import get_contacts_df
 from graphein.features.edges.distance import compute_distmat
+from graphein.features.edges.intramolecular import get_contacts_df
+from graphein.protein.config import ProteinGraphConfig
 
 # from graphein.protein.visualisation import protein_graph_plot_3d
 
-import logging
 
 logging.basicConfig(level="DEBUG")
 log = logging.getLogger(__name__)
@@ -288,34 +287,34 @@ def construct_graph(config: BaseModel, pdb_path: str, pdb_code: str):
 
 
 if __name__ == "__main__":
-    from graphein.features.edges.intramolecular import (
-        peptide_bonds,
-        salt_bridge,
-        van_der_waals,
-        pi_cation,
-    )
-    from graphein.features.edges.distance import (
-        add_delaunay_triangulation,
-        add_hydrophobic_interactions,
-        add_disulfide_interactions,
-        add_hydrogen_bond_interactions,
-        add_cation_pi_interactions,
-        add_ionic_interactions,
-        add_aromatic_interactions,
-        add_aromatic_sulphur_interactions,
-        add_distance_threshold,
-        add_k_nn_edges,
-    )
+    import graphein.features.sequence.propy
     from graphein.features.amino_acid import (
         expasy_protein_scale,
         meiler_embedding,
     )
+    from graphein.features.edges.distance import (
+        add_aromatic_interactions,
+        add_aromatic_sulphur_interactions,
+        add_cation_pi_interactions,
+        add_delaunay_triangulation,
+        add_distance_threshold,
+        add_disulfide_interactions,
+        add_hydrogen_bond_interactions,
+        add_hydrophobic_interactions,
+        add_ionic_interactions,
+        add_k_nn_edges,
+    )
+    from graphein.features.edges.intramolecular import (
+        peptide_bonds,
+        pi_cation,
+        salt_bridge,
+        van_der_waals,
+    )
     from graphein.features.sequence.embeddings import (
-        esm_sequence_embedding,
         biovec_sequence_embedding,
+        esm_sequence_embedding,
     )
     from graphein.features.sequence.sequence import molecular_weight
-    import graphein.features.sequence.propy
 
     configs = {
         "granularity": "CA",

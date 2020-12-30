@@ -6,12 +6,13 @@ import networkx as nx
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
-#from graphein.construct_graphs import ProteinGraph
+# from graphein.construct_graphs import ProteinGraph
 
 # import plotly.plotly as py
 # import plotly.graph_objs as go
 
 ### MODIFIED FROM ORIGINAL - NEEDS LOTS OF WORK
+
 
 def protein_graph_plot_3d(
     g: nx.Graph,
@@ -68,7 +69,7 @@ def protein_graph_plot_3d(
     n = g.number_of_nodes()
     # Get the maximum number of edges adjacent to a single node
 
-    #edge_max = max([g.degree(i) for i in range(n)])
+    # edge_max = max([g.degree(i) for i in range(n)])
 
     # Define color range proportional to number of edges adjacent to a single node
     if colour_by == "degree":
@@ -97,7 +98,7 @@ def protein_graph_plot_3d(
                 xi,
                 yi,
                 zi,
-                #color=colors[key],
+                # color=colors[key],
                 s=node_size_min + node_size_multiplier * g.degree(key),
                 edgecolors="k",
                 alpha=node_alpha,

@@ -5,11 +5,12 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Optional, List, Union, Callable
+from typing import Callable, List, Optional, Union
+
 from pydantic import BaseModel
 
-from graphein.features.edges import peptide_bonds
 from graphein.features.amino_acid import meiler_embedding
+from graphein.features.edges import peptide_bonds
 
 
 class ProteinGraphConfig(BaseModel):
