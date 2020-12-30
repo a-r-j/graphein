@@ -75,12 +75,10 @@ class ProteinMesh(object):
         verts, faces, aux = load_obj(obj_file)
         return verts, faces, aux
 
-from ipymol import viewer as pymol
 
+from ipymol import viewer as pymol
 
 if __name__ == "__main__":
     p = ProteinMesh()
     print(p.create_mesh(pdb_code="3eiy", out_dir="../examples/meshes/"))
     # print(p.create_mesh(obj_file='../examples/meshes/3eiy.obj'))
-
-
