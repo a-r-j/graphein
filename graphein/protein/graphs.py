@@ -5,13 +5,9 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import glob
-import os
-import re
-import subprocess
+from __future__ import annotations
 from functools import partial
 from typing import Any, Dict, List, NamedTuple, Optional, Union, Callable
-from dataenforce import Dataset
 
 import networkx as nx
 import numpy as np
@@ -19,27 +15,29 @@ import pandas as pd
 
 from Bio.PDB import *
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
-from Bio.PDB.Polypeptide import aa1, one_to_three, three_to_one
+from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
 
 from rdkit.Chem import MolFromPDBFile
 
-
-import matplotlib.pyplot as plt
-from pydantic import BaseModel
-
 from graphein import utils
 from graphein.protein.config import ProteinGraphConfig
-from graphein.protein.visualisation import protein_graph_plot_3d
+from graphein.features.edges.intramolecular import get_contacts_df
+from graphein.features.edges.distance import compute_distmat
 
-# Todo dataenforce types
-# AtomicDF = Dataset[]
+# from graphein.protein.visualisation import protein_graph_plot_3d
+
+import logging
+
+logging.basicConfig(level="DEBUG")
+log = logging.getLogger(__name__)
 
 
 def read_pdb_to_dataframe(
     pdb_path: str, verbose: bool = False
 ) -> pd.DataFrame:
-    """Reads PDB file to PandasPDB object
+    """
+    Reads PDB file to PandasPDB object
     :param pdb_path: path to PDB file
     :type pdb_path: str
     :param verbose: print dataframe?
@@ -76,12 +74,17 @@ def process_dataframe(
     atoms = protein_df.df["ATOM"]
     hetatms = protein_df.df["HETATM"]
 
+    # Deprotonate structure by removing H atoms
+    if deprotonate:
+        log.debug(
+            "Deprotonating protein. This removes H atoms from the pdb_df dataframe"
+        )
+        atoms = atoms.loc[atoms["atom_name"] != "H"].reset_index(drop=True)
+
+    # Restrict DF to desired granularity
     if granularity == "centroids":
-        if deprotonate:
-            atoms = atoms.loc[atoms["atom_name"] != "H"].reset_index()
         centroids = calculate_centroid_positions(atoms)
-        # centroids["residue_id"] =
-        atoms = atoms.loc[atoms["atom_name"] == "CA"].reset_index()
+        atoms = atoms.loc[atoms["atom_name"] == "CA"].reset_index(drop=True)
         atoms["x_coord"] = centroids["x_coord"]
         atoms["y_coord"] = centroids["y_coord"]
         atoms["z_coord"] = centroids["z_coord"]
@@ -89,17 +92,17 @@ def process_dataframe(
         atoms = atoms.loc[atoms["atom_name"] == granularity]
 
     if keep_hets:
-        # Todo this control flow needs improving.
+        # Todo this control flow needs improving. This should be its own function to deal with non-standard residues
         if exclude_waters:
             hetatms = hetatms.loc[hetatms["residue_name"] != "HOH"]
-        if verbose:
-            print(f"Detected {len(hetatms)} HETATOM nodes")
+            log.debug(f"Detected {len(hetatms)} HETATOM nodes")
         protein_df = pd.concat([atoms, hetatms])
     else:
         protein_df = atoms
 
     # Remove alt_loc residues
     if not insertions:
+        # Todo log.debug(f"Detected X insertions")
         protein_df = protein_df.loc[protein_df["alt_loc"].isin(["", "A"])]
 
     # perform chain selection
@@ -107,8 +110,20 @@ def process_dataframe(
         protein_df, chain_selection=chain_selection, verbose=verbose
     )
 
-    if verbose:
-        print(f"Detected {len(protein_df)} total nodes")
+    # Name nodes
+    protein_df["node_id"] = (
+        protein_df["chain_id"].apply(str)
+        + ":"
+        + protein_df["residue_name"]
+        + ":"
+        + protein_df["residue_number"].apply(str)
+    )
+    if granularity == "atom":
+        protein_df["node_id"] = (
+            protein_df["node_id"] + ":" + protein_df["atom_name"]
+        )
+
+    log.debug(f"Detected {len(protein_df)} total nodes")
 
     return protein_df
 
@@ -136,9 +151,6 @@ def select_chains(
         ]
     protein_df = pd.concat([c for c in chains])
 
-    if verbose:
-        print(protein_df)
-
     return protein_df
 
 
@@ -148,13 +160,15 @@ def add_nodes_to_graph(
     granularity: str = "CA",
     verbose: bool = False,
 ) -> nx.Graph:
-    G = nx.Graph()
-
-    # Assign graph level attributes todo move to separate function
-    G.graph["pdb_id"] = pdb_id
-    G.graph["chain_ids"] = list(protein_df["chain_id"].unique())
-    G.graph["pdb_df"] = protein_df
-    # Add Sequences
+    # Create graph and assign intrinsic graph-level metadata
+    G = nx.Graph(
+        name=pdb_id,
+        pdb_id=pdb_id,
+        node_type=granularity,
+        chain_ids=list(protein_df["chain_id"].unique()),
+        pdb_df=protein_df,
+    )
+    # Add Sequences to graph metadata
     for c in G.graph["chain_ids"]:
         G.graph[f"sequence_{c}"] = (
             protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
@@ -169,12 +183,7 @@ def add_nodes_to_graph(
     coords = np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]])
     b_factor = protein_df["b_factor"]
 
-    # Name nodes
-    nodes = protein_df["chain_id"] + ":" + residue_name + ":" + residue_number
-    if granularity == "atom":
-        nodes = nodes + ":" + protein_df["atom_name"]
-
-    # add nodes to graph
+    nodes = protein_df["node_id"]
     G.add_nodes_from(nodes)
 
     # Set intrinsic node attributes
@@ -212,10 +221,14 @@ def calculate_centroid_positions(
     )
     if verbose:
         print(f"Calculated {len(centroids)} centroid nodes")
+    log.debug(f"Calculated {len(centroids)} centroid nodes")
     return centroids
 
 
 def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
+    """
+    Annotates node metadata
+    """
     for func in funcs:
         for n, d in G.nodes(data=True):
             func(n, d)
@@ -246,6 +259,9 @@ def annotate_graph_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 def compute_edges(
     G: nx.Graph, config: BaseModel, funcs: List[Callable]
 ) -> nx.Graph:
+    # Todo move to edge computation
+    G.graph["contacts_df"] = get_contacts_df(config, G.graph["pdb_id"])
+    G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
 
     for func in funcs:
         func(G)
@@ -268,13 +284,34 @@ def construct_graph(config: BaseModel, pdb_path: str, pdb_code: str):
 
 
 if __name__ == "__main__":
-    from graphein.features.edges import peptide_bonds, salt_bridge, van_der_waals, pi_cation
-    from graphein.features.amino_acid import expasy_protein_scale, meiler_embedding
-    from graphein.features.sequence import (
+    from graphein.features.edges.intramolecular import (
+        peptide_bonds,
+        salt_bridge,
+        van_der_waals,
+        pi_cation,
+    )
+    from graphein.features.edges.distance import (
+        add_delaunay_triangulation,
+        add_hydrophobic_interactions,
+        add_disulfide_interactions,
+        add_hydrogen_bond_interactions,
+        add_cation_pi_interactions,
+        add_ionic_interactions,
+        add_aromatic_interactions,
+        add_aromatic_sulphur_interactions,
+        add_distance_threshold,
+        add_k_nn_edges
+    )
+    from graphein.features.amino_acid import (
+        expasy_protein_scale,
+        meiler_embedding,
+    )
+    from graphein.features.sequence.embeddings import (
         esm_sequence_embedding,
         biovec_sequence_embedding,
-        molecular_weight,
     )
+    from graphein.features.sequence.sequence import molecular_weight
+    import graphein.features.sequence.propy
 
     configs = {
         "granularity": "CA",
@@ -294,17 +331,31 @@ if __name__ == "__main__":
     g = add_nodes_to_graph(df, "3eiy", config.granularity, config.verbose)
 
     g = annotate_node_metadata(g, [expasy_protein_scale, meiler_embedding])
-    g = compute_edges(
-        g, config, [peptide_bonds, salt_bridge, van_der_waals, pi_cation]
-    )
+    g = compute_edges(g, config, [partial(add_k_nn_edges, long_interaction_threshold=0)])
+    """
     g = annotate_graph_metadata(
         g,
-        [esm_sequence_embedding, biovec_sequence_embedding, molecular_weight],
+        [
+            # esm_sequence_embedding,
+            # biovec_sequence_embedding,
+            # partial(molecular_weight, aggregation_type=["sum", "mean", "max"]),
+            partial(
+                amino_acid_composition, aggregation_type=["sum", "mean", "max"]
+            ),
+            partial(
+                dipeptide_composition, aggregation_type=["sum", "mean", "max"]
+            ),
+            partial(
+                aa_dipeptide_composition,
+                aggregation_type=["sum", "mean", "max"],
+            ),
+            all_composition_descriptors,
+            composition_normalized_vdwv
+        ],
     )
+    """
 
     print(nx.info(g))
-
-    print(g.graph)
     colors = nx.get_edge_attributes(g, "color").values()
 
     """
