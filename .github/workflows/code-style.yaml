@@ -1,0 +1,26 @@
+name: Code style checks
+
+on: [pull_request, push]
+
+jobs:
+  code-style:
+    name: "Ensure code style compliance"
+    runs-on: "ubuntu-18.04"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install code style checking tools
+        run: python -m install black interrogate
+
+      - name: Run black
+        black --check .
+
+      - name: Run interrogate
+        interrogate .
