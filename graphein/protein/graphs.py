@@ -56,20 +56,28 @@ def process_dataframe(
     chain_selection: str = "all",
     insertions: bool = False,
     deprotonate: bool = True,
-    keep_hets: bool = False,
-    exclude_waters: bool = True,
+    keep_hets: List[str] = [],
     verbose: bool = False,
 ) -> pd.DataFrame:
     """
     Process ATOM and HETATM dataframes to produce singular dataframe used for graph construction
-    :param protein_df:
-    :param granularity:
-    :param insertions:
-    :param deprotonate:
-    :param keep_hets:
-    :param exclude_waters:
-    :param verbose:
-    :return:
+
+    :param protein_df: Dataframe to process.
+        Should be the object returned from `read_pdb_to_dataframe`.
+    :param granularity: The level of granualrity for the graph.
+        This determines the node definition.
+        Acceptable values include:
+        - "centroids"
+        - "atoms"
+        - any of the atom_names in the PDB file (e.g. "CA", "CB", "OG", etc.)
+    :param insertions: Whether or not to keep insertions.
+    :param deprotonate: Whether or not to remove hydrogen atoms (i.e. deprotonation).
+    :param keep_hets: Hetatoms to keep. Defaults to an empty list.
+        To keep a hetatom, pass it inside a list of hetatom names to keep.
+    :param verbose: Verbosity level.
+    :paraam chain_selection: Which protein chain to select. Defaults to "all".
+    :return: A protein dataframe that can be consumed by
+        other graph construction functions.
     """
     atoms = protein_df.df["ATOM"]
     hetatms = protein_df.df["HETATM"]
@@ -91,14 +99,10 @@ def process_dataframe(
     else:
         atoms = atoms.loc[atoms["atom_name"] == granularity]
 
-    if keep_hets:
-        # Todo this control flow needs improving. This should be its own function to deal with non-standard residues
-        if exclude_waters:
-            hetatms = hetatms.loc[hetatms["residue_name"] != "HOH"]
-            log.debug(f"Detected {len(hetatms)} HETATOM nodes")
-        protein_df = pd.concat([atoms, hetatms])
-    else:
-        protein_df = atoms
+    hetatms_to_keep = []
+    for hetatm in keep_hets:
+        hetatms_to_keep.append(hetatms.loc[hetatms["residue_name"] == hetatm])
+    protein_df = pd.concat([atoms, hetatms_to_keep])
 
     # Remove alt_loc residues
     if not insertions:
@@ -300,7 +304,7 @@ if __name__ == "__main__":
         add_aromatic_interactions,
         add_aromatic_sulphur_interactions,
         add_distance_threshold,
-        add_k_nn_edges
+        add_k_nn_edges,
     )
     from graphein.features.amino_acid import (
         expasy_protein_scale,
@@ -331,7 +335,9 @@ if __name__ == "__main__":
     g = add_nodes_to_graph(df, "3eiy", config.granularity, config.verbose)
 
     g = annotate_node_metadata(g, [expasy_protein_scale, meiler_embedding])
-    g = compute_edges(g, config, [partial(add_k_nn_edges, long_interaction_threshold=0)])
+    g = compute_edges(
+        g, config, [partial(add_k_nn_edges, long_interaction_threshold=0)]
+    )
     """
     g = annotate_graph_metadata(
         g,
