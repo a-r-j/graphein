@@ -33,7 +33,7 @@ use_parentheses = true
 # super good for guaranteeing that there's docs!
 [tool.interrogate]
 exclude = ["setup.py", "docs", "build", "nbconvert_config.py"]
-fail-under = 20
+fail-under = 61.7
 ignore-init-method = true
 ignore-init-module = true
 ignore-module = false
