@@ -5,37 +5,37 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
-from typing import List, Tuple
-import os
-import networkx as nx
-import subprocess
-from itertools import combinations
-import pandas as pd
-import numpy as np
-from sklearn.metrics import pairwise_distances
-from sklearn.neighbors import kneighbors_graph
-from scipy.spatial import Delaunay
-from scipy.spatial.distance import euclidean, pdist, rogerstanimoto, squareform
-
-from pydantic import BaseModel
-
-from graphein.protein.resi_atoms import (
-    BACKBONE_ATOMS,
-    BOND_TYPES,
-    HYDROPHOBIC_RESIS,
-    DISULFIDE_RESIS,
-    DISULFIDE_ATOMS,
-    IONIC_RESIS,
-    POS_AA,
-    NEG_AA,
-    AROMATIC_RESIS,
-    CATION_RESIS,
-    CATION_PI_RESIS,
-    PI_RESIS,
-    AA_RING_ATOMS,
-)
 
 import logging
+import os
+import subprocess
+from itertools import combinations
+from typing import List, Tuple
+
+import networkx as nx
+import numpy as np
+import pandas as pd
+from pydantic import BaseModel
+from scipy.spatial import Delaunay
+from scipy.spatial.distance import euclidean, pdist, rogerstanimoto, squareform
+from sklearn.metrics import pairwise_distances
+from sklearn.neighbors import kneighbors_graph
+
+from graphein.protein.resi_atoms import (
+    AA_RING_ATOMS,
+    AROMATIC_RESIS,
+    BACKBONE_ATOMS,
+    BOND_TYPES,
+    CATION_PI_RESIS,
+    CATION_RESIS,
+    DISULFIDE_ATOMS,
+    DISULFIDE_RESIS,
+    HYDROPHOBIC_RESIS,
+    IONIC_RESIS,
+    NEG_AA,
+    PI_RESIS,
+    POS_AA,
+)
 
 log = logging.getLogger(__name__)
 

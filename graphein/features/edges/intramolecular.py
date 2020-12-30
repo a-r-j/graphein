@@ -6,12 +6,13 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 import os
-import networkx as nx
 import subprocess
-import pandas as pd
-
 from typing import Optional
+
+import networkx as nx
+import pandas as pd
 from pydantic import BaseModel
+
 from graphein.protein.utils import download_pdb
 
 

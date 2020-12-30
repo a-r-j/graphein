@@ -5,8 +5,9 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import torch
 from functools import lru_cache
+
+import torch
 
 
 @lru_cache()

@@ -4,9 +4,10 @@ Purpose: This is a set of utility variables and functions that can be used
 across the Graphein project.
 """
 
+from typing import Dict, List
+
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from typing import List, Dict
 
 BACKBONE_ATOMS: List[str] = ["N", "CA", "C", "O"]
 

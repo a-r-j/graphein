@@ -5,6 +5,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import os
+
 from Bio.PDB import PDBList
 
 

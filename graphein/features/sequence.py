@@ -5,11 +5,13 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import os
-import networkx as nx
-from pathlib import Path
 from functools import lru_cache
-from graphein.features.utils import compute_esm_embedding
+from pathlib import Path
+
+import networkx as nx
 from Bio import SeqUtils
+
+from graphein.features.utils import compute_esm_embedding
 
 
 def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
