@@ -3,6 +3,7 @@ channels:
 - conda-forge
 dependencies:
 - python=3.8
+- biopython
 - black
 - conda
 - flake8
@@ -11,6 +12,7 @@ dependencies:
 - matplotlib
 - mypy
 - nbstripout
+- networkx
 - numpy
 - pandas
 - pip
@@ -20,4 +22,5 @@ dependencies:
 - pytest
 - pytest-cov
 - pytest-xdist
+- rdkit
 - scipy
