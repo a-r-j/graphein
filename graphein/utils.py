@@ -6,7 +6,6 @@ import pandas as pd
 import xarray as xr
 
 
-
 def onek_encoding_unk(x, allowable_set):
     """
     Function for one hot encoding
