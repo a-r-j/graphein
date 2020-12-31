@@ -1,6 +1,7 @@
+from typing import Callable, List
+
 import networkx as nx
 import pandas as pd
-from typing import List, Callable
 
 
 def onek_encoding_unk(x, allowable_set):

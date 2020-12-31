@@ -9,8 +9,8 @@ These arrays can then be stacked to generate a diffusion tensor.
 import networkx as nx
 import xarray as xr
 
-from .utils import format_adjacency, generate_feature_dataframe
 from .features.edges.distance import compute_distmat
+from .utils import format_adjacency, generate_feature_dataframe
 
 
 def identity_matrix(G: nx.Graph) -> xr.DataArray:
@@ -25,7 +25,7 @@ def identity_matrix(G: nx.Graph) -> xr.DataArray:
 def adjacency_matrix_power(
     G: nx.Graph,
     amat_kwargs: Dict = {},
-    with_identity: bool = True
+    with_identity: bool = True,
     power: float = 1,
 ) -> xr.DataArray:
     """Return the matrix power of the adjacency matrix.
@@ -65,11 +65,13 @@ def inverse_distance_matrix(G, power) -> xr.DataArray:
     :param G: NetworkX Graph object.
     :param power: The power for the distance calculation.
     """
+
     def extract_coords(n, d):
         coord_names = ("x_coord", "y_coord", "z_coord")
-        coords = pd.Series({
-            coord_name: d[coord_name] for coord_name in coord_names
-        }, name=n)
+        coords = pd.Series(
+            {coord_name: d[coord_name] for coord_name in coord_names}, name=n
+        )
+
     return coords
 
     coords = generate_feature_dataframe(G, funcs=[extract_coords])
@@ -79,4 +81,6 @@ def inverse_distance_matrix(G, power) -> xr.DataArray:
     distmat = (distmat + I) ** power
     distmat = 1 / distmat
     distamt -= I
-    return format_adjacency(G, distmat, f"inverse_distance_matrix_power_{power}")
+    return format_adjacency(
+        G, distmat, f"inverse_distance_matrix_power_{power}"
+    )
