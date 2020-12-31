@@ -24,3 +24,4 @@ dependencies:
 - pytest-xdist
 - rdkit
 - scipy
+- xarray
