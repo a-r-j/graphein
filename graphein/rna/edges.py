@@ -1,7 +1,7 @@
 """Functions to compute edges for an RNA secondary structure graph"""
 # %%
 # Graphein
-# Author: Arian Jamasb <arian@jamasb.io>, Emmanuele Rossi
+# Author: Arian Jamasb <arian@jamasb.io>, Emmanuele Rossi, Eric Ma
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
