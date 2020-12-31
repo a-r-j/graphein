@@ -9,8 +9,8 @@ These arrays can then be stacked to generate a diffusion tensor.
 import networkx as nx
 import xarray as xr
 
-from .utils import format_adjacency, generate_feature_dataframe
 from .features.edges.distance import compute_distmat
+from .utils import format_adjacency, generate_feature_dataframe
 
 
 def identity_matrix(G: nx.Graph) -> xr.DataArray:
