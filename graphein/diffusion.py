@@ -6,7 +6,11 @@ Each of the functions here accepts a NetworkX graph object
 and returns a 2D xarray.
 These arrays can then be stacked to generate a diffusion tensor.
 """
+from typing import Dict
+
 import networkx as nx
+import numpy as np
+import pandas as pd
 import xarray as xr
 
 from .features.edges.distance import compute_distmat
@@ -50,7 +54,7 @@ def adjacency_matrix_power(
     )
 
 
-def inverse_distance_matrix(G, power) -> xr.DataArray:
+def inverse_distance_matrix(G: nx.Graph, power: float) -> xr.DataArray:
     """Return the inverse distance matrix.
 
     Using the coordinates present on the graph object,
@@ -71,8 +75,7 @@ def inverse_distance_matrix(G, power) -> xr.DataArray:
         coords = pd.Series(
             {coord_name: d[coord_name] for coord_name in coord_names}, name=n
         )
-
-    return coords
+        return coords
 
     coords = generate_feature_dataframe(G, funcs=[extract_coords])
     distmat = compute_distmat(coords).values
@@ -80,7 +83,7 @@ def inverse_distance_matrix(G, power) -> xr.DataArray:
     I = np.eye(len(G))
     distmat = (distmat + I) ** power
     distmat = 1 / distmat
-    distamt -= I
+    distmat -= I
     return format_adjacency(
         G, distmat, f"inverse_distance_matrix_power_{power}"
     )
