@@ -77,7 +77,6 @@ class ProteinMesh(object):
         return verts, faces, aux
 
 
-
 if __name__ == "__main__":
     p = ProteinMesh()
     print(p.create_mesh(pdb_code="3eiy", out_dir="../examples/meshes/"))
