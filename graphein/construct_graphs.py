@@ -1419,13 +1419,13 @@ class ProteinGraph(object):
     """"
     @staticmethod
     def get_voronoi_edges(protein_df, furthest_site=False, incremental=False):
-        
+
         #Calculate Voronoi edges from protein dataframe
         #:param protein_df:
         #:param furthest_site:
         ##:param incremental:
         #:return:
-        
+
         coord = protein_df[['x_coord', 'y_coord', 'z_coord']]
         vor = spatial.Voronoi(points=coord, furthest_site=furthest_site, incremental=incremental)
         edges = pd.DataFrame(vor.ridge_points)

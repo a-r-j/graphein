@@ -8,6 +8,7 @@
 
 from typing import Any, Dict, List, NamedTuple, Optional, Union
 
+from ipymol import viewer as pymol
 from pytorch3d.io import load_obj, save_obj
 
 
@@ -75,8 +76,6 @@ class ProteinMesh(object):
         verts, faces, aux = load_obj(obj_file)
         return verts, faces, aux
 
-
-from ipymol import viewer as pymol
 
 if __name__ == "__main__":
     p = ProteinMesh()
