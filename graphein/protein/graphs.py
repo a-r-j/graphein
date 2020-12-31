@@ -25,6 +25,8 @@ from graphein.features.edges.distance import compute_distmat
 from graphein.features.edges.intramolecular import get_contacts_df
 from graphein.protein.config import ProteinGraphConfig
 
+from ..utils import annotate_graph_metadata, annotate_node_metadata
+
 # from graphein.protein.visualisation import protein_graph_plot_3d
 
 
@@ -228,16 +230,6 @@ def calculate_centroid_positions(
     return centroids
 
 
-def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
-    """
-    Annotates node metadata
-    """
-    for func in funcs:
-        for n, d in G.nodes(data=True):
-            func(n, d)
-    return G
-
-
 def compute_node_metadata(G: nx.Graph, funcs: List[Callable]) -> pd.Series:
     for func in funcs:
         for n, d in G.nodes(data=True):
@@ -245,18 +237,8 @@ def compute_node_metadata(G: nx.Graph, funcs: List[Callable]) -> pd.Series:
     return metadata
 
 
-def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
-    raise NotImplementedError
-
-
 def compute_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> pd.Series:
     raise NotImplementedError
-
-
-def annotate_graph_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
-    for func in funcs:
-        func(G)
-    return G
 
 
 def compute_edges(
