@@ -6,14 +6,15 @@ Each of the functions here accepts a NetworkX graph object
 and returns a 2D xarray.
 These arrays can then be stacked to generate a diffusion tensor.
 """
+from typing import Dict
+
 import networkx as nx
+import numpy as np
+import pandas as pd
 import xarray as xr
 
 from .features.edges.distance import compute_distmat
 from .utils import format_adjacency, generate_feature_dataframe
-import numpy as np
-from typing import Dict
-import pandas as pd
 
 
 def identity_matrix(G: nx.Graph) -> xr.DataArray:

@@ -1,8 +1,8 @@
 from typing import Callable, List
 
 import networkx as nx
-import pandas as pd
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 
