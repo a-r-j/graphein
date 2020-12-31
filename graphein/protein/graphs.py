@@ -231,6 +231,7 @@ def calculate_centroid_positions(
 
 
 def compute_node_metadata(G: nx.Graph, funcs: List[Callable]) -> pd.Series:
+    # TODO: This needs a clearer function definition.
     for func in funcs:
         for n, d in G.nodes(data=True):
             metadata = func(n, d)
