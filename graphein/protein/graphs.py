@@ -25,6 +25,8 @@ from graphein.features.edges.distance import compute_distmat
 from graphein.features.edges.intramolecular import get_contacts_df
 from graphein.protein.config import ProteinGraphConfig
 
+from ..utils import annotate_graph_metadata, annotate_node_metadata
+
 # from graphein.protein.visualisation import protein_graph_plot_3d
 
 
@@ -78,6 +80,7 @@ def process_dataframe(
     :return: A protein dataframe that can be consumed by
         other graph construction functions.
     """
+    # TODO: Need to properly define what "granularity" is supposed to do.
     atoms = protein_df.df["ATOM"]
     hetatms = protein_df.df["HETATM"]
 
@@ -228,35 +231,16 @@ def calculate_centroid_positions(
     return centroids
 
 
-def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
-    """
-    Annotates node metadata
-    """
-    for func in funcs:
-        for n, d in G.nodes(data=True):
-            func(n, d)
-    return G
-
-
 def compute_node_metadata(G: nx.Graph, funcs: List[Callable]) -> pd.Series:
+    # TODO: This needs a clearer function definition.
     for func in funcs:
         for n, d in G.nodes(data=True):
             metadata = func(n, d)
     return metadata
 
 
-def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
-    raise NotImplementedError
-
-
 def compute_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> pd.Series:
     raise NotImplementedError
-
-
-def annotate_graph_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
-    for func in funcs:
-        func(G)
-    return G
 
 
 def compute_edges(
