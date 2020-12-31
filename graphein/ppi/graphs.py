@@ -45,7 +45,7 @@ def parse_kwargs_from_config(config: PPIGraphConfig) -> PPIGraphConfig:
 
 def compute_ppi_graph(
     protein_list: List[str],
-    edge_construction_funcs,
+    edge_construction_funcs: List[Callable],
     graph_annotation_funcs: Optional[List[Callable]] = None,
     node_annotation_funcs: Optional[List[Callable]] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
