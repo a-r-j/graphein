@@ -67,6 +67,7 @@ def compute_edges(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
         func(G)
     return G
 
+
 def generate_feature_dataframe(
     G: nx.Graph,
     funcs: List[Callable],
