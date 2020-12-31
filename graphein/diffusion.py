@@ -6,11 +6,15 @@ Each of the functions here accepts a NetworkX graph object
 and returns a 2D xarray.
 These arrays can then be stacked to generate a diffusion tensor.
 """
+from typing import Dict
+
 import networkx as nx
+import numpy as np
+import pandas as pd
 import xarray as xr
 
-from .utils import format_adjacency, generate_feature_dataframe
 from .features.edges.distance import compute_distmat
+from .utils import format_adjacency, generate_feature_dataframe
 
 
 def identity_matrix(G: nx.Graph) -> xr.DataArray:
@@ -25,7 +29,7 @@ def identity_matrix(G: nx.Graph) -> xr.DataArray:
 def adjacency_matrix_power(
     G: nx.Graph,
     amat_kwargs: Dict = {},
-    with_identity: bool = True
+    with_identity: bool = True,
     power: float = 1,
 ) -> xr.DataArray:
     """Return the matrix power of the adjacency matrix.
@@ -50,7 +54,7 @@ def adjacency_matrix_power(
     )
 
 
-def inverse_distance_matrix(G, power) -> xr.DataArray:
+def inverse_distance_matrix(G: nx.Graph, power: float) -> xr.DataArray:
     """Return the inverse distance matrix.
 
     Using the coordinates present on the graph object,
@@ -65,12 +69,13 @@ def inverse_distance_matrix(G, power) -> xr.DataArray:
     :param G: NetworkX Graph object.
     :param power: The power for the distance calculation.
     """
+
     def extract_coords(n, d):
         coord_names = ("x_coord", "y_coord", "z_coord")
-        coords = pd.Series({
-            coord_name: d[coord_name] for coord_name in coord_names
-        }, name=n)
-    return coords
+        coords = pd.Series(
+            {coord_name: d[coord_name] for coord_name in coord_names}, name=n
+        )
+        return coords
 
     coords = generate_feature_dataframe(G, funcs=[extract_coords])
     distmat = compute_distmat(coords).values
@@ -78,5 +83,7 @@ def inverse_distance_matrix(G, power) -> xr.DataArray:
     I = np.eye(len(G))
     distmat = (distmat + I) ** power
     distmat = 1 / distmat
-    distamt -= I
-    return format_adjacency(G, distmat, f"inverse_distance_matrix_power_{power}")
+    distmat -= I
+    return format_adjacency(
+        G, distmat, f"inverse_distance_matrix_power_{power}"
+    )
