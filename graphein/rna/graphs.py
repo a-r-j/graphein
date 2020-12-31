@@ -1,7 +1,7 @@
 """Functions for working with RNA Secondary Structure Graphs"""
 # %%
 # Graphein
-# Author: Arian Jamasb <arian@jamasb.io>, Emmanuele Rossi
+# Author: Arian Jamasb <arian@jamasb.io>, Emmanuele Rossi, Eric Ma
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
@@ -10,7 +10,7 @@ from typing import Callable, List, Optional
 
 import networkx as nx
 
-from ..utils import (
+from graphein.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
@@ -37,7 +37,10 @@ SUPPORTED_DOTBRACKET_NOTATION = ["(", ".", ")"]
 # Todo checking of valid base-parings
 
 
-def validate_rna_sequence(s: str):
+def validate_rna_sequence(s: str) -> None:
+    """
+    Validate RNA sequence. This ensures that it only has supported bases
+    """
     letters_used = set(s)
     if not letters_used.issubset(RNA_BASES):
         offending_letter = letters_used.difference(RNA_BASES)
@@ -47,7 +50,10 @@ def validate_rna_sequence(s: str):
         )
 
 
-def validate_lengths(db: str, seq: str):
+def validate_lengths(db: str, seq: str) -> None:
+    """
+    Check lengths of dotbracket and sequence match
+    """
     if len(db) != len(seq):
         raise ValueError(
             f"Length of dotbracket ({len(db)}) does not match length of sequence ({len(seq)})."
@@ -57,7 +63,7 @@ def validate_lengths(db: str, seq: str):
 def sanitize_dotbracket(db: str) -> str:
     """Sanitize dotbracket string.
 
-    This ensures that it only has supported letters.
+    This ensures that it only has supported symobls.
     """
     db = "".join(i if i in SUPPORTED_DOTBRACKET_NOTATION else "." for i in db)
     return db
