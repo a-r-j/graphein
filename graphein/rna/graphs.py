@@ -5,9 +5,10 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Optional, List, Callable
-import networkx as nx
 import logging
+from typing import Callable, List, Optional
+
+import networkx as nx
 
 log = logging.getLogger(__name__)
 
@@ -186,10 +187,11 @@ def construct_rna_graph(
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
+
     from graphein.rna.edges import (
+        add_all_dotbracket_edges,
         add_base_pairing_interactions,
         add_phosphodiester_bonds,
-        add_all_dotbracket_edges,
     )
 
     edge_funcs_1 = [add_base_pairing_interactions, add_phosphodiester_bonds]

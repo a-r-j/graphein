@@ -5,8 +5,9 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import networkx as nx
 import logging
+
+import networkx as nx
 
 log = logging.getLogger(__name__)
 
