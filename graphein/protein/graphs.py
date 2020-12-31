@@ -80,6 +80,7 @@ def process_dataframe(
     :return: A protein dataframe that can be consumed by
         other graph construction functions.
     """
+    # TODO: Need to properly define what "granularity" is supposed to do.
     atoms = protein_df.df["ATOM"]
     hetatms = protein_df.df["HETATM"]
 
