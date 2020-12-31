@@ -11,6 +11,9 @@ import xarray as xr
 
 from .features.edges.distance import compute_distmat
 from .utils import format_adjacency, generate_feature_dataframe
+import numpy as np
+from typing import Dict
+import pandas as pd
 
 
 def identity_matrix(G: nx.Graph) -> xr.DataArray:
@@ -71,8 +74,7 @@ def inverse_distance_matrix(G, power) -> xr.DataArray:
         coords = pd.Series(
             {coord_name: d[coord_name] for coord_name in coord_names}, name=n
         )
-
-    return coords
+        return coords
 
     coords = generate_feature_dataframe(G, funcs=[extract_coords])
     distmat = compute_distmat(coords).values
@@ -80,7 +82,7 @@ def inverse_distance_matrix(G, power) -> xr.DataArray:
     I = np.eye(len(G))
     distmat = (distmat + I) ** power
     distmat = 1 / distmat
-    distamt -= I
+    distmat -= I
     return format_adjacency(
         G, distmat, f"inverse_distance_matrix_power_{power}"
     )
