@@ -10,7 +10,7 @@ from typing import Callable, List, Optional, Union
 from pydantic import BaseModel
 
 from graphein.features.amino_acid import meiler_embedding
-from graphein.features.edges import peptide_bonds
+from graphein.features.edges.intramolecular import peptide_bonds
 
 
 class ProteinGraphConfig(BaseModel):
@@ -32,9 +32,12 @@ class ProteinGraphConfig(BaseModel):
     deprotonate: bool = False
     remove_string_labels: bool = False
     long_interaction_threshold: Optional[int] = None
-    edge_functions: List[Union[Callable, str]] = [peptide_bonds]
-    node_metadata_functions: List[Union[Callable, str]] = [meiler_embedding]
+    edge_construction_functions: List[Union[Callable, str]] = [peptide_bonds]
+    node_metadata_functions: Optional[List[Union[Callable, str]]] = [
+        meiler_embedding
+    ]
     edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
+    graph_metadata_functions: Optional[List[Callable]] = None
 
 
 def parse_edge_functions_from_config(func_names: List[str]):

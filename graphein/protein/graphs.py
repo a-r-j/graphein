@@ -8,25 +8,26 @@
 from __future__ import annotations
 
 import logging
-from functools import partial
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Union
+from typing import Callable, List, Optional
 
 import networkx as nx
 import numpy as np
 import pandas as pd
-from Bio.PDB import *
-from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
-from rdkit.Chem import MolFromPDBFile
 
-from graphein import utils
 from graphein.features.edges.distance import compute_distmat
 from graphein.features.edges.intramolecular import get_contacts_df
 from graphein.protein.config import ProteinGraphConfig
+from graphein.protein.utils import get_protein_name_from_filename
+from graphein.utils import (
+    annotate_edge_metadata,
+    annotate_graph_metadata,
+    annotate_node_metadata,
+    compute_edges,
+)
 
-from ..utils import annotate_graph_metadata, annotate_node_metadata
-
+# from rdkit.Chem import MolFromPDBFile
 # from graphein.protein.visualisation import protein_graph_plot_3d
 
 
@@ -35,24 +36,68 @@ log = logging.getLogger(__name__)
 
 
 def read_pdb_to_dataframe(
-    pdb_path: str, verbose: bool = False
+    pdb_path: Optional[str] = None,
+    pdb_code: Optional[str] = None,
+    verbose: bool = False,
 ) -> pd.DataFrame:
     """
-    Reads PDB file to PandasPDB object
+    Reads PDB file to PandasPDB object.
     :param pdb_path: path to PDB file
-    :type pdb_path: str
+    :param pdb_code: 4-character PDB accession
     :param verbose: print dataframe?
-    :type verbose: bool
     """
-    atomic_df = PandasPdb().read_pdb(pdb_path)
+    if pdb_code is not None:
+        atomic_df = PandasPdb().fetch_pdb(pdb_code)
+
+    if pdb_path is not None:
+        atomic_df = PandasPdb().read_pdb(pdb_path)
 
     if verbose:
         print(atomic_df)
     return atomic_df
 
 
+def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
+    log.debug(
+        "Deprotonating protein. This removes H atoms from the pdb_df dataframe"
+    )
+    return df.loc[df["atom_name"] != "H"].reset_index(drop=True)
+
+
+def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
+    centroids = calculate_centroid_positions(df)
+    df = df.loc[df["atom_name"] == "CA"].reset_index(drop=True)
+    df["x_coord"] = centroids["x_coord"]
+    df["y_coord"] = centroids["y_coord"]
+    df["z_coord"] = centroids["z_coord"]
+
+    return df
+
+
+def subset_structure_to_atom_type(
+    df: pd.DataFrame, granularity: str
+) -> pd.DataFrame:
+    return df.loc[df["atom_name"] == granularity]
+
+
+def remove_insertions(df: pd.DataFrame) -> pd.DataFrame:
+    # Remove alt_loc residues
+    # Todo log.debug(f"Detected X insertions")
+    return df.loc[df["alt_loc"].isin(["", "A"])]
+
+
+def filter_hetatms(
+    df: pd.DataFrame, keep_hets: List[str]
+) -> List[pd.DataFrame]:
+    hetatms_to_keep = []
+    for hetatm in keep_hets:
+        hetatms_to_keep.append(df.loc[df["residue_name"] == hetatm])
+    return hetatms_to_keep
+
+
 def process_dataframe(
     protein_df: pd.DataFrame,
+    config: Optional[ProteinGraphConfig],
     granularity: str = "centroids",
     chain_selection: str = "all",
     insertions: bool = False,
@@ -76,7 +121,7 @@ def process_dataframe(
     :param keep_hets: Hetatoms to keep. Defaults to an empty list.
         To keep a hetatom, pass it inside a list of hetatom names to keep.
     :param verbose: Verbosity level.
-    :paraam chain_selection: Which protein chain to select. Defaults to "all".
+    :param chain_selection: Which protein chain to select. Defaults to "all".
     :return: A protein dataframe that can be consumed by
         other graph construction functions.
     """
@@ -86,30 +131,23 @@ def process_dataframe(
 
     # Deprotonate structure by removing H atoms
     if deprotonate:
-        log.debug(
-            "Deprotonating protein. This removes H atoms from the pdb_df dataframe"
-        )
-        atoms = atoms.loc[atoms["atom_name"] != "H"].reset_index(drop=True)
+        atoms = deprotonate_structure(atoms)
 
     # Restrict DF to desired granularity
     if granularity == "centroids":
-        centroids = calculate_centroid_positions(atoms)
-        atoms = atoms.loc[atoms["atom_name"] == "CA"].reset_index(drop=True)
-        atoms["x_coord"] = centroids["x_coord"]
-        atoms["y_coord"] = centroids["y_coord"]
-        atoms["z_coord"] = centroids["z_coord"]
+        atoms = convert_structure_to_centroids(atoms)
     else:
-        atoms = atoms.loc[atoms["atom_name"] == granularity]
+        atoms = subset_structure_to_atom_type(atoms, granularity)
 
-    hetatms_to_keep = []
-    for hetatm in keep_hets:
-        hetatms_to_keep.append(hetatms.loc[hetatms["residue_name"] == hetatm])
-    protein_df = pd.concat([atoms, hetatms_to_keep])
+    protein_df = atoms
+
+    if len(keep_hets) > 0:
+        hetatms_to_keep = filter_hetatms(atoms, keep_hets)
+        protein_df = pd.concat([atoms, hetatms_to_keep])
 
     # Remove alt_loc residues
     if not insertions:
-        # Todo log.debug(f"Detected X insertions")
-        protein_df = protein_df.loc[protein_df["alt_loc"].isin(["", "A"])]
+        protein_df = remove_insertions(protein_df)
 
     # perform chain selection
     protein_df = select_chains(
@@ -231,20 +269,8 @@ def calculate_centroid_positions(
     return centroids
 
 
-def compute_node_metadata(G: nx.Graph, funcs: List[Callable]) -> pd.Series:
-    # TODO: This needs a clearer function definition.
-    for func in funcs:
-        for n, d in G.nodes(data=True):
-            metadata = func(n, d)
-    return metadata
-
-
-def compute_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> pd.Series:
-    raise NotImplementedError
-
-
 def compute_edges(
-    G: nx.Graph, config: BaseModel, funcs: List[Callable]
+    G: nx.Graph, config: ProteinGraphConfig, funcs: List[Callable]
 ) -> nx.Graph:
     # Todo move to edge computation
     G.graph["contacts_df"] = get_contacts_df(config, G.graph["pdb_id"])
@@ -256,16 +282,81 @@ def compute_edges(
     return G
 
 
-def construct_graph(config: BaseModel, pdb_path: str, pdb_code: str):
-    df = read_pdb_to_dataframe(pdb_path, verbose=config.verbose)
-    df = process_dataframe(df)
+def construct_graph(
+    config: Optional[ProteinGraphConfig],
+    pdb_path: Optional[str] = None,
+    pdb_code: Optional[str] = None,
+    edge_construction_funcs: Optional[List[Callable]] = None,
+    edge_annotation_funcs: Optional[List[Callable]] = None,
+    node_annotation_funcs: Optional[List[Callable]] = None,
+    graph_annotation_funcs: Optional[List[Callable]] = None,
+) -> nx.Graph:
+    """
+    Constructs protein structure graph from a pdb_code or pdb_path. Users can provide a ProteinGraphConfig object.
+    However, config parameters can be overridden by passing arguments directly to the function.
+    :param config: ProteinGraphConfig object. If None, defaults to config in graphein.protein.config
+    :param pdb_path: Path to pdb_file to build graph from
+    :param pdb_code: 4-character PDB accession pdb_code to build graph from
+    :param edge_construction_funcs: List of edge construction functions
+    :param edge_annotation_funcs: List of edge annotation functions
+    :param node_annotation_funcs: List of node annotation functions
+    :param graph_annotation_funcs: List of graph annotation function
+    :return: Protein Structure Graph
+    """
 
-    g = add_nodes_to_graph(df, pdb_code, config.granularity, config.verbose)
-    g = annotate_node_metadata(g, [expasy_protein_scale, meiler_embedding])
-    g = compute_edges(
-        g, config, [peptide_bonds, salt_bridge, van_der_waals, pi_cation]
+    # If no config is provided, use default
+    if config is None:
+        config = ProteinGraphConfig()
+
+    # Get name from pdb_file is no pdb_code is provided
+    if pdb_path and (pdb_code is None):
+        pdb_code = get_protein_name_from_filename(pdb_path)
+
+    # If config params are provided, overwrite them
+    config.edge_construction_functions = (
+        edge_construction_funcs
+        if config.edge_construction_functions is None
+        else config.edge_construction_functions
     )
-    g = annotate_graph_metadata(g, [esm_sequence_embedding])
+    config.node_metadata_functions = (
+        node_annotation_funcs
+        if config.node_metadata_functions is None
+        else config.node_metadata_functions
+    )
+    config.graph_metadata_functions = (
+        graph_annotation_funcs
+        if config.graph_metadata_functions is None
+        else config.graph_metadata_functions
+    )
+    config.edge_metadata_functions = (
+        edge_annotation_funcs
+        if config.edge_metadata_functions is None
+        else config.edge_metadata_functions
+    )
+
+    df = read_pdb_to_dataframe(pdb_path, pdb_code, verbose=config.verbose)
+    df = process_dataframe(df, config)
+
+    # Add nodes to graph
+    g = add_nodes_to_graph(df, pdb_code, config.granularity, config.verbose)
+
+    # Annotate additional node metadata
+    if config.node_metadata_functions is not None:
+        g = annotate_node_metadata(g, config.node_metadata_functions)
+
+    # Compute graph edges
+    g = compute_edges(g, config, config.edge_construction_functions)
+
+    # Annotate additional graph metadata
+    if config.graph_metadata_functions is not None:
+        g = annotate_graph_metadata(g, config.graph_metadata_functions)
+
+    # Annotate additional edge metadata
+    if config.edge_metadata_functions is not None:
+        g = annotate_edge_metadata(g, config.edge_metadata_functions)
+
+    # Add config to graph
+    g.graph["config"] = config
 
     return g
 
@@ -308,7 +399,10 @@ if __name__ == "__main__":
         "verbose": False,
     }
     config = ProteinGraphConfig(**configs)
+    print(config)
+    g = construct_graph(config=config, pdb_path="../../examples/pdbs/3eiy.pdb")
 
+    """
     df = read_pdb_to_dataframe(
         pdb_path="../../examples/pdbs/3eiy.pdb",
         verbose=config.verbose,
@@ -321,6 +415,7 @@ if __name__ == "__main__":
     g = compute_edges(
         g, config, [partial(add_k_nn_edges, long_interaction_threshold=0)]
     )
+    """
     """
     g = annotate_graph_metadata(
         g,
