@@ -45,7 +45,9 @@ def compute_esm_embedding(sequence: str, representation: str):
         return sequence_representations[0].numpy()
 
 
-def convert_graph_dict_feat_to_series(G: nx.Graph, feature_name: str) -> nx.Graph:
+def convert_graph_dict_feat_to_series(
+    G: nx.Graph, feature_name: str
+) -> nx.Graph:
     G.graph[feature_name] = pd.Series(G.graph[feature_name])
     return G
 
