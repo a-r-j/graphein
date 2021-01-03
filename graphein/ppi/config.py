@@ -92,4 +92,3 @@ class PPIGraphConfig(BaseModel):
 
     class Config:
         arbitrary_types_allowed: bool = True
-
