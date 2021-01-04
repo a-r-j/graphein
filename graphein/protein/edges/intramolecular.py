@@ -78,7 +78,9 @@ def get_contacts_df(config: GetContactsConfig, pdb_id: str):
 
 
 def run_get_contacts(
-    config: GetContactsConfig, pdb_id: Optional[str], file_name: Optional[str] = None
+    config: GetContactsConfig,
+    pdb_id: Optional[str],
+    file_name: Optional[str] = None,
 ):
     # Check for GetContacts Installation
     assert os.path.isfile(
@@ -104,7 +106,9 @@ def run_get_contacts(
     print(f"Computed Contacts for: {pdb_id}")
 
 
-def read_contacts_file(config: GetContactsConfig, contacts_file) -> pd.DataFrame:
+def read_contacts_file(
+    config: GetContactsConfig, contacts_file
+) -> pd.DataFrame:
     contacts_file = open(contacts_file, "r").readlines()
     contacts = []
 
