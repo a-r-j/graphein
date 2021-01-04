@@ -1,6 +1,6 @@
-import pandas as pd
 import networkx as nx
 import numpy as np
+import pandas as pd
 
 
 def convert_graph_dict_feat_to_series(

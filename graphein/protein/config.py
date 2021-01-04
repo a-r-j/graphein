@@ -16,7 +16,9 @@ from graphein.protein.features.nodes.amino_acid import meiler_embedding
 
 
 class GetContactsConfig(BaseModel):
-    get_contacts_path: Path = Path("/Users/arianjamasb/github/getcontacts/").resolve()
+    get_contacts_path: Path = Path(
+        "/Users/arianjamasb/github/getcontacts/"
+    ).resolve()
     contacts_dir: Path = Path("../examples/contacts/").resolve()
     pdb_dir: Path = Path("../examples/pdbs/").resolve()
     granularity: str = "CA"
@@ -26,7 +28,9 @@ class ProteinGraphConfig(BaseModel):
     granularity: str = "CA"
     keep_hets: bool = False
     insertions: bool = False
-    pdb_dir: Path = Path("../examples/pdbs/")  # Also suggest to avoid hard-coding paths if possible!
+    pdb_dir: Path = Path(
+        "../examples/pdbs/"
+    )  # Also suggest to avoid hard-coding paths if possible!
     verbose: bool = True
     exclude_waters: bool = True
     covalent_bonds: bool = True
@@ -52,4 +56,3 @@ class ProteinGraphConfig(BaseModel):
 class ProteinMeshConfig(BaseModel):
     pymol_command_line_options: Optional[str] = "-cKq"
     pymol_commands: Optional[List[str]] = ["show surface"]
-

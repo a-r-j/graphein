@@ -39,7 +39,8 @@ def load_meiler_embeddings() -> pd.DataFrame:
     on each function call.
     """
     df = pd.read_csv(
-        Path(__file__).parent.parent / "data" / "meiler_embeddings.csv", index_col=0
+        Path(__file__).parent.parent / "data" / "meiler_embeddings.csv",
+        index_col=0,
     )
     return df
 
@@ -76,6 +77,7 @@ def meiler_embedding(n, d) -> pd.Series:
 def aaindex_1_feat(n, d, feature_name: str) -> pd.Series:
     from Bio.PDB.Polypeptide import three_to_one
     from propy.AAIndex import GetAAIndex1
+
     df = GetAAIndex1(feature_name)
     df = pd.Series(df).loc[three_to_one(d["reside_name"])]
     return df

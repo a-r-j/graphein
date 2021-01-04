@@ -15,7 +15,7 @@ from graphein.protein.features.sequence.utils import (
     compute_feature_over_chains,
 )
 
-#from graphein.protein.features.utils import aggregate_graph_feature_over_chains
+# from graphein.protein.features.utils import aggregate_graph_feature_over_chains
 
 
 """
@@ -40,7 +40,11 @@ def molecular_weight(
 
 def molecular_weight(sequence: str, seq_type="protein") -> pd.Series:
     from Bio import SeqUtils
-    return pd.Series(SeqUtils.molecular_weight(sequence, seq_type=seq_type), name="molecular_weight")
+
+    return pd.Series(
+        SeqUtils.molecular_weight(sequence, seq_type=seq_type),
+        name="molecular_weight",
+    )
 
 
 def aaindex2(sequence: str, feature_type) -> pd.Series:

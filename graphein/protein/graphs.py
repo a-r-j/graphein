@@ -16,9 +16,9 @@ import pandas as pd
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
 
+from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import compute_distmat
 from graphein.protein.edges.intramolecular import get_contacts_df
-from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.utils import get_protein_name_from_filename
 from graphein.utils import (
     annotate_edge_metadata,
@@ -121,7 +121,6 @@ def filter_hetatms(
 
 def process_dataframe(
     protein_df: pd.DataFrame,
-    config: Optional[ProteinGraphConfig],
     granularity: str = "centroids",
     chain_selection: str = "all",
     insertions: bool = False,
@@ -298,7 +297,9 @@ def compute_edges(
 ) -> nx.Graph:
     """Compute edges."""
     # Todo move to edge computation
-    G.graph["contacts_df"] = get_contacts_df(config.get_contacts_config, G.graph["pdb_id"])
+    G.graph["contacts_df"] = get_contacts_df(
+        config.get_contacts_config, G.graph["pdb_id"]
+    )
     G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
 
     for func in funcs:
@@ -311,6 +312,7 @@ def construct_graph(
     config: Optional[ProteinGraphConfig],
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
+    df_processing_funcs: Optional[List[Callable]] = None,
     edge_construction_funcs: Optional[List[Callable]] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
     node_annotation_funcs: Optional[List[Callable]] = None,
@@ -340,6 +342,11 @@ def construct_graph(
         pdb_code = get_protein_name_from_filename(pdb_path)
 
     # If config params are provided, overwrite them
+    config.protein_df_processing_functions = (
+        df_processing_funcs
+        if config.protein_df_processing_functions is None
+        else config.protein_df_processing_functions
+    )
     config.edge_construction_functions = (
         edge_construction_funcs
         if config.edge_construction_functions is None

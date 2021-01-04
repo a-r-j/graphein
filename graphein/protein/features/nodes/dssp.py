@@ -1,28 +1,29 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import networkx as nx
 import pandas as pd
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 
 DSSP_COLS = [
-        "chain",
-        "resnum",
-        "icode",
-        "aa",
-        "ss",
-        "exposure_rsa",
-        "phi",
-        "psi",
-        "dssp_index",
-        "NH_O_1_relidx",
-        "NH_O_1_energy",
-        "O_NH_1_relidx",
-        "O_NH_1_energy",
-        "NH_O_2_relidx",
-        "NH_O_2_energy",
-        "O_NH_2_relidx",
-        "O_NH_2_energy",
-    ]
+    "chain",
+    "resnum",
+    "icode",
+    "aa",
+    "ss",
+    "exposure_rsa",
+    "phi",
+    "psi",
+    "dssp_index",
+    "NH_O_1_relidx",
+    "NH_O_1_energy",
+    "O_NH_1_relidx",
+    "O_NH_1_energy",
+    "NH_O_2_relidx",
+    "NH_O_2_energy",
+    "O_NH_2_relidx",
+    "O_NH_2_energy",
+]
+
 
 def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
     # Parse DSSP output to DataFrame
@@ -43,18 +44,20 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
 
 
 def add_dssp_df(G: nx.Graph) -> nx.Graph:
-    G
+    raise NotImplementedError
 
 
 def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
+    raise NotImplementedError
 
 
 def add_dssp_features(G: nx.Graph) -> nx.Graph:
     if G.graph["pdb_code"] is not None:
-        d = dssp_dict_from_pdb_file(pdb_code + ".pdb") # Todo fix paths
+        raise NotImplementedError
+        # d = dssp_dict_from_pdb_file(pdb_code + ".pdb") # Todo fix paths
     elif G.graph["file_path"] is not None:
         d = dssp_dict_from_pdb_file(G.graph["file_path"])
-    
+
     dssp_df = parse_dssp_df(d)
     dssp_df = process_dssp_df(d)
 
@@ -65,14 +68,13 @@ def add_dssp_features(G: nx.Graph) -> nx.Graph:
     return G
 
 
+"""
 def _get_protein_features(
         self, pdb_code: Optional[str], file_path: Optional[str], chain_selection: str
 ) -> pd.DataFrame:
-    """
     :param file_path: (str) file path to PDB file
     :param pdb_code: (str) String containing four letter PDB accession
     :return df (pd.DataFrame): Dataframe containing output of DSSP (Solvent accessibility, secondary structure for each residue)
-    """
 
     # Run DSSP on relevant PDB file
     if pdb_code:
@@ -97,3 +99,4 @@ def _get_protein_features(
     df["exposure_asa"] = df["exposure_rsa"] * df["max_acc"]
     df["index"] = df["chain"] + ":" + df["aa_three"] + ":" + df["resnum"].apply(str)
     return df
+"""
