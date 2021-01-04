@@ -221,6 +221,7 @@ def add_nodes_to_graph(
     granularity: str = "CA",
     verbose: bool = False,
 ) -> nx.Graph:
+    """Add nodes into protein graph."""
     # Create graph and assign intrinsic graph-level metadata
     G = nx.Graph(
         name=pdb_id,
@@ -256,8 +257,7 @@ def add_nodes_to_graph(
     nx.set_node_attributes(G, dict(zip(nodes, coords)), "coords")
     nx.set_node_attributes(G, dict(zip(nodes, b_factor)), "b_factor")
 
-    # Todo include charge, line_idx for traceability?
-
+    # TODO: include charge, line_idx for traceability?
     if verbose:
         print(nx.info(G))
         print(G.nodes())
@@ -270,9 +270,9 @@ def calculate_centroid_positions(
 ) -> pd.DataFrame:
     """
     Calculates position of sidechain centroids
+
     :param atoms: ATOM df of protein structure
     :param verbose: bool
-    :type verbose: bool
     :return: centroids (df)
     """
     centroids = (
@@ -289,6 +289,7 @@ def calculate_centroid_positions(
 def compute_edges(
     G: nx.Graph, config: ProteinGraphConfig, funcs: List[Callable]
 ) -> nx.Graph:
+    """Compute edges."""
     # Todo move to edge computation
     G.graph["contacts_df"] = get_contacts_df(config, G.graph["pdb_id"])
     G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
@@ -310,7 +311,9 @@ def construct_graph(
 ) -> nx.Graph:
     """
     Constructs protein structure graph from a pdb_code or pdb_path. Users can provide a ProteinGraphConfig object.
+
     However, config parameters can be overridden by passing arguments directly to the function.
+
     :param config: ProteinGraphConfig object. If None, defaults to config in graphein.protein.config
     :param pdb_path: Path to pdb_file to build graph from
     :param pdb_code: 4-character PDB accession pdb_code to build graph from
