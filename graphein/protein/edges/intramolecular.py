@@ -4,14 +4,15 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+from __future__ import annotations
 
 import os
 import subprocess
+from pathlib import Path
 from typing import Optional
 
 import networkx as nx
 import pandas as pd
-from pydantic import BaseModel
 
 from graphein.protein.utils import download_pdb
 
@@ -57,11 +58,11 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
 ####################################
 
 
-def get_contacts_df(config: BaseModel, pdb_id: str):
+def get_contacts_df(config: GetContactsConfig, pdb_id: str):
     if not config.contacts_dir:
-        config.contacts_dir = "/tmp/"
+        config.contacts_dir = Path("/tmp/")
 
-    contacts_file = config.contacts_dir + pdb_id + "_contacts.tsv"
+    contacts_file = config.contacts_dir / (pdb_id + "_contacts.tsv")
 
     # Check for existence of GetContacts file
     if not os.path.isfile(contacts_file):
@@ -77,7 +78,9 @@ def get_contacts_df(config: BaseModel, pdb_id: str):
 
 
 def run_get_contacts(
-    config: BaseModel, pdb_id: Optional[str], file_name: Optional[str] = None
+    config: GetContactsConfig,
+    pdb_id: Optional[str],
+    file_name: Optional[str] = None,
 ):
     # Check for GetContacts Installation
     assert os.path.isfile(
@@ -85,7 +88,7 @@ def run_get_contacts(
     ), "No GetContacts Installation Detected"
 
     # Check for existence of pdb file. If not, download it.
-    if not os.path.isfile(config.pdb_dir + pdb_id):
+    if not os.path.isfile(config.pdb_dir / pdb_id):
         pdb_file = download_pdb(config, pdb_id)
     else:
         pdb_file = config.pdb_dir + pdb_id + ".pdb"
@@ -93,16 +96,19 @@ def run_get_contacts(
     # Run GetContacts
     command = f"{config.get_contacts_path}/get_static_contacts.py "
     command += f"--structure {pdb_file} "
-    command += f'--output {config.contacts_dir + pdb_id + "_contacts.tsv"} '
+    command += f'--output {(config.contacts_dir / (pdb_id + "_contacts.tsv")).as_posix()} '
     command += "--itypes all"  # --sele "protein"'
+    print(command)
     subprocess.run(command, shell=True)
 
     # Check it all checks out
-    assert os.path.isfile(config.contacts_dir + pdb_id + "_contacts.tsv")
+    assert os.path.isfile(config.contacts_dir / (pdb_id + "_contacts.tsv"))
     print(f"Computed Contacts for: {pdb_id}")
 
 
-def read_contacts_file(config: BaseModel, contacts_file) -> pd.DataFrame:
+def read_contacts_file(
+    config: GetContactsConfig, contacts_file
+) -> pd.DataFrame:
     contacts_file = open(contacts_file, "r").readlines()
     contacts = []
 
