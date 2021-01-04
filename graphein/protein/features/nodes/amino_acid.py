@@ -74,8 +74,8 @@ def meiler_embedding(n, d) -> pd.Series:
 
 
 def aaindex_1_feat(n, d, feature_name: str) -> pd.Series:
-    from propy.AAIndex import GetAAIndex1
     from Bio.PDB.Polypeptide import three_to_one
+    from propy.AAIndex import GetAAIndex1
     df = GetAAIndex1(feature_name)
     df = pd.Series(df).loc[three_to_one(d["reside_name"])]
     return df

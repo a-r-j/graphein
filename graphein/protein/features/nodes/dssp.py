@@ -1,7 +1,8 @@
-from typing import Dict, Any
-import pandas as pd
+from typing import Any, Dict
+
 import networkx as nx
-from Bio.PDB.DSSP import residue_max_acc, dssp_dict_from_pdb_file
+import pandas as pd
+from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 
 DSSP_COLS = [
         "chain",

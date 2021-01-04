@@ -5,13 +5,14 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
+
+from pathlib import Path
 from typing import Callable, List, Optional, Union
 
 from pydantic import BaseModel
 
-from graphein.protein.features.nodes.amino_acid import meiler_embedding
 from graphein.protein.edges.intramolecular import peptide_bonds
-from pathlib import Path
+from graphein.protein.features.nodes.amino_acid import meiler_embedding
 
 
 class GetContactsConfig(BaseModel):
@@ -35,7 +36,7 @@ class ProteinGraphConfig(BaseModel):
     verbose: bool = True
     deprotonate: bool = False
     long_interaction_threshold: Optional[int] = None
-    data_frame_processing_functions: Optional[List[Callable]] = None
+    protein_df_processing_functions: Optional[List[Callable]] = None
     edge_construction_functions: List[Union[Callable, str]] = [peptide_bonds]
     node_metadata_functions: Optional[List[Union[Callable, str]]] = [
         meiler_embedding

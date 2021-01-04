@@ -4,7 +4,10 @@ from pathlib import Path
 
 import networkx as nx
 import torch
-from graphein.protein.features.sequence.utils import compute_feature_over_chains
+
+from graphein.protein.features.sequence.utils import (
+    compute_feature_over_chains,
+)
 
 
 @lru_cache()

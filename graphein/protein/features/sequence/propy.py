@@ -10,7 +10,10 @@ from typing import Any, Callable, Dict, List, Optional
 
 import networkx as nx
 
-from graphein.protein.features.sequence.utils import compute_feature_over_chains, aggregate_feature_over_chains
+from graphein.protein.features.sequence.utils import (
+    aggregate_feature_over_chains,
+    compute_feature_over_chains,
+)
 from graphein.protein.features.utils import (
     aggregate_graph_feature_over_chains,
     convert_graph_dict_feat_to_series,
