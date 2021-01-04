@@ -16,8 +16,8 @@ import pandas as pd
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
 
-from graphein.features.edges.distance import compute_distmat
-from graphein.features.edges.intramolecular import get_contacts_df
+from graphein.protein.edges.distance import compute_distmat
+from graphein.protein.edges.intramolecular import get_contacts_df
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.utils import get_protein_name_from_filename
 from graphein.utils import (
@@ -96,6 +96,13 @@ def subset_structure_to_atom_type(
 
 
 def remove_insertions(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    This function removes insertions from PDB dataframes
+    :param df:
+    :type df:
+    :return:
+    :rtype:
+    """
     """Remove insertions from structure."""
     # Remove alt_loc residues
     # Todo log.debug(f"Detected X insertions")
@@ -291,7 +298,7 @@ def compute_edges(
 ) -> nx.Graph:
     """Compute edges."""
     # Todo move to edge computation
-    G.graph["contacts_df"] = get_contacts_df(config, G.graph["pdb_id"])
+    G.graph["contacts_df"] = get_contacts_df(config.get_contacts_config, G.graph["pdb_id"])
     G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
 
     for func in funcs:
@@ -382,40 +389,17 @@ def construct_graph(
 
 
 if __name__ == "__main__":
-    import graphein.features.sequence.propy
-    from graphein.features.amino_acid import (
+    import graphein.protein.features.sequence.propy
+    from graphein.protein.features.nodes.amino_acid import (
         expasy_protein_scale,
         meiler_embedding,
     )
-    from graphein.features.edges.distance import (
-        add_aromatic_interactions,
-        add_aromatic_sulphur_interactions,
-        add_cation_pi_interactions,
-        add_delaunay_triangulation,
-        add_distance_threshold,
-        add_disulfide_interactions,
-        add_hydrogen_bond_interactions,
-        add_hydrophobic_interactions,
-        add_ionic_interactions,
-        add_k_nn_edges,
-    )
-    from graphein.features.edges.intramolecular import (
-        peptide_bonds,
-        pi_cation,
-        salt_bridge,
-        van_der_waals,
-    )
-    from graphein.features.sequence.embeddings import (
-        biovec_sequence_embedding,
-        esm_sequence_embedding,
-    )
-    from graphein.features.sequence.sequence import molecular_weight
+    from graphein.protein.features.sequence.sequence import molecular_weight
 
     configs = {
         "granularity": "CA",
         "keep_hets": False,
         "insertions": False,
-        "contacts_dir": "../../examples/contacts/",
         "verbose": False,
     }
     config = ProteinGraphConfig(**configs)
