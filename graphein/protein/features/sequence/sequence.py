@@ -38,13 +38,21 @@ def molecular_weight(
 """
 
 
-def molecular_weight(sequence: str, seq_type="protein") -> pd.Series:
+def molecular_weight(input, seq_type="protein"):
     from Bio import SeqUtils
 
-    return pd.Series(
-        SeqUtils.molecular_weight(sequence, seq_type=seq_type),
-        name="molecular_weight",
-    )
+    func = partial(SeqUtils.molecular_weight, seq_type=seq_type)
+
+    # If a graph is provided, e.g. from a protein graph we compute the function over the chains
+    if isinstance(input, nx.Graph):
+        G = compute_feature_over_chains(
+            input, func, feature_name="molecular_weight"
+        )
+        return G
+
+    # If a node is provided, e.g. from a PPI graph we extract the sequence and compute the weight
+    elif type(input) == str:
+        return func(input)
 
 
 def aaindex2(sequence: str, feature_type) -> pd.Series:
@@ -52,4 +60,4 @@ def aaindex2(sequence: str, feature_type) -> pd.Series:
 
 
 if __name__ == "__main__":
-    print(molecular_weight(sequence="MYTGV"))
+    print(molecular_weight(input="MYTGV"))

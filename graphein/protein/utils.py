@@ -7,6 +7,7 @@
 import os
 from pathlib import Path
 
+import pandas as pd
 from Bio.PDB import PDBList
 
 
@@ -46,3 +47,19 @@ def get_protein_name_from_filename(pdb_path: str) -> str:
     head, tail = os.path.split(pdb_path)
     tail = os.path.splitext(tail)[0]
     return tail
+
+
+def filter_dataframe(
+    dataframe: pd.DataFrame, by_column, list_of_values, boolean
+):
+    """
+    Filter function for dataframe.
+    Filters the [dataframe] such that the [by_column] values have to be
+    in the [list_of_values] list if boolean == True, or not in the list
+    if boolean == False
+    """
+    df = dataframe.copy()
+    df = df[df[by_column].isin(list_of_values) == boolean]
+    df.reset_index(inplace=True, drop=True)
+
+    return df
