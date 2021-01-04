@@ -10,7 +10,7 @@ from typing import Callable, List, Optional, Union
 from pydantic import BaseModel
 
 from graphein.features.amino_acid import meiler_embedding
-from graphein.features.edges import peptide_bonds
+from graphein.features.edges.intramolecular import peptide_bonds
 
 
 class ProteinGraphConfig(BaseModel):
@@ -37,9 +37,6 @@ class ProteinGraphConfig(BaseModel):
     edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
 
 
-def parse_edge_functions_from_config(func_names: List[str]):
-    raise NotImplementedError
-
-
-def parse_node_metadata_functions_from_config(func_names: List[str]):
-    raise NotImplementedError
+class ProteinMeshConfig(BaseModel):
+    pymol_command_line_options: Optional[str] = "-cKq"
+    pymol_commands: Optional[List[str]] = ["show surface"]
