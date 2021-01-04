@@ -121,6 +121,8 @@ def filter_hetatms(
 
 def process_dataframe(
     protein_df: pd.DataFrame,
+    atom_df_processing_funcs: Optional[List[Callable]] = None,
+    hetatom_df_processing_funcs: Optional[List[Callable]] = None,
     granularity: str = "centroids",
     chain_selection: str = "all",
     insertions: bool = False,
@@ -133,6 +135,8 @@ def process_dataframe(
 
     :param protein_df: Dataframe to process.
         Should be the object returned from `read_pdb_to_dataframe`.
+    :param atom_df_processing_funcs: List of functions to process dataframe. These must take in a dataframe and return a dataframe
+    :param hetatom_df_processing_funcs: List of functions to process dataframe. These must take in a dataframe and return a dataframe
     :param granularity: The level of granualrity for the graph.
         This determines the node definition.
         Acceptable values include:
@@ -151,6 +155,20 @@ def process_dataframe(
     # TODO: Need to properly define what "granularity" is supposed to do.
     atoms = protein_df.df["ATOM"]
     hetatms = protein_df.df["HETATM"]
+
+    # This block enables processing via a list of supplied functions operating on the atom and hetatom dataframes
+    # If these are provided, the dataframe returned will be computed only from these and the default workflow
+    # below this block will not execute.
+    if atom_df_processing_funcs is not None:
+        for func in atom_df_processing_funcs:
+            atoms = func(atoms)
+        if hetatom_df_processing_funcs is None:
+            return atoms
+
+    if hetatom_df_processing_funcs is not None:
+        for func in hetatom_df_processing_funcs:
+            hetatms = func(hetatms)
+        return pd.concat([atoms, hetatms])
 
     # Deprotonate structure by removing H atoms
     if deprotonate:
@@ -293,13 +311,11 @@ def calculate_centroid_positions(
 
 
 def compute_edges(
-    G: nx.Graph, config: ProteinGraphConfig, funcs: List[Callable]
+    G: nx.Graph, config: Optional[GetContactsConfig], funcs: List[Callable]
 ) -> nx.Graph:
     """Compute edges."""
     # Todo move to edge computation
-    G.graph["contacts_df"] = get_contacts_df(
-        config.get_contacts_config, G.graph["pdb_id"]
-    )
+    G.graph["contacts_df"] = get_contacts_df(config, G.graph["pdb_id"])
     G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
 
     for func in funcs:
@@ -326,6 +342,7 @@ def construct_graph(
     :param config: ProteinGraphConfig object. If None, defaults to config in graphein.protein.config
     :param pdb_path: Path to pdb_file to build graph from
     :param pdb_code: 4-character PDB accession pdb_code to build graph from
+    :param df_processing_funcs: List of dataframe processing functions
     :param edge_construction_funcs: List of edge construction functions
     :param edge_annotation_funcs: List of edge annotation functions
     :param node_annotation_funcs: List of node annotation functions
