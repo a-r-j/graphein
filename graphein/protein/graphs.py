@@ -78,6 +78,7 @@ def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
+    """Overwrite existing (x, y, z) coordinates with centroids of the amino acids."""
     centroids = calculate_centroid_positions(df)
     df = df.loc[df["atom_name"] == "CA"].reset_index(drop=True)
     df["x_coord"] = centroids["x_coord"]
@@ -90,10 +91,12 @@ def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
 def subset_structure_to_atom_type(
     df: pd.DataFrame, granularity: str
 ) -> pd.DataFrame:
+    """Return a subset of atomic dataframe that contains only certain atom names."""
     return df.loc[df["atom_name"] == granularity]
 
 
 def remove_insertions(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove insertions from structure."""
     # Remove alt_loc residues
     # Todo log.debug(f"Detected X insertions")
     return df.loc[df["alt_loc"].isin(["", "A"])]
@@ -102,6 +105,7 @@ def remove_insertions(df: pd.DataFrame) -> pd.DataFrame:
 def filter_hetatms(
     df: pd.DataFrame, keep_hets: List[str]
 ) -> List[pd.DataFrame]:
+    """Return hetatms of interest."""
     hetatms_to_keep = []
     for hetatm in keep_hets:
         hetatms_to_keep.append(df.loc[df["residue_name"] == hetatm])
