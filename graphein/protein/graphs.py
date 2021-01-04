@@ -66,6 +66,11 @@ def read_pdb_to_dataframe(
 
 
 def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove protons from PDB dataframe.
+
+    :param df: Atomic dataframe.
+    :returns: Atomic dataframe with all atom_name == "H" removed.
+    """
     log.debug(
         "Deprotonating protein. This removes H atoms from the pdb_df dataframe"
     )
