@@ -559,6 +559,8 @@ MOLECULAR_WEIGHTS_STD = dict()
 for k, v in MOLECULAR_WEIGHTS.items():
     MOLECULAR_WEIGHTS_STD[k] = scaler.transform(np.array([v]).reshape(-1, 1))
 
+# TODO: Document where this came from @a-r-j, as I think it might not be as standard as, say, the MWs.
+# Just replace this todo with a link, should suffice.
 QUASI_SEQ_DISTANCE_MATRIX: Dict[str, float] = {
     "AA": 0.0,
     "AC": 0.112,
