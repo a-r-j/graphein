@@ -11,15 +11,19 @@ from pydantic import BaseModel
 
 from graphein.features.amino_acid import meiler_embedding
 from graphein.features.edges.intramolecular import peptide_bonds
+from pathlib import Path
 
 
 class ProteinGraphConfig(BaseModel):
     granularity: str = "CA"
     keep_hets: bool = False
     insertions: bool = False
-    get_contacts_path: str = "/Users/arianjamasb/github/getcontacts"
-    pdb_dir: str = "../examples/pdbs/"
+    ### TODO: I suggest refactoring this out into a GetContactsConfig object.
+    # Also suggest to avoid hard-coding paths if possible!
+    get_contacts_path: Optional[Path] = None
+    pdb_dir: Path = "../examples/pdbs/"
     contacts_dir: str = "../examples/contacts/"
+    ### END TODO
     verbose: bool = True
     exclude_waters: bool = True
     covalent_bonds: bool = True
