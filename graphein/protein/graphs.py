@@ -42,15 +42,23 @@ def read_pdb_to_dataframe(
 ) -> pd.DataFrame:
     """
     Reads PDB file to PandasPDB object.
+
+    Returns `atomic_df`,
+    which is a dataframe enumerating all atoms
+    and their cartesian coordinates in 3D space.
+
     :param pdb_path: path to PDB file
     :param pdb_code: 4-character PDB accession
     :param verbose: print dataframe?
     """
-    if pdb_code is not None:
-        atomic_df = PandasPdb().fetch_pdb(pdb_code)
+    if pdb_code is None and pdb_path is None:
+        raise NameError("One of pdb_code or pdb_path must be specified!")
 
-    if pdb_path is not None:
-        atomic_df = PandasPdb().read_pdb(pdb_path)
+    atomic_df = (
+        PandasPdb().fetch_pdb(pdb_code)
+        if pdb_code is None
+        else PandasPdb().read_pdb(pdb_path)
+    )
 
     if verbose:
         print(atomic_df)
