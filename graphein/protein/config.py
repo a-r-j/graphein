@@ -40,9 +40,6 @@ class ProteinGraphConfig(BaseModel):
     graph_metadata_functions: Optional[List[Callable]] = None
 
 
-def parse_edge_functions_from_config(func_names: List[str]):
-    raise NotImplementedError
-
-
-def parse_node_metadata_functions_from_config(func_names: List[str]):
-    raise NotImplementedError
+class ProteinMeshConfig(BaseModel):
+    pymol_command_line_options: Optional[str] = "-cKq"
+    pymol_commands: Optional[List[str]] = ["show surface"]
