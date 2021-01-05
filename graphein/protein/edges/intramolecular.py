@@ -39,14 +39,13 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             if i == len(chain_residues) - 1:
                 pass
             else:
-                # PLACE HOLDER EDGE FEATURE
                 # Adds "peptide bond" between current residue and the next
-                G.add_edge(
-                    residue,
-                    chain_residues[i + 1],
-                    attr="peptide_bond",
-                    color="b",
-                )
+                if G.has_edge(i, i + 1):
+                    G.edges[i, i + 1]["kind"].add("peptide_bond")
+                else:
+                    G.add_edge(
+                        residue, chain_residues[i + 1], kind={"peptide_bond"}
+                    )
 
     return G
 
@@ -154,8 +153,10 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     ]
 
     for label, [res1, res2, interaction_type] in interactions.iterrows():
-        # Place holder
-        G.add_edge(res1, res2, attr=interaction_type, color="r")
+        if G.has_edge(res1, res2):
+            G.edges[res1, res2]["kind"].add(interaction_type)
+        else:
+            G.add_edge(res1, res2, kind={interaction_type})
 
     return G
 
