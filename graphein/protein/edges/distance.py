@@ -10,7 +10,7 @@ import logging
 import os
 import subprocess
 from itertools import combinations
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import networkx as nx
 import numpy as np
@@ -36,6 +36,7 @@ from graphein.protein.resi_atoms import (
     PI_RESIS,
     POS_AA,
 )
+from graphein.protein.utils import filter_dataframe
 
 log = logging.getLogger(__name__)
 
@@ -56,35 +57,17 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     return eucl_dists
 
 
-def compute_rgroup_dataframe(pdb_df: pd.DataFrame) -> pd.DataFrame:
-    """Return the atoms that are in R-groups and not the backbone chain."""
-    rgroup_df = filter_dataframe(pdb_df, "atom_name", BACKBONE_ATOMS, False)
-    return rgroup_df
-
-
-def filter_dataframe(
-    dataframe: pd.DataFrame, by_column, list_of_values, boolean
+def add_hydrophobic_interactions(
+    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
-    """
-    Filter function for dataframe.
-    Filters the [dataframe] such that the [by_column] values have to be
-    in the [list_of_values] list if boolean == True, or not in the list
-    if boolean == False
-    """
-    df = dataframe.copy()
-    df = df[df[by_column].isin(list_of_values) == boolean]
-    df.reset_index(inplace=True, drop=True)
-
-    return df
-
-
-def add_hydrophobic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
     """
     Find all hydrophobic interactions.
     Performs searches between the following residues:
     ALA, VAL, LEU, ILE, MET, PHE, TRP, PRO, TYR
     Criteria: R-group residues are within 5A distance.
     """
+    if rgroup_df is None:
+        rgroup_df = G.graph["rgroup_df"]
     hydrophobics_df = filter_dataframe(
         rgroup_df, "residue_name", HYDROPHOBIC_RESIS, True
     )
@@ -95,11 +78,15 @@ def add_hydrophobic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
     )
 
 
-def add_disulfide_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
+def add_disulfide_interactions(
+    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+):
     """
     Find all disulfide interactions between CYS residues.
     Criteria: sulfur atom pairs are within 2.2A of each other.
     """
+    if rgroup_df is None:
+        rgroup_df = G.graph["rgroup_df"]
     disulfide_df = filter_dataframe(
         rgroup_df, "residue_name", DISULFIDE_RESIS, True
     )
@@ -111,9 +98,13 @@ def add_disulfide_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
     add_interacting_resis(G, interacting_atoms, disulfide_df, ["disulfide"])
 
 
-def add_hydrogen_bond_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
+def add_hydrogen_bond_interactions(
+    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+):
     """Add all hydrogen-bond interactions."""
     # For these atoms, find those that are within 3.5A of one another.
+    if rgroup_df is None:
+        rgroup_df = G.graph["rgroup_df"]
     HBOND_ATOMS = [
         "ND",  # histidine and asparagine
         "NE",  # glutamate, tryptophan, arginine, histidine
@@ -144,11 +135,13 @@ def add_hydrogen_bond_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
     add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
 
 
-def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
+def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame = None):
     """
     Find all ionic interactions.
     Criteria: ARG, LYS, HIS, ASP, and GLU residues are within 6A.
     """
+    if rgroup_df is None:
+        rgroup_df = G.graph["rgroup_df"]
     ionic_df = filter_dataframe(rgroup_df, "residue_name", IONIC_RESIS, True)
     distmat = compute_distmat(ionic_df)
     interacting_atoms = get_interacting_atoms(6, distmat)
@@ -174,7 +167,9 @@ def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
                 G.remove_edge(r1, r2)
 
 
-def add_aromatic_interactions(G: nx.Graph, pdb_df: pd.DataFrame):
+def add_aromatic_interactions(
+    G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None
+):
     """
     Find all aromatic-aromatic interaction.
     Criteria: phenyl ring centroids separated between 4.5A to 7A.
@@ -223,8 +218,12 @@ def add_aromatic_interactions(G: nx.Graph, pdb_df: pd.DataFrame):
             G.add_edge(n1, n2, kind={"aromatic"})
 
 
-def add_aromatic_sulphur_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
+def add_aromatic_sulphur_interactions(
+    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+):
     """Find all aromatic-sulphur interactions."""
+    if rgroup_df is None:
+        rgroup_df = G.graph["rgroup_df"]
     RESIDUES = ["MET", "CYS", "PHE", "TYR", "TRP"]
     SULPHUR_RESIS = ["MET", "CYS"]
     AROMATIC_RESIS = ["PHE", "TYR", "TRP"]
@@ -250,8 +249,12 @@ def add_aromatic_sulphur_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
                 G.add_edge(resi1, resi2, kind={"aromatic_sulphur"})
 
 
-def add_cation_pi_interactions(G: nx.Graph, rgroup_df: pd.DataFrame):
+def add_cation_pi_interactions(
+    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+):
     """Add cation-pi interactions."""
+    if rgroup_df is None:
+        rgroup_df = G.graph["rgroup_df"]
     cation_pi_df = filter_dataframe(
         rgroup_df, "residue_name", CATION_PI_RESIS, True
     )
@@ -323,17 +326,17 @@ def add_distance_threshold(
     :return:
     :rtype:
     """
-    dist_mat = compute_distmat(G.graph["pdb_df"])
+    dist_mat = compute_distmat(G.graph["raw_pdb_df"])
     interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
     interacting_nodes = zip(interacting_nodes[0], interacting_nodes[1])
 
     for (a1, a2) in interacting_nodes:
-        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
-        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
-        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
-        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
-        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
-        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
+        n1 = G.graph["raw_pdb_df"].loc[a1, "node_id"]
+        n2 = G.graph["raw_pdb_df"].loc[a2, "node_id"]
+        n1_chain = G.graph["raw_pdb_df"].loc[a1, "chain_id"]
+        n2_chain = G.graph["raw_pdb_df"].loc[a2, "chain_id"]
+        n1_position = G.graph["raw_pdb_df"].loc[a1, "residue_number"]
+        n2_position = G.graph["raw_pdb_df"].loc[a2, "residue_number"]
 
         condition_1 = n1_chain != n2_chain
         condition_2 = (
@@ -356,7 +359,7 @@ def add_k_nn_edges(
     p: int = 2,
     include_self: bool = False,
 ):
-    dist_mat = compute_distmat(G.graph["pdb_df"])
+    dist_mat = compute_distmat(G.graph["raw_pdb_df"])
 
     nn = kneighbors_graph(
         X=dist_mat,
@@ -373,12 +376,12 @@ def add_k_nn_edges(
     interacting_nodes = zip(outgoing, incoming, nn.data)
 
     for (a1, a2, data) in interacting_nodes:
-        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
-        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
-        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
-        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
-        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
-        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
+        n1 = G.graph["raw_pdb_df"].loc[a1, "node_id"]
+        n2 = G.graph["raw_pdb_df"].loc[a2, "node_id"]
+        n1_chain = G.graph["raw_pdb_df"].loc[a1, "chain_id"]
+        n2_chain = G.graph["raw_pdb_df"].loc[a2, "chain_id"]
+        n1_position = G.graph["raw_pdb_df"].loc[a1, "residue_number"]
+        n2_position = G.graph["raw_pdb_df"].loc[a2, "residue_number"]
 
         condition_1 = n1_chain != n2_chain
         condition_2 = (
