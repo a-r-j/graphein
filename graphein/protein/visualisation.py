@@ -236,7 +236,6 @@ if __name__ == "__main__":
     plot_protein_structure_graph(
         g,
         30,
-        None,
         (10, 7),
         colour_nodes_by="residue_name",
         colour_edges_by="kind",
