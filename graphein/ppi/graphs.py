@@ -108,6 +108,8 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     from graphein.ppi.edges import add_biogrid_edges, add_string_edges
+    from graphein.ppi.features.node_features import add_sequence_to_nodes
+    from graphein.protein.features.sequence.sequence import molecular_weight
 
     protein_list = [
         "CDC42",
@@ -129,6 +131,7 @@ if __name__ == "__main__":
             partial(add_string_edges, kwargs=kwargs),
             partial(add_biogrid_edges, kwargs=kwargs),
         ],
+        node_annotation_funcs=[add_sequence_to_nodes, molecular_weight],
     )
 
     edge_colors = [
@@ -139,6 +142,8 @@ if __name__ == "__main__":
         else "y"
         for u, v in g.edges()
     ]
+
+    print(g.nodes())
 
     print(nx.info(g))
     nx.draw(g, with_labels=True, edge_color=edge_colors)

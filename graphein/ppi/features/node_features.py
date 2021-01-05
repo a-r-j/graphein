@@ -7,13 +7,20 @@ def add_sequence_to_nodes(n, d):
     :param n:
     :param d:
     """
-    from bioservices import UniProt
+    from bioservices import HGNC, UniProt
 
+    h = HGNC(verbose=False)
     u = UniProt(verbose=False)
+
+    d["uniprot_ids"] = h.fetch("symbol", d["protein_id"])["response"]["docs"][
+        0
+    ]["uniprot_ids"]
+
     # Todo these API calls should probably be batched
     # Todo mapping with bioservices to support other protein IDs?
-    d["uniprot_id"] = u.mapping(fr="ACC", to="ID")
-    d["sequence"] = u.get_fasta_sequence(d["uniprot_id"])
+
+    for id in d["uniprot_ids"]:
+        d[f"sequence_{id}"] = u.get_fasta_sequence(id)
 
 
 if __name__ == "__main__":
