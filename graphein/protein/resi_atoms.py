@@ -1376,5 +1376,5 @@ SCHNEIDER_WREDE_DISTMAT: Dict[str, float] = {
     "AW": 0.739,
     "AV": 0.273,
     "AY": 0.552,
-    "VK": 0.889
+    "VK": 0.889,
 }
