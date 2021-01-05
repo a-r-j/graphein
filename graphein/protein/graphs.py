@@ -326,7 +326,7 @@ def add_nodes_to_graph(
     if protein_df is None:
         protein_df = G.graph["pdb_df"]
 
-    # Assign intrinsic node attributes
+    # Assign node attributes
     chain_id = protein_df["chain_id"].apply(str)
     residue_name = protein_df["residue_name"]
     residue_number = protein_df["residue_number"].apply(str)
