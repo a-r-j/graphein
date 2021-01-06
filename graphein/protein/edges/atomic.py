@@ -9,12 +9,12 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
+from graphein.protein.edges.distance import compute_distmat
 from graphein.protein.resi_atoms import (
+    COVALENT_RADII,
     DEFAULT_BOND_STATE,
     RESIDUE_ATOM_BOND_STATE,
-    COVALENT_RADII,
 )
-from graphein.protein.edges.distance import compute_distmat
 
 # TODO BOND ORDER - currently we make no distinction between single, double and aromatic bonds
 # Todo dealing with metals
