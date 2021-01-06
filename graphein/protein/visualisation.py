@@ -191,6 +191,7 @@ def plot_protein_structure_graph(
 
 if __name__ == "__main__":
     from graphein.protein.config import ProteinGraphConfig
+    from graphein.protein.edges.atomic import add_atomic_edges
     from graphein.protein.edges.distance import (
         add_aromatic_sulphur_interactions,
         add_delaunay_triangulation,
@@ -219,33 +220,33 @@ if __name__ == "__main__":
     # plot_pointcloud(m, "Test")
     # TEST PROTEIN STRUCTURE GRAPH PLOTTING
     configs = {
-        "granularity": "CA",
+        "granularity": "atom",
         "keep_hets": False,
+        "deprotonate": True,
         "insertions": False,
         "verbose": False,
     }
 
     config = ProteinGraphConfig(**configs)
-    config.edge_construction_functions = [
-        peptide_bonds,
-        salt_bridge,
-        hydrogen_bond,
-        add_hydrophobic_interactions,
-        add_ionic_interactions,
-        add_aromatic_sulphur_interactions,
-        add_delaunay_triangulation,
-    ]
+    config.edge_construction_functions = [add_atomic_edges]
+
     config.node_metadata_functions = [meiler_embedding, expasy_protein_scale]
     # g = construct_graph(config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e")
+
     g = construct_graph(
         config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e"
     )
     print(nx.info(g))
-    print(g.graph["pdb_df"].to_string())
+    # print(g.graph["pdb_df"].to_string())
 
-    print(g.nodes(data=True))
-    print(g.edges(data=True))
+    # print(g.nodes(data=True))
+    # print(g.nodes(data=True))
 
     plot_protein_structure_graph(
-        g, 30, (10, 7), colour_nodes_by="seq_position", colour_edges_by="kind"
+        g,
+        30,
+        (10, 7),
+        colour_nodes_by="seq_position",
+        colour_edges_by="kind",
+        label_node_ids=True,
     )
