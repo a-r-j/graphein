@@ -26,7 +26,7 @@ EDGE_COLOR_MAPPING = {"string": "r", "biogrid": "b"}
 def parse_kwargs_from_config(config: PPIGraphConfig) -> PPIGraphConfig:
     """
     If configs for STRING and BIOGRID are provided in the Global PPIGraphConfig, we update the kwargs
-    :param config:
+    :param config: PPI graph configuration object.
     :return: config with updated config.kwargs
     """
     if config.string_config is not None:
