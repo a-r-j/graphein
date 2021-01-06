@@ -4,8 +4,6 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-
-
 from __future__ import annotations
 
 from itertools import count
@@ -88,10 +86,6 @@ def colour_edges(
             frozenset(a) for a in nx.get_edge_attributes(G, "kind").values()
         )
         mapping = dict(zip(sorted(edge_types), count()))
-        [
-            print(mapping[frozenset(G.edges[i]["kind"])] / len(edge_types))
-            for i in G.edges()
-        ]
         colors = [
             colour_map(
                 mapping[frozenset(G.edges[i]["kind"])] / len(edge_types)
@@ -108,6 +102,7 @@ def plot_protein_structure_graph(
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
     node_size_multiplier: float = 20.0,
+    label_node_ids: bool = True,
     node_colour_map=plt.cm.plasma,
     edge_color_map=plt.cm.plasma,
     colour_nodes_by: str = "degree",
@@ -124,6 +119,7 @@ def plot_protein_structure_graph(
     :param node_alpha: Controls node transparency
     :param node_size_min: Specifies node minimum size
     :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree.
+    :param label_node_ids: bool indicating whether or not to plot node_id labels
     :param node_colour_map: colour map to use for nodes
     :param edge_color_map: colour map to use for edges
     :param colour_nodes_by: Specifies how to colour nodes. "degree"m "seq_position" or a node eature
@@ -166,6 +162,9 @@ def plot_protein_structure_graph(
                 edgecolors="k",
                 alpha=node_alpha,
             )
+            if label_node_ids:
+                label = list(G.nodes())[i]
+                ax.text(xi, yi, zi, label)
 
         # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
         # Those two points are the extrema of the line to be plotted
@@ -193,8 +192,11 @@ def plot_protein_structure_graph(
 if __name__ == "__main__":
     from graphein.protein.config import ProteinGraphConfig
     from graphein.protein.edges.distance import (
+        add_aromatic_sulphur_interactions,
         add_delaunay_triangulation,
+        add_disulfide_interactions,
         add_hydrophobic_interactions,
+        add_ionic_interactions,
     )
     from graphein.protein.edges.intramolecular import (
         hydrogen_bond,
@@ -229,14 +231,21 @@ if __name__ == "__main__":
         salt_bridge,
         hydrogen_bond,
         add_hydrophobic_interactions,
+        add_ionic_interactions,
+        add_aromatic_sulphur_interactions,
+        add_delaunay_triangulation,
     ]
     config.node_metadata_functions = [meiler_embedding, expasy_protein_scale]
-    g = construct_graph(config=config, pdb_path="../../examples/pdbs/3eiy.pdb")
+    # g = construct_graph(config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e")
+    g = construct_graph(
+        config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e"
+    )
+    print(nx.info(g))
+    print(g.graph["pdb_df"].to_string())
+
+    print(g.nodes(data=True))
+    print(g.edges(data=True))
 
     plot_protein_structure_graph(
-        g,
-        30,
-        (10, 7),
-        colour_nodes_by="residue_name",
-        colour_edges_by="kind",
+        g, 30, (10, 7), colour_nodes_by="seq_position", colour_edges_by="kind"
     )
