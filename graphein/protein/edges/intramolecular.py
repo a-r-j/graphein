@@ -23,30 +23,50 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
     :param G: networkx protein graph
     :return G; networkx protein graph with added peptide bonds
     """
+    # for i (n, d) in G.nodes(data=True):
+
+    # First we get all adjacent residues
+    # for i, (n, d) in enumerate(G.nodes(data=True)):
 
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
 
         # Find chain residues
         chain_residues = [
-            n for n, v in G.nodes(data=True) if v["chain_id"] == chain_id
+            (n, v) for n, v in G.nodes(data=True) if v["chain_id"] == chain_id
         ]
 
         # Iterate over every residue in chain
         for i, residue in enumerate(chain_residues):
-
             # Checks not at chain terminus - is this versatile enough?
             if i == len(chain_residues) - 1:
-                pass
-            else:
+                continue
+            # Asserts residues are on the same chain
+            cond_1 = (
+                residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
+            )
+            # Asserts residue numbers are adjacent
+            cond_2 = (
+                abs(
+                    residue[1]["residue_number"]
+                    - chain_residues[i + 1][1]["residue_number"]
+                )
+                == 1
+            )
+
+            # If this checks out, we add a peptide bond
+            if (cond_1) and (cond_2):
                 # Adds "peptide bond" between current residue and the next
                 if G.has_edge(i, i + 1):
                     G.edges[i, i + 1]["kind"].add("peptide_bond")
                 else:
                     G.add_edge(
-                        residue, chain_residues[i + 1], kind={"peptide_bond"}
+                        residue[0],
+                        chain_residues[i + 1][0],
+                        kind={"peptide_bond"},
                     )
-
+            else:
+                continue
     return G
 
 
@@ -57,15 +77,15 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
 ####################################
 
 
-def get_contacts_df(config: GetContactsConfig, pdb_id: str):
+def get_contacts_df(config: GetContactsConfig, pdb_name: str):
     if not config.contacts_dir:
         config.contacts_dir = Path("/tmp/")
 
-    contacts_file = config.contacts_dir / (pdb_id + "_contacts.tsv")
+    contacts_file = config.contacts_dir / (pdb_name + "_contacts.tsv")
 
     # Check for existence of GetContacts file
     if not os.path.isfile(contacts_file):
-        run_get_contacts(config, pdb_id)
+        run_get_contacts(config, pdb_name)
 
     contacts_df = read_contacts_file(config, contacts_file)
 
@@ -153,6 +173,10 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     ]
 
     for label, [res1, res2, interaction_type] in interactions.iterrows():
+        # Check residues are actually in graph
+        if not (G.has_node(res1) and G.has_node(res2)):
+            continue
+        
         if G.has_edge(res1, res2):
             G.edges[res1, res2]["kind"].add(interaction_type)
         else:
