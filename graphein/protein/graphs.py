@@ -60,9 +60,9 @@ def read_pdb_to_dataframe(
         raise NameError("One of pdb_code or pdb_path must be specified!")
 
     atomic_df = (
-        PandasPdb().fetch_pdb(pdb_code)
-        if pdb_code is not None
-        else PandasPdb().read_pdb(pdb_path)
+        PandasPdb().read_pdb(pdb_path)
+        if pdb_path is not None
+        else PandasPdb().fetch_pdb(pdb_code)
     )
 
     # Assign Node IDs to dataframes
@@ -79,7 +79,6 @@ def read_pdb_to_dataframe(
             + ":"
             + atomic_df.df["ATOM"]["atom_name"]
         )
-
     if verbose:
         print(atomic_df)
     return atomic_df
@@ -276,16 +275,19 @@ def select_chains(
     :return
     """
     if chain_selection != "all":
-        chains = [
-            protein_df.loc[protein_df["chain_id"] == chain]
-            for chain in chain_selection
-        ]
-    else:
-        chains = [
-            protein_df.loc[protein_df["chain_id"] == chain]
-            for chain in protein_df["chain_id"].unique()
-        ]
-    protein_df = pd.concat([c for c in chains])
+        # chains = [
+        #    protein_df.loc[protein_df["chain_id"] == chain]
+        #    for chain in chain_selection
+        # ]
+        protein_df = filter_dataframe(
+            protein_df, list(chain_selection), boolean=True
+        )
+    # else:
+    # chains = [
+    #    protein_df.loc[protein_df["chain_id"] == chain]
+    #    for chain in protein_df["chain_id"].unique()
+    # ]
+    # protein_df = pd.concat([c for c in chains])
 
     return protein_df
 
@@ -325,11 +327,10 @@ def add_nodes_to_graph(
     # If no protein dataframe is supplied, use the one stored in the Graph object
     if protein_df is None:
         protein_df = G.graph["pdb_df"]
-
-    # Assign node attributes
+    # Assign intrinsic node attributes
     chain_id = protein_df["chain_id"].apply(str)
     residue_name = protein_df["residue_name"]
-    residue_number = protein_df["residue_number"].apply(str)
+    residue_number = protein_df["residue_number"]  # .apply(str)
     coords = np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]])
     b_factor = protein_df["b_factor"]
 
@@ -399,6 +400,7 @@ def construct_graph(
     config: Optional[ProteinGraphConfig],
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
+    chain_selection: str = "all",
     df_processing_funcs: Optional[List[Callable]] = None,
     edge_construction_funcs: Optional[List[Callable]] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
@@ -457,7 +459,7 @@ def construct_graph(
     )
 
     raw_df = read_pdb_to_dataframe(pdb_path, pdb_code, verbose=config.verbose)
-    protein_df = process_dataframe(raw_df)
+    protein_df = process_dataframe(raw_df, chain_selection=chain_selection)
 
     # Initialise graph with metadata
     g = initialise_graph_with_metadata(
@@ -468,7 +470,6 @@ def construct_graph(
     )
     # Add nodes to graph
     g = add_nodes_to_graph(g)
-
     # Annotate additional node metadata
     if config.node_metadata_functions is not None:
         g = annotate_node_metadata(g, config.node_metadata_functions)
