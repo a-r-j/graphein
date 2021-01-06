@@ -176,7 +176,7 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
         # Check residues are actually in graph
         if not (G.has_node(res1) and G.has_node(res2)):
             continue
-        
+
         if G.has_edge(res1, res2):
             G.edges[res1, res2]["kind"].add(interaction_type)
         else:
