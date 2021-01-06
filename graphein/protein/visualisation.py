@@ -108,6 +108,7 @@ def plot_protein_structure_graph(
     colour_nodes_by: str = "degree",
     colour_edges_by: str = "type",
     edge_alpha: float = 0.5,
+    plot_style: str = "ggplot",
     out_path: Optional[str] = None,
     out_format: str = ".png",
 ):
@@ -125,6 +126,7 @@ def plot_protein_structure_graph(
     :param colour_nodes_by: Specifies how to colour nodes. "degree"m "seq_position" or a node eature
     :param colour_edges_by: Specifies how to colour edges. Currently only "kind" is supported
     :param edge_alpha: Controls edge transparency
+    :param plot_style: matplotlib style sheet to use
     :param out_path: If not none, writes plot to this location
     :param out_format: Fileformat to use for plot
     :return:
@@ -141,7 +143,7 @@ def plot_protein_structure_graph(
     )
 
     # 3D network plot
-    with plt.style.context(("ggplot")):
+    with plt.style.context((plot_style)):
 
         fig = plt.figure(figsize=figsize)
         ax = Axes3D(fig)
@@ -183,10 +185,8 @@ def plot_protein_structure_graph(
     if out_path is not None:
         plt.savefig(out_path + str(angle).zfill(3) + out_format)
         plt.close("all")
-    else:
-        plt.show()
 
-    return
+    return plt
 
 
 if __name__ == "__main__":
@@ -242,11 +242,13 @@ if __name__ == "__main__":
     # print(g.nodes(data=True))
     # print(g.nodes(data=True))
 
-    plot_protein_structure_graph(
+    p = plot_protein_structure_graph(
         g,
         30,
         (10, 7),
-        colour_nodes_by="seq_position",
+        colour_nodes_by="atom_type",
         colour_edges_by="kind",
-        label_node_ids=True,
+        label_node_ids=False,
     )
+
+    p.show()
