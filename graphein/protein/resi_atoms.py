@@ -1011,6 +1011,7 @@ DEFAULT_BOND_STATE: Dict[str, str] = {
     "HG1": "Hsb",
     "HE": "Hsb",
     "1HH1": "Hsb",
+    "1HH2": "Hsb",
     "2HH1": "Hsb",
     "2HH2": "Hsb",
     "HG": "Hsb",
