@@ -969,6 +969,7 @@ GRANTHAM_CHEMICAL_DISTANCE_MATRIX: Dict[str, float] = {
     "YY": 0.0,
 }
 
+
 # Scheider-Wrede Physicochemical Distance Matrix taken from ProPy3.
 # Paper: The rational design of amino acid sequences by artificial neural networks and simulated molecular evolution:
 # de novo design of an idealized leader peptidase cleavage site
@@ -1377,4 +1378,132 @@ SCHNEIDER_WREDE_DISTMAT: Dict[str, float] = {
     "AV": 0.273,
     "AY": 0.552,
     "VK": 0.889,
+}
+
+# Maximum numer of neighbours an atom can have.
+# Taken from: https://www.daylight.com/meetings/mug01/Sayle/m4xbondage.html
+MAX_NEIGHBOURS: Dict[str, int] = {
+    "C": 4,
+    "H": 1,
+    "B": 3,
+    "O": 2,
+    "F": 1,
+    "Br": 1,
+    "I": 3,
+}
+
+# Covalent radii for OpenSCAD output.
+
+# Covalent radii from Heyrovska, Raji : 'Atomic Structures of all the Twenty
+# Essential Amino Acids and a Tripeptide, with Bond Lengths as Sums of Atomic
+# Covalent Radii' <https://arxiv.org/pdf/0804.2488.pdf>
+# Adding Ores between Osb and Odb for Asp and Glu, Nres between Nsb and Ndb
+# for Arg, as PDB does not specify
+
+COVALENT_RADII: Dict[str, float] = {
+    "Csb": 0.77,
+    "Cres": 0.72,
+    "Cdb": 0.67,
+    "Osb": 0.67,
+    "Ores": 0.635,
+    "Odb": 0.60,
+    "Nsb": 0.70,
+    "Nres": 0.66,
+    "Ndb": 0.62,
+    "Hsb": 0.37,
+    "Ssb": 1.04,
+}
+
+# Atom classes based on Heyrovska, Raji covalent radii paper.
+DEFAULT_BOND_STATE: Dict[str, str] = {
+    "N": "Nsb",
+    "CA": "Csb",
+    "C": "Cdb",
+    "O": "Odb",
+    "OXT": "Osb",
+    "CB": "Csb",
+    "H": "Hsb",
+    # Not sure about these - assuming they're all standard Hydrogen. Won't make much difference given
+    # the tolerance is larger than Hs covalent radius
+    "HG1": "Hsb",
+    "HE": "Hsb",
+    "1HH1": "Hsb",
+    "1HH2": "Hsb",
+    "2HH1": "Hsb",
+    "2HH2": "Hsb",
+    "HG": "Hsb",
+    "HH": "Hsb",
+    "1HD2": "Hsb",
+    "2HD2": "Hsb",
+    "HZ1": "Hsb",
+    "HZ2": "Hsb",
+    "HZ3": "Hsb",
+}
+
+RESIDUE_ATOM_BOND_STATE: Dict[str, str] = {
+    "XXX": {
+        "N": "Nsb",
+        "CA": "Csb",
+        "C": "Cdb",
+        "O": "Odb",
+        "OXT": "Osb",
+        "CB": "Csb",
+        "H": "Hsb",
+    },
+    "VAL": {"CG1": "Csb", "CG2": "Csb"},
+    "LEU": {"CG": "Csb", "CD1": "Csb", "CD2": "Csb"},
+    "ILE": {"CG1": "Csb", "CG2": "Csb", "CD1": "Csb"},
+    "MET": {"CG": "Csb", "SD": "Ssb", "CE": "Csb"},
+    "PHE": {
+        "CG": "Cdb",
+        "CD1": "Cres",
+        "CD2": "Cres",
+        "CE1": "Cdb",
+        "CE2": "Cdb",
+        "CZ": "Cres",
+    },
+    "PRO": {"CG": "Csb", "CD": "Csb"},
+    "SER": {"OG": "Osb"},
+    "THR": {"OG1": "Osb", "CG2": "Csb"},
+    "CYS": {"SG": "Ssb"},
+    "ASN": {"CG": "Csb", "OD1": "Odb", "ND2": "Ndb"},
+    "GLN": {"CG": "Csb", "CD": "Csb", "OE1": "Odb", "NE2": "Ndb"},
+    "TYR": {
+        "CG": "Cdb",
+        "CD1": "Cres",
+        "CD2": "Cres",
+        "CE1": "Cdb",
+        "CE2": "Cdb",
+        "CZ": "Cres",
+        "OH": "Osb",
+    },
+    "TRP": {
+        "CG": "Cdb",
+        "CD1": "Cdb",
+        "CD2": "Cres",
+        "NE1": "Nsb",
+        "CE2": "Cdb",
+        "CE3": "Cdb",
+        "CZ2": "Cres",
+        "CZ3": "Cres",
+        "CH2": "Cdb",
+    },
+    "ASP": {"CG": "Csb", "OD1": "Ores", "OD2": "Ores"},
+    "GLU": {"CG": "Csb", "CD": "Csb", "OE1": "Ores", "OE2": "Ores"},
+    "HIS": {
+        "CG": "Cdb",
+        "CD2": "Cdb",
+        "ND1": "Nsb",
+        "CE1": "Cdb",
+        "NE2": "Ndb",
+    },
+    "LYS": {"CG": "Csb", "CD": "Csb", "CE": "Csb", "NZ": "Nsb"},
+    "ARG": {
+        "CG": "Csb",
+        "CD": "Csb",
+        "NE": "Nsb",
+        "CZ": "Cdb",
+        "NH1": "Nres",
+        "NH2": "Nres",
+    },
 }
