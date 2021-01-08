@@ -78,9 +78,7 @@ def compute_HiC_graph_from_regions(
             s2_id = f"{c2}:{st2}-{e2}"
 
             b2 = c.bins()[s2[0] : s2[-1] + 1]
-            n2 = b1.apply(
-                lambda x: f"{x[0]}:{x[1]}-{x[2]}", axis=1
-            ).values
+            n2 = b1.apply(lambda x: f"{x[0]}:{x[1]}-{x[2]}", axis=1).values
 
             # Create graph and add unique bins as nodes
             G = nx.Graph(cooler_file=contacts, region1=s1_id, region2=s2_id)
@@ -93,7 +91,9 @@ def compute_HiC_graph_from_regions(
                 unique_nodes = np.append(n1, n2)
 
             G.add_nodes_from(unique_bins)
-            log.debug(f"Added {len(unique_bins)} nodes to {s1_id}-{s2_id} graph")
+            log.debug(
+                f"Added {len(unique_bins)} nodes to {s1_id}-{s2_id} graph"
+            )
 
             nx.set_node_attributes(
                 G, dict(zip(unique_bins, unique_nodes)), "bin_regions"
@@ -136,4 +136,7 @@ if __name__ == "__main__":
         "chr3": np.array([[1, 10000], [11000, 20000]]),
     }
 
-    compute_HiC_graph_from_regions("Dixon2012-H1hESC-HindIII-allreps-filtered.1000kb.cool", regions=regions)
+    compute_HiC_graph_from_regions(
+        "Dixon2012-H1hESC-HindIII-allreps-filtered.1000kb.cool",
+        regions=regions,
+    )

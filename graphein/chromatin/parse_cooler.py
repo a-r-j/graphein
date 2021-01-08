@@ -6,7 +6,9 @@ import cooler
 import numpy as np
 
 
-def parse_cooler(cooler_file: Path, regions: Dict[str, np.ndarray]) -> Tuple[Cooler, List[np.ndarray]]:
+def parse_cooler(
+    cooler_file: Path, regions: Dict[str, np.ndarray]
+) -> Tuple[Cooler, List[np.ndarray]]:
     # Load cooler
     c = cooler.Cooler(cooler_file)
 
@@ -14,13 +16,13 @@ def parse_cooler(cooler_file: Path, regions: Dict[str, np.ndarray]) -> Tuple[Coo
     b_ids = fetch_bins_from_cooler(cooler, regions)
     # Identify unique bin_ids and isolate disjoint regions
     slices = get_unique_bins(b_ids)
-    
+
     return c, slices
 
 
-
-
-def fetch_bins_from_cooler(cooler: Cooler, regions: Dict[str, np.ndarray]) -> List[List[np.int64]]:
+def fetch_bins_from_cooler(
+    cooler: Cooler, regions: Dict[str, np.ndarray]
+) -> List[List[np.int64]]:
     # Fetch relevant bin_ids from the cooler file
     b_ids = []
     for chrom in regions:
