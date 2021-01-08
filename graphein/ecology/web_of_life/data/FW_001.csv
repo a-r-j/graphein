@@ -1,0 +1,41 @@
+,Benthos,Insects,Zooplankton,Hypostomus sp.,Pimelodus maculatus,Schizodon borellii,Loricariichthys platymetopon,Prochilodus lineatus,Cyphocharax modesta,Steindachnerina insculpta,Iheringichthys labrosus,Schizodon altoparanae,Hypophthalmus edentatus,Trachydoras paraguayensis,Hoplosternum littorale,Leporinus friderici,Leporinus obtusidens,Parauchenipterus galeatus,Pterodoras granulosus,Astyanax altiparanae,Auchenipterus nuchalis,Brycon orbignyanus,Acestrorhyncus lacustris,Hoplias malabaricus,Plagioscion squamosissimus,Pseudoplatystoma corruscans,Rhaphiodon vulpinus,Serrasalmus marginatus,Hemisorubin platyrhynchos,Salminus brasiliensis,Serrasalmus spilopleura,Other benthos feeders,Other detritus feeders,Other insectivores,Other piscivores,Other omnivores
+Phytoplankton,,,0.5,0.2,0.05,0.3,0.1,0.15,0.35,0.35,,0.3,0.3,,,0.05,0.05,,0.1,0.1,,,,,,,,,,,,0.05,0.1,,,0.1
+Aquatic macrophytes,,0.3,,,0.05,0.7,,,,,,0.7,,,0.1,0.3,0.3,0.4,0.5,0.2,,0.3,,,,,,,,,,0.1,,0.2,,0.15
+Periphyton,0.5,,,,,,,,,,0.1,,,,,,,,,,,,,,,,,,,,,,,,,0.1
+Benthos,,,,,0.25,,0.1,0.15,0.1,0.1,0.35,,,,0.2,0.05,0.05,,0.1,,,,,,,,,,,,,0.35,0.1,,,0.15
+Insects,,,,,0.1,,0.2,,,,0.2,,,0.15,0.2,0.2,0.2,0.6,0.1,0.3,0.7,0.55,,,,,,,,,,0.1,0.1,0.6,,0.3
+Zooplankton,,,,,0.1,,,,,,0.1,,0.7,0.3,0.2,,,,0.1,0.1,0.2,,,,,,,,,,,0.1,,0.1,,0.1
+Hypostomus sp.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.2,,,,,,
+Pimelodus maculatus,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.25,,,,,,,
+Schizodon borellii,,,,,,,,,,,,,,,,,,,,,,,0.1,,,,,,,,,,,,0.1,
+Loricariichthys platymetopon,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.15,,,,,,
+Prochilodus lineatus,,,,,,,,,,,,,,,,,,,,,,,,0.2,0.3,,0.2,0.1,,0.15,0.1,,,,0.2,
+Cyphocharax modesta,,,,,,,,,,,,,,,,,,,,,,,0.1,,,,,,,,,,,,,
+Steindachnerina insculpta,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.2,,,,,,,
+Iheringichthys labrosus,,,,,,,,,,,,,,,,,,,,,,,0.2,,,,,,,,,,,,,
+Schizodon altoparanae,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.1,,,,,,
+Hypophthalmus edentatus,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.1,,,0.1,,,,0.1,
+Trachydoras paraguayensis,,,,,0.1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Hoplosternum littorale,,,,,,,,,,,,,,,,,,,,,,,,,,0.3,,,,,,,,,,
+Leporinus friderici,,,,,0.05,,,,,,,,,,,,,,,,,,,,0.1,,,,,,,,,,,
+Leporinus obtusidens,,,,,,,,,,,,,,,,,,,,0.1,,,,0.2,,0.1,,,,,,,,,,
+Parauchenipterus galeatus,,,,,,,,,,,,,,,,,,,,,,,,,0.15,,0.2,,,,,,,,,
+Pterodoras granulosus,,,,,,,,,,,,,,,,,,,,,,,,0.2,,,,0.1,,,0.1,,,,,
+Astyanax altiparanae,,,,,0.1,,,,,,,,,,,0.1,0.1,,,,,0.1,0.2,,0.15,0.2,0.2,0.1,0.15,0.1,0.1,,,0.1,0.2,
+Auchenipterus nuchalis,,,,,,,,,,,,,,,,,,,,,,,0.1,,,0.1,,,,,0.1,,,,, 
+Brycon orbignyanus,,,,,,,,,,,,,,,,,,,,,,,,,,,0.1,,0.1,,,,,,, 
+Acestrorhyncus lacustris,,,,,,,,,,,,,,,,,,,,,,,,0.1,,,0.1,,,,,,,,, 
+Hoplias malabaricus,,,,,,,,,,,,,,,,,,,,,,,,0.2,,,,,,0.2,,,,,, 
+Plagioscion squamosissimus,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.1,,,0.2,,,,, 
+Pseudoplatystoma corruscans,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.05,,,,,,,0.05, 
+Rhaphiodon vulpinus,,,,,,,,,,,,,,,,,,,,,,,,,,,0.1,,,,,,,,, 
+Serrasalmus marginatus,,,,,0.05,,,,,,,,,,,,,,,,,,,,0.1,0.1,,0.1,0.1,,,,,,, 
+Hemisorubin platyrhynchos,,,,,,,,,,,,,,,,,,,,,,,,,,0.1,,,,,,,,,, 
+Salminus brasiliensis,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.05, 
+Serrasalmus spilopleura,,,,,,,,,,,,,,,,,,,,,,,,,0.1,,,,,,,,,,, 
+Other benthos feeders,,,,,,,,,,,,,,,,,,,,,0.1,,,,,,0.1,0.1,,,0.1,,,,, 
+Other detritus feeders,,,,,,,,,,,,,,,,,,,,,,,0.1,,,,,0.1,0.1,,0.1,,,,, 
+Other insectivores,,,,,0.05,,,,,,,,,,,,,,,,,0.05,0.1,0.1,0.1,,,0.1,0.1,,,,,,, 
+Other piscivores,,,,,,,,,,,,,,,,,,,,,,,,,,0.1,,,,,,,,,0.1, 
+Other omnivores,,,,,,,,,,,,,,,,0.1,0.1,,,0.1,,,0.1,,,,,0.05,,0.1,0.1,,,,0.2, 
+Detritus,0.5,0.7,0.5,0.8,0.1,,0.6,0.7,0.55,0.55,0.25,,,0.55,0.3,0.2,0.2,,0.1,0.1,,,,,,,,,,,,0.3,0.7,,,0.1

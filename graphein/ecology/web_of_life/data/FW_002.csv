@@ -1,0 +1,15 @@
+,Zooplanckton,Terrestrial Invertebrates,Astyanax fasciatus,Astyanax altiparanae,Brycon nattereri,Leporinus friderici,Hypostomus strigaticeps,Hoplias malabaricus,Salminus hilarii
+Phytoplankton,0.4,,0.001,0.02,,0.004,,,
+Macrophytes,,0.2,0.5,0.1,0.036,0.1,,0.007,
+Zooplankton,,,,,,,,,
+Terrestrial Invertebrates,,,0.192,0.85,0.742,0.634,,0.361,0.025
+Astyanax fasciatus,,,,,,,,0.1,0.06
+Astyanax altiparanae,,,,,,,,0.5,0.74
+Brycon nattereri,,,,,,,,,0.115
+Leporinus friderici,,,,,,,,,0.05
+Hypostomus strigaticeps,,,,,,,,,0.01
+Hoplias malabaricus,,,,,,,,0.03,
+Salminus hilarii,,,,,,,,,
+Detritus Animal,,,0.307,0.0006,0.001,0.01,,0.001,
+Detritus,0.6,0.3,,,0.003,,1,0.001,
+Import,,0.5,,0.029,0.219,0.252,,,
