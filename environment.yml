@@ -27,6 +27,6 @@ dependencies:
 - xarray
 - ipympl
 - pydantic
-- sklearn
+- scikit-learn
 - pip:
     - git+https://www.github.com/a-r-j/graphein@protein_vis
