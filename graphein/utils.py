@@ -65,7 +65,7 @@ def annotate_node_features(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     :return: Graph with node features added
     """
     for func in funcs:
-            func(G)
+        func(G)
     return G
 
 
