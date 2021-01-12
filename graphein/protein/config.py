@@ -33,13 +33,8 @@ class ProteinGraphConfig(BaseModel):
     )  # Also suggest to avoid hard-coding paths if possible!
     verbose: bool = True
     exclude_waters: bool = True
-    covalent_bonds: bool = True
-    include_ss: bool = True
-    include_ligand: bool = False
-    graph_constructor: Optional[str] = None
     verbose: bool = True
     deprotonate: bool = False
-    long_interaction_threshold: Optional[int] = None
     protein_df_processing_functions: Optional[List[Callable]] = None
     edge_construction_functions: List[Union[Callable, str]] = [peptide_bonds]
     node_metadata_functions: Optional[List[Union[Callable, str]]] = [
