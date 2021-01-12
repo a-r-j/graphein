@@ -160,7 +160,7 @@ def plot_protein_structure_graph(
                 yi,
                 zi,
                 color=node_colors[i],
-                s=node_size_min + node_size_multiplier * g.degree[key],
+                s=node_size_min + node_size_multiplier * G.degree[key],
                 edgecolors="k",
                 alpha=node_alpha,
             )
@@ -170,7 +170,7 @@ def plot_protein_structure_graph(
 
         # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
         # Those two points are the extrema of the line to be plotted
-        for i, j in enumerate(g.edges()):
+        for i, j in enumerate(G.edges()):
             x = np.array((pos[j[0]][0], pos[j[1]][0]))
             y = np.array((pos[j[0]][1], pos[j[1]][1]))
             z = np.array((pos[j[0]][2], pos[j[1]][2]))
