@@ -191,7 +191,11 @@ def plot_protein_structure_graph(
 
 if __name__ == "__main__":
     from graphein.protein.config import ProteinGraphConfig
-    from graphein.protein.edges.atomic import add_atomic_edges
+    from graphein.protein.edges.atomic import (
+        add_atomic_edges,
+        add_bond_order,
+        add_ring_status,
+    )
     from graphein.protein.edges.distance import (
         add_aromatic_sulphur_interactions,
         add_delaunay_triangulation,
@@ -228,7 +232,11 @@ if __name__ == "__main__":
     }
 
     config = ProteinGraphConfig(**configs)
-    config.edge_construction_functions = [add_atomic_edges]
+    config.edge_construction_functions = [
+        add_atomic_edges,
+        add_ring_status,
+        add_bond_order,
+    ]
 
     config.node_metadata_functions = [meiler_embedding, expasy_protein_scale]
     # g = construct_graph(config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e")
@@ -237,16 +245,12 @@ if __name__ == "__main__":
         config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e"
     )
     print(nx.info(g))
-    # print(g.graph["pdb_df"].to_string())
-
-    # print(g.nodes(data=True))
-    # print(g.nodes(data=True))
 
     p = plot_protein_structure_graph(
         g,
         30,
         (10, 7),
-        colour_nodes_by="atom_type",
+        colour_nodes_by="element_symbol",
         colour_edges_by="kind",
         label_node_ids=False,
     )

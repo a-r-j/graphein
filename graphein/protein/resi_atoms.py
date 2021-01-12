@@ -1090,3 +1090,96 @@ RESIDUE_ATOM_BOND_STATE: Dict[str, str] = {
         "NH2": "Nres",
     },
 }
+
+# Contains idealised single, double and triple bond lengths (i_s, i_d, i_t) and watersheds (w_sd, w_dt),
+# below which a bond is probably double/triple (e.g. triple < double < single)
+# Taken from: Automatic Assignment of Chemical Connectivity to Organic Molecules in the Cambridge Structural Database
+# Jon C. Baber and Edward E. Hodgkin*
+# J. Chem. Inf. Comput. Sci. 1992, 32. 401-406
+BOND_LENGTHS: Dict[str, Dict[str, float]] = {
+    "As-N": {"i_s": 1.86, "i_d": 1.835, "w_sd": 1.845},
+    "As-O": {"i_s": 1.71, "i_d": 1.66, "w_sd": 1.68},
+    "As-S": {"i_s": 2.28, "i_d": 2.08, "w_sd": 2.15},
+    "C-C": {
+        "i_s": 1.49,
+        "i_d": 1.31,
+        "i_t": 1.18,
+        "w_sd": 1.38,
+        "w_dt": 1.21,
+    },
+    "C-N": {"i_s": 1.42, "i_d": 1.32, "i_t": 1.14, "w_sd": 1.34, "w_dt": 1.20},
+    "C-O": {
+        "i_s": 1.41,
+        "i_d": 1.22,
+        "w_sd": 1.28,
+    },
+    "C-S": {
+        "i_s": 1.78,
+        "i_d": 1.68,
+        "w_sd": 1.70,
+    },
+    "C-Te": {
+        "i_s": 2.20,
+        "i_d": 1.80,
+        "w_sd": 2.10,
+    },
+    "N-N": {
+        "i_s": 1.40,
+        "i_d": 1.22,
+        "w_sd": 1.32,
+    },
+    "N-O": {
+        "i_s": 1.39,
+        "i_d": 1.22,
+        "w_sd": 1.25,
+    },
+    "N-P": {
+        "i_s": 1.69,
+        "i_d": 1.59,
+        "w_sd": 1.62,
+    },
+    "N-S": {
+        "i_s": 1.66,
+        "i_d": 1.54,
+        "w_sd": 1.58,
+    },
+    "N-Se": {
+        "i_s": 1.83,
+        "i_d": 1.79,
+        "w_sd": 1.80,
+    },
+    "O-P": {
+        "i_s": 1.60,
+        "i_d": 1.48,
+        "w_sd": 1.52,
+    },
+    "O-S": {
+        "i_s": 1.58,
+        "i_d": 1.45,
+        "w_sd": 1.54,
+    },
+    "P-P": {
+        "i_s": 2.23,
+        "i_d": 2.04,
+        "w_sd": 2.06,
+    },
+}
+
+BOND_ORDERS: Dict = {
+    "As-N": [1, 2],
+    "As-O": [1, 2],
+    "As-S": [1, 2],
+    "C-C": [1, 2, 3],
+    "C-N": [1, 2, 3],
+    "C-O": [1, 2],
+    "C-S": [1, 2],
+    "C-Te": [1, 2],
+    "N-N": [1, 2],
+    "N-O": [1, 2],
+    "N-P": [1, 2],
+    "N-S": [1, 2],
+    "N-Se": [1, 2],
+    "O-P": [1, 2],
+    "O-S": [1, 2],
+    "P-P": [1, 2],
+}

@@ -5,21 +5,23 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+from typing import Any, Dict
+
 import networkx as nx
 import numpy as np
 import pandas as pd
 
 from graphein.protein.edges.distance import compute_distmat
 from graphein.protein.resi_atoms import (
+    BOND_LENGTHS,
+    BOND_ORDERS,
     COVALENT_RADII,
     DEFAULT_BOND_STATE,
     RESIDUE_ATOM_BOND_STATE,
 )
 
-# TODO BOND ORDER - currently we make no distinction between single, double and aromatic bonds
 # Todo dealing with metals
 # Todo There are other check and balances that can be implemented from here: https://www.daylight.com/meetings/mug01/Sayle/m4xbondage.html
-# Todo detect aromaticity
 
 
 def assign_bond_states_to_dataframe(df: pd.DataFrame) -> pd.DataFrame:
@@ -101,6 +103,7 @@ def add_atomic_edges(G: nx.Graph) -> nx.Graph:
     # Get node IDs from non NaN entries in the thresholded distance matrix and add the edge to the graph
     inds = zip(*np.where(~np.isnan(t_distmat)))
     for i in inds:
+        length = t_distmat[i[0]][i[1]]
         node_1 = G.graph["pdb_df"]["node_id"][i[0]]
         node_2 = G.graph["pdb_df"]["node_id"][i[1]]
         chain_1 = G.graph["pdb_df"]["chain_id"][i[0]]
@@ -116,9 +119,180 @@ def add_atomic_edges(G: nx.Graph) -> nx.Graph:
 
         if G.has_edge(node_1, node_2):
             G.edges[node_1, node_2]["kind"].add("covalent")
+            G.edges[node_1, node_2]["bond_length"] = length
         else:
-            G.add_edge(node_1, node_2, kind={"covalent"})
+            G.add_edge(node_1, node_2, kind={"covalent"}, bond_length=length)
 
     # Todo checking degree against MAX_NEIGHBOURS
 
     return G
+
+
+def add_ring_status(G: nx.Graph) -> nx.Graph:
+    """
+    Identifies rings in the atomic graph. Assigns the edge attribute "RING" to edges in the ring. We do not distinguish
+    between aromatic and non aromatic rings.
+    :param G: Atom-level protein structure graph to add ring edge types to
+    :return: Atom-level protein structure graph with added RING edge attribute
+    """
+    cycles = nx.cycle_basis(
+        G
+    )  # Produces a list of lists containing nodes in each cycle
+    # Iterate over cycles, check for an edge between the nodes - if there is one, add a "RING" attribute
+    for cycle in cycles:
+        [
+            G.edges[x, y]["kind"].add("RING")
+            for i, x in enumerate(cycle)
+            for j, y in enumerate(cycle)
+            if G.has_edge(x, y)
+            if i != j
+        ]
+
+    return G
+
+
+def add_bond_order(G: nx.Graph) -> nx.Graph:
+    """
+    Assign bond orders to the covalent bond edges between atoms on the basis of bond length. Values are taken from:
+    Automatic Assignment of Chemical Connectivity to Organic Molecules in the CambridgeStructural Database.
+    Jon C. Baber and Edward E. Hodgkin*
+    :param G: Atomic-level protein graph with covalent edges.
+    :return: Atomic-level protein graph with covalent edges annotated with putative bond order.
+    """
+    for u, v, a in G.edges(data=True):
+        atom_a = G.nodes[u]["element_symbol"]
+        atom_b = G.nodes[v]["element_symbol"]
+
+        # Assign bonds with hydrogens to 1
+        if atom_a == "H" or atom_b == "H":
+            G.edges[u, v]["kind"].add("SINGLE")
+        # If not, we need to identify the bond type from the bond length
+        else:
+            query = f"{atom_a}-{atom_b}"
+            # We need this try block as the dictionary keys may be X-Y, whereas the query we construct may be Y-X
+            try:
+                identify_bond_type_from_mapping(G, u, v, a, query)
+            except:
+                query = f"{atom_b}-{atom_a}"
+                identify_bond_type_from_mapping(G, u, v, a, query)
+    return G
+
+
+def identify_bond_type_from_mapping(
+    G: nx.Graph, u: str, v: str, a: Dict[str, Any], query: str
+):
+    """
+    Compares the bond length between two atoms in the graph, and the relevant experimental value by performing a lookup
+    against the watershed values in:
+    Automatic Assignment of Chemical Connectivity to Organic Molecules in the Cambridge
+    Structural Database. Jon C. Baber and Edward E. Hodgkin*
+    Bond orders are assigned in the order triple < double < single (e.g. if a bond is shorter than the triple bond
+    watershed (w_dt) then it is assigned as a triple bond. Similarly, if a bond is longer than this but shorter than the
+    double bond watershed, it is assigned double bond status.
+    :param G: nx.Graph of atom-protein structure with atomic edges added
+    :param u: node 1 in edge
+    :param v: node 2 in edge
+    :param a: edge data
+    :param query: "ELEMENTX-ELEMENTY" to perform lookup with (E.g. C-O, N-N)
+    :return: Graph with atomic edge bond order assigned
+    """
+    # Perform lookup of allowable bond orders for the given atom pair
+    allowable_order = BOND_ORDERS[query]
+    # If max souble, compare the length to the double watershed distance, w_sd, else assign single
+    if len(allowable_order) == 2:
+        if a["bond_length"] < BOND_LENGTHS[query]["w_sd"]:
+            G.edges[u, v]["kind"].add("DOUBLE")
+        else:
+            G.edges[u, v]["kind"].add("SINGLE")
+    else:
+        # If max triple, compare the length to the triple watershed distance, w_dt, then double, else assign single
+        if a["bond_length"] < BOND_LENGTHS[query]["w_dt"]:
+            G.edges[u, v]["kind"].add("TRIPLE")
+        elif a["bond_length"] < BOND_LENGTHS[query]["w_sd"]:
+            G.edges[u, v]["kind"].add("DOUBLE")
+        else:
+            G.edges[u, v]["kind"].add("SINGLE")
+    return G
+
+
+# The codeblock below was used in an initial pass at solving the bond order assignment problem based on hybridisation state.
+# We instead use a simpler method of construction based on bond lengths, but I am loathe to remove this code as it may prove useful later
+"""
+def cosinus(x0, x1, x2):
+    e0 = x0 - x1
+    e1 = x2 - x1
+    e0 = e0 / np.linalg.norm(e0)
+    e1 = e1 / np.linalg.norm(e1)
+    cosinus = np.dot(e0, e1)
+    angle = np.arccos(cosinus)
+
+    return 180 - np.degrees(angle)
+
+
+def dihedral(x0, x1, x2, x3):
+    b0 = -1.0 * (x1 - x0)
+    b1 = x2 - x1
+    b2 = x3 - x2
+
+    b0xb1 = np.cross(b0, b1)
+    b1xb2 = np.cross(b2, b1)
+
+    b0xb1_x_b1xb2 = np.cross(b0xb1, b1xb2)
+
+    y = np.dot(b0xb1_x_b1xb2, b1) * (1.0 / np.linalg.norm(b1))
+    x = np.dot(b0xb1, b1xb2)
+
+    grad = 180 - np.degrees(np.arctan2(y, x))
+    return grad
+
+
+def assign_bond_orders(G: nx.Graph) -> nx.Graph:
+
+    bond_angles: Dict[str, float] = {}
+    for n, d in G.nodes(data=True):
+        neighbours = list(G.neighbors(n))
+
+        if len(neighbours) == 1:
+            G.edges[n, neighbours[0]]["kind"].add("SINGLE")
+            bond_angles[n] = 0.0
+        elif len(neighbours) == 2:
+            cos_angle = cosinus(
+                G.nodes[n]["coords"],
+                G.nodes[neighbours[0]]["coords"],
+                G.nodes[neighbours[1]]["coords"],
+            )
+            bond_angles[n] = cos_angle
+        elif len(neighbours) == 3:
+            dihed = dihedral(
+                G.nodes[n]["coords"],
+                G.nodes[neighbours[0]]["coords"],
+                G.nodes[neighbours[1]]["coords"],
+                G.nodes[neighbours[2]]["coords"],
+            )
+            bond_angles[n] = dihed
+
+    print(bond_angles)
+
+    # Assign Bond angles to dataframe
+    G.graph["pdb_df"]["bond_angles"] = G.graph["pdb_df"]["node_id"].map(
+        bond_angles
+    )
+    print(G.graph["pdb_df"].to_string())
+
+    # Assign Hybridisation state from Bond Angles
+    hybridisation_state = {
+        n: "sp"
+        if d > 155
+        else "sp2"
+        if d > 115
+        else "sp3"
+        if d <= 115
+        else "UNK"
+        for n, d in bond_angles.items()
+    }
+    G.graph["pdb_df"]["bond_angles"] = G.graph["pdb_df"]["node_id"].map(
+        hybridisation_state
+    )
+
+    return G
+"""

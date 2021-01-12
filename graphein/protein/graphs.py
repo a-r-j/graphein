@@ -339,6 +339,7 @@ def add_nodes_to_graph(
     b_factor = protein_df["b_factor"]
     atom_type = protein_df["atom_name"]
     nodes = protein_df["node_id"]
+    element_symbol = protein_df["element_symbol"]
     G.add_nodes_from(nodes)
 
     # Set intrinsic node attributes
@@ -348,6 +349,9 @@ def add_nodes_to_graph(
         G, dict(zip(nodes, residue_number)), "residue_number"
     )
     nx.set_node_attributes(G, dict(zip(nodes, atom_type)), "atom_type")
+    nx.set_node_attributes(
+        G, dict(zip(nodes, element_symbol)), "element_symbol"
+    )
     nx.set_node_attributes(G, dict(zip(nodes, coords)), "coords")
     nx.set_node_attributes(G, dict(zip(nodes, b_factor)), "b_factor")
 
@@ -509,7 +513,11 @@ if __name__ == "__main__":
     from functools import partial
 
     import graphein.protein.features.sequence.propy
-    from graphein.protein.edges.atomic import add_atomic_edges
+    from graphein.protein.edges.atomic import (
+        add_atomic_edges,
+        add_bond_order,
+        add_ring_status,
+    )
     from graphein.protein.edges.distance import (
         add_delaunay_triangulation,
         add_hydrogen_bond_interactions,
@@ -536,10 +544,15 @@ if __name__ == "__main__":
         "verbose": False,
     }
     config = ProteinGraphConfig(**configs)
-    config.edge_construction_functions = [add_atomic_edges]
+    config.edge_construction_functions = [
+        add_atomic_edges,
+        add_bond_order,
+        add_ring_status,
+    ]
     # Test High-level API
     g = construct_graph(config=config, pdb_path="../../examples/pdbs/3eiy.pdb")
     print(nx.info(g))
+    print(g.edges())
     """
     # Test Low-level API
     raw_df = read_pdb_to_dataframe(
