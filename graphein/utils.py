@@ -57,6 +57,18 @@ def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     return G
 
 
+def annotate_node_features(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
+    """
+    Annotates nodes with features data. Note: passes whole graph to function.
+    :param G: Graph to add node features to
+    :param funcs: List of node feature annotation functions
+    :return: Graph with node features added
+    """
+    for func in funcs:
+            func(G)
+    return G
+
+
 def compute_edges(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     """
     Computes edges for an Graph from a list of edge construction functions
