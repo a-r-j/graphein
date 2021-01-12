@@ -38,7 +38,7 @@ def molecular_weight(
 """
 
 
-def molecular_weight(input, seq_type="protein"):
+def molecular_weight(input, data: Optional = None, seq_type="protein"):
     from Bio import SeqUtils
 
     func = partial(SeqUtils.molecular_weight, seq_type=seq_type)
@@ -52,7 +52,10 @@ def molecular_weight(input, seq_type="protein"):
 
     # If a node is provided, e.g. from a PPI graph we extract the sequence and compute the weight
     elif type(input) == str:
-        return func(input)
+        for id in data["uniprot_ids"]:
+            print(data)
+            data[f"molecular_weight_{id}"] = func(data[f"sequence_{id}"])
+        return
 
 
 def aaindex2(sequence: str, feature_type) -> pd.Series:
