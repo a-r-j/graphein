@@ -12,8 +12,7 @@ from typing import List, Optional, Tuple
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-from pytorch3d.ops import sample_points_from_meshes
+
 
 
 def plot_pointcloud(mesh: Meshes, title: str = "") -> None:
@@ -23,6 +22,7 @@ def plot_pointcloud(mesh: Meshes, title: str = "") -> None:
     :param title: Title of plot
     :return:
     """
+    from pytorch3d.ops import sample_points_from_meshes
     # Sample points uniformly from the surface of the mesh.
     points = sample_points_from_meshes(mesh, 5000)
     x, y, z = points.clone().detach().cpu().squeeze().unbind(1)
@@ -131,6 +131,7 @@ def plot_protein_structure_graph(
     :param out_format: Fileformat to use for plot
     :return:
     """
+    from mpl_toolkits.mplot3d import Axes3D
     # Get Node Attributes
     pos = nx.get_node_attributes(G, "coords")
 
@@ -196,27 +197,11 @@ if __name__ == "__main__":
         add_bond_order,
         add_ring_status,
     )
-    from graphein.protein.edges.distance import (
-        add_aromatic_sulphur_interactions,
-        add_delaunay_triangulation,
-        add_disulfide_interactions,
-        add_hydrophobic_interactions,
-        add_ionic_interactions,
-    )
-    from graphein.protein.edges.intramolecular import (
-        hydrogen_bond,
-        peptide_bonds,
-        salt_bridge,
-    )
     from graphein.protein.features.nodes.amino_acid import (
         expasy_protein_scale,
         meiler_embedding,
     )
     from graphein.protein.graphs import construct_graph
-    from graphein.protein.meshes import (
-        convert_verts_and_face_to_mesh,
-        create_mesh,
-    )
 
     # Test Point cloud plotting
     # v, f, a = create_mesh(pdb_code="3eiy")
