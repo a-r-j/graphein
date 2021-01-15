@@ -58,7 +58,6 @@ def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
     df["aa"] = amino_acids
 
     # Construct node IDs
-
     node_ids = []
 
     for i, row in df.iterrows():
@@ -70,23 +69,6 @@ def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-
-
-def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
-    if G.graph["pdb_code"] is not None:
-        raise NotImplementedError
-        # d = dssp_dict_from_pdb_file(pdb_code + ".pdb") # Todo fix paths
-    elif G.graph["file_path"] is not None:
-        d = dssp_dict_from_pdb_file(G.graph["file_path"])
-
-    dssp_df = parse_dssp_df(d)
-    dssp_df = process_dssp_df(d)
-
-    # Assign features
-    G.graph["dssp_secondary_structure"] = dssp_df["ss"]
-    G.graph["dssp_exposure_rsa"] = dssp_df["exposure_rsa"]
-    G.graph["dssp_exposure_asa"] = dssp_df["exposure_asa"]
-    return G
 
 def add_dssp_df(G: nx.Graph) -> nx.Graph:
 
@@ -103,10 +85,40 @@ def add_dssp_df(G: nx.Graph) -> nx.Graph:
 
     # Todo - add executable from config
     dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP="mkdssp")
+
     dssp_dict = parse_dssp_df(dssp_dict)
     dssp_dict = process_dssp_df(dssp_dict)
 
     G.graph["dssp_df"] = dssp_dict
 
-    print(G.graph["dssp_df"])
     return G
+
+def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
+
+    granularity = G.graph["config"].granularity
+    dssp_df = G.graph["dssp_df"]
+
+    if granularity == "atom":
+        # If granularity is atom, apply residue feature to every atom
+        for n in G.nodes():
+            residue = n.split(":")
+            residue = residue[0] + ":" + residue[1] + ":" + residue[2]
+
+            G.nodes[n][feature] = dssp_df.loc[residue, feature]
+
+    else:
+        nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
+
+        
+
+    return G
+
+# Check ASA
+def asa(G: nx.Graph) -> nx.Graph:
+    return add_dssp_feature(G, "exposure_rsa")
+
+def phi(G: nx.Graph) -> nx.Graph:
+    return add_dssp_feature(G, "phi")
+
+def psi(G: nx.Graph) -> nx.Graph:
+    return add_dssp_feature(G, "psi")

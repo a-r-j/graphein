@@ -540,6 +540,16 @@ if __name__ == "__main__":
     # Test High-level API
     g = construct_graph(config=config, pdb_path="../../examples/pdbs/3eiy.pdb")
     print(nx.info(g))
+
+    # Test DSSP
+    from graphein.protein.features.nodes.dssp import add_dssp_feature, add_dssp_df, asa, phi, psi
+    add_dssp_df(g)
+    phi(g)
+    psi(g)
+    #asa(g)
+    #print(g.nodes(data=True))
+
+
     """
     # Test Low-level API
     raw_df = read_pdb_to_dataframe(
