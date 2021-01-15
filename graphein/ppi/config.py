@@ -29,19 +29,19 @@ class BioGridConfig(BaseModel):
     searchNames: Optional[
         bool
     ] = True  # If ‘true’, the interactor OFFICIAL_SYMBOL will be examined for a match with the geneList.
-    max: Optional[int] = 1000  # Number of results to fetch
+    max: Optional[int] = 10000  # Number of results to fetch
     interSpeciesExcluded: Optional[
         bool
     ] = True  # If ‘true’, interactions with interactors from different species will be excluded.
     selfInteractionsExcluded: Optional[
         bool
-    ] = True  # If ‘true’, interactions with one interactor will be excluded.
+    ] = False  # If ‘true’, interactions with one interactor will be excluded.
     evidenceList: Optional[
-        bool
-    ] = True  # Any interaction evidence with its Experimental System in the list will be excluded from the results unless includeEvidence is set to true.
+        str
+    ] = ""  # Any interaction evidence with its Experimental System in the list will be excluded from the results unless includeEvidence is set to true.
     includeEvidence: Optional[
         bool
-    ] = True  # If set to true, any interaction evidence with its Experimental System in the evidenceList will be included in the result
+    ] = False  # If set to true, any interaction evidence with its Experimental System in the evidenceList will be included in the result
     searchIds: Optional[
         bool
     ] = True  # If ‘true’, the interactor ENTREZ_GENE, ORDERED LOCUS and SYSTEMATIC_NAME (orf) will be examined for a match with the geneList.
@@ -55,8 +55,8 @@ class BioGridConfig(BaseModel):
         bool
     ] = True  # If ‘true’, the entries in 'GENELIST' will be compared to BIOGRID internal IDS which are provided in all Tab2 formatted files.
     additionalIdentifierTypes: Optional[
-        List[str]
-    ] = None  # Identifier types on this list are examined for a match with the geneList.
+        str
+    ] = ""  # Identifier types on this list are examined for a match with the geneList.
     excludeGenes: Optional[
         bool
     ] = False  # If ‘true’, interactions containing genes in the geneList will be excluded from the results.
@@ -65,10 +65,10 @@ class BioGridConfig(BaseModel):
     ] = True  # If ‘true’, in addition to interactions between genes on the geneList, interactions will also be fetched which have only one interactor on the geneList
     includeInteractorInteractions: Optional[
         bool
-    ] = True  # If ‘true’ interactions between the geneList’s first order interactors will be included.
+    ] = False  # If ‘true’ interactions between the geneList’s first order interactors will be included.
     pubmedList: Optional[
-        bool
-    ] = True  # Interactions will be fetched whose Pubmed Id is/ is not in this list, depending on the value of excludePubmeds.
+        str
+    ] = ""  # Interactions will be fetched whose Pubmed Id is/ is not in this list, depending on the value of excludePubmeds.
     excludePubmeds: Optional[
         bool
     ] = False  # If ‘false’, interactions with Pubmed ID in pubmedList will be included in the results; if ‘true’ they will be excluded.
@@ -77,7 +77,7 @@ class BioGridConfig(BaseModel):
     ] = 20  # Interactions whose Pubmed ID has more than this number of interactions will be excluded from the results. Ignored if excludePubmeds is ‘false’.
     throughputTag: Optional[
         str
-    ] = "high"  # If set to 'low or 'high', only interactions with 'Low throughput' or 'High throughput' in the 'throughput' field will be returned.
+    ] = "any"  # If set to 'low or 'high', only interactions with 'Low throughput' or 'High throughput' in the 'throughput' field will be returned.
 
 
 class PPIGraphConfig(BaseModel):
