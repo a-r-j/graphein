@@ -14,7 +14,6 @@ import networkx as nx
 import numpy as np
 
 
-
 def plot_pointcloud(mesh: Meshes, title: str = "") -> None:
     """
     Plots pytorch3d Meshes object as pointcloud
@@ -23,6 +22,7 @@ def plot_pointcloud(mesh: Meshes, title: str = "") -> None:
     :return:
     """
     from pytorch3d.ops import sample_points_from_meshes
+
     # Sample points uniformly from the surface of the mesh.
     points = sample_points_from_meshes(mesh, 5000)
     x, y, z = points.clone().detach().cpu().squeeze().unbind(1)
@@ -132,6 +132,7 @@ def plot_protein_structure_graph(
     :return:
     """
     from mpl_toolkits.mplot3d import Axes3D
+
     # Get Node Attributes
     pos = nx.get_node_attributes(G, "coords")
 
