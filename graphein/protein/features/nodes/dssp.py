@@ -1,8 +1,13 @@
 from typing import Any, Dict, Optional
 
+import os
 import networkx as nx
 import pandas as pd
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
+from Bio.Data.IUPACData import protein_letters_1to3
+
+from graphein.protein.utils import download_pdb
+
 
 DSSP_COLS = [
     "chain",
@@ -43,15 +48,31 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
     return pd.DataFrame.from_records(appender, columns=DSSP_COLS)
 
 
-def add_dssp_df(G: nx.Graph) -> nx.Graph:
-    raise NotImplementedError
-
-
 def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
-    raise NotImplementedError
+
+    # Convert 1 letter aa code to 3 letter
+    amino_acids = df["aa"].tolist()
+
+    for i, amino_acid in enumerate(amino_acids):
+        amino_acids[i] = protein_letters_1to3[amino_acid].upper()
+    df["aa"] = amino_acids
+
+    # Construct node IDs
+
+    node_ids = []
+
+    for i, row in df.iterrows():
+        node_id = row["chain"] + ":" + row["aa"] + ":" + str(row["resnum"])
+        node_ids.append(node_id)
+    df["node_id"] = node_ids
+
+    df.set_index("node_id", inplace=True)
+
+    return df
 
 
-def add_dssp_features(G: nx.Graph) -> nx.Graph:
+
+def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     if G.graph["pdb_code"] is not None:
         raise NotImplementedError
         # d = dssp_dict_from_pdb_file(pdb_code + ".pdb") # Todo fix paths
@@ -67,36 +88,25 @@ def add_dssp_features(G: nx.Graph) -> nx.Graph:
     G.graph["dssp_exposure_asa"] = dssp_df["exposure_asa"]
     return G
 
+def add_dssp_df(G: nx.Graph) -> nx.Graph:
 
-"""
-def _get_protein_features(
-        self, pdb_code: Optional[str], file_path: Optional[str], chain_selection: str
-) -> pd.DataFrame:
-    :param file_path: (str) file path to PDB file
-    :param pdb_code: (str) String containing four letter PDB accession
-    :return df (pd.DataFrame): Dataframe containing output of DSSP (Solvent accessibility, secondary structure for each residue)
+    config = G.graph["config"]
+    pdb_id = G.graph["pdb_id"]
 
-    # Run DSSP on relevant PDB file
-    if pdb_code:
-        d = dssp_dict_from_pdb_file(self.pdb_dir + pdb_code + ".pdb")
-    if file_path:
-        d = dssp_dict_from_pdb_file(file_path)
+    # To add - Check for DSSP installation
 
-    # Subset dataframe to those in chain_selection
-    if chain_selection != "all":
-        df = df.loc[df["chain"].isin(chain_selection)]
-    # Rename cysteines to 'C'
-    df["aa"] = df["aa"].str.replace("[a-z]", "C")
-    df = df[df["aa"].isin(list(aa1))]
+    # Check for existence of pdb file. If not, download it.
+    if not os.path.isfile(config.pdb_dir / pdb_id):
+        pdb_file = download_pdb(config, pdb_id)
+    else:
+        pdb_file = config.pdb_dir + pdb_id + ".pdb"
 
-    # Drop alt_loc residues
-    df = df.loc[df["icode"] == " "]
+    # Todo - add executable from config
+    dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP="mkdssp")
+    dssp_dict = parse_dssp_df(dssp_dict)
+    dssp_dict = process_dssp_df(dssp_dict)
 
-    # Add additional Columns
-    df["aa_three"] = df["aa"].apply(one_to_three)
-    df["max_acc"] = df["aa_three"].map(residue_max_acc["Sander"].get)
-    df[["exposure_rsa", "max_acc"]] = df[["exposure_rsa", "max_acc"]].astype(float)
-    df["exposure_asa"] = df["exposure_rsa"] * df["max_acc"]
-    df["index"] = df["chain"] + ":" + df["aa_three"] + ":" + df["resnum"].apply(str)
-    return df
-"""
+    G.graph["dssp_df"] = dssp_dict
+
+    print(G.graph["dssp_df"])
+    return G
