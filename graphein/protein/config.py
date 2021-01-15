@@ -42,7 +42,7 @@ class ProteinGraphConfig(BaseModel):
     ]
     edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
     graph_metadata_functions: Optional[List[Callable]] = None
-    get_contacts_config: Optional[GetContactsConfig] = GetContactsConfig()
+    get_contacts_config: Optional[GetContactsConfig] = None
 
     class Config:
         arbitrary_types_allowed: bool = True
