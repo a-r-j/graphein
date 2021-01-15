@@ -1,4 +1,3 @@
-from intramolecular import *
-
+from .intramolecular import *
 from .atomic import *
 from .distance import *
