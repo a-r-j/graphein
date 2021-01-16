@@ -58,13 +58,6 @@ def add_dssp_features(G: nx.Graph) -> nx.Graph:
     elif G.graph["file_path"] is not None:
         d = dssp_dict_from_pdb_file(G.graph["file_path"])
 
-    dssp_df = parse_dssp_df(d)
-    dssp_df = process_dssp_df(d)
-
-    # Assign features
-    G.graph["dssp_secondary_structure"] = dssp_df["ss"]
-    G.graph["dssp_exposure_rsa"] = dssp_df["exposure_rsa"]
-    G.graph["dssp_exposure_asa"] = dssp_df["exposure_asa"]
     return G
 
 
