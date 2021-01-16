@@ -83,11 +83,18 @@ def add_dssp_df(G: nx.Graph) -> nx.Graph:
     else:
         pdb_file = config.pdb_dir + pdb_id + ".pdb"
 
+
+    if config.verbose:
+        pass # print DSSP executable
+
     # Todo - add executable from config
     dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP="mkdssp")
 
     dssp_dict = parse_dssp_df(dssp_dict)
     dssp_dict = process_dssp_df(dssp_dict)
+
+    if config.verbose:
+        print(dssp_dict)
 
     G.graph["dssp_df"] = dssp_dict
 
@@ -95,10 +102,10 @@ def add_dssp_df(G: nx.Graph) -> nx.Graph:
 
 def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
 
-    granularity = G.graph["config"].granularity
+    config = G.graph["config"]
     dssp_df = G.graph["dssp_df"]
 
-    if granularity == "atom":
+    if config.granularity == "atom":
         # If granularity is atom, apply residue feature to every atom
         for n in G.nodes():
             residue = n.split(":")
@@ -109,7 +116,8 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     else:
         nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
 
-        
+    if config.verbose:
+        print("Added " + feature + " features to graph nodes")
 
     return G
 
