@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 import os
 import networkx as nx
 import pandas as pd
+import numpy as np
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 from Bio.Data.IUPACData import protein_letters_1to3
 
@@ -34,6 +35,8 @@ DSSP_COLS = [
     "O_NH_2_relidx",
     "O_NH_2_energy",
 ]
+
+DSSP_SS = ["H", "B", "E", "G", "I", "T", "S"]
 
 
 def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
@@ -124,6 +127,7 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     config = G.graph["config"]
     dssp_df = G.graph["dssp_df"]
 
+    # Change to not allow for atom granuarlity?
     if config.granularity == "atom":
         # If granularity is atom, apply residue feature to every atom
         for n in G.nodes():
@@ -171,4 +175,32 @@ def psi(G: nx.Graph) -> nx.Graph:
     """
     return add_dssp_feature(G, "psi")
 
-# To add SS funciton
+def secondary_structure(G: nx.Graph) -> nx.Graph:
+    """
+    Adds secondary structure of each residue in protein graph as calculated by DSSP in the form of a one hot vector
+        Note: DSSP dataframe must be precomputed and added as graph level variable "dssp_df".
+        
+    :param G: Input protein graph
+    :return: Protein graph with secondary structure added
+    """
+
+    dssp_df = G.graph["dssp_df"]
+
+    for node, row in dssp_df.iterrows():
+
+        ss_element = row["ss"]
+
+        # Adds empty one hot vector if DSSP doesn't not predict an SS element
+        if ss_element == "-":
+            G.nodes[node]["secondary structure"] = np.zeros(7)
+
+        # Adds one hot encoding of SS for that residue/node
+        else:
+            index = DSSP_SS.index(ss_element)
+  
+            one_hot = np.zeros(7)
+            one_hot[index] = 1
+
+            G.nodes[node]["secondary structure"] = one_hot
+
+    return G

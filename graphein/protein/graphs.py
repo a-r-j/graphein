@@ -530,7 +530,7 @@ if __name__ == "__main__":
     from graphein.protein.features.sequence.sequence import molecular_weight
 
     configs = {
-        "granularity": "atom",
+        "granularity": "CA",
         "keep_hets": False,
         "insertions": False,
         "verbose": False,
@@ -542,10 +542,16 @@ if __name__ == "__main__":
     print(nx.info(g))
 
     # Test DSSP
-    from graphein.protein.features.nodes.dssp import add_dssp_feature, add_dssp_df, asa, phi, psi
+    from graphein.protein.features.nodes.dssp import (add_dssp_feature, 
+                                                        add_dssp_df, 
+                                                        asa, phi, psi,
+                                                        secondary_structure)
+
     add_dssp_df(g)
     phi(g)
     psi(g)
+    secondary_structure(g)
+
     #asa(g)
     #print(g.nodes(data=True))
 
