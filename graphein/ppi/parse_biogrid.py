@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 def params_BIOGRID(
-        params: Dict[str, Union[str, int, List[str], List[int]]], **kwargs
+    params: Dict[str, Union[str, int, List[str], List[int]]], **kwargs
 ) -> Dict[str, Union[str, int]]:
     """
     Updates default parameters with user parameters for the method "interactions" of the BIOGRID API REST.
@@ -71,10 +71,10 @@ def params_BIOGRID(
 
 
 def parse_BIOGRID(
-        protein_list: List[str],
-        ncbi_taxon_id: Union[int, str, List[int], List[str]],
-        paginate: bool = True,
-        **kwargs,
+    protein_list: List[str],
+    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    paginate: bool = True,
+    **kwargs,
 ) -> pd.DataFrame:
     """
     Makes BIOGRID API call and returns a source specific Pandas dataframe.
@@ -109,11 +109,11 @@ def parse_BIOGRID(
 
     # Call BIOGRID
     def make_call(
-            request_url: str,
-            params: Dict[str, Union[str, int]],
-            start: int = 0,
-            max: int = 10000,
-            paginate: bool = paginate,
+        request_url: str,
+        params: Dict[str, Union[str, int]],
+        start: int = 0,
+        max: int = 10000,
+        paginate: bool = paginate,
     ):
         params["start"] = start
         response = requests.post(request_url, data=params)
@@ -168,9 +168,11 @@ def standardise_BIOGRID(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def BIOGRID_df(protein_list: List[str],
-               ncbi_taxon_id: Union[int, str, List[int], List[str]],
-               **kwargs) -> pd.DataFrame:
+def BIOGRID_df(
+    protein_list: List[str],
+    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    **kwargs,
+) -> pd.DataFrame:
     """
     Generates standardised dataframe with BIOGRID protein-protein interactions, filtered according to user's input
     :protein_list: List of proteins (official symbol) that will be included in the PPI graph
@@ -195,7 +197,7 @@ if __name__ == "__main__":
         "RAC2",
         "RACGAP1",
         "RHOA",
-        "RHOB"
+        "RHOB",
     ]
     sources = ["STRING", "BIOGRID"]
     kwargs = {

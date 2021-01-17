@@ -129,7 +129,7 @@ def standardise_STRING(df: pd.DataFrame) -> pd.DataFrame:
 def STRING_df(
     protein_list: List[str],
     ncbi_taxon_id: Union[int, str, List[int], List[str]],
-    **kwargs
+    **kwargs,
 ) -> pd.DataFrame:
     """
     Generates standardised dataframe with STRING protein-protein interactions, filtered according to user's input
@@ -138,7 +138,9 @@ def STRING_df(
     :param kwargs:  Additional parameters to pass to STRING API calls
     :return: Standardised dataframe with STRING interactions
     """
-    df = parse_STRING(protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs)
+    df = parse_STRING(
+        protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs
+    )
     df = filter_STRING(df, **kwargs)
     df = standardise_STRING(df)
 
