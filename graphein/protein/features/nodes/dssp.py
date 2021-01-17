@@ -1,3 +1,9 @@
+"""Featurization functions for graph nodes using DSSP predicted features."""
+# Graphein
+# Author: Arian Jamasb <arian@jamasb.io>, Charlie Harris
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
+# Code Repository: https://github.com/a-r-j/graphein
 from typing import Any, Dict, Optional
 
 import os
@@ -31,7 +37,9 @@ DSSP_COLS = [
 
 
 def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
-    # Parse DSSP output to DataFrame
+    """
+    Parse DSSP output to DataFrame
+    """
     appender = []
     for k in dssp[1]:
         to_append = []
@@ -49,6 +57,9 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
 
 
 def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Processes a DSSP DataFrame to make indexes align with node IDs 
+    """
 
     # Convert 1 letter aa code to 3 letter
     amino_acids = df["aa"].tolist()
@@ -71,6 +82,11 @@ def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_dssp_df(G: nx.Graph) -> nx.Graph:
+    """
+    Construct DSSP dataframe and add as graph level variable to protein grapgh
+    :param G: Input protein graph
+    :return: Protein graph with DSSP dataframe added
+    """
 
     config = G.graph["config"]
     pdb_id = G.graph["pdb_id"]
@@ -101,6 +117,9 @@ def add_dssp_df(G: nx.Graph) -> nx.Graph:
     return G
 
 def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
+    """
+    Adds a certain amino acid feature as calculated by DSSP to every node in a protein graph
+    """
 
     config = G.graph["config"]
     dssp_df = G.graph["dssp_df"]
@@ -123,10 +142,33 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
 
 # Check ASA
 def asa(G: nx.Graph) -> nx.Graph:
+    """
+    Adds ASA of each residue in protein graph as calculated by DSSP.
+        Note: DSSP dataframe must be precomputed and added as graph level variable "dssp_df".
+
+    :param G: Input protein graph
+    :return: Protein graph with asa values added
+    """
     return add_dssp_feature(G, "exposure_rsa")
 
 def phi(G: nx.Graph) -> nx.Graph:
+    """
+    Adds phi-angles of each residue in protein graph as calculated by DSSP.
+        Note: DSSP dataframe must be precomputed and added as graph level variable "dssp_df".
+        
+    :param G: Input protein graph
+    :return: Protein graph with phi-angles values added
+    """
     return add_dssp_feature(G, "phi")
 
 def psi(G: nx.Graph) -> nx.Graph:
+    """
+    Adds psi-angles of each residue in protein graph as calculated by DSSP.
+        Note: DSSP dataframe must be precomputed and added as graph level variable "dssp_df".
+        
+    :param G: Input protein graph
+    :return: Protein graph with psi-angles values added
+    """
     return add_dssp_feature(G, "psi")
+
+# To add SS funciton
