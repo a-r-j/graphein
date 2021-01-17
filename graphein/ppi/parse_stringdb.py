@@ -113,6 +113,9 @@ def standardise_STRING(df: pd.DataFrame) -> pd.DataFrame:
     :param df: Source specific Pandas dataframe
     :return: Standardised dataframe
     """
+    if df.empty:
+        return pd.DataFrame({"p1": [], "p2": [], "source": []})
+
     # Rename & delete columns
     df = df.rename(columns={"preferredName_A": "p1", "preferredName_B": "p2"})
     df = df[["p1", "p2"]]
@@ -125,14 +128,17 @@ def standardise_STRING(df: pd.DataFrame) -> pd.DataFrame:
 
 def STRING_df(
     protein_list: List[str],
-    ncbi_taxon_id: int,
-    kwargs: Dict[str, Union[str, int]],
+    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    **kwargs
 ) -> pd.DataFrame:
     """
     Generates standardised dataframe with STRING protein-protein interactions, filtered according to user's input
+    :protein_list: List of proteins (official symbol) that will be included in the PPI graph
+    :ncbi_taxon_id: NCBI taxonomy identifiers for the organism. 9606 corresponds to Homo Sapiens
+    :param kwargs:  Additional parameters to pass to STRING API calls
     :return: Standardised dataframe with STRING interactions
     """
-    df = parse_STRING(protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id)
+    df = parse_STRING(protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs)
     df = filter_STRING(df, **kwargs)
     df = standardise_STRING(df)
 
