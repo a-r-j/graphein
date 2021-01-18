@@ -11,7 +11,7 @@ from typing import Callable, List, Optional, Union
 
 from pydantic import BaseModel
 
-from graphein.protein.edges.intramolecular import peptide_bonds
+from graphein.protein.edges.distance import add_peptide_bonds
 from graphein.protein.features.nodes.amino_acid import meiler_embedding
 
 
@@ -36,7 +36,7 @@ class ProteinGraphConfig(BaseModel):
     verbose: bool = True
     deprotonate: bool = False
     protein_df_processing_functions: Optional[List[Callable]] = None
-    edge_construction_functions: List[Union[Callable, str]] = [peptide_bonds]
+    edge_construction_functions: List[Union[Callable, str]] = [add_peptide_bonds]
     node_metadata_functions: Optional[List[Union[Callable, str]]] = [
         meiler_embedding
     ]

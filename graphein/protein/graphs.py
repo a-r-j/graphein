@@ -522,11 +522,10 @@ if __name__ == "__main__":
         add_delaunay_triangulation,
         add_hydrogen_bond_interactions,
         add_k_nn_edges,
+        add_peptide_bonds
     )
-    from graphein.protein.edges.intramolecular import (
-        peptide_bonds,
-        salt_bridge,
-    )
+    from graphein.protein.edges.intramolecular import salt_bridge
+    
     from graphein.protein.features.nodes.amino_acid import (
         expasy_protein_scale,
         meiler_embedding,
