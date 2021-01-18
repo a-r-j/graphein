@@ -7,6 +7,7 @@ import torch
 
 from graphein.protein.features.sequence.utils import (
     compute_feature_over_chains,
+    subset_by_node_feature_value,
 )
 
 
@@ -42,13 +43,6 @@ def compute_esm_embedding(sequence: str, representation: str):
         return sequence_representations[0].numpy()
 
 
-def subset(G, feature_name, feature_value):
-    node_list = []
-    for n, d in G.nodes(data=True):
-        if d["feature_name"] = feature_value:
-             node_list.append(n)
-    return G.subgraph(node_list)
-
 def esm_residue_embedding(
     G: nx.Graph,
     model_name: str = "esm1b_t33_650M_UR50S",
@@ -63,7 +57,7 @@ def esm_residue_embedding(
             output_layer=output_layer,
         )
 
-        subgraph = subset(G, "chain_id", chain)
+        subgraph = subset_by_node_feature_value(G, "chain_id", chain)
         
         for i, n, d in enumerate(subgraph.nodes(data=True)):
             G.nodes[n]["esm_embedding"] = embedding[i]
