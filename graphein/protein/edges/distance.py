@@ -110,7 +110,6 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
     return G
 
 
-
 def add_hydrophobic_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):

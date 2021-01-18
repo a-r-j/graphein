@@ -16,7 +16,6 @@ import pandas as pd
 
 from graphein.protein.utils import download_pdb
 
-
 ####################################
 #                                  #
 #     GetContacts Interactions     #
