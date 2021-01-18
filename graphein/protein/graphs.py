@@ -552,6 +552,7 @@ if __name__ == "__main__":
     psi(g)
     secondary_structure(g)
     print(g.nodes(data=True))
+    esm_sequence_embedding(g)
 
     #asa(g)
     #print(g.nodes(data=True))

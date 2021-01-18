@@ -42,21 +42,32 @@ def compute_esm_embedding(sequence: str, representation: str):
         return sequence_representations[0].numpy()
 
 
+def subset(G, feature_name, feature_value):
+    node_list = []
+    for n, d in G.nodes(data=True):
+        if d["feature_name"] = feature_value:
+             node_list.append(n)
+    return G.subgraph(node_list)
+
 def esm_residue_embedding(
     G: nx.Graph,
     model_name: str = "esm1b_t33_650M_UR50S",
     output_layer: int = 33,
 ) -> nx.Graph:
-    for c in G.graph["chain_id"]:
+
+    for chain in G.graph["chain_id"]:
         embedding = compute_esm_embedding(
-            G.graph[f"sequence_{c}"],
+            G.graph[f"sequence_{chain}"],
             representation="residue",
             model_name=model_name,
             output_layer=output_layer,
         )
-        # Todo complete residue assignment over subgraph
-        for i, n, d in enumerate(G.nodes(data=True)):
-            n["esm_embedding"] = embedding[i]
+
+        subgraph = subset(G, "chain_id", chain)
+        
+        for i, n, d in enumerate(subgraph.nodes(data=True)):
+            G.nodes[n]["esm_embedding"] = embedding[i]
+
     return G
 
 
