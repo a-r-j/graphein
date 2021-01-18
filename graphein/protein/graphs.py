@@ -551,6 +551,7 @@ if __name__ == "__main__":
     phi(g)
     psi(g)
     secondary_structure(g)
+    print(g.nodes(data=True))
 
     #asa(g)
     #print(g.nodes(data=True))

@@ -177,30 +177,10 @@ def psi(G: nx.Graph) -> nx.Graph:
 
 def secondary_structure(G: nx.Graph) -> nx.Graph:
     """
-    Adds secondary structure of each residue in protein graph as calculated by DSSP in the form of a one hot vector
+    Adds secondary structure of each residue in protein graph as calculated by DSSP in the form of a string
         Note: DSSP dataframe must be precomputed and added as graph level variable "dssp_df".
         
     :param G: Input protein graph
     :return: Protein graph with secondary structure added
     """
-
-    dssp_df = G.graph["dssp_df"]
-
-    for node, row in dssp_df.iterrows():
-
-        ss_element = row["ss"]
-
-        # Adds empty one hot vector if DSSP doesn't not predict an SS element
-        if ss_element == "-":
-            G.nodes[node]["secondary structure"] = np.zeros(7)
-
-        # Adds one hot encoding of SS for that residue/node
-        else:
-            index = DSSP_SS.index(ss_element)
-  
-            one_hot = np.zeros(7)
-            one_hot[index] = 1
-
-            G.nodes[node]["secondary structure"] = one_hot
-
-    return G
+    return add_dssp_feature(G, "ss")
