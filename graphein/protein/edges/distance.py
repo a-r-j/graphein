@@ -57,6 +57,59 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     return eucl_dists
 
 
+def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
+    """
+    Adds peptide backbone to residues in each chain
+    :param G: networkx protein graph
+    :return G; networkx protein graph with added peptide bonds
+    """
+    # for i (n, d) in G.nodes(data=True):
+
+    # First we get all adjacent residues
+    # for i, (n, d) in enumerate(G.nodes(data=True)):
+
+    # Iterate over every chain
+    for chain_id in G.graph["chain_ids"]:
+
+        # Find chain residues
+        chain_residues = [
+            (n, v) for n, v in G.nodes(data=True) if v["chain_id"] == chain_id
+        ]
+
+        # Iterate over every residue in chain
+        for i, residue in enumerate(chain_residues):
+            # Checks not at chain terminus - is this versatile enough?
+            if i == len(chain_residues) - 1:
+                continue
+            # Asserts residues are on the same chain
+            cond_1 = (
+                residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
+            )
+            # Asserts residue numbers are adjacent
+            cond_2 = (
+                abs(
+                    residue[1]["residue_number"]
+                    - chain_residues[i + 1][1]["residue_number"]
+                )
+                == 1
+            )
+
+            # If this checks out, we add a peptide bond
+            if (cond_1) and (cond_2):
+                # Adds "peptide bond" between current residue and the next
+                if G.has_edge(i, i + 1):
+                    G.edges[i, i + 1]["kind"].add("peptide_bond")
+                else:
+                    G.add_edge(
+                        residue[0],
+                        chain_residues[i + 1][0],
+                        kind={"peptide_bond"},
+                    )
+            else:
+                continue
+    return G
+
+
 def add_hydrophobic_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):

@@ -1,0 +1,32 @@
+name: graphein-dev
+channels:
+- conda-forge
+dependencies:
+- python=3.8
+- biopython
+- black
+- conda
+- flake8
+- isort
+- mamba
+- matplotlib
+- mypy
+- nbstripout
+- networkx
+- numpy
+- pandas
+- pip
+- pre-commit
+- pycodestyle
+- pydocstyle
+- pytest
+- pytest-cov
+- pytest-xdist
+- rdkit
+- scipy
+- xarray
+- ipympl
+- pydantic
+- scikit-learn
+- pip:
+    - git+https://www.github.com/a-r-j/graphein@protein_vis

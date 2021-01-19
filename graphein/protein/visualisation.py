@@ -12,8 +12,6 @@ from typing import List, Optional, Tuple
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-from pytorch3d.ops import sample_points_from_meshes
 
 
 def plot_pointcloud(mesh: Meshes, title: str = "") -> None:
@@ -23,6 +21,8 @@ def plot_pointcloud(mesh: Meshes, title: str = "") -> None:
     :param title: Title of plot
     :return:
     """
+    from pytorch3d.ops import sample_points_from_meshes
+
     # Sample points uniformly from the surface of the mesh.
     points = sample_points_from_meshes(mesh, 5000)
     x, y, z = points.clone().detach().cpu().squeeze().unbind(1)
@@ -131,6 +131,8 @@ def plot_protein_structure_graph(
     :param out_format: Fileformat to use for plot
     :return:
     """
+    from mpl_toolkits.mplot3d import Axes3D
+
     # Get Node Attributes
     pos = nx.get_node_attributes(G, "coords")
 
@@ -160,7 +162,7 @@ def plot_protein_structure_graph(
                 yi,
                 zi,
                 color=node_colors[i],
-                s=node_size_min + node_size_multiplier * g.degree[key],
+                s=node_size_min + node_size_multiplier * G.degree[key],
                 edgecolors="k",
                 alpha=node_alpha,
             )
@@ -170,7 +172,7 @@ def plot_protein_structure_graph(
 
         # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
         # Those two points are the extrema of the line to be plotted
-        for i, j in enumerate(g.edges()):
+        for i, j in enumerate(G.edges()):
             x = np.array((pos[j[0]][0], pos[j[1]][0]))
             y = np.array((pos[j[0]][1], pos[j[1]][1]))
             z = np.array((pos[j[0]][2], pos[j[1]][2]))
@@ -191,28 +193,16 @@ def plot_protein_structure_graph(
 
 if __name__ == "__main__":
     from graphein.protein.config import ProteinGraphConfig
-    from graphein.protein.edges.atomic import add_atomic_edges
-    from graphein.protein.edges.distance import (
-        add_aromatic_sulphur_interactions,
-        add_delaunay_triangulation,
-        add_disulfide_interactions,
-        add_hydrophobic_interactions,
-        add_ionic_interactions,
-    )
-    from graphein.protein.edges.intramolecular import (
-        hydrogen_bond,
-        peptide_bonds,
-        salt_bridge,
+    from graphein.protein.edges.atomic import (
+        add_atomic_edges,
+        add_bond_order,
+        add_ring_status,
     )
     from graphein.protein.features.nodes.amino_acid import (
         expasy_protein_scale,
         meiler_embedding,
     )
     from graphein.protein.graphs import construct_graph
-    from graphein.protein.meshes import (
-        convert_verts_and_face_to_mesh,
-        create_mesh,
-    )
 
     # Test Point cloud plotting
     # v, f, a = create_mesh(pdb_code="3eiy")
@@ -228,7 +218,11 @@ if __name__ == "__main__":
     }
 
     config = ProteinGraphConfig(**configs)
-    config.edge_construction_functions = [add_atomic_edges]
+    config.edge_construction_functions = [
+        add_atomic_edges,
+        add_ring_status,
+        add_bond_order,
+    ]
 
     config.node_metadata_functions = [meiler_embedding, expasy_protein_scale]
     # g = construct_graph(config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e")
@@ -237,16 +231,12 @@ if __name__ == "__main__":
         config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e"
     )
     print(nx.info(g))
-    # print(g.graph["pdb_df"].to_string())
-
-    # print(g.nodes(data=True))
-    # print(g.nodes(data=True))
 
     p = plot_protein_structure_graph(
         g,
         30,
         (10, 7),
-        colour_nodes_by="atom_type",
+        colour_nodes_by="element_symbol",
         colour_edges_by="kind",
         label_node_ids=False,
     )
