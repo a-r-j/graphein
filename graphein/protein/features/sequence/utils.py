@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Any
 
 import networkx as nx
 import numpy as np
@@ -48,9 +48,19 @@ def aggregate_feature_over_chains(
 def sequence_to_ngram(sequence: str, N: int) -> List[str]:
     return [sequence[i : i + N] for i in range(len(sequence) - N + 1)]
 
-def subset_by_node_feature_value(G: nx.Graph, feature_name: str, feature_value) -> nx.Graph:
+
+def subset_by_node_feature_value(
+    G: nx.Graph, feature_name: str, feature_value: Any
+) -> nx.Graph:
+    """
+    Extracts a subgraph from a protein structure graph based on nodes with a certain feature value
+    :param G: nx.Graph protein structure graph to extract a subgraph from
+    :param feature_name: Name of feature to base subgraph extraction from
+    :param feature_value: Value of feature to select
+    :return: Subgraph of G based on nodes with a given feature value
+    """
     node_list = []
     for n, d in G.nodes(data=True):
-        if d["feature_name"] = feature_value:
-             node_list.append(n)
+        if d[feature_name] == feature_value:
+            node_list.append(n)
     return G.subgraph(node_list)
