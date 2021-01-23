@@ -51,6 +51,6 @@ def sequence_to_ngram(sequence: str, N: int) -> List[str]:
 def subset_by_node_feature_value(G: nx.Graph, feature_name: str, feature_value) -> nx.Graph:
     node_list = []
     for n, d in G.nodes(data=True):
-        if d["feature_name"] = feature_value:
+        if d["feature_name"] == feature_value:
              node_list.append(n)
     return G.subgraph(node_list)
