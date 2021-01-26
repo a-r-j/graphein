@@ -36,8 +36,8 @@ jobs:
 
       - name: Debugging calls
         run: |
-          conda activate graphein-dev
-          which conda
+          source activate graphein-dev
+          which python
 
       - name: Run tests
         run: |
