@@ -1,8 +1,10 @@
 """Tests for graphein.protein.graphs"""
 
-from graphein.protein.graphs import construct_graph
-import networkx as nx
 from pathlib import Path
+
+import networkx as nx
+
+from graphein.protein.graphs import construct_graph
 
 
 def test_construct_graph():
