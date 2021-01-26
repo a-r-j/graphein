@@ -1,1 +1,1 @@
-"""Protein graph construction module.""
+"""Protein graph construction module."""

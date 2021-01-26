@@ -382,11 +382,11 @@ def calculate_centroid_positions(
 
 def compute_edges(
     G: nx.Graph,
-    get_contacts_config: Optional[GetContactsConfig],
     funcs: List[Callable],
+    get_contacts_config: Optional[GetContactsConfig] = None,
 ) -> nx.Graph:
     """Compute edges."""
-    # Todo move to edge computation
+    # TODO: move to edge computation
     if get_contacts_config is not None:
         G.graph["contacts_df"] = get_contacts_df(
             get_contacts_config, G.graph["pdb_id"]
@@ -402,7 +402,7 @@ def compute_edges(
 
 
 def construct_graph(
-    config: Optional[ProteinGraphConfig],
+    config: Optional[ProteinGraphConfig] = None,
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
@@ -488,7 +488,9 @@ def construct_graph(
 
     # Compute graph edges
     g = compute_edges(
-        g, config.get_contacts_config, config.edge_construction_functions
+        g,
+        funcs=config.edge_construction_functions,
+        get_contacts_config=None,
     )
 
     # Annotate additional graph metadata
