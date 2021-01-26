@@ -34,8 +34,8 @@ jobs:
           conda env create -f environment-dev.yml
           python -m pip install .
 
-      - name: Run tests
-        run: |
-          source activate graphein-dev
-          pytest
+      # - name: Run tests
+      #   run: |
+      #     source activate graphein-dev
+      #     pytest
 
