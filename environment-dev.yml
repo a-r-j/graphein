@@ -30,6 +30,7 @@ dependencies:
 - jupyter
 - jupyterlab
 - pydantic
+- interrogate
 - pip:
   - propy
   - biovec
