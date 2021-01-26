@@ -1,3 +1,8 @@
+"""Functions for graph-level featurization of the sequence of a protein.
+
+TODO: Need further elaboration
+on what functionality this module is intended to provide.
+"""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
