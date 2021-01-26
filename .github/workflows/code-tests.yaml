@@ -29,7 +29,7 @@ jobs:
       #     key: ${{ runner.os }}-env.${{ hashFiles('environment-dev.yml') }}
 
       - name: Build environment
-        if: steps.cache-environment.outputs.cache-hit != 'true'
+        # if: steps.cache-environment.outputs.cache-hit != 'true'
         run: |
           conda env create -f environment-dev.yml
           python -m pip install .
