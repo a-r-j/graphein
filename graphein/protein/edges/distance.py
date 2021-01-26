@@ -1,4 +1,4 @@
-"""Featurization functions for graph edges."""
+"""Functions for computing biochemical edges of graphs."""
 # Graphein
 # Author: Eric Ma, Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -44,6 +44,7 @@ log = logging.getLogger(__name__)
 def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     """
     Compute pairwise euclidean distances between every atom.
+
     Design choice: passed in a DataFrame to enable easier testing on
     dummy data.
     """
@@ -62,8 +63,10 @@ def add_hydrophobic_interactions(
 ):
     """
     Find all hydrophobic interactions.
+
     Performs searches between the following residues:
     ALA, VAL, LEU, ILE, MET, PHE, TRP, PRO, TYR
+
     Criteria: R-group residues are within 5A distance.
     """
     if rgroup_df is None:
@@ -83,6 +86,7 @@ def add_disulfide_interactions(
 ):
     """
     Find all disulfide interactions between CYS residues.
+
     Criteria: sulfur atom pairs are within 2.2A of each other.
     """
     if rgroup_df is None:
@@ -138,6 +142,7 @@ def add_hydrogen_bond_interactions(
 def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame = None):
     """
     Find all ionic interactions.
+
     Criteria: ARG, LYS, HIS, ASP, and GLU residues are within 6A.
     """
     if rgroup_df is None:
@@ -398,12 +403,16 @@ def add_k_nn_edges(
 def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
     """
     Return ring atoms from a dataframe.
+
     A helper function for add_aromatic_interactions.
+
     Gets the ring atoms from the particular aromatic amino acid.
+
     Parameters:
     ===========
     - dataframe: the dataframe containing the atom records.
     - aa: the amino acid of interest, passed in as 3-letter string.
+
     Returns:
     ========
     - dataframe: a filtered dataframe containing just those atoms from the
@@ -422,11 +431,15 @@ def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
 def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
     """
     Return aromatic ring centrods.
+
     A helper function for add_aromatic_interactions.
+
     Computes the ring centroids for each a particular amino acid's ring
     atoms.
+
     Ring centroids are computed by taking the mean of the x, y, and z
     coordinates.
+
     Parameters:
     ===========
     - ring_atom_df: a dataframe computed using get_ring_atoms.
@@ -448,9 +461,11 @@ def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
 def get_edges_by_bond_type(G: nx.Graph, bond_type: str) -> List[Tuple]:
     """
     Return edges of a particular bond type.
+
     Parameters:
     ===========
     - bond_type: (str) one of the elements in the variable BOND_TYPES
+
     Returns:
     ========
     - resis: (list) a list of tuples, where each tuple is an edge.
@@ -482,12 +497,16 @@ def add_interacting_resis(
 ):
     """
     Add interacting residues to graph.
+
     Returns a list of 2-tuples indicating the interacting residues based
     on the interacting atoms. This is most typically called after the
     get_interacting_atoms function above.
+
     Also filters out the list such that the residues have to be at least
     two apart.
+
     ### Parameters
+
     - interacting_atoms:    (numpy array) result from get_interacting_atoms function.
     - dataframe:            (pandas dataframe) a pandas dataframe that
                             houses the euclidean locations of each atom.
@@ -501,6 +520,7 @@ def add_interacting_resis(
                             - aromatic_sulphur
                             - cation_pi
                             - delaunay
+
     Returns:
     ========
     - filtered_interacting_resis: (set of tuples) the residues that are in
