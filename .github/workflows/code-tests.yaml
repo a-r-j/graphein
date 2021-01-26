@@ -32,16 +32,17 @@ jobs:
         # if: steps.cache-environment.outputs.cache-hit != 'true'
         run: |
           conda env create -f environment-dev.yml
-          python -m pip install .
 
       - name: Debugging calls
         run: |
           source activate graphein-dev
           which python
 
+      # No deps helps us check that all dependencies
+      # are explicitly stated in environment.yml
       - name: Run tests
         run: |
           source activate graphein-dev
-          python -m pip install .
-          pytest
+          python -m pip install . --no-deps
+          pytest .
 

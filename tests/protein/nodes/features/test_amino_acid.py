@@ -34,8 +34,8 @@ def test_expasy_protein_scale():
     expasy_protein_scale(n, d)
 
 
-def test_aaindex_1_feat():
-    """Execution test for `aaindex_1_feat`."""
-    d = {"residue_name": "LEU"}
-    n = "DUMMY"
-    aaindex_1_feat(n, d)
+# def test_aaindex_1_feat():
+#     """Execution test for `aaindex_1_feat`."""
+#     d = {"residue_name": "LEU"}
+#     n = "DUMMY"
+#     aaindex_1_feat(n, d, feature_name="KRIW790103")
