@@ -42,3 +42,11 @@ ignore-private = false
 ignore-semiprivate = false
 quiet = false
 verbose = 2
+
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --cov graphein --cov-report xml --cov-report=term-missing"
+testpaths = [
+    "tests",
+]
