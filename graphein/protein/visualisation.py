@@ -10,6 +10,7 @@ from itertools import count
 from typing import List, Optional, Tuple
 
 import matplotlib.pyplot as plt
+import matplotlib
 import networkx as nx
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
