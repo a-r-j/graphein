@@ -1,9 +1,6 @@
 name: Code tests
 
-on:
-  pull_request:
-    branch:
-      master
+on: [pull_request]
 
 jobs:
   code-tests:
