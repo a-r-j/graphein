@@ -24,4 +24,10 @@ dependencies:
 - pytest-xdist
 - rdkit
 - scipy
+- scikit-learn
 - xarray
+- jupyter
+- jupyterlab
+- pip:
+  - propy
+  - biovec
