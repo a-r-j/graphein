@@ -61,6 +61,8 @@ def subset_by_node_feature_value(
     """
     node_list = []
     for n, d in G.nodes(data=True):
+
         if d[feature_name] == feature_value:
             node_list.append(n)
+
     return G.subgraph(node_list)

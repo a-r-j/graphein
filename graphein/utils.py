@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from Bio.Data.IUPACData import protein_letters_3to1
+
 
 def onek_encoding_unk(x, allowable_set):
     """
@@ -253,3 +255,17 @@ def generate_adjacency_tensor(
     if return_array:
         return da.data
     return da
+
+
+def protein_letters_3to1_all_caps(amino_acid: str) -> str:
+    """
+    Converts capitalised 3 letter amino acid code to single letter.
+    
+    Not provided in default biopython.
+    """
+
+    amino_acid = amino_acid[0] + amino_acid[1:].lower()
+
+    one_letter_code = protein_letters_3to1[amino_acid]
+
+    return one_letter_code

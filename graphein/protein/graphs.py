@@ -558,18 +558,29 @@ if __name__ == "__main__":
                                                         asa, phi, psi,
                                                         secondary_structure)
 
+    """
     add_dssp_df(g)
     phi(g)
     psi(g)
     secondary_structure(g)
     print(g.nodes(data=True))
-    esm_sequence_embedding(g)
+    #esm_sequence_embedding(g)
 
     #asa(g)
     #print(g.nodes(data=True))
 
 
     print(g.edges())
+    """
+
+    # Test AAindex
+    from graphein.protein.features.nodes.aaindex import (aaindex1)
+
+    g = aaindex1(g, "FAUJ880111")
+
+    print(g.nodes(data=True))
+    print(g.graph["aaindex1"])
+
 
     """
     # Test Low-level API
