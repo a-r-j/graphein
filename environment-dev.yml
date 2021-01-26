@@ -4,6 +4,7 @@ channels:
 dependencies:
 - python=3.8
 - biopython
+- biopandas
 - black
 - conda
 - flake8
@@ -28,6 +29,7 @@ dependencies:
 - xarray
 - jupyter
 - jupyterlab
+- pydantic
 - pip:
   - propy
   - biovec
