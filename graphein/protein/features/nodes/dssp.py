@@ -68,6 +68,7 @@ def add_dssp_features(G: nx.Graph) -> nx.Graph:
     return G
 
 
+# TODO: decide whether this needs to be deleted or not.
 """
 def _get_protein_features(
         self, pdb_code: Optional[str], file_path: Optional[str], chain_selection: str
