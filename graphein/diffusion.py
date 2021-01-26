@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from .features.edges.distance import compute_distmat
+from .edges.distance import compute_distmat
 from .utils import format_adjacency, generate_feature_dataframe
 
 
@@ -67,6 +67,8 @@ def inverse_distance_matrix(G: nx.Graph, power: float) -> xr.DataArray:
     Diagonals (entries [i, i]) are set to 0.
 
     :param G: NetworkX Graph object.
+        Assumes that each node has `x_coord`, `y_coord`, and `z_coord`
+        as node attributes.
     :param power: The power for the distance calculation.
     """
 
