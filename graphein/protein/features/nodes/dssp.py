@@ -146,6 +146,7 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
 
     return G
 
+# TODO port ASA and RSA calculations from older version of graphein
 # Check ASA
 def asa(G: nx.Graph) -> nx.Graph:
     """
