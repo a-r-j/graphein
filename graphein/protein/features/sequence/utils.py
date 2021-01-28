@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Any
+from typing import Any, Callable, List
 
 import networkx as nx
 import numpy as np
@@ -7,6 +7,13 @@ import numpy as np
 def compute_feature_over_chains(
     G: nx.Graph, func: Callable, feature_name: str
 ) -> nx.Graph:
+    """
+    Computes a sequence featurisation function over the chains in a graph
+    :param G: nx.Graph protein structure graph to featurise
+    :param func: Sequence featurisation function
+    :param feature_name: name of added feature
+    :return: Graph with added features of the form G.graph[f"{feature_name}_{chain_id}"]
+    """
     for c in G.graph["chain_ids"]:
         G.graph[f"{feature_name}_{c}"] = func(G.graph[f"sequence_{c}"])
         """
@@ -25,6 +32,13 @@ def compute_feature_over_chains(
 def aggregate_feature_over_chains(
     G: nx.Graph, feature_name: str, aggregation_type: str
 ) -> nx.Graph:
+    """
+    Performs aggregation of a given feature over chains in a graph to produce an aggregated value
+    :param G: nx.Graph protein structure graph
+    :param feature_name: Name of feature to aggregate
+    :param aggregation_type: Type of aggregation to perform (min/max/mean/sum)
+    :return: Graph with new aggregated feature
+    """
 
     if aggregation_type == "max":
         func = np.max
@@ -46,6 +60,12 @@ def aggregate_feature_over_chains(
 
 
 def sequence_to_ngram(sequence: str, N: int) -> List[str]:
+    """
+    Chops a sequence into overlapping N-grams (substrings of length N)
+    :param sequence: str Sequence to convert to N-garm
+    :param N: Length ofN-grams (int)
+    :return: List of n-grams
+    """
     return [sequence[i : i + N] for i in range(len(sequence) - N + 1)]
 
 

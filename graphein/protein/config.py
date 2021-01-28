@@ -18,6 +18,7 @@ from graphein.protein.features.nodes.amino_acid import meiler_embedding
 class DSSPConfig(BaseModel):
     executable: str = "mkdssp"
 
+
 class GetContactsConfig(BaseModel):
     get_contacts_path: Path = Path(
         "/Users/arianjamasb/github/getcontacts/"

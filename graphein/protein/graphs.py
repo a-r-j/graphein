@@ -532,6 +532,7 @@ if __name__ == "__main__":
     from graphein.protein.features.sequence.embeddings import (
         biovec_sequence_embedding,
         esm_sequence_embedding,
+        esm_residue_embedding,
     )
     from graphein.protein.features.sequence.sequence import molecular_weight
 
@@ -551,12 +552,15 @@ if __name__ == "__main__":
     g = construct_graph(config=config, pdb_path="../../examples/pdbs/3eiy.pdb")
     print(nx.info(g))
 
-
     # Test DSSP
-    from graphein.protein.features.nodes.dssp import (add_dssp_feature, 
-                                                        add_dssp_df, 
-                                                        asa, phi, psi,
-                                                        secondary_structure)
+    from graphein.protein.features.nodes.dssp import (
+        add_dssp_df,
+        add_dssp_feature,
+        asa,
+        phi,
+        psi,
+        secondary_structure,
+    )
 
     """
     add_dssp_df(g)
@@ -564,11 +568,13 @@ if __name__ == "__main__":
     psi(g)
     secondary_structure(g)
     print(g.nodes(data=True))
-    #esm_sequence_embedding(g)
 
-    #asa(g)
-    #print(g.nodes(data=True))
+    esm_sequence_embedding(g)
+    esm_residue_embedding(g)
 
+
+    # asa(g)
+    print(g.nodes(data=True))
 
     print(g.edges())
     """
@@ -581,6 +587,7 @@ if __name__ == "__main__":
     print(g.nodes(data=True))
     print(g.graph["aaindex1"])
 
+    # print(g.edges())
 
     """
     # Test Low-level API
