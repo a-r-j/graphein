@@ -1,11 +1,10 @@
 """Featurization functions for graph nodes using DSSP predicted features."""
-import os
-
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Charlie Harris
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+import os
 from typing import Any, Dict, Optional
 
 import networkx as nx
@@ -147,6 +146,7 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     return G
 
 
+# TODO port ASA and RSA calculations from older version of graphein
 # Check ASA
 def asa(G: nx.Graph) -> nx.Graph:
     """
