@@ -36,6 +36,8 @@ def aaindex1(G: nx.Graph, accession: str) -> nx.Graph:
     """
 
     title, index_data = fetch_AAIndex(accession)
+
+    # TODO: change to allow for a list of all accession numbers? 
     G.graph["aaindex1"] = accession + ": " + title
 
     for n in G.nodes:
