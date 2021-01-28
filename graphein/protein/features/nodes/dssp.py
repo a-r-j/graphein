@@ -126,7 +126,6 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     config = G.graph["config"]
     dssp_df = G.graph["dssp_df"]
 
-
     ## TO DO
     # Change to not allow for atom granuarlity?
     if config.granularity == "atom":
