@@ -11,6 +11,16 @@ from graphein.protein.features.sequence.utils import (
     compute_feature_over_chains,
     subset_by_node_feature_value,
 )
+from graphein.utils import import_message
+
+try:
+    import biovec
+except ImportError:
+    import_message(
+        submodule="graphein.protein.features.sequence.embeddings",
+        package="biovec",
+        pip_install=True,
+    )
 
 
 @lru_cache()
@@ -27,32 +37,26 @@ def _load_esm_model(model_name: str = "esm1b_t33_650M_UR50S"):
     Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
 
     Pre-trained models:
-    Full Name	#layers	#params	Dataset	Embedding Dim	Model URL
-    ESM-1b	esm1b_t33_650M_UR50S	33	650M	UR50/S	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
-    ESM1-main	esm1_t34_670M_UR50S	34	670M	UR50/S	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
-    esm1_t34_670M_UR50D	34	670M	UR50/D	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
-    esm1_t34_670M_UR100	34	670M	UR100	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
-    esm1_t12_85M_UR50S	12	85M	UR50/S	768
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
-    esm1_t6_43M_UR50S	6	43M	UR50/S	768
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
+    Full Name layers params Dataset Embedding Dim Model URL
+    ESM-1b esm1b_t33_650M_UR50S 33 650M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
+    ESM1-main esm1_t34_670M_UR50S34 670M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
+    esm1_t34_670M_UR50D 34 670M UR50/D 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
+    esm1_t34_670M_UR100 34 670M UR100 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
+    esm1_t12_85M_UR50S 12 85M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
+    esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
     :param model_name: Name of pre-trained model to load
     :return: loaded pre-trained model
     """
-    import torch
 
     return torch.hub.load("facebookresearch/esm", model_name)
 
 
-def compute_esm_embedding(sequence: str,
-                          representation: str,
-                          model_name: str = "esm1b_t33_650M_UR50S",
-                          output_layer: int = 33
-                          ) -> np.ndarray:
+def compute_esm_embedding(
+    sequence: str,
+    representation: str,
+    model_name: str = "esm1b_t33_650M_UR50S",
+    output_layer: int = 33,
+) -> np.ndarray:
     """
     Computes sequence embedding using Pre-trained ESM model from FAIR
 
@@ -65,19 +69,13 @@ def compute_esm_embedding(sequence: str,
     Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
 
     Pre-trained models:
-    Full Name	#layers	#params	Dataset	Embedding Dim	Model URL
-    ESM-1b	esm1b_t33_650M_UR50S	33	650M	UR50/S	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
-    ESM1-main	esm1_t34_670M_UR50S	34	670M	UR50/S	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
-    esm1_t34_670M_UR50D	34	670M	UR50/D	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
-    esm1_t34_670M_UR100	34	670M	UR100	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
-    esm1_t12_85M_UR50S	12	85M	UR50/S	768
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
-    esm1_t6_43M_UR50S	6	43M	UR50/S	768
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
+    Full Name layers params Dataset Embedding Dim Model URL
+    ESM-1b esm1b_t33_650M_UR50S 33 650M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
+    ESM1-main esm1_t34_670M_UR50S 34 670M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
+    esm1_t34_670M_UR50D 34 670M UR50/D 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
+    esm1_t34_670M_UR100 34 670M UR100 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
+    esm1_t12_85M_UR50S 12 85M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
+    esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
 
     :param sequence: Protein sequence to embed (str)
     :param representation: Type of embedding to extract. "residue: or "sequence". Sequence-level embeddings are averaged residue embeddings
@@ -95,7 +93,9 @@ def compute_esm_embedding(sequence: str,
 
     # Extract per-residue representations (on CPU)
     with torch.no_grad():
-        results = model(batch_tokens, repr_layers=[output_layer], return_contacts=True)
+        results = model(
+            batch_tokens, repr_layers=[output_layer], return_contacts=True
+        )
     token_representations = results["representations"][output_layer]
 
     if representation == "residue":
@@ -107,7 +107,7 @@ def compute_esm_embedding(sequence: str,
         sequence_representations = []
         for i, (_, seq) in enumerate(data):
             sequence_representations.append(
-                token_representations[i, 1: len(seq) + 1].mean(0)
+                token_representations[i, 1 : len(seq) + 1].mean(0)
             )
         return sequence_representations[0].numpy()
 
@@ -129,19 +129,13 @@ def esm_residue_embedding(
     Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
 
     Pre-trained models:
-    Full Name	#layers	#params	Dataset	Embedding Dim	Model URL
-    ESM-1b	esm1b_t33_650M_UR50S	33	650M	UR50/S	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
-    ESM1-main	esm1_t34_670M_UR50S	34	670M	UR50/S	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
-    esm1_t34_670M_UR50D	34	670M	UR50/D	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
-    esm1_t34_670M_UR100	34	670M	UR100	1280
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
-    esm1_t12_85M_UR50S	12	85M	UR50/S	768
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
-    esm1_t6_43M_UR50S	6	43M	UR50/S	768
-    https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
+    Full Name layers params Dataset Embedding Dim Model URL
+    ESM-1b esm1b_t33_650M_UR50S 33 650M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
+    ESM1-main esm1_t34_670M_UR50S 34 670M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
+    esm1_t34_670M_UR50D 34 670M UR50/D 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
+    esm1_t34_670M_UR100 34 670M UR100 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
+    esm1_t12_85M_UR50S 12 85M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
+    esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
 
     :param G: nx.Graph to add esm embedding to
     :param model_name: Name of pre-trained model to use
@@ -185,7 +179,6 @@ def _load_biovec_model():
     Source: ProtVec: A Continuous Distributed Representation of Biological Sequences
     Paper: http://arxiv.org/pdf/1503.05140v1.pdf
     """
-    import biovec
 
     return biovec.models.load_protvec(
         os.fspath(
@@ -202,7 +195,7 @@ def biovec_sequence_embedding(G: nx.Graph) -> nx.Graph:
 
     Source: ProtVec: A Continuous Distributed Representation of Biological Sequences
     Paper: http://arxiv.org/pdf/1503.05140v1.pdf
-    :param G:  nx.Graph protein structure graph
+    :param G: nx.Graph protein structure graph
     :return: nx.Graph protein structure graph with biovec embedding added. e.g. G.graph["biovec_embedding_A"]
     """
     pv = _load_biovec_model()
