@@ -40,6 +40,9 @@ def aaindex1(G: nx.Graph, accession: str) -> nx.Graph:
     # TODO: change to allow for a list of all accession numbers?
     G.graph["aaindex1"] = accession + ": " + title
 
+    if G.graph["config"].granularity == "atom":
+        raise NameError("AAIndex features cannot be added to atom granularity graph")
+
     for n in G.nodes:
         residue = n.split(":")[1]
         residue = protein_letters_3to1_all_caps(residue)
