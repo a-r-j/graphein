@@ -531,8 +531,8 @@ if __name__ == "__main__":
     )
     from graphein.protein.features.sequence.embeddings import (
         biovec_sequence_embedding,
-        esm_sequence_embedding,
         esm_residue_embedding,
+        esm_sequence_embedding,
     )
     from graphein.protein.features.sequence.sequence import molecular_weight
 
@@ -580,7 +580,7 @@ if __name__ == "__main__":
     """
 
     # Test AAindex
-    from graphein.protein.features.nodes.aaindex import (aaindex1)
+    from graphein.protein.features.nodes.aaindex import aaindex1
 
     g = aaindex1(g, "FAUJ880111")
 
