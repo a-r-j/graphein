@@ -33,10 +33,10 @@ jobs:
         run: |
           conda env create -f environment-dev.yml
 
-      - name: Debugging calls
+      - name: Run pytest
         run: |
           source activate graphein-dev
-          which python
+          pytest .
 
       # No deps helps us check that all dependencies
       # are explicitly stated in environment.yml
@@ -45,4 +45,3 @@ jobs:
       #     source activate graphein-dev
       #     python -m pip install . --no-deps
       #     pytest .
-
