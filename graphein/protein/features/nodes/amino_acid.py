@@ -22,8 +22,7 @@ def load_expasy_scales() -> pd.DataFrame:
     on each function call.
     """
     df = pd.read_csv(
-        Path(__file__).parent.parent / "data" / "amino_acid_properties.csv",
-        index_col=0,
+        Path(__file__).parent / "amino_acid_properties.csv", index_col=0
     )
     return df
 
@@ -39,8 +38,7 @@ def load_meiler_embeddings() -> pd.DataFrame:
     on each function call.
     """
     df = pd.read_csv(
-        Path(__file__).parent.parent / "data" / "meiler_embeddings.csv",
-        index_col=0,
+        Path(__file__).parent / "meiler_embeddings.csv", index_col=0
     )
     return df
 
