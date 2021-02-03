@@ -36,6 +36,7 @@ jobs:
       - name: Run pytest
         run: |
           source activate graphein-dev
+          pip install .
           pytest .
 
       # No deps helps us check that all dependencies
