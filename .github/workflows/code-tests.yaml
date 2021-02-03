@@ -39,6 +39,9 @@ jobs:
           pip install .
           pytest .
 
+      - name: Upload code coverage
+        run: |
+          bash <(curl -s https://codecov.io/bash)
       # No deps helps us check that all dependencies
       # are explicitly stated in environment.yml
       # - name: Run tests
