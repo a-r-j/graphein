@@ -33,10 +33,14 @@ jobs:
         run: |
           conda env create -f environment-dev.yml
 
-      - name: Run pytest
+      - name: Install Graphein
         run: |
           source activate graphein-dev
-          pip install .
+          pip install -e .
+
+      - name: Run tests
+        run: |
+          source activate graphein-dev
           pytest .
 
       - name: Upload code coverage
