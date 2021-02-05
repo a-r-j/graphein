@@ -5,13 +5,13 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import logging
-from typing import Any, Dict, List, Union
-
-from pathlib import Path
-import pandas as pd
-import wget
 import os
 import zipfile
+from pathlib import Path
+from typing import Any, Dict, List, Union
+
+import pandas as pd
+import wget
 
 log = logging.getLogger(__name__)
 

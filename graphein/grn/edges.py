@@ -9,8 +9,8 @@ import logging
 import networkx as nx
 import pandas as pd
 
-from graphein.grn.parse_trrust import TRRUST_df
 from graphein.grn.parse_regnetwork import RegNetwork_df
+from graphein.grn.parse_trrust import TRRUST_df
 
 log = logging.getLogger(__name__)
 
