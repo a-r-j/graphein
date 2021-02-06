@@ -34,3 +34,4 @@ dependencies:
 - pip:
   - propy
   - biovec
+  - multipledispatch
