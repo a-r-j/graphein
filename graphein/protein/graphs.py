@@ -1,7 +1,7 @@
 """Functions for working with Protein Structure Graphs"""
 # %%
 # Graphein
-# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
+# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma, Charlie
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
@@ -16,7 +16,7 @@ import pandas as pd
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
 
-from graphein.protein.config import ProteinGraphConfig
+from graphein.protein.config import ProteinGraphConfig, GetContactsConfig, DSSPConfig
 from graphein.protein.edges.distance import compute_distmat
 from graphein.protein.edges.intramolecular import get_contacts_df
 from graphein.protein.resi_atoms import BACKBONE_ATOMS
@@ -407,6 +407,8 @@ def compute_edges(
 
 def construct_graph(
     config: Optional[ProteinGraphConfig],
+    get_contacts_config: Optional[GetContactsConfig] = None,
+    dssp_config: Optional[DSSPConfig] = None,
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
@@ -435,6 +437,13 @@ def construct_graph(
     # If no config is provided, use default
     if config is None:
         config = ProteinGraphConfig()
+
+    if get_contacts_config is not None:
+        config.get_contacts_config = get_contacts_config
+
+    if dssp_config is not None:
+        config.dssp_config = dssp_config
+
 
     # Get name from pdb_file is no pdb_code is provided
     if pdb_path and (pdb_code is None):
@@ -549,8 +558,13 @@ if __name__ == "__main__":
         add_ring_status,
     ]
     # Test High-level API
-    g = construct_graph(config=config, pdb_path="../../examples/pdbs/3eiy.pdb")
+    g = construct_graph(config=config, pdb_path="../../examples/pdbs/4hhb.pdb")
     print(nx.info(g))
+
+    # Test GetContacts
+    from graphein.protein.edges.intramolecular import hydrogen_bond
+
+    hydrogen_bond(g)
 
     # Test DSSP
     from graphein.protein.features.nodes.dssp import (
