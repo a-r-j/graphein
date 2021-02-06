@@ -3,7 +3,6 @@
 from pandas.testing import assert_series_equal
 
 from graphein.protein.features.nodes.amino_acid import (
-    aaindex_1_feat,
     expasy_protein_scale,
     load_expasy_scales,
 )
