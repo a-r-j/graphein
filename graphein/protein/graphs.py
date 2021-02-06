@@ -390,12 +390,13 @@ def compute_edges(
     funcs: List[Callable],
 ) -> nx.Graph:
     """Compute edges."""
-    # Todo move to edge computation
+    # TODO move to edge computation
     if get_contacts_config is not None:
         G.graph["contacts_df"] = get_contacts_df(
             get_contacts_config, G.graph["pdb_id"]
         )
 
+    # TODO have these not calculated by default? E.g. only using get contacts edges.
     G.graph["atomic_dist_mat"] = compute_distmat(G.graph["raw_pdb_df"])
     G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
 
@@ -438,6 +439,7 @@ def construct_graph(
     if config is None:
         config = ProteinGraphConfig()
 
+    # Add optional configs to main config if using high-level API
     if get_contacts_config is not None:
         config.get_contacts_config = get_contacts_config
 
@@ -558,7 +560,7 @@ if __name__ == "__main__":
         add_ring_status,
     ]
     # Test High-level API
-    g = construct_graph(config=config, pdb_path="../../examples/pdbs/4hhb.pdb")
+    g = construct_graph(config=config, get_contacts_config=GetContactsConfig(), pdb_path="../../examples/pdbs/4hhb.pdb")
     print(nx.info(g))
 
     # Test GetContacts
