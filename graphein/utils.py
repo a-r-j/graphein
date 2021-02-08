@@ -1,5 +1,5 @@
-from graphein.protein.features.nodes.dssp import add_dssp_df
-from graphein.protein.config import DSSPConfig
+from __future__ import annotations
+
 import os
 import sys
 from typing import Callable, List, Optional
@@ -49,17 +49,15 @@ def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     return G
 
 
-def annotate_node_metadata(G: nx.Graph, dssp_config: Optional[DSSPConfig], funcs: List[Callable]) -> nx.Graph:
+def annotate_node_metadata(
+    G: nx.Graph, dssp_config: Optional[DSSPConfig], funcs: List[Callable]
+) -> nx.Graph:
     """
     Annotates nodes with metadata
     :param G: Graph to add node metadata to
     :param funcs: List of node metadata annotation functions
     :return: Graph with node metadata added
     """
-
-    # TODO decide if this needs to be moved
-    if DSSP_config is not None:
-        G = add_dssp_df(G, dssp_config)
 
     for func in funcs:
         for n, d in G.nodes(data=True):
