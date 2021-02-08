@@ -112,6 +112,10 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     :type interaction_type: str
     :return G: nx.Graph
     """
+    if "contacts_df" not in G.graph:
+        G.graph["contacts_df"] = get_contacts_df(
+            G.graph["config"].get_contacts_config, G.graph["pdb_id"]
+        )
 
     contacts = G.graph["contacts_df"]
 
