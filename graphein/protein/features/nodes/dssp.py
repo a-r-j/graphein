@@ -4,6 +4,8 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+from __future__ import annotations
+
 import os
 from typing import Any, Dict, Optional
 
@@ -14,7 +16,6 @@ from Bio.Data.IUPACData import protein_letters_1to3
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 
 from graphein.protein.utils import download_pdb
-from graphein.protein.config import DSSPConfig
 
 DSSP_COLS = [
     "chain",
@@ -123,9 +124,11 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     """
     Adds a certain amino acid feature as calculated by DSSP to every node in a protein graph
     """
+    if "dssp_df" not in G.graph:
+        G = add_dssp_df(G, G.graph["config"].dssp_config)
 
     config = G.graph["config"]
-    dssp_df = G.graph["dssp_df"]
+    dssp_df = G.graph["dss p_df"]
 
     # Change to not allow for atom granuarlity?
     if config.granularity == "atom":
@@ -157,7 +160,6 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
 def asa(G: nx.Graph) -> nx.Graph:
     """
     Adds ASA of each residue in protein graph as calculated by DSSP.
-        Note: DSSP dataframe must be precomputed and added as graph level variable "dssp_df".
 
     :param G: Input protein graph
     :return: Protein graph with asa values added
@@ -168,7 +170,6 @@ def asa(G: nx.Graph) -> nx.Graph:
 def phi(G: nx.Graph) -> nx.Graph:
     """
     Adds phi-angles of each residue in protein graph as calculated by DSSP.
-        Note: DSSP dataframe must be precomputed and added as graph level variable "dssp_df".
 
     :param G: Input protein graph
     :return: Protein graph with phi-angles values added
@@ -179,7 +180,6 @@ def phi(G: nx.Graph) -> nx.Graph:
 def psi(G: nx.Graph) -> nx.Graph:
     """
     Adds psi-angles of each residue in protein graph as calculated by DSSP.
-        Note: DSSP dataframe must be precomputed and added as graph level variable "dssp_df".
 
     :param G: Input protein graph
     :return: Protein graph with psi-angles values added
@@ -190,7 +190,6 @@ def psi(G: nx.Graph) -> nx.Graph:
 def secondary_structure(G: nx.Graph) -> nx.Graph:
     """
     Adds secondary structure of each residue in protein graph as calculated by DSSP in the form of a string
-        Note: DSSP dataframe must be precomputed and added as graph level variable "dssp_df".
 
     :param G: Input protein graph
     :return: Protein graph with secondary structure added
