@@ -1,7 +1,7 @@
 """Functions for working with Protein Structure Graphs"""
 # %%
 # Graphein
-# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma, Charlie
+# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma, Charlie Harris
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
@@ -16,7 +16,11 @@ import pandas as pd
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
 
-from graphein.protein.config import ProteinGraphConfig, GetContactsConfig, DSSPConfig
+from graphein.protein.config import (
+    DSSPConfig,
+    GetContactsConfig,
+    ProteinGraphConfig,
+)
 from graphein.protein.edges.distance import compute_distmat
 from graphein.protein.edges.intramolecular import get_contacts_df
 from graphein.protein.resi_atoms import BACKBONE_ATOMS
@@ -389,16 +393,12 @@ def compute_edges(
     get_contacts_config: Optional[GetContactsConfig],
     funcs: List[Callable],
 ) -> nx.Graph:
-    """Compute edges."""
-    # TODO move to edge computation
-    if get_contacts_config is not None:
-        G.graph["contacts_df"] = get_contacts_df(
-            get_contacts_config, G.graph["pdb_id"]
-        )
 
-    # TODO have these not calculated by default? E.g. only using get contacts edges.
-    G.graph["atomic_dist_mat"] = compute_distmat(G.graph["raw_pdb_df"])
-    G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
+    # This control flow prevents unnecessary computation of the distance matrices
+    if G.graph["config"].granularity == "atom":
+        G.graph["atomic_dist_mat"] = compute_distmat(G.graph["raw_pdb_df"])
+    else:
+        G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
 
     for func in funcs:
         func(G)
@@ -407,9 +407,7 @@ def compute_edges(
 
 
 def construct_graph(
-    config: Optional[ProteinGraphConfig],
-    get_contacts_config: Optional[GetContactsConfig] = None,
-    dssp_config: Optional[DSSPConfig] = None,
+    config: Optional[ProteinGraphConfig] = None,
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
@@ -438,14 +436,6 @@ def construct_graph(
     # If no config is provided, use default
     if config is None:
         config = ProteinGraphConfig()
-
-    # Add optional configs to main config if using high-level API
-    if get_contacts_config is not None:
-        config.get_contacts_config = get_contacts_config
-
-    if dssp_config is not None:
-        config.dssp_config = dssp_config
-
 
     # Get name from pdb_file is no pdb_code is provided
     if pdb_path and (pdb_code is None):
@@ -497,10 +487,15 @@ def construct_graph(
     )
     # Add nodes to graph
     g = add_nodes_to_graph(g)
-    
+
+    # Add config to graph
+    g.graph["config"] = config
+
     # Annotate additional node metadata
     if config.node_metadata_functions is not None:
-        g = annotate_node_metadata(g, config.dssp_config, config.node_metadata_functions)
+        g = annotate_node_metadata(
+            g, config.dssp_config, config.node_metadata_functions
+        )
 
     # Compute graph edges
     g = compute_edges(
@@ -514,9 +509,6 @@ def construct_graph(
     # Annotate additional edge metadata
     if config.edge_metadata_functions is not None:
         g = annotate_edge_metadata(g, config.edge_metadata_functions)
-
-    # Add config to graph
-    g.graph["config"] = config
 
     return g
 
@@ -553,6 +545,8 @@ if __name__ == "__main__":
         "keep_hets": False,
         "insertions": False,
         "verbose": False,
+        "get_contacts_config": GetContactsConfig(),
+        "dssp_config": DSSPConfig(),
     }
     config = ProteinGraphConfig(**configs)
     config.edge_construction_functions = [
@@ -561,7 +555,10 @@ if __name__ == "__main__":
         add_ring_status,
     ]
     # Test High-level API
-    g = construct_graph(config=config, get_contacts_config=GetContactsConfig(), pdb_path="../../examples/pdbs/4hhb.pdb")
+    g = construct_graph(
+        config=config,
+        pdb_path="../../examples/pdbs/4hhb.pdb",
+    )
     print(nx.info(g))
 
     # Test GetContacts
