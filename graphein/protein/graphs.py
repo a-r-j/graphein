@@ -497,9 +497,10 @@ def construct_graph(
     )
     # Add nodes to graph
     g = add_nodes_to_graph(g)
+    
     # Annotate additional node metadata
     if config.node_metadata_functions is not None:
-        g = annotate_node_metadata(g, config.node_metadata_functions)
+        g = annotate_node_metadata(g, config.dssp_config, config.node_metadata_functions)
 
     # Compute graph edges
     g = compute_edges(
