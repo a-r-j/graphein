@@ -27,6 +27,7 @@ def molecular_weight(protein: str, seq_type: str = "protein"):
     return func(protein)
 
 
+
 @dispatch(nx.Graph, str)
 def molecular_weight(protein: nx.Graph, seq_type: str = "protein"):
     func = partial(SeqUtils.molecular_weight, seq_type=seq_type)
