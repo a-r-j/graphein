@@ -15,6 +15,10 @@ from graphein.protein.edges.distance import add_peptide_bonds
 from graphein.protein.features.nodes.amino_acid import meiler_embedding
 
 
+class DSSPConfig(BaseModel):
+    executable: str = "mkdssp"
+
+
 class GetContactsConfig(BaseModel):
     get_contacts_path: Path = Path(
         "/Users/arianjamasb/github/getcontacts/"
@@ -35,6 +39,8 @@ class ProteinGraphConfig(BaseModel):
     exclude_waters: bool = True
     verbose: bool = True
     deprotonate: bool = False
+
+    # Graph construction functions
     protein_df_processing_functions: Optional[List[Callable]] = None
     edge_construction_functions: List[Union[Callable, str]] = [
         add_peptide_bonds
@@ -44,10 +50,10 @@ class ProteinGraphConfig(BaseModel):
     ]
     edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
     graph_metadata_functions: Optional[List[Callable]] = None
-    get_contacts_config: Optional[GetContactsConfig] = None
 
-    class Config:
-        arbitrary_types_allowed: bool = True
+    # External Dependency configs
+    get_contacts_config: Optional[GetContactsConfig] = None
+    dssp_config: Optional[DSSPConfig] = None
 
 
 class ProteinMeshConfig(BaseModel):

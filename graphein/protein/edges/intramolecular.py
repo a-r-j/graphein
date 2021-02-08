@@ -24,6 +24,7 @@ from graphein.protein.utils import download_pdb
 
 
 def get_contacts_df(config: GetContactsConfig, pdb_name: str):
+
     if not config.contacts_dir:
         config.contacts_dir = Path("/tmp/")
 
@@ -111,8 +112,13 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     :type interaction_type: str
     :return G: nx.Graph
     """
-    # Load contacts df
+    if "contacts_df" not in G.graph:
+        G.graph["contacts_df"] = get_contacts_df(
+            G.graph["config"].get_contacts_config, G.graph["pdb_id"]
+        )
+
     contacts = G.graph["contacts_df"]
+
     # Select specific interaction type
     interactions = contacts.loc[
         contacts["interaction_type"] == interaction_type

@@ -1,7 +1,7 @@
 """Functions for working with Protein Structure Graphs"""
 # %%
 # Graphein
-# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
+# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma, Charlie Harris
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
@@ -16,7 +16,11 @@ import pandas as pd
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
 
-from graphein.protein.config import ProteinGraphConfig
+from graphein.protein.config import (
+    DSSPConfig,
+    GetContactsConfig,
+    ProteinGraphConfig,
+)
 from graphein.protein.edges.distance import compute_distmat
 from graphein.protein.edges.intramolecular import get_contacts_df
 from graphein.protein.resi_atoms import BACKBONE_ATOMS
@@ -389,15 +393,12 @@ def compute_edges(
     get_contacts_config: Optional[GetContactsConfig],
     funcs: List[Callable],
 ) -> nx.Graph:
-    """Compute edges."""
-    # Todo move to edge computation
-    if get_contacts_config is not None:
-        G.graph["contacts_df"] = get_contacts_df(
-            get_contacts_config, G.graph["pdb_id"]
-        )
 
-    G.graph["atomic_dist_mat"] = compute_distmat(G.graph["raw_pdb_df"])
-    G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
+    # This control flow prevents unnecessary computation of the distance matrices
+    if G.graph["config"].granularity == "atom":
+        G.graph["atomic_dist_mat"] = compute_distmat(G.graph["raw_pdb_df"])
+    else:
+        G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
 
     for func in funcs:
         func(G)
@@ -406,7 +407,7 @@ def compute_edges(
 
 
 def construct_graph(
-    config: Optional[ProteinGraphConfig],
+    config: Optional[ProteinGraphConfig] = None,
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
@@ -486,9 +487,15 @@ def construct_graph(
     )
     # Add nodes to graph
     g = add_nodes_to_graph(g)
+
+    # Add config to graph
+    g.graph["config"] = config
+
     # Annotate additional node metadata
     if config.node_metadata_functions is not None:
-        g = annotate_node_metadata(g, config.node_metadata_functions)
+        g = annotate_node_metadata(
+            g, config.dssp_config, config.node_metadata_functions
+        )
 
     # Compute graph edges
     g = compute_edges(
@@ -502,9 +509,6 @@ def construct_graph(
     # Annotate additional edge metadata
     if config.edge_metadata_functions is not None:
         g = annotate_edge_metadata(g, config.edge_metadata_functions)
-
-    # Add config to graph
-    g.graph["config"] = config
 
     return g
 
@@ -531,15 +535,18 @@ if __name__ == "__main__":
     )
     from graphein.protein.features.sequence.embeddings import (
         biovec_sequence_embedding,
+        esm_residue_embedding,
         esm_sequence_embedding,
     )
     from graphein.protein.features.sequence.sequence import molecular_weight
 
     configs = {
-        "granularity": "atom",
+        "granularity": "CA",
         "keep_hets": False,
         "insertions": False,
         "verbose": False,
+        "get_contacts_config": GetContactsConfig(),
+        "dssp_config": DSSPConfig(),
     }
     config = ProteinGraphConfig(**configs)
     config.edge_construction_functions = [
@@ -548,9 +555,54 @@ if __name__ == "__main__":
         add_ring_status,
     ]
     # Test High-level API
-    g = construct_graph(config=config, pdb_path="../../examples/pdbs/3eiy.pdb")
+    g = construct_graph(
+        config=config,
+        pdb_path="../../examples/pdbs/4hhb.pdb",
+    )
     print(nx.info(g))
+
+    # Test GetContacts
+    from graphein.protein.edges.intramolecular import hydrogen_bond
+
+    hydrogen_bond(g)
+
+    # Test DSSP
+    from graphein.protein.features.nodes.dssp import (
+        add_dssp_df,
+        add_dssp_feature,
+        asa,
+        phi,
+        psi,
+        secondary_structure,
+    )
+
+    """
+    add_dssp_df(g)
+    phi(g)
+    psi(g)
+    secondary_structure(g)
+    print(g.nodes(data=True))
+
+    esm_sequence_embedding(g)
+    esm_residue_embedding(g)
+
+
+    # asa(g)
+    print(g.nodes(data=True))
+
     print(g.edges())
+    """
+
+    # Test AAindex
+    from graphein.protein.features.nodes.aaindex import aaindex1
+
+    g = aaindex1(g, "FAUJ880111")
+
+    print(g.nodes(data=True))
+    print(g.graph["aaindex1"])
+
+    # print(g.edges())
+
     """
     # Test Low-level API
     raw_df = read_pdb_to_dataframe(

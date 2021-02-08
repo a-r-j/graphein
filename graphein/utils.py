@@ -1,9 +1,14 @@
-from typing import Callable, List
+from __future__ import annotations
+
+import os
+import sys
+from typing import Callable, List, Optional
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 import xarray as xr
+from Bio.Data.IUPACData import protein_letters_3to1
 
 
 def onek_encoding_unk(x, allowable_set):
@@ -44,13 +49,16 @@ def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     return G
 
 
-def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
+def annotate_node_metadata(
+    G: nx.Graph, dssp_config: Optional[DSSPConfig], funcs: List[Callable]
+) -> nx.Graph:
     """
     Annotates nodes with metadata
     :param G: Graph to add node metadata to
     :param funcs: List of node metadata annotation functions
     :return: Graph with node metadata added
     """
+
     for func in funcs:
         for n, d in G.nodes(data=True):
             func(n, d)
@@ -253,3 +261,62 @@ def generate_adjacency_tensor(
     if return_array:
         return da.data
     return da
+
+
+def protein_letters_3to1_all_caps(amino_acid: str) -> str:
+    """
+    Converts capitalised 3 letter amino acid code to single letter.
+
+    Not provided in default biopython.
+    """
+
+    amino_acid = amino_acid[0] + amino_acid[1:].lower()
+
+    one_letter_code = protein_letters_3to1[amino_acid]
+
+    return one_letter_code
+
+
+def import_message(
+    submodule: str,
+    package: str,
+    conda_channel: str = None,
+    pip_install: bool = False,
+):
+    """
+    Return warning if package is not found.
+    Generic message for indicating to the user when a function relies on an
+    optional module / package that is not currently installed. Includes
+    installation instructions. Typically used in conjunction without optional featurisation libraries
+    :param submodule: graphein submodule that needs an external dependency.
+    :param package: External package this submodule relies on.
+    :param conda_channel: Conda channel package can be installed from,
+        if at all.
+    :param pip_install: Whether package can be installed via pip.
+    """
+    is_conda = os.path.exists(os.path.join(sys.prefix, "conda-meta"))
+    installable = True
+    if is_conda:
+        if conda_channel is None:
+            installable = False
+            installation = f"{package} cannot be installed via conda"
+        else:
+            installation = f"conda install -c {conda_channel} {package}"
+    else:
+        if pip_install:
+            installation = f"pip install {package}"
+        else:
+            installable = False
+            installation = f"{package} cannot be installed via pip"
+
+    print(
+        f"To use the janitor submodule {submodule}, you need to install "
+        f"{package}."
+    )
+    print()
+    if installable:
+        print("To do so, use the following command:")
+        print()
+        print(f"    {installation}")
+    else:
+        print(f"{installation}")

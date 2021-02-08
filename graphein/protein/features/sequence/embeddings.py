@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from functools import lru_cache, partial
 from pathlib import Path
@@ -7,18 +9,81 @@ import torch
 
 from graphein.protein.features.sequence.utils import (
     compute_feature_over_chains,
+    subset_by_node_feature_value,
 )
+from graphein.utils import import_message
+
+try:
+    import biovec
+except ImportError:
+    import_message(
+        submodule="graphein.protein.features.sequence.embeddings",
+        package="biovec",
+        pip_install=True,
+    )
 
 
 @lru_cache()
-def _load_esm_model():
-    import torch
+def _load_esm_model(model_name: str = "esm1b_t33_650M_UR50S"):
+    """
+    Loads pre-trained FAIR ESM model from torch hub.
 
-    return torch.hub.load("facebookresearch/esm", "esm1b_t33_650M_UR50S")
+    Sources:
+    Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
+    Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
+    Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
+
+    Transformer protein language models are unsupervised structure learners 2020
+    Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
+
+    Pre-trained models:
+    Full Name layers params Dataset Embedding Dim Model URL
+    ESM-1b esm1b_t33_650M_UR50S 33 650M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
+    ESM1-main esm1_t34_670M_UR50S34 670M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
+    esm1_t34_670M_UR50D 34 670M UR50/D 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
+    esm1_t34_670M_UR100 34 670M UR100 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
+    esm1_t12_85M_UR50S 12 85M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
+    esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
+    :param model_name: Name of pre-trained model to load
+    :return: loaded pre-trained model
+    """
+
+    return torch.hub.load("facebookresearch/esm", model_name)
 
 
-def compute_esm_embedding(sequence: str, representation: str):
-    model, alphabet = _load_esm_model()
+def compute_esm_embedding(
+    sequence: str,
+    representation: str,
+    model_name: str = "esm1b_t33_650M_UR50S",
+    output_layer: int = 33,
+) -> np.ndarray:
+    """
+    Computes sequence embedding using Pre-trained ESM model from FAIR
+
+    Sources:
+    Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
+    Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
+    Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
+
+    Transformer protein language models are unsupervised structure learners 2020
+    Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
+
+    Pre-trained models:
+    Full Name layers params Dataset Embedding Dim Model URL
+    ESM-1b esm1b_t33_650M_UR50S 33 650M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
+    ESM1-main esm1_t34_670M_UR50S 34 670M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
+    esm1_t34_670M_UR50D 34 670M UR50/D 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
+    esm1_t34_670M_UR100 34 670M UR100 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
+    esm1_t12_85M_UR50S 12 85M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
+    esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
+
+    :param sequence: Protein sequence to embed (str)
+    :param representation: Type of embedding to extract. "residue: or "sequence". Sequence-level embeddings are averaged residue embeddings
+    :param model_name: Name of pre-trained model to use
+    :param output_layer: integer indicating which layer the output should be taken from
+    :return: embedding (np.ndarray)
+    """
+    model, alphabet = _load_esm_model(model_name)
     batch_converter = alphabet.get_batch_converter()
 
     data = [
@@ -28,11 +93,16 @@ def compute_esm_embedding(sequence: str, representation: str):
 
     # Extract per-residue representations (on CPU)
     with torch.no_grad():
-        results = model(batch_tokens, repr_layers=[33], return_contacts=True)
-    token_representations = results["representations"][33]
+        results = model(
+            batch_tokens, repr_layers=[output_layer], return_contacts=True
+        )
+    token_representations = results["representations"][output_layer]
 
     if representation == "residue":
         return token_representations.numpy()
+
+    # Generate per-sequence representations via averaging
+    # NOTE: token 0 is always a beginning-of-sequence token, so the first residue is token 1.
     elif representation == "sequence":
         sequence_representations = []
         for i, (_, seq) in enumerate(data):
@@ -47,20 +117,55 @@ def esm_residue_embedding(
     model_name: str = "esm1b_t33_650M_UR50S",
     output_layer: int = 33,
 ) -> nx.Graph:
-    for c in G.graph["chain_id"]:
+    """
+    Computes ESM residue embeddings from a protein sequence and adds the to the graph.
+
+    Sources:
+    Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
+    Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
+    Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
+
+    Transformer protein language models are unsupervised structure learners 2020
+    Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
+
+    Pre-trained models:
+    Full Name layers params Dataset Embedding Dim Model URL
+    ESM-1b esm1b_t33_650M_UR50S 33 650M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
+    ESM1-main esm1_t34_670M_UR50S 34 670M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
+    esm1_t34_670M_UR50D 34 670M UR50/D 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
+    esm1_t34_670M_UR100 34 670M UR100 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
+    esm1_t12_85M_UR50S 12 85M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
+    esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
+
+    :param G: nx.Graph to add esm embedding to
+    :param model_name: Name of pre-trained model to use
+    :param output_layer: index of output layer in pre-trained model
+    :return: nx.Graph with esm embedding feature added to nodes
+    """
+
+    for chain in G.graph["chain_ids"]:
         embedding = compute_esm_embedding(
-            G.graph[f"sequence_{c}"],
+            G.graph[f"sequence_{chain}"],
             representation="residue",
             model_name=model_name,
             output_layer=output_layer,
         )
-        # Todo complete residue assignment over subgraph
-        for i, n, d in enumerate(G.nodes(data=True)):
-            n["esm_embedding"] = embedding[i]
+        # remove start and end tokens from per-token residue embeddings
+        embedding = embedding[0, 1:-1]
+        subgraph = subset_by_node_feature_value(G, "chain_id", chain)
+
+        for i, (n, d) in enumerate(subgraph.nodes(data=True)):
+            G.nodes[n]["esm_embedding"] = embedding[i]
+
     return G
 
 
 def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
+    """
+    Computes ESM sequence embedding feature over chains in a graph
+    :param G: nx.Graph protein structure graph
+    :return: nx.Graphein protein structure graphein with esm embedding features added eg. G.graph["esm_embedding_A"]
+    """
     func = partial(compute_esm_embedding, representation="sequence")
     G = compute_feature_over_chains(G, func, feature_name="esm_embedding")
 
@@ -74,7 +179,6 @@ def _load_biovec_model():
     Source: ProtVec: A Continuous Distributed Representation of Biological Sequences
     Paper: http://arxiv.org/pdf/1503.05140v1.pdf
     """
-    import biovec
 
     return biovec.models.load_protvec(
         os.fspath(
@@ -86,6 +190,14 @@ def _load_biovec_model():
 
 
 def biovec_sequence_embedding(G: nx.Graph) -> nx.Graph:
+    """
+    Adds BioVec sequence embedding feature to the graph. Computed over chains
+
+    Source: ProtVec: A Continuous Distributed Representation of Biological Sequences
+    Paper: http://arxiv.org/pdf/1503.05140v1.pdf
+    :param G: nx.Graph protein structure graph
+    :return: nx.Graph protein structure graph with biovec embedding added. e.g. G.graph["biovec_embedding_A"]
+    """
     pv = _load_biovec_model()
     func = pv.to_vecs
     G = compute_feature_over_chains(G, func, feature_name="biovec_embedding")
