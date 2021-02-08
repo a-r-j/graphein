@@ -14,6 +14,7 @@ from Bio.Data.IUPACData import protein_letters_1to3
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 
 from graphein.protein.utils import download_pdb
+from graphein.protein.config import DSSPConfig
 
 DSSP_COLS = [
     "chain",
@@ -83,7 +84,7 @@ def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_dssp_df(G: nx.Graph) -> nx.Graph:
+def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein grapgh
     :param G: Input protein graph
