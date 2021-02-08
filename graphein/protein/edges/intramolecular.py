@@ -4,14 +4,15 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+from __future__ import annotations
 
 import os
 import subprocess
+from pathlib import Path
 from typing import Optional
 
 import networkx as nx
 import pandas as pd
-from pydantic import BaseModel
 
 from graphein.protein.utils import download_pdb
 
@@ -22,31 +23,50 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
     :param G: networkx protein graph
     :return G; networkx protein graph with added peptide bonds
     """
+    # for i (n, d) in G.nodes(data=True):
+
+    # First we get all adjacent residues
+    # for i, (n, d) in enumerate(G.nodes(data=True)):
 
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
 
         # Find chain residues
         chain_residues = [
-            n for n, v in G.nodes(data=True) if v["chain_id"] == chain_id
+            (n, v) for n, v in G.nodes(data=True) if v["chain_id"] == chain_id
         ]
 
         # Iterate over every residue in chain
         for i, residue in enumerate(chain_residues):
-
             # Checks not at chain terminus - is this versatile enough?
             if i == len(chain_residues) - 1:
-                pass
-            else:
-                # PLACE HOLDER EDGE FEATURE
-                # Adds "peptide bond" between current residue and the next
-                G.add_edge(
-                    residue,
-                    chain_residues[i + 1],
-                    attr="peptide_bond",
-                    color="b",
+                continue
+            # Asserts residues are on the same chain
+            cond_1 = (
+                residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
+            )
+            # Asserts residue numbers are adjacent
+            cond_2 = (
+                abs(
+                    residue[1]["residue_number"]
+                    - chain_residues[i + 1][1]["residue_number"]
                 )
+                == 1
+            )
 
+            # If this checks out, we add a peptide bond
+            if (cond_1) and (cond_2):
+                # Adds "peptide bond" between current residue and the next
+                if G.has_edge(i, i + 1):
+                    G.edges[i, i + 1]["kind"].add("peptide_bond")
+                else:
+                    G.add_edge(
+                        residue[0],
+                        chain_residues[i + 1][0],
+                        kind={"peptide_bond"},
+                    )
+            else:
+                continue
     return G
 
 
@@ -57,15 +77,15 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
 ####################################
 
 
-def get_contacts_df(config: BaseModel, pdb_id: str):
+def get_contacts_df(config: GetContactsConfig, pdb_name: str):
     if not config.contacts_dir:
-        config.contacts_dir = "/tmp/"
+        config.contacts_dir = Path("/tmp/")
 
-    contacts_file = config.contacts_dir + pdb_id + "_contacts.tsv"
+    contacts_file = config.contacts_dir / (pdb_name + "_contacts.tsv")
 
     # Check for existence of GetContacts file
     if not os.path.isfile(contacts_file):
-        run_get_contacts(config, pdb_id)
+        run_get_contacts(config, pdb_name)
 
     contacts_df = read_contacts_file(config, contacts_file)
 
@@ -77,7 +97,9 @@ def get_contacts_df(config: BaseModel, pdb_id: str):
 
 
 def run_get_contacts(
-    config: BaseModel, pdb_id: Optional[str], file_name: Optional[str] = None
+    config: GetContactsConfig,
+    pdb_id: Optional[str],
+    file_name: Optional[str] = None,
 ):
     # Check for GetContacts Installation
     assert os.path.isfile(
@@ -85,7 +107,7 @@ def run_get_contacts(
     ), "No GetContacts Installation Detected"
 
     # Check for existence of pdb file. If not, download it.
-    if not os.path.isfile(config.pdb_dir + pdb_id):
+    if not os.path.isfile(config.pdb_dir / pdb_id):
         pdb_file = download_pdb(config, pdb_id)
     else:
         pdb_file = config.pdb_dir + pdb_id + ".pdb"
@@ -93,16 +115,19 @@ def run_get_contacts(
     # Run GetContacts
     command = f"{config.get_contacts_path}/get_static_contacts.py "
     command += f"--structure {pdb_file} "
-    command += f'--output {config.contacts_dir + pdb_id + "_contacts.tsv"} '
+    command += f'--output {(config.contacts_dir / (pdb_id + "_contacts.tsv")).as_posix()} '
     command += "--itypes all"  # --sele "protein"'
+    print(command)
     subprocess.run(command, shell=True)
 
     # Check it all checks out
-    assert os.path.isfile(config.contacts_dir + pdb_id + "_contacts.tsv")
+    assert os.path.isfile(config.contacts_dir / (pdb_id + "_contacts.tsv"))
     print(f"Computed Contacts for: {pdb_id}")
 
 
-def read_contacts_file(config: BaseModel, contacts_file) -> pd.DataFrame:
+def read_contacts_file(
+    config: GetContactsConfig, contacts_file
+) -> pd.DataFrame:
     contacts_file = open(contacts_file, "r").readlines()
     contacts = []
 
@@ -148,8 +173,14 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     ]
 
     for label, [res1, res2, interaction_type] in interactions.iterrows():
-        # Place holder
-        G.add_edge(res1, res2, attr=interaction_type, color="r")
+        # Check residues are actually in graph
+        if not (G.has_node(res1) and G.has_node(res2)):
+            continue
+
+        if G.has_edge(res1, res2):
+            G.edges[res1, res2]["kind"].add(interaction_type)
+        else:
+            G.add_edge(res1, res2, kind={interaction_type})
 
     return G
 

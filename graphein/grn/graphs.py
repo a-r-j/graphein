@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
 
-    from graphein.grn.edges import add_trrust_edges, add_regnetwork_edges
+    from graphein.grn.edges import add_regnetwork_edges, add_trrust_edges
 
     gene_list = ["AATF", "MYC", "USF1", "SP1", "TP53", "DUSP1"]
 
