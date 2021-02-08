@@ -15,7 +15,7 @@ from graphein.ppi.parse_stringdb import STRING_df
 log = logging.getLogger(__name__)
 
 
-def add_string_edges(G: nx.Graph, kwargs) -> nx.Graph:
+def add_string_edges(G: nx.Graph, **kwargs) -> nx.Graph:
     """
     Adds edges from STRING to PPIGraph
     :param G: Graph to edges to (populated with protein_id nodes)
@@ -33,7 +33,7 @@ def add_string_edges(G: nx.Graph, kwargs) -> nx.Graph:
     return G
 
 
-def add_biogrid_edges(G: nx.Graph, kwargs) -> nx.Graph:
+def add_biogrid_edges(G: nx.Graph, **kwargs) -> nx.Graph:
     """
     Adds edges from BIOGRID to PPIGraph
     :param G: Graph to edges to (populated with protein_id nodes)

@@ -93,7 +93,7 @@ def parse_BIOGRID(
     method = "interactions"
     request_url = "/".join([string_api_url, method])
     if type(ncbi_taxon_id) is list:
-        ncbi_taxon_id = "|".join(ncbi_taxon_id)
+        ncbi_taxon_id = "|".join(str(t) for t in ncbi_taxon_id)
     params = {  # Default parameters
         "geneList": "|".join(protein_list),
         "accesskey": "c4ab86373e0bb921a878bb6d15ee4fb4",
@@ -153,6 +153,9 @@ def standardise_BIOGRID(df: pd.DataFrame) -> pd.DataFrame:
     :param df: Source specific Pandas dataframe
     :return: Standardised dataframe
     """
+    if df.empty:
+        return pd.DataFrame({"p1": [], "p2": [], "source": []})
+
     # Rename & delete columns
     df = df.rename(
         columns={"OFFICIAL_SYMBOL_A": "p1", "OFFICIAL_SYMBOL_B": "p2"}
@@ -165,9 +168,16 @@ def standardise_BIOGRID(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def BIOGRID_df(protein_list, ncbi_taxon_id, kwargs) -> pd.DataFrame:
+def BIOGRID_df(
+    protein_list: List[str],
+    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    **kwargs,
+) -> pd.DataFrame:
     """
     Generates standardised dataframe with BIOGRID protein-protein interactions, filtered according to user's input
+    :protein_list: List of proteins (official symbol) that will be included in the PPI graph
+    :ncbi_taxon_id: NCBI taxonomy identifiers for the organism. 9606 corresponds to Homo Sapiens
+    :param kwargs:  Additional parameters to pass to BIOGRID API calls
     :return: Standardised dataframe with BIOGRID interactions
     """
     df = parse_BIOGRID(
@@ -199,4 +209,4 @@ if __name__ == "__main__":
         protein_list=protein_list, ncbi_taxon_id=9606, kwargs=kwargs
     )
 
-    print(df)
+    print(df.head())
