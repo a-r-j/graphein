@@ -7,15 +7,12 @@
 from __future__ import annotations
 
 import logging
-import os
-import subprocess
 from itertools import combinations
 from typing import List, Optional, Tuple
 
 import networkx as nx
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import euclidean, pdist, rogerstanimoto, squareform
 from sklearn.metrics import pairwise_distances
@@ -47,6 +44,9 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
 
     Design choice: passed in a DataFrame to enable easier testing on
     dummy data.
+
+    :param pdb_df: pd.Dataframe containing protein structure.
+    :return: pd.Dataframe of euclidean distance matrix
     """
     eucl_dists = pdist(
         pdb_df[["x_coord", "y_coord", "z_coord"]], metric="euclidean"
@@ -322,14 +322,12 @@ def add_distance_threshold(
     G: nx.Graph, long_interaction_threshold: int, threshold: float = 5.0
 ):
     """
-    :param G:
-    :type G:
-    :param long_interaction_threshold:
-    :type long_interaction_threshold:
-    :param threshold:
-    :type threshold:
-    :return:
-    :rtype:
+    Adds edges to any nodes within a given distance of each other. Long interaction threshold is used
+    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+    :param G: Protein Structure graph to add distance edges to
+    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :param threshold: Distance in angstroms, below which two nodes are connected
+    :return: Graph with distance-based edges added
     """
     dist_mat = compute_distmat(G.graph["raw_pdb_df"])
     interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
@@ -364,6 +362,23 @@ def add_k_nn_edges(
     p: int = 2,
     include_self: bool = False,
 ):
+    """
+    Adds edges to nodes based on K nearest neighbours. Long interaction threshold is used
+    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+    :param G: Protein Structure graph to add distance edges to
+    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :param k: Number of neighbors for each sample.
+    :param mode: Type of returned matrix: ‘connectivity’ will return the connectivity matrix with ones and zeros,
+    and ‘distance’ will return the distances between neighbors according to the given metric.
+    :param metric: The distance metric used to calculate the k-Neighbors for each sample point.
+    The DistanceMetric class gives a list of available metrics.
+    The default distance is ‘euclidean’ (‘minkowski’ metric with the p param equal to 2.)
+    :param p: Power parameter for the Minkowski metric. When p = 1, this is equivalent to using manhattan_distance (l1),
+     and euclidean_distance (l2) for p = 2. For arbitrary p, minkowski_distance (l_p) is used.
+    :param include_self: Whether or not to mark each sample as the first nearest neighbor to itself.
+    If ‘auto’, then True is used for mode=’connectivity’ and False for mode=’distance’.
+    :return: Graph with knn-based edges added
+    """
     dist_mat = compute_distmat(G.graph["raw_pdb_df"])
 
     nn = kneighbors_graph(
@@ -458,7 +473,9 @@ def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
     return centroid_df
 
 
-def get_edges_by_bond_type(G: nx.Graph, bond_type: str) -> List[Tuple]:
+def get_edges_by_bond_type(
+    G: nx.Graph, bond_type: str
+) -> List[Tuple[str, str]]:
     """
     Return edges of a particular bond type.
 
@@ -477,10 +494,14 @@ def get_edges_by_bond_type(G: nx.Graph, bond_type: str) -> List[Tuple]:
     return resis
 
 
-def node_coords(G: nx.Graph, n: str):
+def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
     """
     Return the x, y, z coordinates of a node.
     This is a helper function. Simplifies the code.
+
+    :param G: nx.Graph protein structure graph to extract coordinates from
+    :param n: str node ID in graph to extract coordinates from
+    :return: Tuple of coordinates (x, y, z)
     """
     x = G.nodes[n]["x_coord"]
     y = G.nodes[n]["y_coord"]
