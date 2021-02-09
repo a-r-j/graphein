@@ -570,19 +570,23 @@ if __name__ == "__main__":
     from graphein.protein.features.nodes.dssp import (
         add_dssp_df,
         add_dssp_feature,
+        rsa,
         asa,
         phi,
         psi,
         secondary_structure,
     )
 
-    """
-    add_dssp_df(g)
+    
+    #add_dssp_df(g)
     phi(g)
     psi(g)
     secondary_structure(g)
-    print(g.nodes(data=True))
+    asa(g)
+    rsa(g)
 
+    print(g.nodes(data=True))
+    """
     esm_sequence_embedding(g)
     esm_residue_embedding(g)
 
@@ -592,14 +596,15 @@ if __name__ == "__main__":
 
     print(g.edges())
     """
-
     # Test AAindex
     from graphein.protein.features.nodes.aaindex import aaindex1
 
     g = aaindex1(g, "FAUJ880111")
-
-    print(g.nodes(data=True))
     print(g.graph["aaindex1"])
+
+
+    print("")
+    print(g.nodes(data=True)["D:HIS:146"])
 
     # print(g.edges())
 

@@ -23,7 +23,7 @@ DSSP_COLS = [
     "icode",
     "aa",
     "ss",
-    "exposure_rsa",
+    "asa",
     "phi",
     "psi",
     "dssp_index",
@@ -128,7 +128,7 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
         G = add_dssp_df(G, G.graph["config"].dssp_config)
 
     config = G.graph["config"]
-    dssp_df = G.graph["dss p_df"]
+    dssp_df = G.graph["dssp_df"]
 
     # Change to not allow for atom granuarlity?
     if config.granularity == "atom":
@@ -155,8 +155,25 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     return G
 
 
-# TODO port ASA and RSA calculations from older version of graphein
-# Check ASA
+def rsa(G: nx.Graph) -> nx.Graph:
+    """
+    Adds RSA (relative solvent accessibility) of each residue in protein graph as calculated by DSSP.
+
+    :param G: Input protein graph
+    :return: Protein graph with rsa values added
+    """
+
+    # Calcualte RSA
+    dssp_df = G.graph["dssp_df"]
+    dssp_df["max_acc"] = dssp_df["aa"].map(residue_max_acc["Sander"].get)
+    dssp_df[["asa", "max_acc"]] = dssp_df[["asa", "max_acc"]].astype(float)
+    dssp_df["rsa"] = dssp_df["asa"] / dssp_df["max_acc"]
+
+    G.graph["dssp_df"] = dssp_df
+
+    return add_dssp_feature(G, "rsa")
+
+
 def asa(G: nx.Graph) -> nx.Graph:
     """
     Adds ASA of each residue in protein graph as calculated by DSSP.
@@ -164,7 +181,7 @@ def asa(G: nx.Graph) -> nx.Graph:
     :param G: Input protein graph
     :return: Protein graph with asa values added
     """
-    return add_dssp_feature(G, "exposure_rsa")
+    return add_dssp_feature(G, "asa")
 
 
 def phi(G: nx.Graph) -> nx.Graph:
@@ -195,3 +212,36 @@ def secondary_structure(G: nx.Graph) -> nx.Graph:
     :return: Protein graph with secondary structure added
     """
     return add_dssp_feature(G, "ss")
+
+    """
+def _get_protein_features(
+        self, pdb_code: Optional[str], file_path: Optional[str], chain_selection: str
+) -> pd.DataFrame:
+    :param file_path: (str) file path to PDB file
+    :param pdb_code: (str) String containing four letter PDB accession
+    :return df (pd.DataFrame): Dataframe containing output of DSSP (Solvent accessibility, secondary structure for each residue)
+
+    # Run DSSP on relevant PDB file
+    if pdb_code:
+        d = dssp_dict_from_pdb_file(self.pdb_dir + pdb_code + ".pdb")
+    if file_path:
+        d = dssp_dict_from_pdb_file(file_path)
+
+    # Subset dataframe to those in chain_selection
+    if chain_selection != "all":
+        df = df.loc[df["chain"].isin(chain_selection)]
+    # Rename cysteines to 'C'
+    df["aa"] = df["aa"].str.replace("[a-z]", "C")
+    df = df[df["aa"].isin(list(aa1))]
+
+    # Drop alt_loc residues
+    df = df.loc[df["icode"] == " "]
+
+    # Add additional Columns
+    df["aa_three"] = df["aa"].apply(one_to_three)
+    df["max_acc"] = df["aa_three"].map(residue_max_acc["Sander"].get)
+    df[["exposure_rsa", "max_acc"]] = df[["exposure_rsa", "max_acc"]].astype(float)
+    df["exposure_asa"] = df["exposure_rsa"] * df["max_acc"]
+    df["index"] = df["chain"] + ":" + df["aa_three"] + ":" + df["resnum"].apply(str)
+    return df
+"""
