@@ -1,3 +1,4 @@
+"""Functions for adding metadata to PPI Graphs from STRING and BIOGRID"""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas

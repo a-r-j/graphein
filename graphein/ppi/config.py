@@ -10,6 +10,10 @@ from pydantic import BaseModel
 
 
 class STRINGConfig(BaseModel):
+    """
+    Config for specifying parameters for API calls to STRINGdb
+    """
+
     species: Optional[int] = 9606  # NCBI taxon identifiers
     required_score: Optional[
         int
@@ -26,6 +30,10 @@ class STRINGConfig(BaseModel):
 
 
 class BioGridConfig(BaseModel):
+    """
+    Config for specifying parameters for API calls to BIOGRID
+    """
+
     searchNames: Optional[
         bool
     ] = True  # If ‘true’, the interactor OFFICIAL_SYMBOL will be examined for a match with the geneList.
@@ -81,6 +89,10 @@ class BioGridConfig(BaseModel):
 
 
 class PPIGraphConfig(BaseModel):
+    """
+    Config for specifying parameters for PPI Graph Construction
+    """
+
     paginate: bool = True
     ncbi_taxon_id: int = 9606
     kwargs: Optional[Dict[str, Union[str, int, float]]] = {

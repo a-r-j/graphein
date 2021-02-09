@@ -1,3 +1,10 @@
+"""Functions for adding nodes features to a PPI Graph"""
+# %%
+# Graphein
+# Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
+# Code Repository: https://github.com/a-r-j/graphein
 import networkx as nx
 
 
