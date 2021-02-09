@@ -93,7 +93,7 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein graph
     :param G: Input protein graph
-    :param dssp_config: DSSP Config object. Specifies which executable to run.
+    :param dssp_config: DSSPConfig object. Specifies which executable to run.
     Located in graphein.protein.config
     :return: Protein graph with DSSP dataframe added
     """
@@ -101,7 +101,7 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     config = G.graph["config"]
     pdb_id = G.graph["pdb_id"]
 
-    # To add - Check for DSSP installation
+    # TODO - Check for DSSP installation
 
     # Check for existence of pdb file. If not, download it.
     if not os.path.isfile(config.pdb_dir / pdb_id):
@@ -109,18 +109,21 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     else:
         pdb_file = config.pdb_dir + pdb_id + ".pdb"
 
+    # Extract DSSP executable
+    executable = dssp_config.executable
+
     if config.verbose:
-        pass  # print DSSP executable
+        print(f"Using DSSP executable '{executable}'")
 
-    # Todo - add executable from config
-    dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP="mkdssp")
-
+    # Run DSSP
+    dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP=executable)
     dssp_dict = parse_dssp_df(dssp_dict)
     dssp_dict = process_dssp_df(dssp_dict)
 
     if config.verbose:
         print(dssp_dict)
 
+    # Assign DSSP Dict
     G.graph["dssp_df"] = dssp_dict
 
     return G
