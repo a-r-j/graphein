@@ -16,14 +16,13 @@ def load_expasy_scales() -> pd.DataFrame:
     """
     Load pre-downloaded EXPASY scales.
 
-    This helps with node featurization.
+    This helps with node featuarization.
 
     The function is LRU-cached in memory for fast access
     on each function call.
     """
     df = pd.read_csv(
-        Path(__file__).parent.parent / "data" / "amino_acid_properties.csv",
-        index_col=0,
+        Path(__file__).parent / "amino_acid_properties.csv", index_col=0
     )
     return df
 
@@ -39,8 +38,7 @@ def load_meiler_embeddings() -> pd.DataFrame:
     on each function call.
     """
     df = pd.read_csv(
-        Path(__file__).parent.parent / "data" / "meiler_embeddings.csv",
-        index_col=0,
+        Path(__file__).parent / "meiler_embeddings.csv", index_col=0
     )
     return df
 
@@ -74,28 +72,5 @@ def meiler_embedding(n, d) -> pd.Series:
     return df[amino_acid]
 
 
-def aaindex_1_feat(n, d, feature_name: str) -> pd.Series:
-    from Bio.PDB.Polypeptide import three_to_one
-    from propy.AAIndex import GetAAIndex1
-
-    df = GetAAIndex1(feature_name)
-    df = pd.Series(df).loc[three_to_one(d["reside_name"])]
-    return df
-
-
-def load_feature_dataframe(n, d) -> pd.Series:
-    """
-    Generic function for loading features from an on-disk file
-    :param n:
-    :param d:
-    :return:
-    """
-    raise NotImplementedError
-
-
 def load_esm_embedding_residue(n, d) -> pd.Series:
     raise NotImplementedError
-
-
-if __name__ == "__main__":
-    aaindex_1_feat(feature_name="KRIW790103")

@@ -20,6 +20,8 @@ class DSSPConfig(BaseModel):
 
 
 class GetContactsConfig(BaseModel):
+    """Config object for parameters relating to running GetContacts"""
+
     get_contacts_path: Path = Path(
         "/Users/arianjamasb/github/getcontacts/"
     ).resolve()
@@ -29,6 +31,8 @@ class GetContactsConfig(BaseModel):
 
 
 class ProteinGraphConfig(BaseModel):
+    """Config Object for Protein Structure Graph Construction"""
+
     granularity: str = "CA"
     keep_hets: bool = False
     insertions: bool = False
@@ -57,5 +61,7 @@ class ProteinGraphConfig(BaseModel):
 
 
 class ProteinMeshConfig(BaseModel):
+    """Config object for parameters relating to ProteinMeshConfig Mesh construction with PyMol"""
+
     pymol_command_line_options: Optional[str] = "-cKq"
     pymol_commands: Optional[List[str]] = ["show surface"]

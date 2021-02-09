@@ -4,6 +4,11 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+
+# TODO: This the docstrings inside this module's set of functions
+# can do without the `type`s.
+# This is because the types are already annotated on the function.
+
 import logging
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional
@@ -32,13 +37,11 @@ def compute_propy_feature(
     Computes Propy Descriptors over chains in a Protein Graph
 
     :param G: Protein Graph
-    :type G: nx.Graph
     :param func: ProPy wrapper function to compute
-    :type func: Callable
     :param feature_name: Name of feature to index it in the nx.Graph object
-    :type feature_name: str
-    :param aggregation_type: Type of aggregation to use when aggregating a feature over multiple chains. ["mean", "man", "sum"]
-    :type aggregation_type: Optional[List[str]]
+    :param aggregation_type: Type of aggregation to use
+        when aggregating a feature over multiple chains.
+        One of ["mean", "man", "sum"]
     :return G: Returns protein Graph with features added. Features are accessible with G.graph[{feature_name}_{chain | aggegation_type}]
     """
     G = compute_feature_over_chains(G, func, feature_name=feature_name)
