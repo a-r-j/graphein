@@ -73,5 +73,5 @@ def add_interacting_proteins(
         else:
             G.add_edge(p1, p2, kind={kind})
     log.debug(f"Added {len(df)} {kind} interaction edges")
-    
+
     return G
