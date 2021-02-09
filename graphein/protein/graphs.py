@@ -570,15 +570,14 @@ if __name__ == "__main__":
     from graphein.protein.features.nodes.dssp import (
         add_dssp_df,
         add_dssp_feature,
-        rsa,
         asa,
         phi,
         psi,
+        rsa,
         secondary_structure,
     )
 
-    
-    #add_dssp_df(g)
+    # add_dssp_df(g)
     phi(g)
     psi(g)
     secondary_structure(g)
@@ -601,7 +600,6 @@ if __name__ == "__main__":
 
     g = aaindex1(g, "FAUJ880111")
     print(g.graph["aaindex1"])
-
 
     print("")
     print(g.nodes(data=True)["D:HIS:146"])
