@@ -50,7 +50,7 @@ def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
 
 def annotate_node_metadata(
-    G: nx.Graph, dssp_config: Optional[DSSPConfig], funcs: List[Callable]
+    G: nx.Graph, funcs: List[Callable]
 ) -> nx.Graph:
     """
     Annotates nodes with metadata
