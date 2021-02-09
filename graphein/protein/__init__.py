@@ -1,0 +1,1 @@
+"""Protein graph construction module."""

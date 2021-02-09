@@ -9,6 +9,7 @@ from __future__ import annotations
 from itertools import count
 from typing import List, Optional, Tuple
 
+import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -23,6 +24,8 @@ def plot_pointcloud(mesh: Meshes, title: str = "") -> None:
     :param title: Title of plot
     :return:
     """
+    # TODO: Meshes needs to be imported
+    # TODO: Add return annotation to docstring
     # Sample points uniformly from the surface of the mesh.
     points = sample_points_from_meshes(mesh, 5000)
     x, y, z = points.clone().detach().cpu().squeeze().unbind(1)
@@ -143,7 +146,7 @@ def plot_protein_structure_graph(
     )
 
     # 3D network plot
-    with plt.style.context((plot_style)):
+    with plt.style.context(plot_style):
 
         fig = plt.figure(figsize=figsize)
         ax = Axes3D(fig)
@@ -190,6 +193,7 @@ def plot_protein_structure_graph(
 
 
 if __name__ == "__main__":
+    # TODO: Move the block here into tests.
     from graphein.protein.config import ProteinGraphConfig
     from graphein.protein.edges.atomic import add_atomic_edges
     from graphein.protein.edges.distance import (

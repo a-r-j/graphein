@@ -1,3 +1,4 @@
+"""Functions for making and parsing API calls to BIOGRID"""
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
@@ -89,9 +90,9 @@ def parse_BIOGRID(
     :return: Source specific Pandas dataframe.
     """
     # Prepare call to BIOGRID API
-    string_api_url = "https://webservice.thebiogrid.org"
+    biogrid_api_url = "https://webservice.thebiogrid.org"
     method = "interactions"
-    request_url = "/".join([string_api_url, method])
+    request_url = "/".join([biogrid_api_url, method])
     if type(ncbi_taxon_id) is list:
         ncbi_taxon_id = "|".join(str(t) for t in ncbi_taxon_id)
     params = {  # Default parameters
@@ -114,7 +115,16 @@ def parse_BIOGRID(
         start: int = 0,
         max: int = 10000,
         paginate: bool = paginate,
-    ):
+    ) -> pd.DataFrame:
+        """
+        Makes call to BIOGRID API
+        :param request_url: BIOGRID URL to make request
+        :param params: BIOGRID API parameters to use
+        :param start: index in gene list to start from
+        :param max: number of genes to use in API call. Results are limited to 10k per call
+        :param paginate: bool indicating whether or not to paginate calls. Above 10k calls this is required
+        :return: pd.DataFrame containing BIOGRID_df API call output
+        """
         params["start"] = start
         response = requests.post(request_url, data=params)
         df = pd.read_json(response.text.strip()).transpose()

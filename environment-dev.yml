@@ -4,6 +4,7 @@ channels:
 dependencies:
 - python=3.8
 - biopython
+- biopandas
 - black
 - conda
 - flake8
@@ -24,4 +25,13 @@ dependencies:
 - pytest-xdist
 - rdkit
 - scipy
+- scikit-learn
 - xarray
+- jupyter
+- jupyterlab
+- pydantic
+- interrogate
+- pip:
+  - propy
+  - biovec
+  - multipledispatch
