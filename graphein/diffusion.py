@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from .edges.distance import compute_distmat
+from .protein.edges.distance import compute_distmat
 from .utils import format_adjacency, generate_feature_dataframe
 
 
@@ -72,7 +72,13 @@ def inverse_distance_matrix(G: nx.Graph, power: float) -> xr.DataArray:
     :param power: The power for the distance calculation.
     """
 
-    def extract_coords(n, d):
+    def extract_coords(n, d) -> pd.Series:
+        """
+        Extracts xyz coordinates from a node.
+        :param n: node id
+        :param d: node data
+        :return: pd.Series containing x,y,z coordinates
+        """
         coord_names = ("x_coord", "y_coord", "z_coord")
         coords = pd.Series(
             {coord_name: d[coord_name] for coord_name in coord_names}, name=n
