@@ -10,7 +10,6 @@ import os
 from typing import Any, Dict, Optional
 
 import networkx as nx
-import numpy as np
 import pandas as pd
 from Bio.Data.IUPACData import protein_letters_1to3
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
@@ -43,6 +42,9 @@ DSSP_SS = ["H", "B", "E", "G", "I", "T", "S"]
 def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
     """
     Parse DSSP output to DataFrame
+
+    :param dssp: Dictionary containing DSSP output
+    :return: pd.Dataframe containing parsed DSSP output
     """
     appender = []
     for k in dssp[1]:
@@ -50,7 +52,7 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
         y = dssp[0][k]
         chain = k[0]
         residue = k[1]
-        het = residue[0]
+        # het = residue[0]
         resnum = residue[1]
         icode = residue[2]
         to_append.extend([chain, resnum, icode])
@@ -63,6 +65,8 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
 def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
     """
     Processes a DSSP DataFrame to make indexes align with node IDs
+    :param df: pd.Dataframe containing the parsed output from DSSP.
+    :return: pd.Dataframe with node IDs
     """
 
     # Convert 1 letter aa code to 3 letter
@@ -87,8 +91,10 @@ def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
 
 def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     """
-    Construct DSSP dataframe and add as graph level variable to protein grapgh
+    Construct DSSP dataframe and add as graph level variable to protein graph
     :param G: Input protein graph
+    :param dssp_config: DSSP Config object. Specifies which executable to run.
+    Located in graphein.protein.config
     :return: Protein graph with DSSP dataframe added
     """
 
@@ -122,7 +128,30 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
 
 def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     """
-    Adds a certain amino acid feature as calculated by DSSP to every node in a protein graph
+    Adds add_dssp_feature specified amino acid feature as calculated
+    by DSSP to every node in a protein graph
+    :param G: Protein structure graph to add dssp feature to
+    :param feature: string specifying name of DSSP feature to add:
+    "chain",
+    "resnum",
+    "icode",
+    "aa",
+    "ss",
+    "asa",
+    "phi",
+    "psi",
+    "dssp_index",
+    "NH_O_1_relidx",
+    "NH_O_1_energy",
+    "O_NH_1_relidx",
+    "O_NH_1_energy",
+    "NH_O_2_relidx",
+    "NH_O_2_energy",
+    "O_NH_2_relidx",
+    "O_NH_2_energy",
+
+    These names parse_dssp_df accessible in the DSSP_COLS list
+    :return: Protein structure graph with DSSP feature added to nodes
     """
     if "dssp_df" not in G.graph:
         G = add_dssp_df(G, G.graph["config"].dssp_config)
@@ -133,7 +162,8 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     # Change to not allow for atom granuarlity?
     if config.granularity == "atom":
         raise NameError(
-            f"DSSP residue features ({feature}) cannot be added to atom granularity graph"
+            f"DSSP residue features ({feature}) \
+            cannot be added to atom granularity graph"
         )
 
         # TODO confirm below is not needed and remove
@@ -157,13 +187,14 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
 
 def rsa(G: nx.Graph) -> nx.Graph:
     """
-    Adds RSA (relative solvent accessibility) of each residue in protein graph as calculated by DSSP.
+    Adds RSA (relative solvent accessibility) of each residue in protein graph
+    as calculated by DSSP.
 
     :param G: Input protein graph
     :return: Protein graph with rsa values added
     """
 
-    # Calcualte RSA
+    # Calculate RSA
     dssp_df = G.graph["dssp_df"]
     dssp_df["max_acc"] = dssp_df["aa"].map(residue_max_acc["Sander"].get)
     dssp_df[["asa", "max_acc"]] = dssp_df[["asa", "max_acc"]].astype(float)
@@ -206,42 +237,10 @@ def psi(G: nx.Graph) -> nx.Graph:
 
 def secondary_structure(G: nx.Graph) -> nx.Graph:
     """
-    Adds secondary structure of each residue in protein graph as calculated by DSSP in the form of a string
+    Adds secondary structure of each residue in protein graph
+    as calculated by DSSP in the form of a string
 
     :param G: Input protein graph
     :return: Protein graph with secondary structure added
     """
     return add_dssp_feature(G, "ss")
-
-    """
-def _get_protein_features(
-        self, pdb_code: Optional[str], file_path: Optional[str], chain_selection: str
-) -> pd.DataFrame:
-    :param file_path: (str) file path to PDB file
-    :param pdb_code: (str) String containing four letter PDB accession
-    :return df (pd.DataFrame): Dataframe containing output of DSSP (Solvent accessibility, secondary structure for each residue)
-
-    # Run DSSP on relevant PDB file
-    if pdb_code:
-        d = dssp_dict_from_pdb_file(self.pdb_dir + pdb_code + ".pdb")
-    if file_path:
-        d = dssp_dict_from_pdb_file(file_path)
-
-    # Subset dataframe to those in chain_selection
-    if chain_selection != "all":
-        df = df.loc[df["chain"].isin(chain_selection)]
-    # Rename cysteines to 'C'
-    df["aa"] = df["aa"].str.replace("[a-z]", "C")
-    df = df[df["aa"].isin(list(aa1))]
-
-    # Drop alt_loc residues
-    df = df.loc[df["icode"] == " "]
-
-    # Add additional Columns
-    df["aa_three"] = df["aa"].apply(one_to_three)
-    df["max_acc"] = df["aa_three"].map(residue_max_acc["Sander"].get)
-    df[["exposure_rsa", "max_acc"]] = df[["exposure_rsa", "max_acc"]].astype(float)
-    df["exposure_asa"] = df["exposure_rsa"] * df["max_acc"]
-    df["index"] = df["chain"] + ":" + df["aa_three"] + ":" + df["resnum"].apply(str)
-    return df
-"""
