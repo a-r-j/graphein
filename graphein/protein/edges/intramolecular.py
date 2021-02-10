@@ -6,6 +6,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import logging
 import os
 import subprocess
 from pathlib import Path
@@ -16,6 +17,63 @@ import pandas as pd
 
 from graphein.protein.utils import download_pdb
 
+
+log = logging.getLogger(__name__)
+
+
+def peptide_bonds(G: nx.Graph) -> nx.Graph:
+    """
+    Adds peptide backbone to residues in each chain
+    :param G: networkx protein graph
+    :return: networkx protein graph with added peptide bonds
+    """
+    # for i (n, d) in G.nodes(data=True):
+
+    # First we get all adjacent residues
+    # for i, (n, d) in enumerate(G.nodes(data=True)):
+
+    # Iterate over every chain
+    for chain_id in G.graph["chain_ids"]:
+
+        # Find chain residues
+        chain_residues = [
+            (n, v) for n, v in G.nodes(data=True) if v["chain_id"] == chain_id
+        ]
+
+        # Iterate over every residue in chain
+        for i, residue in enumerate(chain_residues):
+            # Checks not at chain terminus - is this versatile enough?
+            if i == len(chain_residues) - 1:
+                continue
+            # Asserts residues are on the same chain
+            cond_1 = (
+                residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
+            )
+            # Asserts residue numbers are adjacent
+            cond_2 = (
+                abs(
+                    residue[1]["residue_number"]
+                    - chain_residues[i + 1][1]["residue_number"]
+                )
+                == 1
+            )
+
+            # If this checks out, we add a peptide bond
+            if (cond_1) and (cond_2):
+                # Adds "peptide bond" between current residue and the next
+                if G.has_edge(i, i + 1):
+                    G.edges[i, i + 1]["kind"].add("peptide_bond")
+                else:
+                    G.add_edge(
+                        residue[0],
+                        chain_residues[i + 1][0],
+                        kind={"peptide_bond"},
+                    )
+            else:
+                continue
+    return G
+
+
 ####################################
 #                                  #
 #     GetContacts Interactions     #
@@ -23,8 +81,14 @@ from graphein.protein.utils import download_pdb
 ####################################
 
 
-def get_contacts_df(config: GetContactsConfig, pdb_name: str):
 
+def get_contacts_df(config: GetContactsConfig, pdb_name: str) -> pd.DataFrame:
+    """
+    Reads GetContact File and returns it as a pd.DataFrame
+    :param config: GetContactsConfig object
+    :param pdb_name: Name of PDB file. Contacts files are name {pdb_name}_contacts.tsv
+    :return: DataFrame of prased Getcontacts output
+    """
     if not config.contacts_dir:
         config.contacts_dir = Path("/tmp/")
 
@@ -32,6 +96,7 @@ def get_contacts_df(config: GetContactsConfig, pdb_name: str):
 
     # Check for existence of GetContacts file
     if not os.path.isfile(contacts_file):
+        log.info("GetContacts file not found. Running GetContacts...")
         run_get_contacts(config, pdb_name)
 
     contacts_df = read_contacts_file(config, contacts_file)
@@ -45,36 +110,55 @@ def get_contacts_df(config: GetContactsConfig, pdb_name: str):
 
 def run_get_contacts(
     config: GetContactsConfig,
-    pdb_id: Optional[str],
+    pdb_id: Optional[str] = None,
     file_name: Optional[str] = None,
 ):
+    """
+    Runs GetContacts on a protein structure. If no file_name is provided, a PDB file is downloaded for the pdb_id
+    :param config: GetContactsConfig object containing GetContacts parameters
+    :param pdb_id: 4-character PDB accession code
+    :param file_name: PDB_name file to use, if annotations to be retrieved from the PDB
+    """
     # Check for GetContacts Installation
     assert os.path.isfile(
         f"{config.get_contacts_path}/get_static_contacts.py"
-    ), "No GetContacts Installation Detected"
+    ), "No GetContacts Installation Detected. Please install from: https://getcontacts.github.io"
 
     # Check for existence of pdb file. If not, download it.
-    if not os.path.isfile(config.pdb_dir / pdb_id):
-        pdb_file = download_pdb(config, pdb_id)
-    else:
-        pdb_file = config.pdb_dir + pdb_id + ".pdb"
+    if not os.path.isfile(config.pdb_dir / file_name):
+        log.debug(
+            f"No pdb file found for {config.pdb_dir / file_name}. Checking pdb_id..."
+        )
+        if not os.path.isfile(config.pdb_dir / pdb_id):
+            log.debug(
+                f"No pdb file found for {config.pdb_dir / pdb_id}. Downloading..."
+            )
+            pdb_file = download_pdb(config, pdb_id)
+        else:
+            pdb_file = config.pdb_dir + pdb_id + ".pdb"
 
     # Run GetContacts
     command = f"{config.get_contacts_path}/get_static_contacts.py "
     command += f"--structure {pdb_file} "
     command += f'--output {(config.contacts_dir / (pdb_id + "_contacts.tsv")).as_posix()} '
     command += "--itypes all"  # --sele "protein"'
-    print(command)
+    log.info(f"Running GetContacts with command: {command}")
     subprocess.run(command, shell=True)
 
     # Check it all checks out
     assert os.path.isfile(config.contacts_dir / (pdb_id + "_contacts.tsv"))
-    print(f"Computed Contacts for: {pdb_id}")
+    log.info(f"Computed Contacts for: {pdb_id}")
 
 
 def read_contacts_file(
     config: GetContactsConfig, contacts_file
 ) -> pd.DataFrame:
+    """
+    Parses GetContacts file to an edgelist (pd.DataFrame)
+    :param config: GetContactsConfig object
+    :param contacts_file: file name of contacts file
+    :return: Pandas Dataframe of edge list
+    """
     contacts_file = open(contacts_file, "r").readlines()
     contacts = []
 
@@ -138,28 +222,62 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
 
 
 def hydrogen_bond(G: nx.Graph) -> nx.Graph:
+    """
+    Adds hydrogen bonds to protein structure graph
+    :param G: nx.Graph to add hydrogen bonds to
+    :return: nx.Graph with hydrogen bonds added
+    """
     return add_contacts_edge(G, "hb")
 
 
 def salt_bridge(G: nx.Graph) -> nx.Graph:
+    """
+    Adds slat bridges to protein structure graph
+    :param G: nx.Graph to add salt bridges to
+    :return: nx.Graph with salt bridges added"""
     return add_contacts_edge(G, "sb")
 
 
 def pi_cation(G: nx.Graph) -> nx.Graph:
+    """
+    Adds pi-cation interactions to protein structure graph
+    :param G: nx.Graph to add pi-cation interactions to
+    :return: nx.Graph with pi-pi_cation interactions added
+    """
+
     return add_contacts_edge(G, "pc")
 
 
 def pi_stacking(G: nx.Graph) -> nx.Graph:
+    """
+    Adds pi-stacking interactions to protein structure graph
+    :param G: nx.Graph to add pi-stacking interactions to
+    :return: nx.Graph with pi-stacking interactions added
+    """
     return add_contacts_edge(G, "ps")
 
 
 def t_stacking(G: nx.Graph) -> nx.Graph:
+    """
+    Adds t-stacking interactions to protein structure graph
+    :param G: nx.Graph to add t-stacking interactions to
+    :return: nx.Graph with t-stacking interactions added
+    """
     return add_contacts_edge(G, "ts")
 
 
 def hydrophobic(G: nx.Graph) -> nx.Graph:
+    """
+    Adds hydrophobic interactions to protein structure graph
+    :param G: nx.Graph to add hydrophobic interaction edges to
+    :return: nx.Graph with hydrophobic interactions added"""
     return add_contacts_edge(G, "hp")
 
 
 def van_der_waals(G: nx.Graph) -> nx.Graph:
+    """
+    Adds van der Waals interactions to protein structure graph
+    :param G: nx.Graph to add van der Waals interactions to
+    :return: nx.Graph with van der Waals interactions added
+    """
     return add_contacts_edge(G, "vdw")

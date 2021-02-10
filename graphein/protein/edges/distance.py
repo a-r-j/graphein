@@ -1,4 +1,4 @@
-"""Featurization functions for graph edges."""
+"""Functions for computing biochemical edges of graphs."""
 # Graphein
 # Author: Eric Ma, Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -7,15 +7,12 @@
 from __future__ import annotations
 
 import logging
-import os
-import subprocess
 from itertools import combinations
 from typing import List, Optional, Tuple
 
 import networkx as nx
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import euclidean, pdist, rogerstanimoto, squareform
 from sklearn.metrics import pairwise_distances
@@ -44,8 +41,12 @@ log = logging.getLogger(__name__)
 def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     """
     Compute pairwise euclidean distances between every atom.
+
     Design choice: passed in a DataFrame to enable easier testing on
     dummy data.
+
+    :param pdb_df: pd.Dataframe containing protein structure.
+    :return: pd.Dataframe of euclidean distance matrix
     """
     eucl_dists = pdist(
         pdb_df[["x_coord", "y_coord", "z_coord"]], metric="euclidean"
@@ -115,8 +116,10 @@ def add_hydrophobic_interactions(
 ):
     """
     Find all hydrophobic interactions.
+
     Performs searches between the following residues:
     ALA, VAL, LEU, ILE, MET, PHE, TRP, PRO, TYR
+
     Criteria: R-group residues are within 5A distance.
     """
     if rgroup_df is None:
@@ -136,6 +139,7 @@ def add_disulfide_interactions(
 ):
     """
     Find all disulfide interactions between CYS residues.
+
     Criteria: sulfur atom pairs are within 2.2A of each other.
     """
     if rgroup_df is None:
@@ -191,6 +195,7 @@ def add_hydrogen_bond_interactions(
 def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame = None):
     """
     Find all ionic interactions.
+
     Criteria: ARG, LYS, HIS, ASP, and GLU residues are within 6A.
     """
     if rgroup_df is None:
@@ -370,14 +375,12 @@ def add_distance_threshold(
     G: nx.Graph, long_interaction_threshold: int, threshold: float = 5.0
 ):
     """
-    :param G:
-    :type G:
-    :param long_interaction_threshold:
-    :type long_interaction_threshold:
-    :param threshold:
-    :type threshold:
-    :return:
-    :rtype:
+    Adds edges to any nodes within a given distance of each other. Long interaction threshold is used
+    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+    :param G: Protein Structure graph to add distance edges to
+    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :param threshold: Distance in angstroms, below which two nodes are connected
+    :return: Graph with distance-based edges added
     """
     dist_mat = compute_distmat(G.graph["raw_pdb_df"])
     interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
@@ -412,6 +415,23 @@ def add_k_nn_edges(
     p: int = 2,
     include_self: bool = False,
 ):
+    """
+    Adds edges to nodes based on K nearest neighbours. Long interaction threshold is used
+    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+    :param G: Protein Structure graph to add distance edges to
+    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :param k: Number of neighbors for each sample.
+    :param mode: Type of returned matrix: ‘connectivity’ will return the connectivity matrix with ones and zeros,
+    and ‘distance’ will return the distances between neighbors according to the given metric.
+    :param metric: The distance metric used to calculate the k-Neighbors for each sample point.
+    The DistanceMetric class gives a list of available metrics.
+    The default distance is ‘euclidean’ (‘minkowski’ metric with the p param equal to 2.)
+    :param p: Power parameter for the Minkowski metric. When p = 1, this is equivalent to using manhattan_distance (l1),
+     and euclidean_distance (l2) for p = 2. For arbitrary p, minkowski_distance (l_p) is used.
+    :param include_self: Whether or not to mark each sample as the first nearest neighbor to itself.
+    If ‘auto’, then True is used for mode=’connectivity’ and False for mode=’distance’.
+    :return: Graph with knn-based edges added
+    """
     dist_mat = compute_distmat(G.graph["raw_pdb_df"])
 
     nn = kneighbors_graph(
@@ -451,12 +471,16 @@ def add_k_nn_edges(
 def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
     """
     Return ring atoms from a dataframe.
+
     A helper function for add_aromatic_interactions.
+
     Gets the ring atoms from the particular aromatic amino acid.
+
     Parameters:
     ===========
     - dataframe: the dataframe containing the atom records.
     - aa: the amino acid of interest, passed in as 3-letter string.
+
     Returns:
     ========
     - dataframe: a filtered dataframe containing just those atoms from the
@@ -475,11 +499,15 @@ def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
 def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
     """
     Return aromatic ring centrods.
+
     A helper function for add_aromatic_interactions.
+
     Computes the ring centroids for each a particular amino acid's ring
     atoms.
+
     Ring centroids are computed by taking the mean of the x, y, and z
     coordinates.
+
     Parameters:
     ===========
     - ring_atom_df: a dataframe computed using get_ring_atoms.
@@ -498,12 +526,16 @@ def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
     return centroid_df
 
 
-def get_edges_by_bond_type(G: nx.Graph, bond_type: str) -> List[Tuple]:
+def get_edges_by_bond_type(
+    G: nx.Graph, bond_type: str
+) -> List[Tuple[str, str]]:
     """
     Return edges of a particular bond type.
+
     Parameters:
     ===========
     - bond_type: (str) one of the elements in the variable BOND_TYPES
+
     Returns:
     ========
     - resis: (list) a list of tuples, where each tuple is an edge.
@@ -515,10 +547,14 @@ def get_edges_by_bond_type(G: nx.Graph, bond_type: str) -> List[Tuple]:
     return resis
 
 
-def node_coords(G: nx.Graph, n: str):
+def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
     """
     Return the x, y, z coordinates of a node.
     This is a helper function. Simplifies the code.
+
+    :param G: nx.Graph protein structure graph to extract coordinates from
+    :param n: str node ID in graph to extract coordinates from
+    :return: Tuple of coordinates (x, y, z)
     """
     x = G.nodes[n]["x_coord"]
     y = G.nodes[n]["y_coord"]
@@ -535,12 +571,16 @@ def add_interacting_resis(
 ):
     """
     Add interacting residues to graph.
+
     Returns a list of 2-tuples indicating the interacting residues based
     on the interacting atoms. This is most typically called after the
     get_interacting_atoms function above.
+
     Also filters out the list such that the residues have to be at least
     two apart.
+
     ### Parameters
+
     - interacting_atoms:    (numpy array) result from get_interacting_atoms function.
     - dataframe:            (pandas dataframe) a pandas dataframe that
                             houses the euclidean locations of each atom.
@@ -554,6 +594,7 @@ def add_interacting_resis(
                             - aromatic_sulphur
                             - cation_pi
                             - delaunay
+
     Returns:
     ========
     - filtered_interacting_resis: (set of tuples) the residues that are in

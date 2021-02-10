@@ -104,7 +104,11 @@ def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
-    """Overwrite existing (x, y, z) coordinates with centroids of the amino acids."""
+    """Overwrite existing (x, y, z) coordinates with centroids of the amino acids.
+
+    :param df: Pandas Dataframe config protein structure to convert into a dataframe of centroid positions
+    :return: pd.Dataframe with atoms/residues positiions converted into centroid positions
+    """
     centroids = calculate_centroid_positions(df)
     df = df.loc[df["atom_name"] == "CA"].reset_index(drop=True)
     df["x_coord"] = centroids["x_coord"]
@@ -128,9 +132,7 @@ def remove_insertions(df: pd.DataFrame) -> pd.DataFrame:
     """
     This function removes insertions from PDB dataframes
     :param df:
-    :type df:
     :return:
-    :rtype:
     """
     """Remove insertions from structure."""
     # Remove alt_loc residues
@@ -390,10 +392,9 @@ def calculate_centroid_positions(
 
 def compute_edges(
     G: nx.Graph,
-    get_contacts_config: Optional[GetContactsConfig],
     funcs: List[Callable],
+    get_contacts_config: Optional[GetContactsConfig] = None,
 ) -> nx.Graph:
-
     # This control flow prevents unnecessary computation of the distance matrices
     if G.graph["config"].granularity == "atom":
         G.graph["atomic_dist_mat"] = compute_distmat(G.graph["raw_pdb_df"])
@@ -499,7 +500,9 @@ def construct_graph(
 
     # Compute graph edges
     g = compute_edges(
-        g, config.get_contacts_config, config.edge_construction_functions
+        g,
+        funcs=config.edge_construction_functions,
+        get_contacts_config=None,
     )
 
     # Annotate additional graph metadata

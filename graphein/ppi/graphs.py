@@ -1,3 +1,4 @@
+"""Functions for constructing a PPI PPIGraphConfig from STRINGdb and BIOGRID"""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas

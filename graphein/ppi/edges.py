@@ -1,3 +1,4 @@
+"""Functions for adding edges to a PPI Graph from parsed STRING & BIOGRID API call outputs"""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas
@@ -72,3 +73,5 @@ def add_interacting_proteins(
         else:
             G.add_edge(p1, p2, kind={kind})
     log.debug(f"Added {len(df)} {kind} interaction edges")
+
+    return G

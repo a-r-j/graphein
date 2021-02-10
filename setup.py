@@ -30,7 +30,9 @@ setup(
     author_email="arian@jamasb.io",
     url="https://github.com/a-r-j/graphein",
     packages=find_packages(),
-    package_data={"": ["LICENSE.txt", "README.md", "requirements.txt"]},
+    package_data={
+        "": ["LICENSE.txt", "README.md", "requirements.txt", "*.csv"]
+    },
     include_package_data=True,
     install_requires=install_reqs,
     license="MIT",

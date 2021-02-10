@@ -1,3 +1,4 @@
+"""Protein graph construction module."""
 from .config import *
 from .edges import *
 from .features import *

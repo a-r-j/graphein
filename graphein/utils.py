@@ -1,8 +1,11 @@
+"""Utilities for working with graph objects"""
+# Graphein
+# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
+# Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
-
-import os
-import sys
-from typing import Callable, List, Optional
+from typing import Any, Callable, Iterable, List
 
 import networkx as nx
 import numpy as np
@@ -11,7 +14,9 @@ import xarray as xr
 from Bio.Data.IUPACData import protein_letters_3to1
 
 
-def onek_encoding_unk(x, allowable_set):
+def onek_encoding_unk(
+    x: Iterable[Any], allowable_set: List[Any]
+) -> List[bool]:
     """
     Function for one hot encoding
     :param x: value to one-hot

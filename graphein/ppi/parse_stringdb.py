@@ -1,3 +1,4 @@
+"""Functions for making and parsing API calls to STRINGdb"""
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
