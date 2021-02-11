@@ -17,7 +17,6 @@ import pandas as pd
 
 from graphein.protein.utils import download_pdb
 
-
 log = logging.getLogger(__name__)
 
 
@@ -79,7 +78,6 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
 #     GetContacts Interactions     #
 #                                  #
 ####################################
-
 
 
 def get_contacts_df(config: GetContactsConfig, pdb_name: str) -> pd.DataFrame:
