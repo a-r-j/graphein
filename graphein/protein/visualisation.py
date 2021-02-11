@@ -9,11 +9,12 @@ from __future__ import annotations
 from itertools import count
 from typing import List, Optional, Tuple
 
-from pytorch3d.ops import sample_points_from_meshes
 import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+from pytorch3d.ops import sample_points_from_meshes
 
 
 def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:
@@ -44,7 +45,8 @@ def colour_nodes(
     Computes node colours based on "degree", "seq_position" or node attributes
     :param G: Graph to compute node colours for
     :param colour_map:  Colourmap to use.
-    :param colour_by: Manner in which to colour nodes. If node_types "degree" or "seq_position", this must correspond to a node feature
+    :param colour_by: Manner in which to colour nodes.
+    If node_types "degree" or "seq_position", this must correspond to a node feature
     :return: List of node colours
     """
     # get number of nodes
@@ -98,6 +100,7 @@ def colour_edges(
 def plot_protein_structure_graph(
     G: nx.Graph,
     angle: int,
+    plot_title: Optional[str] = None,
     figsize: Tuple[int, int] = (10, 7),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
@@ -116,6 +119,7 @@ def plot_protein_structure_graph(
     Plots protein structure graph in Axes3D.
     :param G:  nx.Graph Protein Structure graph to plot
     :param angle:  View angle
+    :param plot_title: Title of plot
     :param figsize: Size of figure
     :param node_alpha: Controls node transparency
     :param node_size_min: Specifies node minimum size
@@ -180,6 +184,8 @@ def plot_protein_structure_graph(
             # Plot the connecting lines
             ax.plot(x, y, z, c=edge_colors[i], alpha=edge_alpha)
 
+    # Set title
+    ax.set_title(plot_title)
     # Set the initial view
     ax.view_init(30, angle)
     # Hide the axes
