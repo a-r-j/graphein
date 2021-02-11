@@ -382,17 +382,17 @@ def add_distance_threshold(
     :param threshold: Distance in angstroms, below which two nodes are connected
     :return: Graph with distance-based edges added
     """
-    dist_mat = compute_distmat(G.graph["raw_pdb_df"])
+    dist_mat = compute_distmat(G.graph["pdb_df"])
     interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
     interacting_nodes = zip(interacting_nodes[0], interacting_nodes[1])
 
-    for (a1, a2) in interacting_nodes:
-        n1 = G.graph["raw_pdb_df"].loc[a1, "node_id"]
-        n2 = G.graph["raw_pdb_df"].loc[a2, "node_id"]
-        n1_chain = G.graph["raw_pdb_df"].loc[a1, "chain_id"]
-        n2_chain = G.graph["raw_pdb_df"].loc[a2, "chain_id"]
-        n1_position = G.graph["raw_pdb_df"].loc[a1, "residue_number"]
-        n2_position = G.graph["raw_pdb_df"].loc[a2, "residue_number"]
+    for a1, a2 in interacting_nodes:
+        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
+        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
+        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
+        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
+        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
+        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
 
         condition_1 = n1_chain != n2_chain
         condition_2 = (
@@ -432,7 +432,7 @@ def add_k_nn_edges(
     If ‘auto’, then True is used for mode=’connectivity’ and False for mode=’distance’.
     :return: Graph with knn-based edges added
     """
-    dist_mat = compute_distmat(G.graph["raw_pdb_df"])
+    dist_mat = compute_distmat(G.graph["pdb_df"])
 
     nn = kneighbors_graph(
         X=dist_mat,
@@ -443,29 +443,38 @@ def add_k_nn_edges(
         include_self=include_self,
     )
 
-    outgoing = np.repeat(np.array(range(len(G.graph["pdb_id"]))), k)
+    # Create iterable of node indices
+    outgoing = np.repeat(np.array(range(len(G.graph["pdb_df"]))), k)
     incoming = nn.indices
+    interacting_nodes = zip(outgoing, incoming)
 
-    interacting_nodes = zip(outgoing, incoming, nn.data)
+    for a1, a2 in interacting_nodes:
+        # Get nodes IDs from indices
+        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
+        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
 
-    for (a1, a2, data) in interacting_nodes:
-        n1 = G.graph["raw_pdb_df"].loc[a1, "node_id"]
-        n2 = G.graph["raw_pdb_df"].loc[a2, "node_id"]
-        n1_chain = G.graph["raw_pdb_df"].loc[a1, "chain_id"]
-        n2_chain = G.graph["raw_pdb_df"].loc[a2, "chain_id"]
-        n1_position = G.graph["raw_pdb_df"].loc[a1, "residue_number"]
-        n2_position = G.graph["raw_pdb_df"].loc[a2, "residue_number"]
+        # Get chains
+        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
+        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
 
+        # Get sequence position
+        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
+        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
+
+        # Check residues are not on same chain
         condition_1 = n1_chain != n2_chain
+        # Check residues are separated by long_interaction_threshold
         condition_2 = (
             abs(n1_position - n2_position) > long_interaction_threshold
         )
 
+        # If not on same chain add edge or
+        # If on same chain and separation is sufficient add edge
         if condition_1 or (condition_2 and not condition_1):
             if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("distance_threshold")
+                G.edges[n1, n2]["kind"].add("k_nn")
             else:
-                G.add_edge(n1, n2, kind={"distance_threshold"})
+                G.add_edge(n1, n2, kind={"k_nn"})
 
 
 def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
