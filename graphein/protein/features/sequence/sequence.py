@@ -6,11 +6,14 @@ proporties of the sequence."""
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+from __future__ import annotations
+
 from functools import partial
 
 import networkx as nx
 from Bio import SeqUtils
 from multipledispatch import dispatch
+from networkx import Graph
 
 from graphein.protein.features.sequence.utils import (
     aggregate_feature_over_chains,
@@ -27,8 +30,8 @@ def molecular_weight(protein: str, seq_type: str = "protein"):
     return func(protein)
 
 
-@dispatch(nx.Graph, str)
-def molecular_weight(protein: nx.Graph, seq_type: str = "protein"):
+@dispatch(nx.Graph, seq_type=str)
+def molecular_weight(protein, seq_type: str = "protein"):
     func = partial(SeqUtils.molecular_weight, seq_type=seq_type)
 
     G = compute_feature_over_chains(
