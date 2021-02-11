@@ -396,10 +396,11 @@ def compute_edges(
     get_contacts_config: Optional[GetContactsConfig] = None,
 ) -> nx.Graph:
     # This control flow prevents unnecessary computation of the distance matrices
-    if G.graph["config"].granularity == "atom":
-        G.graph["atomic_dist_mat"] = compute_distmat(G.graph["raw_pdb_df"])
-    else:
-        G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
+    if "config" in G.graph:
+        if G.graph["config"].granularity == "atom":
+            G.graph["atomic_dist_mat"] = compute_distmat(G.graph["raw_pdb_df"])
+        else:
+            G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
 
     for func in funcs:
         func(G)
@@ -494,9 +495,7 @@ def construct_graph(
 
     # Annotate additional node metadata
     if config.node_metadata_functions is not None:
-        g = annotate_node_metadata(
-            g, config.dssp_config, config.node_metadata_functions
-        )
+        g = annotate_node_metadata(g, config.node_metadata_functions)
 
     # Compute graph edges
     g = compute_edges(
@@ -550,26 +549,25 @@ if __name__ == "__main__":
         "verbose": False,
         "get_contacts_config": GetContactsConfig(),
         "dssp_config": DSSPConfig(),
+        "graph_metadata_functions": [molecular_weight],
     }
     config = ProteinGraphConfig(**configs)
     config.edge_construction_functions = [
-        add_atomic_edges,
-        add_bond_order,
-        add_ring_status,
+        partial(add_k_nn_edges, k=3, long_interaction_threshold=0)
     ]
     # Test High-level API
     g = construct_graph(
         config=config,
-        pdb_path="../../examples/pdbs/4hhb.pdb",
+        pdb_path="../examples/pdbs/3eiy.pdb",
     )
-    print(nx.info(g))
 
     # Test GetContacts
-    from graphein.protein.edges.intramolecular import hydrogen_bond
+    # from graphein.protein.edges.intramolecular import hydrogen_bond
 
-    hydrogen_bond(g)
+    # hydrogen_bond(g)
 
     # Test DSSP
+    """
     from graphein.protein.features.nodes.dssp import (
         add_dssp_df,
         add_dssp_feature,
@@ -589,6 +587,7 @@ if __name__ == "__main__":
 
     print(g.nodes(data=True))
     """
+    """
     esm_sequence_embedding(g)
     esm_residue_embedding(g)
 
@@ -599,6 +598,7 @@ if __name__ == "__main__":
     print(g.edges())
     """
     # Test AAindex
+    """
     from graphein.protein.features.nodes.aaindex import aaindex1
 
     g = aaindex1(g, "FAUJ880111")
@@ -608,7 +608,7 @@ if __name__ == "__main__":
     print(g.nodes(data=True)["D:HIS:146"])
 
     # print(g.edges())
-
+    """
     """
     # Test Low-level API
     raw_df = read_pdb_to_dataframe(
