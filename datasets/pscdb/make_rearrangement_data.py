@@ -4,16 +4,21 @@ import pandas as pd
 import torch as torch
 from tqdm import tqdm
 
+from graphein.protein.config import (
+    DSSPConfig,
+    GetContactsConfig,
+    ProteinGraphConfig,
+)
+from graphein.protein.edges.intramolecular import (
+    hydrogen_bond,
+    hydrophobic,
+    pi_cation,
+    pi_stacking,
+    salt_bridge,
+    t_stacking,
+    van_der_waals,
+)
 from graphein.protein.graphs import construct_graph
-from graphein.protein.config import ProteinGraphConfig, DSSPConfig, GetContactsConfig
-from graphein.protein.edges.intramolecular import hydrophobic, 
-                                                salt_bridge,
-                                                    hydrogen_bond, 
-                                                    t_stacking, 
-                                                    van_der_waals, 
-                                                    pi_cation, 
-                                                    pi_stacking,
-                                                    t_stacking
 
 if __name__ == "__main__":
     """
@@ -43,24 +48,25 @@ if __name__ == "__main__":
         "insertions": False,
         "verbose": False,
         "pdb_dir": "../examples/pdbs/",
-        "get_contacts_config": GetContactsConfig(contacts_dir="../examples/contacts/",
-                                                pdb_dir="../examples/contacts/"),
+        "get_contacts_config": GetContactsConfig(
+            contacts_dir="../examples/contacts/",
+            pdb_dir="../examples/contacts/",
+        ),
         "dssp_config": DSSPConfig(),
     }
 
     config = ProteinGraphConfig(**configs)
 
     config.edge_construction_functions = [
-        salt_bridge, 
-        hydrogen_bond, 
-        van_der_waals, 
-        pi_cation, 
+        salt_bridge,
+        hydrogen_bond,
+        van_der_waals,
+        pi_cation,
         pi_stacking,
         hydrophobic,
-        t_stacking
+        t_stacking,
     ]
     # Test High-level API
-
 
     # Iterate over rows to produce Graph, pickle graph and label
     for row in tqdm(range(len(df))):
@@ -68,10 +74,7 @@ if __name__ == "__main__":
         file_path = f'pdbs/{example["Free PDB"]}.pdb'
         contact_file = f'contacts/{example["Free PDB"]}_contacts.tsv'
 
-        g = construct_graph(
-                config=config,
-                pdb_code=example["Free PDB"])
-
+        g = construct_graph(config=config, pdb_code=example["Free PDB"])
 
         print(g)
 
