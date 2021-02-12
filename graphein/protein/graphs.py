@@ -109,6 +109,10 @@ def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
     :param df: Pandas Dataframe config protein structure to convert into a dataframe of centroid positions
     :return: pd.Dataframe with atoms/residues positiions converted into centroid positions
     """
+    log.debug(
+        "Converting dataframe to centroids. This averages XYZ coords of the atoms in a residue"
+    )
+
     centroids = calculate_centroid_positions(df)
     df = df.loc[df["atom_name"] == "CA"].reset_index(drop=True)
     df["x_coord"] = centroids["x_coord"]
@@ -525,15 +529,6 @@ if __name__ == "__main__":
         add_peptide_bonds,
     )
     from graphein.protein.edges.intramolecular import salt_bridge
-    from graphein.protein.features.nodes.amino_acid import (
-        expasy_protein_scale,
-        meiler_embedding,
-    )
-    from graphein.protein.features.sequence.embeddings import (
-        biovec_sequence_embedding,
-        esm_residue_embedding,
-        esm_sequence_embedding,
-    )
     from graphein.protein.features.sequence.sequence import molecular_weight
 
     configs = {
@@ -555,54 +550,6 @@ if __name__ == "__main__":
         pdb_path="../examples/pdbs/3eiy.pdb",
     )
 
-    # Test GetContacts
-    # from graphein.protein.edges.intramolecular import hydrogen_bond
-
-    # hydrogen_bond(g)
-
-    # Test DSSP
-    """
-    from graphein.protein.features.nodes.dssp import (
-        add_dssp_df,
-        add_dssp_feature,
-        asa,
-        phi,
-        psi,
-        rsa,
-        secondary_structure,
-    )
-
-    # add_dssp_df(g)
-    phi(g)
-    psi(g)
-    secondary_structure(g)
-    asa(g)
-    rsa(g)
-
-    print(g.nodes(data=True))
-    """
-    """
-    esm_sequence_embedding(g)
-    esm_residue_embedding(g)
-
-
-    # asa(g)
-    print(g.nodes(data=True))
-
-    print(g.edges())
-    """
-    # Test AAindex
-    """
-    from graphein.protein.features.nodes.aaindex import aaindex1
-
-    g = aaindex1(g, "FAUJ880111")
-    print(g.graph["aaindex1"])
-
-    print("")
-    print(g.nodes(data=True)["D:HIS:146"])
-
-    # print(g.edges())
-    """
     """
     # Test Low-level API
     raw_df = read_pdb_to_dataframe(
