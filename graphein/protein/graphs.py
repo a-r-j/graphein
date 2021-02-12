@@ -282,22 +282,15 @@ def select_chains(
     :param chain_selection:
     :param verbose: Print dataframe
     :type verbose: bool
-    :return
+    :return Protein structure dataframe containing only entries in the chain selection
     """
     if chain_selection != "all":
-        # chains = [
-        #    protein_df.loc[protein_df["chain_id"] == chain]
-        #    for chain in chain_selection
-        # ]
         protein_df = filter_dataframe(
-            protein_df, list(chain_selection), boolean=True
+            protein_df,
+            by_column="chain_id",
+            list_of_values=list(chain_selection),
+            boolean=True,
         )
-    # else:
-    # chains = [
-    #    protein_df.loc[protein_df["chain_id"] == chain]
-    #    for chain in protein_df["chain_id"].unique()
-    # ]
-    # protein_df = pd.concat([c for c in chains])
 
     return protein_df
 
@@ -427,6 +420,7 @@ def construct_graph(
     :param config: ProteinGraphConfig object. If None, defaults to config in graphein.protein.config
     :param pdb_path: Path to pdb_file to build graph from
     :param pdb_code: 4-character PDB accession pdb_code to build graph from
+    :param chain_selection: String of polypeptide chains to include in graph. E.g "ABDF" or "all"
     :param df_processing_funcs: List of dataframe processing functions
     :param edge_construction_funcs: List of edge construction functions
     :param edge_annotation_funcs: List of edge annotation functions
