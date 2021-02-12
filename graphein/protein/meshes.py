@@ -10,9 +10,18 @@ import importlib.util
 import logging
 from typing import List, NamedTuple, Optional, Tuple
 
-from pytorch3d.structures import Meshes
-
 from graphein.protein.config import ProteinMeshConfig
+from graphein.utils import import_message
+
+try:
+    from pytorch3d.structures import Meshes
+except ImportError:
+    import_message(
+        submodule="graphein.protein.meshes",
+        package="pytorch3d",
+        conda_channel="pytorch3d",
+    )
+
 
 log = logging.getLogger(__name__)
 

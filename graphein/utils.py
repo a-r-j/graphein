@@ -6,13 +6,16 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import os
+import sys
 from typing import Any, Callable, Iterable, List
 
 import networkx as nx
 import numpy as np
 import pandas as pd
-import xarray as xr
 from Bio.Data.IUPACData import protein_letters_3to1
+
+import xarray as xr
 
 
 def onek_encoding_unk(
