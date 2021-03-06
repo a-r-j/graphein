@@ -31,6 +31,13 @@ def onek_encoding_unk(
     return [x == s for s in allowable_set]
 
 
+def filter_dataframe(df: pd.DataFrame, funcs: List[Callable]) -> pd.DataFrame:
+    """"""
+    for func in funcs:
+        df = func(df)
+    return df
+
+
 def annotate_graph_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     """
     Annotates graph with graph-level metadata
