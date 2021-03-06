@@ -25,3 +25,4 @@ dependencies:
 - rdkit
 - scipy
 - xarray
+- wget
