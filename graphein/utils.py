@@ -1,4 +1,12 @@
-from typing import Callable, List
+"""Utilities for working with graph objects"""
+
+# Graphein
+# Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
+# Code Repository: https://github.com/a-r-j/graphein
+
+from typing import Any, Callable, Iterable, List
 
 import networkx as nx
 import numpy as np
@@ -6,7 +14,9 @@ import pandas as pd
 import xarray as xr
 
 
-def onek_encoding_unk(x, allowable_set):
+def onek_encoding_unk(
+    x: Iterable[Any], allowable_set: List[Any]
+) -> List[bool]:
     """
     Function for one hot encoding
     :param x: value to one-hot

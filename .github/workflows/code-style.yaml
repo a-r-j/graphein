@@ -38,7 +38,7 @@ jobs:
         run: python -m pip install interrogate
 
       - name: Run interrogate
-        run: interrogate .
+        run: interrogate graphein
 
 
   isort:
