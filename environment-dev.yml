@@ -35,3 +35,5 @@ dependencies:
   - propy
   - biovec
   - multipledispatch
+  - wget
+
