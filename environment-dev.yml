@@ -31,6 +31,7 @@ dependencies:
 - jupyterlab
 - pydantic
 - interrogate
+- pytorch3d
 - pip:
   - propy
   - biovec
