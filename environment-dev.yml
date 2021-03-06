@@ -1,6 +1,7 @@
 name: graphein-dev
 channels:
 - conda-forge
+- pytorch
 dependencies:
 - python=3.8
 - biopython
@@ -23,6 +24,7 @@ dependencies:
 - pytest
 - pytest-cov
 - pytest-xdist
+- pytorch
 - rdkit
 - scipy
 - scikit-learn
@@ -31,11 +33,9 @@ dependencies:
 - jupyterlab
 - pydantic
 - interrogate
-
 - pip:
   - propy
   - biovec
   - multipledispatch
   - pytorch3d
-  - torch==1.8.0+cpu
   - wget
