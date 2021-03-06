@@ -5,6 +5,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import logging
+from typing import Callable, List, Optional
 
 import networkx as nx
 import pandas as pd
@@ -15,7 +16,9 @@ from graphein.grn.parse_trrust import TRRUST_df
 log = logging.getLogger(__name__)
 
 
-def add_trrust_edges(G: nx.Graph, kwargs) -> nx.Graph:
+def add_trrust_edges(
+    G: nx.Graph, trrust_filtering_funcs: Optional[List[Callable]] = None
+) -> nx.Graph:
     """
     Adds edges from TRRUST to GRNGraph
     :param G: Graph to edges to (populated with gene_id nodes)
@@ -25,14 +28,16 @@ def add_trrust_edges(G: nx.Graph, kwargs) -> nx.Graph:
     G.graph["sources"].append("trrust")
     G.graph["trrust_df"] = TRRUST_df(
         G.graph["gene_list"],
-        kwargs=kwargs,
+        filtering_funcs=trrust_filtering_funcs,
     )
     add_interacting_genes(G, df=G.graph["trrust_df"], kind="trrust")
 
     return G
 
 
-def add_regnetwork_edges(G: nx.Graph, kwargs) -> nx.Graph:
+def add_regnetwork_edges(
+    G: nx.Graph, regnetwork_filtering_funcs: Optional[List[Callable]] = None
+) -> nx.Graph:
     """
     Adds edges from RegNetwork to GRNGraph
     :param G: Graph to edges to (populated with gene_id nodes)
@@ -42,7 +47,7 @@ def add_regnetwork_edges(G: nx.Graph, kwargs) -> nx.Graph:
     G.graph["sources"].append("regnetwork")
     G.graph["regnetwork_df"] = RegNetwork_df(
         G.graph["gene_list"],
-        kwargs=kwargs,
+        filtering_funcs=regnetwork_filtering_funcs,
     )
     add_interacting_genes(G, df=G.graph["regnetwork_df"], kind="regnetwork")
 

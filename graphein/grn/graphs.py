@@ -18,7 +18,7 @@ from graphein.utils import (
 )
 
 log = logging.getLogger(__name__)
-
+logging.basicConfig(level=logging.INFO)
 
 EDGE_COLOR_MAPPING = {"trrust": "r", "regnetwork": "b", "abasy": "g"}
 
@@ -29,16 +29,17 @@ def parse_kwargs_from_config(config: GRNGraphConfig) -> GRNGraphConfig:
     :param config: GRN graph configuration object.
     :return: config with updated config.kwargs
     """
-    if config.trrust_config is not None:
+    if config.trrust_config.kwargs is not None:
         trrust_config_dict = {
-            "TRRUST_" + k: v for k, v in dict(config.trrust_config.items())
+            "TRRUST_" + k: v
+            for k, v in dict(config.trrust_config.kwargs.items())
         }
         config.kwargs = config.kwargs.update(trrust_config_dict)
 
-    if config.regnetwork_config is not None:
+    if config.regnetwork_config.kwargs is not None:
         regnetwork_config_dict = {
             "RegNetwork_" + k: v
-            for k, v in dict(config.regnetwork_config.items())
+            for k, v in dict(config.regnetwork_config.kwargs.items())
         }
         config.kwargs = config.kwargs.update(regnetwork_config_dict)
     return config
@@ -53,7 +54,7 @@ def compute_grn_graph(
     config: Optional[GRNGraphConfig] = None,
 ) -> nx.Graph:
     """
-    Computes a GRN Graph from a list of gene IDs
+    Computes a Gene Regulatory Network Graph from a list of gene IDs
     :param gene_list: List of gene identifiers
     :param edge_construction_funcs:  List of functions to construct edges with
     :param graph_annotation_funcs: List of functions functools annotate graph metadata
@@ -109,6 +110,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     from graphein.grn.edges import add_regnetwork_edges, add_trrust_edges
+    from graphein.grn.features.node_features import add_sequence_to_nodes
 
     gene_list = ["AATF", "MYC", "USF1", "SP1", "TP53", "DUSP1"]
 
@@ -126,10 +128,16 @@ if __name__ == "__main__":
     g = compute_grn_graph(
         gene_list=gene_list,
         edge_construction_funcs=[
-            partial(add_trrust_edges, kwargs=kwargs),
-            partial(add_regnetwork_edges, kwargs=kwargs),
+            partial(
+                add_trrust_edges,
+                trrust_filtering_funcs=config.trrust_config.filtering_functions,
+            ),
+            partial(
+                add_regnetwork_edges,
+                regnetwork_filtering_funcs=config.regnetwork_config.filtering_functions,
+            ),
         ],
-        # node_annotation_funcs=[add_sequence_to_nodes, molecular_weight],
+        node_annotation_funcs=[add_sequence_to_nodes],  # , molecular_weight],
         edge_annotation_funcs=[edge_ann_fn],
     )
     print(g.edges(data=True))

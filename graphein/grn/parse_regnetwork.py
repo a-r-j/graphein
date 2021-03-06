@@ -1,3 +1,5 @@
+import functools
+
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
@@ -8,32 +10,36 @@ import logging
 import os
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Callable, List, Optional
 
 import pandas as pd
 import wget
 
+from ..utils import filter_dataframe
+
 log = logging.getLogger(__name__)
 
 
-def _download_RegNetwork():
+def _download_RegNetwork(root_dir: Optional[Path] = None) -> str:
     """
-    Downloads RegNetwork regulatory interactions
+    Downloads RegNetwork regulatory interactions to the root directory
+    :param root_dir: Path object specifying the location to download RegNetwork to
     """
     url = "http://www.regnetworkweb.org/download/human.zip"
 
-    # TODO: perhaps this would be better?
-    #  https://stackoverflow.com/questions/25389095/python-get-path-of-root-project-structure
-    root_dir = os.path.dirname(os.path.realpath("../"))
-    regnetwork_dir = "{}/datasets/regnetwork".format(root_dir)
+    # If no root dir is provided, use the dataset directory inside graphein.
+    if root_dir is None:
+        root_dir = Path(__file__).parent.parent.parent / "datasets"
+
+    regnetwork_dir = f"{root_dir}/regnetwork"
     Path(regnetwork_dir).mkdir(parents=False, exist_ok=True)
-    compressed_file = "{}/human.zip".format(regnetwork_dir)
-    out_dir = "{}/human".format(regnetwork_dir)
-    file = "{}/human.source".format(out_dir)
+    compressed_file = f"{regnetwork_dir}/human.zip"
+    out_dir = f"{regnetwork_dir}/human"
+    file = f"{out_dir}/human.source"
 
     # Download data and unzip
     if not os.path.exists(file):
-        print("Downloading RegNetwork ...")
+        log.info("Downloading RegNetwork ...")
         wget.download(url, compressed_file)
 
         with zipfile.ZipFile(compressed_file, "r") as zip_ref:
@@ -42,22 +48,25 @@ def _download_RegNetwork():
     return file
 
 
-def _download_RegNetwork_regtypes():
+def _download_RegNetwork_regtypes(root_dir: Optional[Path] = None) -> str:
     """
-    Downloads RegNetwork regulatory interactions types
+    Downloads RegNetwork regulatory interactions types to the root directory
+    :param root_dir: Path object specifying the location to download RegNetwork to
     """
     url = "http://www.regnetworkweb.org/download/RegulatoryDirections.zip"
 
-    root_dir = os.path.dirname(os.path.realpath("../"))
-    regnetwork_dir = "{}/datasets/regnetwork".format(root_dir)
+    if root_dir is None:
+        root_dir = Path(__file__).parent.parent.parent / "datasets"
+
+    regnetwork_dir = f"{root_dir}/regnetwork"
     Path(regnetwork_dir).mkdir(parents=False, exist_ok=True)
-    compressed_file = "{}/RegulatoryDirections.zip".format(regnetwork_dir)
-    out_dir = "{}/human".format(regnetwork_dir)
-    file = "{}/new_kegg.human.reg.direction.txt".format(out_dir)
+    compressed_file = f"{regnetwork_dir}/RegulatoryDirections.zip"
+    out_dir = f"{regnetwork_dir}/human"
+    file = f"{out_dir}/new_kegg.human.reg.direction.txt"
 
     # Download data and unzip
     if not os.path.exists(file):
-        print("Downloading RegNetwork reg types ...")
+        log.info("Downloading RegNetwork reg types ...")
         wget.download(url, compressed_file)
 
         with zipfile.ZipFile(compressed_file, "r") as zip_ref:
@@ -66,27 +75,48 @@ def _download_RegNetwork_regtypes():
     return file
 
 
-def parse_RegNetwork(gene_list: List[str], **kwargs) -> pd.DataFrame:
+@functools.lru_cache()
+def load_RegNetwork_interactions(
+    root_dir: Optional[Path] = None,
+) -> pd.DataFrame:
     """
-    Parser for RegNetwork interactions
-    :param gene_list: List of gene identifiers
-    :return Pandas dataframe with the regulatory interactions between genes in the gene list
+    Loads RegNetwork interaction datafile. Downloads the file first if not already present.
     """
-    file = _download_RegNetwork()
-    df = pd.read_csv(
+    file = _download_RegNetwork(root_dir)
+    return pd.read_csv(
         file, delimiter="\t", header=None, names=["g1", "id1", "g2", "id2"]
     )
-    print(df.head())
 
-    # Add regulatory types
-    file = _download_RegNetwork_regtypes()
-    reg_df = pd.read_csv(
+
+@functools.lru_cache()
+def load_RegNetwork_regulation_types(
+    root_dir: Optional[Path] = None,
+) -> pd.DataFrame:
+    """
+    Loads RegNetwork regulation types. Downloads the file first if not already present.
+    """
+    file = _download_RegNetwork_regtypes(root_dir)
+    return pd.read_csv(
         file,
         delimiter=" ",
         header=None,
         names=["tf", "id1", "target", "id2", "regtype"],
         skiprows=1,
     )
+
+
+def parse_RegNetwork(
+    gene_list: List[str], root_dir: Optional[Path] = None
+) -> pd.DataFrame:
+    """
+    Parser for RegNetwork interactions
+    :param gene_list: List of gene identifiers
+    :return Pandas dataframe with the regulatory interactions between genes in the gene list
+    """
+    # Load dataframes
+    df = load_RegNetwork_interactions(root_dir)
+    reg_df = load_RegNetwork_regulation_types(root_dir)
+
     df = pd.merge(
         df,
         reg_df,
@@ -103,14 +133,19 @@ def parse_RegNetwork(gene_list: List[str], **kwargs) -> pd.DataFrame:
     return df
 
 
-def filter_RegNetwork(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
+def filter_RegNetwork(
+    df: pd.DataFrame, funcs: Optional[List[Callable]] = None
+) -> pd.DataFrame:
     """
-    Filters results of RegNetwork call according to user kwargs,
-    :param df: Source specific Pandas dataframe (RegNetwork) with results of the API call
-    :param kwargs: User thresholds used to filter the results. The parameter names are of the form RegNetwork_<param>,
-                   where <param> is the name of the parameter. All the parameters are numerical values.
-    :return: Source specific Pandas dataframe with filtered results
+    Filters results of RegNetwork call by providing a list of
+    user-defined functions that accept a dataframe and return a dataframe
+    :param df: pd.Dataframe to filter
+    :param funcs: list of functions that carry out dataframe processing
+    :return: processed dataframe
     """
+    if funcs is not None:
+        df = filter_dataframe(df, funcs)
+
     return df
 
 
@@ -135,13 +170,17 @@ def standardise_RegNetwork(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def RegNetwork_df(gene_list: List[str], **kwargs) -> pd.DataFrame:
+def RegNetwork_df(
+    gene_list: List[str],
+    root_dir: Optional[Path] = None,
+    filtering_funcs: Optional[List[Callable]] = None,
+) -> pd.DataFrame:
     """
     Generates standardised dataframe with RegNetwork protein-protein interactions, filtered according to user's input
     :return: Standardised dataframe with RegNetwork interactions
     """
-    df = parse_RegNetwork(gene_list=gene_list)
-    df = filter_RegNetwork(df, **kwargs)
+    df = parse_RegNetwork(gene_list=gene_list, root_dir=root_dir)
+    df = filter_RegNetwork(df, filtering_funcs)
     df = standardise_RegNetwork(df)
 
     return df
