@@ -37,3 +37,4 @@ dependencies:
   - biovec
   - multipledispatch
   - pytorch3d
+  - wget
