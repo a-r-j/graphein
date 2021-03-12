@@ -14,7 +14,17 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
-from pytorch3d.ops import sample_points_from_meshes
+
+from graphein.utils import import_message
+
+try:
+    from pytorch3d.ops import sample_points_from_meshes
+except ImportError:
+    import_message(
+        submodule="graphein.protein.visualisation",
+        package="pytorch3d",
+        conda_channel="pytorch3d",
+    )
 
 
 def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:
@@ -135,7 +145,6 @@ def plot_protein_structure_graph(
     :param out_format: Fileformat to use for plot
     :return:
     """
-    from mpl_toolkits.mplot3d import Axes3D
 
     # Get Node Attributes
     pos = nx.get_node_attributes(G, "coords")
