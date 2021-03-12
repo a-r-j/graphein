@@ -24,9 +24,15 @@ dependencies:
 - pytest-xdist
 - rdkit
 - scipy
+- scikit-learn
 - xarray
 - ipympl
 - pydantic
-- scikit-learn
+- interrogate
 - pip:
+    - propy
+    - biovec
+    - multipledispatch
+    - pytorch3d
+    - wget
     - git+https://www.github.com/a-r-j/graphein@protein_vis
