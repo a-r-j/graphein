@@ -1,6 +1,8 @@
 name: graphein-dev
 channels:
 - conda-forge
+- pytorch
+- pytorch3d
 dependencies:
 - python=3.8
 - biopython
@@ -25,6 +27,8 @@ dependencies:
 - rdkit
 - scipy
 - scikit-learn
+- pytorch=1.7.1
+- pytorch3d
 - xarray
 - ipympl
 - pydantic
@@ -33,6 +37,5 @@ dependencies:
     - propy
     - biovec
     - multipledispatch
-    - pytorch3d
     - wget
     - git+https://www.github.com/a-r-j/graphein@protein_vis
