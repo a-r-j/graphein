@@ -323,7 +323,7 @@ def import_message(
             installation = f"{package} cannot be installed via pip"
 
     print(
-        f"To use the janitor submodule {submodule}, you need to install "
+        f"To use the Graphein submodule {submodule}, you need to install "
         f"{package}."
     )
     print()
