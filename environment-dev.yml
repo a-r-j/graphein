@@ -10,6 +10,7 @@ dependencies:
 - conda
 - flake8
 - isort
+- ipympl
 - mamba
 - matplotlib
 - mypy
@@ -24,7 +25,7 @@ dependencies:
 - pytest
 - pytest-cov
 - pytest-xdist
-- pytorch
+- pytorch=1.7.1
 - rdkit
 - scipy
 - scikit-learn
@@ -34,6 +35,9 @@ dependencies:
 - pydantic
 - interrogate
 - pip:
+  - bioservices
+  - versioneer
+  - pytorch3d
   - propy
   - biovec
   - multipledispatch
