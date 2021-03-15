@@ -2,15 +2,16 @@ import pytest
 from hypothesis import given
 from hypothesis.strategies import text
 
-from graphein.rna.graphs import RNA_BASES, SUPPORTED_DOTBRACKET_NOTATION
-
-from graphein.rna.graphs import construct_rna_graph
 from graphein.rna.edges import (
     add_all_dotbracket_edges,
     add_base_pairing_interactions,
-    add_phosphodiester_bonds
+    add_phosphodiester_bonds,
 )
-
+from graphein.rna.graphs import (
+    RNA_BASES,
+    SUPPORTED_DOTBRACKET_NOTATION,
+    construct_rna_graph,
+)
 
 TEST_SEQUENCE = "UUGGAGUACACAACCUGUACACUCUUUC"
 TEST_DOTBRACKET = "..(((((..(((...)))..)))))..."
@@ -21,17 +22,15 @@ def test_construct_rna_graph():
         dotbracket=TEST_DOTBRACKET,
         sequence=TEST_SEQUENCE,
         edge_construction_funcs=[
-           add_base_pairing_interactions,
-           add_phosphodiester_bonds
-        ]
+            add_base_pairing_interactions,
+            add_phosphodiester_bonds,
+        ],
     )
 
     h = construct_rna_graph(
         dotbracket=TEST_DOTBRACKET,
         sequence=TEST_SEQUENCE,
-        edge_construction_funcs=[
-            add_all_dotbracket_edges
-        ]
+        edge_construction_funcs=[add_all_dotbracket_edges],
     )
 
     assert g.edges() == h.edges()
