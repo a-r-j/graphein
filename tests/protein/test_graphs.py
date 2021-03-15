@@ -99,7 +99,7 @@ def test_intramolecular_edges():
     Example-based test that intramolecualr edge construction using GetContacts works correctly.
 
     Uses 4hhb PDB file as an example test case.
-    
+
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
 
     edge_functions = {
