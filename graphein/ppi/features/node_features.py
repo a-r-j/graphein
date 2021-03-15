@@ -1,11 +1,14 @@
 """Functions for adding nodes features to a PPI Graph"""
+import networkx as nx
+from bioservices import HGNC, UniProt
+
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import networkx as nx
+from graphein.utils import import_message
 
 
 def add_sequence_to_nodes(n, d):
@@ -14,8 +17,6 @@ def add_sequence_to_nodes(n, d):
     :param n: Graph node.
     :param d: Graph attribute dictionary.
     """
-    from bioservices import HGNC, UniProt
-
     h = HGNC(verbose=False)
     u = UniProt(verbose=False)
 
@@ -27,7 +28,7 @@ def add_sequence_to_nodes(n, d):
     # Todo mapping with bioservices to support other protein IDs?
 
     for id in d["uniprot_ids"]:
-        d[f"sequence_{id}"] = u.get_fasta_sequence(id)
+        d[f"sequence"] = u.get_fasta_sequence(id)
 
 
 if __name__ == "__main__":

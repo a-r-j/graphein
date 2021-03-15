@@ -27,12 +27,12 @@ dependencies:
 - scipy
 - scikit-learn
 - pytorch=1.7.1
-
 - xarray
 - ipympl
 - pydantic
 - interrogate
 - pip:
+    - bioservices
     - propy
     - pytorch3d
     - biovec
