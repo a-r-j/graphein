@@ -38,6 +38,7 @@ dependencies:
   - bioservices
   - propy
   - biovec
+  - hypothesis
   - multipledispatch
   - pytorch3d
   - wget
