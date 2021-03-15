@@ -21,7 +21,7 @@ install:
   # Install Python, py.test, and required packages.
   - pip install pytest
   - conda env create -f environment-dev.yml
-  - source activate proteingraph-dev
+  - source activate graphein-dev
   - python setup.py install
 
 script:
