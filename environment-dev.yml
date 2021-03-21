@@ -37,6 +37,7 @@ dependencies:
 - pip:
   - bioservices
   - versioneer
+  - nbval
   - pytorch3d
   - propy
   - biovec
