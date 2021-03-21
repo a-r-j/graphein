@@ -35,6 +35,6 @@ jobs:
           source activate graphein-dev
           pytest --nbval-lax --current-env
 
-    - name: Run example notebooks
-      run: |
-        grep -l smoke_test notebooks/*.ipynb | pytest --nbval-lax --current-env
+      - name: Run example notebooks
+        run: |
+          grep -l smoke_test notebooks/*.ipynb | pytest --nbval-lax --current-env
