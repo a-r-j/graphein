@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Literal, Optional, Union
 
 from pydantic import BaseModel
 
@@ -30,10 +30,52 @@ class GetContactsConfig(BaseModel):
     granularity: str = "CA"
 
 
+GraphAtoms = Literal[
+    "N",
+    "CA",
+    "C",
+    "O",
+    "CB",
+    "OG",
+    "CG",
+    "CD1",
+    "CD2",
+    "CE1",
+    "CE2",
+    "CZ",
+    "OD1",
+    "ND2",
+    "CG1",
+    "CG2",
+    "CD",
+    "CE",
+    "NZ",
+    "OD2",
+    "OE1",
+    "NE2",
+    "OE2",
+    "OH",
+    "NE",
+    "NH1",
+    "NH2",
+    "OG1",
+    "SD",
+    "ND1",
+    "SG",
+    "NE1",
+    "CE3",
+    "CZ2",
+    "CZ3",
+    "CH2",
+    "OXT",
+]
+GranularityOpts = Literal["atom", "centroid"]
+
+
 class ProteinGraphConfig(BaseModel):
     """Config Object for Protein Structure Graph Construction"""
 
-    granularity: str = "CA"
+    granularity: Union[GraphAtoms, GranularityOpts] = "CA"
     keep_hets: bool = False
     insertions: bool = False
     pdb_dir: Path = Path(
