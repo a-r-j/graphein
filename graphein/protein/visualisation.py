@@ -11,9 +11,11 @@ from typing import List, Optional, Tuple
 
 import matplotlib
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import networkx as nx
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
+import plotly.graph_objects as go
+
 
 from graphein.utils import import_message
 
@@ -105,6 +107,102 @@ def colour_edges(
             for i in G.edges()
         ]
     return colors
+
+
+def plotly_protein_structure_graph(
+    G: nx.Graph,
+    plot_title: Optional[str] = None,
+    figsize: Tuple[int, int] = (620, 650),
+    node_alpha: float = 0.7,
+    node_size_min: float = 20.0,
+    node_size_multiplier: float = 20.0,
+    label_node_ids: bool = True,
+    node_colour_map=plt.cm.plasma,
+    edge_color_map=plt.cm.plasma,
+    colour_nodes_by: str = "degree",
+    colour_edges_by: str = "type",
+    edge_alpha: float = 0.5,
+):
+    """
+    Plots protein structure graph using plotly.
+    :param G:  nx.Graph Protein Structure graph to plot
+    :param plot_title: Title of plot
+    :param figsize: Size of figure
+    :param node_alpha: Controls node transparency
+    :param node_size_min: Specifies node minimum size
+    :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree.
+    :param label_node_ids: bool indicating whether or not to plot node_id labels
+    :param node_colour_map: colour map to use for nodes
+    :param edge_color_map: colour map to use for edges
+    :param colour_nodes_by: Specifies how to colour nodes. "degree", "seq_position" or a node feature
+    :param colour_edges_by: Specifies how to colour edges. Currently only "kind" is supported
+    :param edge_alpha: Controls edge transparency
+    """
+
+    # Get Node Attributes
+    pos = nx.get_node_attributes(G, "coords")
+
+    # Get node colours
+    node_colors = colour_nodes(G, colour_map=node_colour_map, colour_by=colour_nodes_by)
+    edge_colors = colour_edges(G, colour_map=edge_color_map, colour_by=colour_edges_by)
+
+    # 3D network plot
+    x_nodes = []
+    y_nodes = []
+    z_nodes = []
+    node_sizes = []
+    node_labels = []
+
+    # Loop on the pos dictionary to extract the x,y,z coordinates of each node
+    for i, (key, value) in enumerate(pos.items()):
+        x_nodes.append(value[0])
+        y_nodes.append(value[1])
+        z_nodes.append(value[2])
+        node_sizes.append(node_size_min + node_size_multiplier * G.degree[key])
+
+        if label_node_ids:
+            node_labels.append(list(G.nodes())[i])
+
+    nodes = go.Scatter3d(
+        x=x_nodes,
+        y=y_nodes,
+        z=z_nodes,
+        mode="markers",
+        marker={"symbol": "circle", "color": node_colors, "size": node_sizes, "opacity": node_alpha},
+    )
+
+    # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
+    # Those two points are the extrema of the line to be plotted
+    x_edges = []
+    y_edges = []
+    z_edges = []
+
+    for j in G.edges():
+        x_edges.append((pos[j[0]][0], pos[j[1]][0]))
+        y_edges.append((pos[j[0]][1], pos[j[1]][1]))
+        z_edges.append((pos[j[0]][2], pos[j[1]][2]))
+
+    axis = dict(showbackground=False, showline=False, zeroline=False, showgrid=False, showticklabels=False, title="")
+
+    edges = go.Scatter3d(x=x_edges, y=y_edges, z=z_edges, mode="lines", line={"color": edge_colors})
+
+    fig = go.Figure(
+        data=[nodes, edges],
+        layout=go.Layout(
+            title=plot_title,
+            width=figsize[0],
+            height=figsize[1],
+            showlegend=False,
+            scene=dict(
+                xaxis=dict(axis),
+                yaxis=dict(axis),
+                zaxis=dict(axis),
+            ),
+            margin=dict(t=100),
+        ),
+    )
+
+    return fig
 
 
 def plot_protein_structure_graph(
