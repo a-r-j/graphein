@@ -124,7 +124,7 @@ def plot_protein_structure_graph(
     plot_style: str = "ggplot",
     out_path: Optional[str] = None,
     out_format: str = ".png",
-):
+) -> Axes3D:
     """
     Plots protein structure graph in Axes3D.
     :param G:  nx.Graph Protein Structure graph to plot
@@ -203,7 +203,7 @@ def plot_protein_structure_graph(
         plt.savefig(out_path + str(angle).zfill(3) + out_format)
         plt.close("all")
 
-    return plt
+    return ax
 
 
 if __name__ == "__main__":
