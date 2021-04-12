@@ -161,7 +161,7 @@ def plot_protein_structure_graph(
     with plt.style.context(plot_style):
 
         fig = plt.figure(figsize=figsize)
-        ax = Axes3D(fig)
+        ax = Axes3D(fig, auto_add_to_figure=True)
 
         # Loop on the pos dictionary to extract the x,y,z coordinates of each node
         for i, (key, value) in enumerate(pos.items()):
