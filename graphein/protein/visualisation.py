@@ -177,14 +177,14 @@ def plotly_protein_structure_graph(
     y_edges = []
     z_edges = []
 
-    for j in G.edges():
-        x_edges.append((pos[j[0]][0], pos[j[1]][0]))
-        y_edges.append((pos[j[0]][1], pos[j[1]][1]))
-        z_edges.append((pos[j[0]][2], pos[j[1]][2]))
+    for node_a, node_b in G.edges(data=False):
+        x_edges.extend([pos[node_a][0], pos[node_b][0], None])
+        y_edges.extend([pos[node_a][1], pos[node_b][1], None])
+        z_edges.extend([pos[node_a][2], pos[node_b][2], None])
 
     axis = dict(showbackground=False, showline=False, zeroline=False, showgrid=False, showticklabels=False, title="")
 
-    edges = go.Scatter3d(x=x_edges, y=y_edges, z=z_edges, mode="lines", line={"color": edge_colors})
+    edges = go.Scatter3d(x=x_edges, y=y_edges, z=z_edges, mode="lines", line={"color": edge_colors, "width": 10}, hoverinfo=None)
 
     fig = go.Figure(
         data=[nodes, edges],
