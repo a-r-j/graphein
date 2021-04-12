@@ -137,7 +137,7 @@ def plot_protein_structure_graph(
     :param label_node_ids: bool indicating whether or not to plot node_id labels
     :param node_colour_map: colour map to use for nodes
     :param edge_color_map: colour map to use for edges
-    :param colour_nodes_by: Specifies how to colour nodes. "degree"m "seq_position" or a node eature
+    :param colour_nodes_by: Specifies how to colour nodes. "degree", "seq_position" or a node feature
     :param colour_edges_by: Specifies how to colour edges. Currently only "kind" is supported
     :param edge_alpha: Controls edge transparency
     :param plot_style: matplotlib style sheet to use
