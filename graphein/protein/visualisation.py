@@ -11,11 +11,10 @@ from typing import List, Optional, Tuple
 
 import matplotlib
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import networkx as nx
 import numpy as np
 import plotly.graph_objects as go
-
+from mpl_toolkits.mplot3d import Axes3D
 
 from graphein.utils import import_message
 
@@ -143,8 +142,12 @@ def plotly_protein_structure_graph(
     pos = nx.get_node_attributes(G, "coords")
 
     # Get node colours
-    node_colors = colour_nodes(G, colour_map=node_colour_map, colour_by=colour_nodes_by)
-    edge_colors = colour_edges(G, colour_map=edge_color_map, colour_by=colour_edges_by)
+    node_colors = colour_nodes(
+        G, colour_map=node_colour_map, colour_by=colour_nodes_by
+    )
+    edge_colors = colour_edges(
+        G, colour_map=edge_color_map, colour_by=colour_edges_by
+    )
 
     # 3D network plot
     x_nodes = []
@@ -168,7 +171,14 @@ def plotly_protein_structure_graph(
         y=y_nodes,
         z=z_nodes,
         mode="markers",
-        marker={"symbol": "circle", "color": node_colors, "size": node_sizes, "opacity": node_alpha},
+        marker={
+            "symbol": "circle",
+            "color": node_colors,
+            "size": node_sizes,
+            "opacity": node_alpha,
+        },
+        text=list(G.nodes()),
+        hoverinfo="text+x+y+z",
     )
 
     # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
@@ -182,9 +192,27 @@ def plotly_protein_structure_graph(
         y_edges.extend([pos[node_a][1], pos[node_b][1], None])
         z_edges.extend([pos[node_a][2], pos[node_b][2], None])
 
-    axis = dict(showbackground=False, showline=False, zeroline=False, showgrid=False, showticklabels=False, title="")
+    axis = dict(
+        showbackground=False,
+        showline=False,
+        zeroline=False,
+        showgrid=False,
+        showticklabels=False,
+        title="",
+    )
 
-    edges = go.Scatter3d(x=x_edges, y=y_edges, z=z_edges, mode="lines", line={"color": edge_colors, "width": 10}, hoverinfo=None)
+    edges = go.Scatter3d(
+        x=x_edges,
+        y=y_edges,
+        z=z_edges,
+        mode="lines",
+        line={"color": edge_colors, "width": 10},
+        text=[
+            str(list(edge_type))
+            for edge_type in nx.get_edge_attributes(G, "kind").values()
+        ],
+        hoverinfo="text",
+    )
 
     fig = go.Figure(
         data=[nodes, edges],
@@ -342,14 +370,14 @@ if __name__ == "__main__":
     # g = construct_graph(config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e")
 
     g = construct_graph(
-        config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e"
+        config=config, pdb_path="../examples/pdbs/3eiy.pdb", pdb_code="3eiy"
     )
     print(nx.info(g))
 
-    p = plot_protein_structure_graph(
+    p = plotly_protein_structure_graph(
         g,
         30,
-        (10, 7),
+        (1000, 2000),
         colour_nodes_by="element_symbol",
         colour_edges_by="kind",
         label_node_ids=False,
