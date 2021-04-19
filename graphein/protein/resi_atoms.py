@@ -1440,7 +1440,7 @@ DEFAULT_BOND_STATE: Dict[str, str] = {
     "HZ3": "Hsb",
 }
 
-RESIDUE_ATOM_BOND_STATE: Dict[str, str] = {
+RESIDUE_ATOM_BOND_STATE: Dict[str, Dict[str, str]] = {
     "XXX": {
         "N": "Nsb",
         "CA": "Csb",

@@ -1,4 +1,4 @@
-"""Functions for computing atomic structre of proteins"""
+"""Functions for computing atomic structure of proteins"""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
