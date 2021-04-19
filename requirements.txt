@@ -1,7 +1,7 @@
 # torch_geometric==1.5.0
 # torch==1.5.0
 # dgl==0.4.3
-pytorch3d==0.2.0
+pytorch3d==0.4.0
 tqdm==4.60.0
 # numpy==1.18.1
 # scipy==1.4.1
