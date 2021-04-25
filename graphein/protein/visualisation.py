@@ -250,7 +250,7 @@ def plot_protein_structure_graph(
     plot_style: str = "ggplot",
     out_path: Optional[str] = None,
     out_format: str = ".png",
-):
+) -> Axes3D:
     """
     Plots protein structure graph in Axes3D.
     :param G:  nx.Graph Protein Structure graph to plot
@@ -263,7 +263,7 @@ def plot_protein_structure_graph(
     :param label_node_ids: bool indicating whether or not to plot node_id labels
     :param node_colour_map: colour map to use for nodes
     :param edge_color_map: colour map to use for edges
-    :param colour_nodes_by: Specifies how to colour nodes. "degree"m "seq_position" or a node eature
+    :param colour_nodes_by: Specifies how to colour nodes. "degree", "seq_position" or a node feature
     :param colour_edges_by: Specifies how to colour edges. Currently only "kind" is supported
     :param edge_alpha: Controls edge transparency
     :param plot_style: matplotlib style sheet to use
@@ -287,7 +287,7 @@ def plot_protein_structure_graph(
     with plt.style.context(plot_style):
 
         fig = plt.figure(figsize=figsize)
-        ax = Axes3D(fig)
+        ax = Axes3D(fig, auto_add_to_figure=True)
 
         # Loop on the pos dictionary to extract the x,y,z coordinates of each node
         for i, (key, value) in enumerate(pos.items()):
@@ -329,7 +329,7 @@ def plot_protein_structure_graph(
         plt.savefig(out_path + str(angle).zfill(3) + out_format)
         plt.close("all")
 
-    return plt
+    return ax
 
 
 if __name__ == "__main__":

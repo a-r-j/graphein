@@ -26,4 +26,4 @@ install:
 
 script:
   # Your test script goes here
-  - pytest
+  - pytest -vvv
