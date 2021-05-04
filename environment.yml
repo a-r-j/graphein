@@ -2,6 +2,7 @@ name: graphein-dev
 channels:
 - conda-forge
 - pytorch
+- plotly
 dependencies:
 - python=3.8
 - biopython
@@ -17,6 +18,7 @@ dependencies:
 - numpy
 - pandas
 - pip
+- plotly
 - pre-commit
 - pycodestyle
 - pydocstyle

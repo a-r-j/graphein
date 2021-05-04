@@ -2,6 +2,7 @@ name: graphein-dev
 channels:
 - conda-forge
 - pytorch
+- plotly
 dependencies:
 - python=3.8
 - biopython
@@ -17,8 +18,10 @@ dependencies:
 - nbstripout
 - networkx
 - numpy
+- nodejs
 - pandas
 - pip
+- plotly
 - pre-commit
 - pycodestyle
 - pydocstyle
@@ -29,6 +32,7 @@ dependencies:
 - rdkit
 - scipy
 - scikit-learn
+- tqdm
 - xarray
 - jupyter
 - jupyterlab
@@ -36,6 +40,7 @@ dependencies:
 - interrogate
 - pip:
   - bioservices
+  - click
   - versioneer
   - nbval
   - pytorch3d
@@ -43,4 +48,6 @@ dependencies:
   - biovec
   - multipledispatch
   - pytorch3d
+  - pyyaml
   - wget
+
