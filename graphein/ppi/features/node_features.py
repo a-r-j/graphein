@@ -8,7 +8,6 @@ from bioservices import HGNC, UniProt
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from graphein.utils import import_message
 
 
 def add_sequence_to_nodes(n, d):

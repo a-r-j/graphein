@@ -15,7 +15,7 @@ from typing import Callable, List, Optional
 import pandas as pd
 import wget
 
-from ..utils import filter_dataframe
+from graphein.utils.utils import filter_dataframe
 
 log = logging.getLogger(__name__)
 

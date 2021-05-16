@@ -16,7 +16,7 @@ import numpy as np
 import plotly.graph_objects as go
 from mpl_toolkits.mplot3d import Axes3D
 
-from graphein.utils import import_message
+from graphein.utils.utils import import_message
 
 try:
     from pytorch3d.ops import sample_points_from_meshes

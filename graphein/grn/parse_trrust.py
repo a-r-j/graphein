@@ -6,7 +6,6 @@
 # Code Repository: https://github.com/a-r-j/graphein
 import logging
 import os
-import zipfile
 from functools import lru_cache
 from pathlib import Path
 from typing import Callable, List, Optional
@@ -14,7 +13,7 @@ from typing import Callable, List, Optional
 import pandas as pd
 import wget
 
-from ..utils import filter_dataframe
+from graphein.utils.utils import filter_dataframe
 
 log = logging.getLogger(__name__)
 

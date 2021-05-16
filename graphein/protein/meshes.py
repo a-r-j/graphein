@@ -11,7 +11,7 @@ import logging
 from typing import List, NamedTuple, Optional, Tuple
 
 from graphein.protein.config import ProteinMeshConfig
-from graphein.utils import import_message
+from graphein.utils.utils import import_message
 
 try:
     from pytorch3d.structures import Meshes

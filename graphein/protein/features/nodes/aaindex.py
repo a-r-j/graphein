@@ -2,7 +2,7 @@ from typing import Dict, Tuple
 
 import networkx as nx
 
-from graphein.utils import import_message, protein_letters_3to1_all_caps
+from graphein.utils.utils import import_message, protein_letters_3to1_all_caps
 
 try:
     from pyaaisc import Aaindex
