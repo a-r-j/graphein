@@ -1,4 +1,5 @@
 from functools import partial
+
 from graphein.grn.config import GRNGraphConfig
 from graphein.grn.edges import add_regnetwork_edges, add_trrust_edges
 from graphein.grn.features.node_features import add_sequence_to_nodes
