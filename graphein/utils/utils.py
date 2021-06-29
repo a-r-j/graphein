@@ -9,7 +9,6 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
-from yaml import unsafe_load
 from typing import Any, Callable, Iterable, List
 
 import networkx as nx
@@ -17,6 +16,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from Bio.Data.IUPACData import protein_letters_3to1
+from yaml import unsafe_load
 
 
 def onek_encoding_unk(
@@ -358,9 +358,11 @@ def parse_config(path: Path):
 
 def parse_protein_graph_config(config_dict):
     from graphein.protein.config import ProteinGraphConfig
+
     config = ProteinGraphConfig(**config_dict)
     print(config)
     return config
+
 
 def parse_dssp_config(config_dict):
     raise NotImplementedError
