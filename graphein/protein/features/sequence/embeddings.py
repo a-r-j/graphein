@@ -11,7 +11,7 @@ from graphein.protein.features.sequence.utils import (
     compute_feature_over_chains,
     subset_by_node_feature_value,
 )
-from graphein.utils import import_message
+from graphein.utils.utils import import_message
 
 try:
     import biovec

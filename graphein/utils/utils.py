@@ -34,7 +34,7 @@ def onek_encoding_unk(
 
 
 def filter_dataframe(df: pd.DataFrame, funcs: List[Callable]) -> pd.DataFrame:
-    """"""
+    """ """
     for func in funcs:
         df = func(df)
     return df

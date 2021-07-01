@@ -22,13 +22,12 @@ from graphein.protein.config import (
     ProteinGraphConfig,
 )
 from graphein.protein.edges.distance import compute_distmat
-from graphein.protein.edges.intramolecular import get_contacts_df
 from graphein.protein.resi_atoms import BACKBONE_ATOMS
 from graphein.protein.utils import (
     filter_dataframe,
     get_protein_name_from_filename,
 )
-from graphein.utils import (
+from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
@@ -309,6 +308,7 @@ def initialise_graph_with_metadata(
         pdb_df=protein_df,
         raw_pdb_df=raw_pdb_df,
         rgroup_df=compute_rgroup_dataframe(raw_pdb_df),
+        coords=np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]]),
     )
 
     # Create graph and assign intrinsic graph-level metadata
@@ -516,19 +516,7 @@ def construct_graph(
 if __name__ == "__main__":
     from functools import partial
 
-    import graphein.protein.features.sequence.propy
-    from graphein.protein.edges.atomic import (
-        add_atomic_edges,
-        add_bond_order,
-        add_ring_status,
-    )
-    from graphein.protein.edges.distance import (
-        add_delaunay_triangulation,
-        add_hydrogen_bond_interactions,
-        add_k_nn_edges,
-        add_peptide_bonds,
-    )
-    from graphein.protein.edges.intramolecular import salt_bridge
+    from graphein.protein.edges.distance import add_k_nn_edges
     from graphein.protein.features.sequence.sequence import molecular_weight
 
     configs = {

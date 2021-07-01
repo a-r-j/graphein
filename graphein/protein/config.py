@@ -69,7 +69,7 @@ GraphAtoms = Literal[
     "CH2",
     "OXT",
 ]
-GranularityOpts = Literal["atom", "centroid"]
+GranularityOpts = Literal["atom", "centroids"]
 
 
 class ProteinGraphConfig(BaseModel):
@@ -83,7 +83,6 @@ class ProteinGraphConfig(BaseModel):
     )  # Also suggest to avoid hard-coding paths if possible!
     verbose: bool = True
     exclude_waters: bool = True
-    verbose: bool = True
     deprotonate: bool = False
 
     # Graph construction functions

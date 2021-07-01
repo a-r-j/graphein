@@ -1,3 +1,5 @@
+from graphein.utils.utils import *
+
 from ._version import get_versions
 
 # Graphein
@@ -6,7 +8,6 @@ from ._version import get_versions
 # Code Repository: https://github.com/a-r-j/graphein
 from .protein import *
 from .rna import *
-from .utils import *
 
 __author__ = "Arian Jamasb <arian@jamasb.io>"
 

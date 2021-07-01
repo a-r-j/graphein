@@ -11,7 +11,7 @@ from typing import Callable, List, Optional
 import networkx as nx
 
 from graphein.ppi.config import PPIGraphConfig
-from graphein.utils import (
+from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
