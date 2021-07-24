@@ -6,11 +6,11 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import logging
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import networkx as nx
 
-from graphein.utils import (
+from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
@@ -19,9 +19,9 @@ from graphein.utils import (
 
 log = logging.getLogger(__name__)
 
-RNA_BASES = ["A", "U", "G", "C", "I"]
+RNA_BASES: List[str] = ["A", "U", "G", "C", "I"]
 
-RNA_BASE_COLORS = {
+RNA_BASE_COLORS: Dict[str, str] = {
     "A": "r",
     "U": "b",
     "G": "g",
@@ -29,12 +29,35 @@ RNA_BASE_COLORS = {
     "I": "m",
 }
 
-SUPPORTED_DOTBRACKET_NOTATION = ["(", ".", ")"]
+CANONICAL_BASE_PAIRINGS: Dict[str, str] = {
+    "A": ["U"],
+    "U": ["A"],
+    "G": ["C"],
+    "C": ["G"],
+}
 
-# Todo Pseudoknots: Some secondary structure databases include other characters ( [] , {}, <>, a, etc...)
-#  to represent pairing in pseudoknots.
+WOBBLE_BASE_PAIRINGS: Dict[str, str] = {
+    "A": ["I"],
+    "U": ["G", "I"],
+    "G": ["U"],
+    "C": ["I"],
+    "I": ["A", "C", "U"],
+}
 
-# Todo checking of valid base-parings
+VALID_BASE_PAIRINGS = {
+    key: CANONICAL_BASE_PAIRINGS.get(key, [])
+    + WOBBLE_BASE_PAIRINGS.get(key, [])
+    for key in set(
+        list(CANONICAL_BASE_PAIRINGS.keys())
+        + list(WOBBLE_BASE_PAIRINGS.keys())
+    )
+}
+
+SIMPLE_DOTBRACKET_NOTATION = ["(", ".", ")"]
+SUPPORTED_PSEUDOKNOT_NOTATION = ["[", "]", "{", "}", "<", ">"]
+SUPPORTED_DOTBRACKET_NOTATION = (
+    SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION
+)
 
 
 def validate_rna_sequence(s: str) -> None:
@@ -60,13 +83,19 @@ def validate_lengths(db: str, seq: str) -> None:
         )
 
 
-def sanitize_dotbracket(db: str) -> str:
+def validate_dotbracket(db: str) -> str:
     """Sanitize dotbracket string.
 
     This ensures that it only has supported symobls.
+    :param db: Dotbrack notation string
     """
-    db = "".join(i if i in SUPPORTED_DOTBRACKET_NOTATION else "." for i in db)
-    return db
+    chars_used = set(db)
+    if not chars_used.issubset(SUPPORTED_DOTBRACKET_NOTATION):
+        offending_letter = chars_used.difference(SUPPORTED_DOTBRACKET_NOTATION)
+        position = db.index(offending_letter)
+        raise ValueError(
+            f"Invalid letter {offending_letter} found at position {position} in the sequence {db}."
+        )
 
 
 def construct_rna_graph(
@@ -106,7 +135,7 @@ def construct_rna_graph(
 
     # Add dotbracket symbol if dotbracket is provided
     if dotbracket:
-        dotbracket = sanitize_dotbracket(dotbracket)
+        validate_dotbracket(dotbracket)
         G.graph["dotbracket"] = dotbracket
 
         nx.set_node_attributes(
@@ -148,23 +177,37 @@ if __name__ == "__main__":
         add_all_dotbracket_edges,
         add_base_pairing_interactions,
         add_phosphodiester_bonds,
+        add_pseudoknots,
     )
 
-    edge_funcs_1 = [add_base_pairing_interactions, add_phosphodiester_bonds]
+    edge_funcs_1 = [
+        add_base_pairing_interactions,
+        add_phosphodiester_bonds,
+        add_pseudoknots,
+    ]
     edge_funcs_2 = [add_all_dotbracket_edges]
 
+    # g = construct_rna_graph(
+    #    "((((....))))..(())",
+    #    "AUGAUGAUGAUGCICIAU",
+    #    edge_construction_funcs=edge_funcs_1,
+    # )
+
     g = construct_rna_graph(
-        "((((....))))..(())",
-        "AUGAUGAUGAUGCICIAU",
+        "......((((((......[[[))))))......]]]....",
+        sequence=None,
         edge_construction_funcs=edge_funcs_1,
     )
+
+    """
     h = construct_rna_graph(
         "((((....))))..(())",
         "AUGAUGAUGAUGCICIAU",
         edge_construction_funcs=edge_funcs_2,
     )
+    """
 
-    assert g.edges() == h.edges()
+    # assert g.edges() == h.edges()
 
     nx.info(g)
 
@@ -172,6 +215,6 @@ if __name__ == "__main__":
     node_colors = nx.get_node_attributes(g, "color").values()
 
     nx.draw(
-        g, edge_color=edge_colors, node_color=node_colors, with_labels=True
+        g, edge_color=edge_colors  # , node_color=node_colors, with_labels=True
     )
     plt.show()
