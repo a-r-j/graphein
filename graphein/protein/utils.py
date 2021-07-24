@@ -7,9 +7,10 @@ from pathlib import Path
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Any, List
+from typing import Any, List, Tuple, Union
 
 import pandas as pd
+import wget
 from Bio.PDB import PDBList
 
 
@@ -73,3 +74,43 @@ def filter_dataframe(
     df.reset_index(inplace=True, drop=True)
 
     return df
+
+
+def download_alphafold_structure(
+    uniprot_id: str,
+    out_dir: str = ".",
+    pdb: bool = True,
+    mmcif: bool = False,
+    aligned_score: bool = True,
+) -> Union[str, Tuple[str, str]]:
+    BASE_URL = "https://alphafold.ebi.ac.uk/files/"
+    """
+    Downloads a structure from the Alphafold EBI database.
+    :param uniprot_id: UniProt ID of desirec protein
+    :param out_dir: string specifying desired otput location. Default is pwd.
+    :param mmcif: Bool specifying whether to download MMCiF or PDB. Default is false (downloads pdb)
+    :param retrieve_aligned_score: Bool specifying whether or not to download score alignment json
+    :return: path to output. Tuple if several outputs specified.
+    """
+    if mmcif:
+        query_url = BASE_URL + "AF-" + uniprot_id + "F1-model_v1.cif"
+    if pdb:
+        query_url = BASE_URL + "AF-" + uniprot_id + "-F1-model_v1.pdb"
+
+    structure_filename = wget.download(query_url, out=out_dir)
+
+    if aligned_score:
+        score_query = (
+            BASE_URL
+            + "AF-"
+            + uniprot_id
+            + "-F1-predicted_aligned_error_v1.json"
+        )
+        score_filename = wget.download(score_query, out=out_dir)
+        return structure_filename, score_filename
+
+    return structure_filename
+
+
+if __name__ == "__main__":
+    download_alphafold_structure(uniprot_id="Q8W3K0", aligned_score=True)
