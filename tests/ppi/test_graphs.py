@@ -32,7 +32,7 @@ def test_construct_graph():
 
     # Check nodes and edges
     assert len(g.nodes()) == 8
-    assert len(g.edges()) == 22
+    assert len(g.edges()) == 23
 
     # Check edge types are from string/biogrid
     # Check nodes are in our list
