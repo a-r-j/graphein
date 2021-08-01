@@ -1,8 +1,8 @@
 name: graphein-dev
 channels:
 - conda-forge
-- pytorch
 - plotly
+- pytorch
 dependencies:
 - python=3.8
 - biopython
@@ -10,44 +10,44 @@ dependencies:
 - black
 - conda
 - flake8
-- isort
+- interrogate
 - ipympl
+- isort
+- jupyter
+- jupyterlab
 - mamba
 - matplotlib
 - mypy
 - nbstripout
 - networkx
-- numpy
 - nodejs
+- numpy
 - pandas
 - pip
 - plotly
 - pre-commit
 - pycodestyle
+- pydantic
 - pydocstyle
 - pytest
 - pytest-cov
 - pytest-xdist
 - pytorch=1.7.1
 - rdkit
-- scipy
 - scikit-learn
+- scipy
+- sphinx
 - tqdm
 - xarray
-- jupyter
-- jupyterlab
-- pydantic
-- interrogate
 - pip:
   - bioservices
+  - biovec
   - click
-  - versioneer
+  - multipledispatch
   - nbval
   - pytorch3d
   - propy
-  - biovec
-  - multipledispatch
-  - pytorch3d
   - pyyaml
+  - sphinx_rtd_theme
+  - versioneer
   - wget
-
