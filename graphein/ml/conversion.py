@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import networkx as nx
 import numpy as np
 import torch
@@ -15,7 +17,13 @@ except ImportError:
 
 
 class graph_format_convert:
-    def __init__(self, src_format, dst_format, verbose="gnn", columns=None):
+    def __init__(
+        self,
+        src_format: str,
+        dst_format: str,
+        verbose: str = "gnn",
+        columns: Optional[List[str]] = None,
+    ):
         supported_format = ["nx", "pyg", "dgl"]
         if (src_format not in supported_format) or (
             dst_format not in supported_format
@@ -95,7 +103,7 @@ class graph_format_convert:
             "kind": "str",
         }
 
-    def convert_nx_to_dgl(self, G):
+    def convert_nx_to_dgl(self, G: nx.Graph) -> dgl.DGLGraph:
         import dgl
 
         g = dgl.DGLGraph()
@@ -167,7 +175,7 @@ class graph_format_convert:
 
         return g
 
-    def convert_nx_to_pyg(self, G):
+    def convert_nx_to_pyg(self, G: nx.Graph) -> Data:
         import torch_geometric
         from torch_geometric.data import Data
 
@@ -209,10 +217,10 @@ class graph_format_convert:
         data.num_nodes = G.number_of_nodes()
         return data
 
-    def convert_nx_to_nx(self, G):
+    def convert_nx_to_nx(self, G: nx.Graph) -> nx.Graph:
         return G
 
-    def convert_dgl_to_nx(self, G):
+    def convert_dgl_to_nx(self, G: dgl.DGLGraph) -> nx.Graph:
         import dgl
 
         node_attrs = G.node_attr_schemes().keys()
@@ -220,12 +228,12 @@ class graph_format_convert:
         nx_g = dgl.to_networkx(G, node_attrs, edge_attrs)
         return nx_g
 
-    def convert_pyg_to_nx(self, G):
+    def convert_pyg_to_nx(self, G: Data) -> nx.Graph:
         import torch_geometric
 
         return torch_geometric.utils.to_networkx(G)
 
-    def __call__(self, G):
+    def __call__(self, G: nx.Graph):
         nx_g = eval("self.convert_" + self.src_format + "_to_nx(G)")
         dst_g = eval("self.convert_nx_to_" + self.dst_format + "(nx_g)")
         return dst_g
