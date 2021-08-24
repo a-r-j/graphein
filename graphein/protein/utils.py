@@ -1,11 +1,13 @@
 """Provides utility functions for use across Graphein"""
+import os
+from pathlib import Path
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import os
-from pathlib import Path
+from typing import Any, List
 
 import pandas as pd
 from Bio.PDB import PDBList
@@ -50,13 +52,21 @@ def get_protein_name_from_filename(pdb_path: str) -> str:
 
 
 def filter_dataframe(
-    dataframe: pd.DataFrame, by_column, list_of_values, boolean
+    dataframe: pd.DataFrame,
+    by_column: str,
+    list_of_values: List[Any],
+    boolean: bool,
 ):
     """
     Filter function for dataframe.
     Filters the [dataframe] such that the [by_column] values have to be
     in the [list_of_values] list if boolean == True, or not in the list
     if boolean == False
+
+    :param dataframe: pd.DataFrame to filter
+    :param by_column: str denoting by_column of dataframe to filter
+    :param list_of_values: List of values to filter with
+    :param bool: indicates whether to keep or exclude matching list_of_values. True -> in list, false -> not in list
     """
     df = dataframe.copy()
     df = df[df[by_column].isin(list_of_values) == boolean]

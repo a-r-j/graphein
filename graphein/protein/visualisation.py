@@ -14,18 +14,26 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
-from pytorch3d.ops import sample_points_from_meshes
+
+from graphein.utils import import_message
+
+try:
+    from pytorch3d.ops import sample_points_from_meshes
+except ImportError:
+    import_message(
+        submodule="graphein.protein.visualisation",
+        package="pytorch3d",
+        conda_channel="pytorch3d",
+    )
 
 
-def plot_pointcloud(mesh: Meshes, title: str = "") -> None:
+def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:
     """
     Plots pytorch3d Meshes object as pointcloud
     :param mesh: Meshes object to plot
     :param title: Title of plot
     :return:
     """
-    # TODO: Meshes needs to be imported
-    # TODO: Add return annotation to docstring
     # Sample points uniformly from the surface of the mesh.
     points = sample_points_from_meshes(mesh, 5000)
     x, y, z = points.clone().detach().cpu().squeeze().unbind(1)
@@ -37,7 +45,7 @@ def plot_pointcloud(mesh: Meshes, title: str = "") -> None:
     ax.set_zlabel("y")
     ax.set_title(title)
     ax.view_init(190, 30)
-    plt.show()
+    return ax
 
 
 def colour_nodes(
@@ -47,7 +55,8 @@ def colour_nodes(
     Computes node colours based on "degree", "seq_position" or node attributes
     :param G: Graph to compute node colours for
     :param colour_map:  Colourmap to use.
-    :param colour_by: Manner in which to colour nodes. If node_types "degree" or "seq_position", this must correspond to a node feature
+    :param colour_by: Manner in which to colour nodes.
+    If node_types "degree" or "seq_position", this must correspond to a node feature
     :return: List of node colours
     """
     # get number of nodes
@@ -101,6 +110,7 @@ def colour_edges(
 def plot_protein_structure_graph(
     G: nx.Graph,
     angle: int,
+    plot_title: Optional[str] = None,
     figsize: Tuple[int, int] = (10, 7),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
@@ -119,6 +129,7 @@ def plot_protein_structure_graph(
     Plots protein structure graph in Axes3D.
     :param G:  nx.Graph Protein Structure graph to plot
     :param angle:  View angle
+    :param plot_title: Title of plot
     :param figsize: Size of figure
     :param node_alpha: Controls node transparency
     :param node_size_min: Specifies node minimum size
@@ -134,6 +145,7 @@ def plot_protein_structure_graph(
     :param out_format: Fileformat to use for plot
     :return:
     """
+
     # Get Node Attributes
     pos = nx.get_node_attributes(G, "coords")
 
@@ -163,7 +175,7 @@ def plot_protein_structure_graph(
                 yi,
                 zi,
                 color=node_colors[i],
-                s=node_size_min + node_size_multiplier * g.degree[key],
+                s=node_size_min + node_size_multiplier * G.degree[key],
                 edgecolors="k",
                 alpha=node_alpha,
             )
@@ -173,7 +185,7 @@ def plot_protein_structure_graph(
 
         # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
         # Those two points are the extrema of the line to be plotted
-        for i, j in enumerate(g.edges()):
+        for i, j in enumerate(G.edges()):
             x = np.array((pos[j[0]][0], pos[j[1]][0]))
             y = np.array((pos[j[0]][1], pos[j[1]][1]))
             z = np.array((pos[j[0]][2], pos[j[1]][2]))
@@ -181,6 +193,8 @@ def plot_protein_structure_graph(
             # Plot the connecting lines
             ax.plot(x, y, z, c=edge_colors[i], alpha=edge_alpha)
 
+    # Set title
+    ax.set_title(plot_title)
     # Set the initial view
     ax.view_init(30, angle)
     # Hide the axes
@@ -195,28 +209,16 @@ def plot_protein_structure_graph(
 if __name__ == "__main__":
     # TODO: Move the block here into tests.
     from graphein.protein.config import ProteinGraphConfig
-    from graphein.protein.edges.atomic import add_atomic_edges
-    from graphein.protein.edges.distance import (
-        add_aromatic_sulphur_interactions,
-        add_delaunay_triangulation,
-        add_disulfide_interactions,
-        add_hydrophobic_interactions,
-        add_ionic_interactions,
-    )
-    from graphein.protein.edges.intramolecular import (
-        hydrogen_bond,
-        peptide_bonds,
-        salt_bridge,
+    from graphein.protein.edges.atomic import (
+        add_atomic_edges,
+        add_bond_order,
+        add_ring_status,
     )
     from graphein.protein.features.nodes.amino_acid import (
         expasy_protein_scale,
         meiler_embedding,
     )
     from graphein.protein.graphs import construct_graph
-    from graphein.protein.meshes import (
-        convert_verts_and_face_to_mesh,
-        create_mesh,
-    )
 
     # Test Point cloud plotting
     # v, f, a = create_mesh(pdb_code="3eiy")
@@ -232,7 +234,11 @@ if __name__ == "__main__":
     }
 
     config = ProteinGraphConfig(**configs)
-    config.edge_construction_functions = [add_atomic_edges]
+    config.edge_construction_functions = [
+        add_atomic_edges,
+        add_ring_status,
+        add_bond_order,
+    ]
 
     config.node_metadata_functions = [meiler_embedding, expasy_protein_scale]
     # g = construct_graph(config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e")
@@ -241,16 +247,12 @@ if __name__ == "__main__":
         config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e"
     )
     print(nx.info(g))
-    # print(g.graph["pdb_df"].to_string())
-
-    # print(g.nodes(data=True))
-    # print(g.nodes(data=True))
 
     p = plot_protein_structure_graph(
         g,
         30,
         (10, 7),
-        colour_nodes_by="atom_type",
+        colour_nodes_by="element_symbol",
         colour_edges_by="kind",
         label_node_ids=False,
     )

@@ -26,11 +26,7 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
     :param G: networkx protein graph
     :return: networkx protein graph with added peptide bonds
     """
-    # for i (n, d) in G.nodes(data=True):
-
-    # First we get all adjacent residues
-    # for i, (n, d) in enumerate(G.nodes(data=True)):
-
+    log.debug("Adding peptide bonds to graph")
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
 
@@ -58,8 +54,8 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             )
 
             # If this checks out, we add a peptide bond
-            if (cond_1) and (cond_2):
-                # Adds "peptide bond" between current residue and the next
+            if cond_1 and cond_2:
+                # Adds "peptide_bond" between current residue and the next
                 if G.has_edge(i, i + 1):
                     G.edges[i, i + 1]["kind"].add("peptide_bond")
                 else:
@@ -140,7 +136,9 @@ def run_get_contacts(
     command += f"--structure {pdb_file} "
     command += f'--output {(config.contacts_dir / (pdb_id + "_contacts.tsv")).as_posix()} '
     command += "--itypes all"  # --sele "protein"'
+
     log.info(f"Running GetContacts with command: {command}")
+
     subprocess.run(command, shell=True)
 
     # Check it all checks out
@@ -157,6 +155,8 @@ def read_contacts_file(
     :param contacts_file: file name of contacts file
     :return: Pandas Dataframe of edge list
     """
+    log.debug(f"Parsing GetContacts output file at: {contacts_file}")
+
     contacts_file = open(contacts_file, "r").readlines()
     contacts = []
 
@@ -194,8 +194,17 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     :type interaction_type: str
     :return G: nx.Graph
     """
-    # Load contacts df
+    log.debug(f"Adding {interaction_type} edges to graph")
+
+    if "contacts_df" not in G.graph:
+        log.info("No 'contacts_df' found in G.graph. Running GetContacts.")
+
+        G.graph["contacts_df"] = get_contacts_df(
+            G.graph["config"].get_contacts_config, G.graph["pdb_id"]
+        )
+
     contacts = G.graph["contacts_df"]
+
     # Select specific interaction type
     interactions = contacts.loc[
         contacts["interaction_type"] == interaction_type

@@ -5,10 +5,13 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+import logging
 from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
+
+log = logging.getLogger(__name__)
 
 
 @lru_cache()
@@ -21,6 +24,9 @@ def load_expasy_scales() -> pd.DataFrame:
     The function is LRU-cached in memory for fast access
     on each function call.
     """
+    log.debug(
+        f"Reading Expasy protein scales from: {Path(__file__).parent / 'amino_acid_properties.csv'}"
+    )
     df = pd.read_csv(
         Path(__file__).parent / "amino_acid_properties.csv", index_col=0
     )
@@ -37,6 +43,9 @@ def load_meiler_embeddings() -> pd.DataFrame:
     The function is LRU-cached in memory for fast access
     on each function call.
     """
+    log.debug(
+        f"Reading meiler embeddings from: {Path(__file__).parent / 'meiler_embeddings.csv'}"
+    )
     df = pd.read_csv(
         Path(__file__).parent / "meiler_embeddings.csv", index_col=0
     )
@@ -70,7 +79,3 @@ def meiler_embedding(n, d) -> pd.Series:
     df = load_meiler_embeddings()
     amino_acid = d["residue_name"]
     return df[amino_acid]
-
-
-def load_esm_embedding_residue(n, d) -> pd.Series:
-    raise NotImplementedError

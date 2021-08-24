@@ -11,8 +11,12 @@ from typing import Callable, List, Optional, Union
 
 from pydantic import BaseModel
 
-from graphein.protein.edges.intramolecular import peptide_bonds
+from graphein.protein.edges.distance import add_peptide_bonds
 from graphein.protein.features.nodes.amino_acid import meiler_embedding
+
+
+class DSSPConfig(BaseModel):
+    executable: str = "mkdssp"
 
 
 class GetContactsConfig(BaseModel):
@@ -37,24 +41,23 @@ class ProteinGraphConfig(BaseModel):
     )  # Also suggest to avoid hard-coding paths if possible!
     verbose: bool = True
     exclude_waters: bool = True
-    covalent_bonds: bool = True
-    include_ss: bool = True
-    include_ligand: bool = False
-    graph_constructor: Optional[str] = None
     verbose: bool = True
     deprotonate: bool = False
-    long_interaction_threshold: Optional[int] = None
+
+    # Graph construction functions
     protein_df_processing_functions: Optional[List[Callable]] = None
-    edge_construction_functions: List[Union[Callable, str]] = [peptide_bonds]
+    edge_construction_functions: List[Union[Callable, str]] = [
+        add_peptide_bonds
+    ]
     node_metadata_functions: Optional[List[Union[Callable, str]]] = [
         meiler_embedding
     ]
     edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
     graph_metadata_functions: Optional[List[Callable]] = None
-    get_contacts_config: Optional[GetContactsConfig] = GetContactsConfig()
 
-    class Config:
-        arbitrary_types_allowed: bool = True
+    # External Dependency configs
+    get_contacts_config: Optional[GetContactsConfig] = None
+    dssp_config: Optional[DSSPConfig] = None
 
 
 class ProteinMeshConfig(BaseModel):

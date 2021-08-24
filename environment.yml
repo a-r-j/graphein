@@ -5,12 +5,10 @@ channels:
 dependencies:
 - python=3.8
 - biopython
-- biopandas
 - black
 - conda
 - flake8
 - isort
-- ipympl
 - mamba
 - matplotlib
 - mypy
@@ -25,20 +23,19 @@ dependencies:
 - pytest
 - pytest-cov
 - pytest-xdist
-- pytorch=1.7.1
 - rdkit
 - scipy
 - scikit-learn
+- pytorch=1.7.1
 - xarray
-- jupyter
-- jupyterlab
+- ipympl
 - pydantic
 - interrogate
 - pip:
-  - bioservices
-  - propy
-  - biovec
-  - hypothesis
-  - multipledispatch
-  - pytorch3d
-  - wget
+    - bioservices
+    - propy
+    - pytorch3d
+    - biovec
+    - multipledispatch
+    - wget
+    - git+https://www.github.com/a-r-j/graphein@protein_vis
