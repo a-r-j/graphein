@@ -12,6 +12,7 @@ import pandas as pd
 import wget
 from Bio.PDB import PDBList
 
+from .resi_atoms import RESI_THREE_TO_1
 
 def download_pdb(config, pdb_code: str) -> str:
     """
@@ -125,6 +126,17 @@ def download_alphafold_structure(
         return structure_filename, score_filename
 
     return structure_filename
+
+def three_to_one_with_mods(res: str) -> str:
+    """
+    Converts three letter AA codes into 1 letter. Allows for modified residues.
+
+    :param res: Three letter residue code str:
+    :type res: str
+    :return: 1-letter residue code
+    :rtype: str
+    """
+    return RESI_THREE_TO_1[res]
 
 
 if __name__ == "__main__":

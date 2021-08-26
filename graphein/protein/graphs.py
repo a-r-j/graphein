@@ -26,6 +26,7 @@ from graphein.protein.resi_atoms import BACKBONE_ATOMS
 from graphein.protein.utils import (
     filter_dataframe,
     get_protein_name_from_filename,
+    three_to_one_with_mods
 )
 from graphein.utils.utils import (
     annotate_edge_metadata,
@@ -395,7 +396,7 @@ def initialise_graph_with_metadata(
     for c in G.graph["chain_ids"]:
         G.graph[f"sequence_{c}"] = (
             protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
-            # .apply(three_to_one)
+            .apply(three_to_one_with_mods)
             .str.cat()
         )
     return G
