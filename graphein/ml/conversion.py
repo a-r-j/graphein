@@ -5,6 +5,7 @@ from typing import List, Literal, Optional, TypeVar
 import networkx as nx
 import numpy as np
 import torch
+import dgl
 
 from graphein.utils.utils import import_message
 
