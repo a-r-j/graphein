@@ -14,6 +14,7 @@ from Bio.PDB import PDBList
 
 from .resi_atoms import RESI_THREE_TO_1
 
+
 def download_pdb(config, pdb_code: str) -> str:
     """
     Download PDB structure from PDB
@@ -126,6 +127,7 @@ def download_alphafold_structure(
         return structure_filename, score_filename
 
     return structure_filename
+
 
 def three_to_one_with_mods(res: str) -> str:
     """

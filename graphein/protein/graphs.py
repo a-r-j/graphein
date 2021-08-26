@@ -26,7 +26,7 @@ from graphein.protein.resi_atoms import BACKBONE_ATOMS
 from graphein.protein.utils import (
     filter_dataframe,
     get_protein_name_from_filename,
-    three_to_one_with_mods
+    three_to_one_with_mods,
 )
 from graphein.utils.utils import (
     annotate_edge_metadata,
