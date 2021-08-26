@@ -20,8 +20,12 @@ log = logging.getLogger(__name__)
 
 def _download_TRRUST(root_dir: Optional[Path] = None) -> str:
     """
-    Downloads TRRUST
-    :param root_dir: Path to desired output directory to download TRRUST to.
+    Downloads TRRUST from https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv
+
+    :param root_dir: Path to desired output directory to download TRRUST to. Defaults to None (downloads to graphein/datasets/trrust/)
+    :type root_dir: pathlib.Path, optional
+    :returns: Path to downloaded TRRUST Dataset.
+    :rtype: str
     """
     url = "https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv"
 
@@ -43,7 +47,11 @@ def _download_TRRUST(root_dir: Optional[Path] = None) -> str:
 def load_TRRUST(root_dir: Optional[Path] = None) -> pd.DataFrame:
     """
     Loads the TRRUST datafile. If file not found, it is downloaded.
+
     :param root_dir: Root directory path to either find or download TRRUST
+    :type root_dir: pathlib.Path, optional
+    :returns: TRRUST database as a dataframe
+    :rtype: pd.DataFrame
     """
     file = _download_TRRUST(root_dir)
 
@@ -59,9 +67,13 @@ def parse_TRRUST(
     gene_list: List[str], root_dir: Optional[Path] = None
 ) -> pd.DataFrame:
     """
-    Parser for TRRUST regulatory interactions
-    :param gene_list: List of gene identifiers
+    Parser for TRRUST regulatory interactions. If the TRRUST dataset is not found in the specified root_dir, it is downloaded
+
+    :param gene_list: List of gene identifiers to restrict dataframe to.
+    :type gene_list: List[str]
+    :param root_dir: Root directory path to either find or download TRRUST. Defaults to None (downloads dataset to graphein/datasets/trrust)
     :return Pandas dataframe with the regulatory interactions between genes in the gene list
+    :rtype: pd.DataFrame
     """
     df = load_TRRUST(root_dir=root_dir)
     # Select input genes
@@ -74,10 +86,10 @@ def filter_TRRUST(
     df: pd.DataFrame, funcs: Optional[List[Callable]]
 ) -> pd.DataFrame:
     """
-    Filters results of TRRUST call according to user kwargs,
+    Filters results of TRRUST call according to user kwargs
+
     :param df: Source specific Pandas dataframe (TRRUST) with results of the API call
-    :param kwargs: User thresholds used to filter the results. The parameter names are of the form TRRUST_<param>,
-                   where <param> is the name of the parameter. All the parameters are numerical values.
+    :param kwargs: User thresholds used to filter the results. The parameter names are of the form TRRUST_<param>, where <param> is the name of the parameter. All the parameters are numerical values.
     :return: Source specific Pandas dataframe with filtered results
     """
     if funcs is not None:
@@ -90,9 +102,12 @@ def standardise_TRRUST(df: pd.DataFrame) -> pd.DataFrame:
     """
     Filters results of TRRUST call by providing a list of
     user-defined functions that accept a dataframe and return a dataframe
-    :param df: pd.Dataframe to filter
+
+    :param df: pd.Dataframe to filter. Must contain columns: ["g1", "g2", "regtype"]
+    :type df: pd.DataFrame
     :param funcs: list of functions that carry out dataframe processing
     :return: processed dataframe
+    :rtype: pd.DataFrame
     """
     # Rename & delete columns
     df = df[["g1", "g2", "regtype"]]
@@ -113,7 +128,13 @@ def TRRUST_df(
 ) -> pd.DataFrame:
     """
     Generates standardised dataframe with TRRUST protein-protein interactions, filtered according to user's input
+
+    :param gene_list:
+    :type gene_list: List[str]
+    :param filtering_funcs:
+    :type filtering_funcs: List[Callable]
     :return: Standardised dataframe with TRRUST interactions
+    :rtype: pd.DataFrame
     """
     df = parse_TRRUST(gene_list=gene_list)
     df = filter_TRRUST(df, filtering_funcs)

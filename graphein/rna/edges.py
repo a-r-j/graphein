@@ -19,8 +19,11 @@ def check_base_pairing_type(base_1: str, base_2: str) -> str:
     Checks type and validity of base pairing interactions.
 
     :param base_1: str RNA Base letter for base 1
+    :type base_1: str
     :param base_2: str RNA base letter for base 2
-    :return: string referencing the type of base pairing
+    :type base_2: str
+    :return: string referencing the type of base pairing:
+    :rtype: str
     """
     try:
         if base_2 in CANONICAL_BASE_PAIRINGS[base_1]:
@@ -34,6 +37,7 @@ def check_base_pairing_type(base_1: str, base_2: str) -> str:
 def add_phosphodiester_bonds(G: nx.Graph) -> nx.Graph:
     """
     Adds phosphodiester bonds between adjacent nucleotides to an RNA secondary structure graph
+
     :param G: RNA Graph to add edges to
     :type G: nx.Graph
     :return: RNA graph with phosphodiester_bond edges added
@@ -52,6 +56,7 @@ def add_phosphodiester_bonds(G: nx.Graph) -> nx.Graph:
 def add_base_pairing_interactions(G: nx.Graph) -> nx.Graph:
     """
     Adds base_pairing interactions between nucleotides to an RNA secondary structure graph
+
     :param G: RNA Graph to add edges to
     :type G: nx.Graph
     :return: RNA graph with base_pairing edges added
@@ -97,6 +102,7 @@ def add_base_pairing_interactions(G: nx.Graph) -> nx.Graph:
 def add_pseudoknots(G: nx.Graph) -> nx.Graph:
     """
     Adds pseudoknots nucleotides to an RNA secondary structure graph
+
     :param G: RNA Graph to add edges to
     :type G: nx.Graph
     :return: RNA graph with pseudoknot edges added
@@ -153,6 +159,7 @@ def add_pseudoknots(G: nx.Graph) -> nx.Graph:
 def add_all_dotbracket_edges(G: nx.Graph) -> nx.Graph:
     """
     Adds phosphodiester bonds between adjacent nucleotides and base_pairing interactions to an RNA secondary structure graph
+
     :param G: RNA Graph to add edges to
     :type G: nx.Graph
     :return: RNA graph with phosphodiester_bond and base_pairing edges added

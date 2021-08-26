@@ -13,8 +13,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from .protein.edges.distance import compute_distmat
-from .utils import format_adjacency, generate_feature_dataframe
+from graphein.protein.edges.distance import compute_distmat
+from graphein.utils.utils import format_adjacency, generate_feature_dataframe
 
 
 def identity_matrix(G: nx.Graph) -> xr.DataArray:
@@ -55,11 +55,7 @@ def adjacency_matrix_power(
     if with_identity:
         amat = amat + np.eye(len(G))
     amat = np.linalg.matrix_power(amat, power)
-    return format_adjacency(
-        G,
-        amat,
-        f"adjacency_matrix_power_{power}",
-    )
+    return format_adjacency(G, amat, f"adjacency_matrix_power_{power}",)
 
 
 def inverse_distance_matrix(G: nx.Graph, power: float) -> xr.DataArray:

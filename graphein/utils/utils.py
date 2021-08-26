@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
-from typing import Any, Callable, Iterable, List
+from typing import Any, Callable, Iterable, List, Optional
 
 import networkx as nx
 import numpy as np
@@ -23,10 +23,14 @@ def onek_encoding_unk(
     x: Iterable[Any], allowable_set: List[Any]
 ) -> List[bool]:
     """
-    Function for one hot encoding
+    Function for perfroming one hot encoding
+
     :param x: value to one-hot
+    :type x: Iterable[Any]
     :param allowable_set: set of options to encode
-    :return: one-hot encoding as torch tensor
+    :type allowable_set: List[Any]
+    :return: one-hot encoding as list
+    :rtype: List[bool]
     """
     # if x not in allowable_set:
     #    x = allowable_set[-1]
@@ -45,8 +49,11 @@ def annotate_graph_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     Annotates graph with graph-level metadata
 
     :param G: Graph on which to add graph-level metadata to
+    :type G: nx.Graph
     :param funcs: List of graph metadata annotation functions
+    :type funcs: List[Callable]
     :return: Graph on which with node metadata added
+    :rtype: nx.Graph
     """
     for func in funcs:
         func(G)
@@ -56,9 +63,13 @@ def annotate_graph_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     """
     Annotates Graph edges with edge metadata
+
     :param G: Graph to add edge metadata to
+    :type G: nx.Graph
     :param funcs: List of edge metadata annotation functions
+    :type funcs: List[Callable]
     :return: Graph with edge metadata added
+    :rtype: nx.Graph
     """
     for func in funcs:
         for u, v, d in G.edges(data=True):
@@ -69,9 +80,13 @@ def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     """
     Annotates nodes with metadata
+
     :param G: Graph to add node metadata to
+    :type G: nx.Graph
     :param funcs: List of node metadata annotation functions
+    :type funcs: List[Callable]
     :return: Graph with node metadata added
+    :rtype: nx.Graph
     """
 
     for func in funcs:
@@ -83,9 +98,13 @@ def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 def annotate_node_features(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     """
     Annotates nodes with features data. Note: passes whole graph to function.
+
     :param G: Graph to add node features to
+    :type G: nx.Graph
     :param funcs: List of node feature annotation functions
+    :type funcs: List[Callable]
     :return: Graph with node features added
+    :rtype: nx.Graph
     """
     for func in funcs:
         func(G)
@@ -97,8 +116,11 @@ def compute_edges(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     Computes edges for an Graph from a list of edge construction functions
 
     :param G: Graph to add features to
+    :type G: nx.Graph
     :param funcs: List of edge construction functions
+    :type funcs: List[Callable]
     :return: Graph with edges added
+    :rtype: nx.Graph
     """
     for func in funcs:
         func(G)
@@ -106,9 +128,7 @@ def compute_edges(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
 
 def generate_feature_dataframe(
-    G: nx.Graph,
-    funcs: List[Callable],
-    return_array=False,
+    G: nx.Graph, funcs: List[Callable], return_array=False,
 ) -> pd.DataFrame:
     """
     Return a pandas DataFrame representation of node metadata.
@@ -280,22 +300,22 @@ def generate_adjacency_tensor(
 
 def protein_letters_3to1_all_caps(amino_acid: str) -> str:
     """
-    Converts capitalised 3 letter amino acid code to single letter.
+    Converts capitalised 3 letter amino acid code to single letter. Not provided in default biopython.
 
-    Not provided in default biopython.
+    :param amino_acid: Capitalised 3-letter amino acid code (eg. "GLY")
+    :type amino_acid: str
+    :returns: Single-letter amino acid code
+    :rtype: str
     """
-
     amino_acid = amino_acid[0] + amino_acid[1:].lower()
-
     one_letter_code = protein_letters_3to1[amino_acid]
-
     return one_letter_code
 
 
 def import_message(
     submodule: str,
     package: str,
-    conda_channel: str = None,
+    conda_channel: Optional[str] = None,
     pip_install: bool = False,
 ):
     """
@@ -303,11 +323,15 @@ def import_message(
     Generic message for indicating to the user when a function relies on an
     optional module / package that is not currently installed. Includes
     installation instructions. Typically used in conjunction without optional featurisation libraries
+
     :param submodule: graphein submodule that needs an external dependency.
+    :type submodule: str
     :param package: External package this submodule relies on.
-    :param conda_channel: Conda channel package can be installed from,
-        if at all.
-    :param pip_install: Whether package can be installed via pip.
+    :type package: str
+    :param conda_channel: Conda channel package can be installed from, if at all. Defaults to None
+    :type conda_channel: str, optional
+    :param pip_install: Whether package can be installed via pip. Defaults to False
+    :type pip_install: bool
     """
     is_conda = os.path.exists(os.path.join(sys.prefix, "conda-meta"))
     installable = True

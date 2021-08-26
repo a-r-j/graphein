@@ -26,8 +26,11 @@ EDGE_COLOR_MAPPING = {"trrust": "r", "regnetwork": "b", "abasy": "g"}
 def parse_kwargs_from_config(config: GRNGraphConfig) -> GRNGraphConfig:
     """
     If configs for specific dataset are provided in the Global GRNGraphConfig, we update the kwargs
+
     :param config: GRN graph configuration object.
+    :type config: graphein.grn.GRNGraphConfig
     :return: config with updated config.kwargs
+    :rtype: graphein.grn.GRNGraphConfig
     """
     if config.trrust_config.kwargs is not None:
         trrust_config_dict = {
@@ -55,13 +58,21 @@ def compute_grn_graph(
 ) -> nx.Graph:
     """
     Computes a Gene Regulatory Network Graph from a list of gene IDs
+
     :param gene_list: List of gene identifiers
+    :type gene_list: List[str]
     :param edge_construction_funcs:  List of functions to construct edges with
-    :param graph_annotation_funcs: List of functions functools annotate graph metadata
-    :param node_annotation_funcs: List of functions to annotate node metadata
-    :param edge_annotation_funcs: List of functions to annotate edge metadata
-    :param config: Config specifying additional parameters for STRING and BIOGRID
+    :type edge_construction_funcs: List[Callable]
+    :param graph_annotation_funcs: List of functions functools annotate graph metadata, defaults to None
+    :type graph_annotation_funcs: List[Callable], optional
+    :param node_annotation_funcs: List of functions to annotate node metadata, defaults to None
+    :type node_annotation_funcs: List[Callable], optional
+    :param edge_annotation_funcs: List of functions to annotate edge metadata, defaults to None
+    :type edge_annotation_funcs: List[Callable], optional
+    :param config: Config specifying additional parameters for STRING and BIOGRID, defaults to None
+    :type config: graphein.grn.GRNGraphConfig, optional
     :return: nx.Graph of PPI network
+    :rtype: nx.Graph
     """
 
     # Load default config if none supplied
@@ -81,9 +92,7 @@ def compute_grn_graph(
     log.debug(f"Added {len(gene_list)} nodes to graph")
 
     nx.set_node_attributes(
-        G,
-        dict(zip(gene_list, gene_list)),
-        "gene_id",
+        G, dict(zip(gene_list, gene_list)), "gene_id",
     )
 
     # Annotate additional graph metadata

@@ -23,6 +23,9 @@ def load_expasy_scales() -> pd.DataFrame:
 
     The function is LRU-cached in memory for fast access
     on each function call.
+
+    :returns: pd.DataFrame containing expasy scales
+    :rtype: pd.DataFrame
     """
     log.debug(
         f"Reading Expasy protein scales from: {Path(__file__).parent / 'amino_acid_properties.csv'}"
@@ -42,6 +45,9 @@ def load_meiler_embeddings() -> pd.DataFrame:
 
     The function is LRU-cached in memory for fast access
     on each function call.
+
+    :returns: pd.DataFrame containing Meiler Embeddings from Meiler et al. 2001
+    :rtype: pd.DataFrame
     """
     log.debug(
         f"Reading meiler embeddings from: {Path(__file__).parent / 'meiler_embeddings.csv'}"
@@ -60,6 +66,8 @@ def expasy_protein_scale(n, d) -> pd.Series:
 
     :param n: Node in a NetworkX graph
     :param d: NetworkX node attributes.
+    :returns: pd.Series of amino acid features
+    :rtype: pd.Series
     """
     df = load_expasy_scales()
     amino_acid = d["residue_name"]
@@ -75,6 +83,8 @@ def meiler_embedding(n, d) -> pd.Series:
 
     :param n: Node in a NetworkX graph
     :param d: NetworkX node attributes.
+    :returns: pd.Series of amino acid features
+    :rtype: pd.Series
     """
     df = load_meiler_embeddings()
     amino_acid = d["residue_name"]
