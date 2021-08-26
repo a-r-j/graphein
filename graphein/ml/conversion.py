@@ -1,4 +1,6 @@
-from typing import List, Optional
+from __future__ import annotations
+
+from typing import List, Literal, Optional, TypeVar
 
 import networkx as nx
 import numpy as np
@@ -13,33 +15,53 @@ except ImportError:
         submodule="graphein.ml.conversion",
         package="torch_geometric",
         pip_install=True,
+        conda_channel="rusty1s",
     )
 
+SUPPORTED_FORMATS = ["nx", "pyg", "dgl"]
+SUPPORTED_VERBOSITY = ["gnn", "default", "all_info"]
 
-class graph_format_convert:
+
+class GraphFormatConvertor:
+    """
+    Provides conversion utilities between NetworkX Graphs and geometric deep learning library destination formats.
+    Currently, we provide support for converstion from nx.Graphs to dgl.DGLGraph and pytorch_geometric.Data. Supported conversion
+    formats can be retrieved from graphein.ml.conversion.SUPPORTED_FORMATS.
+
+    :param src_format: The type of graph you'd like to convert from. Supported formats are available in graphein.ml.conversion.SUPPORTED_FORMATS
+    :type src_format: Literal["nx", "pyg", "dgl"]
+    :param dst_format: The type of graph format you'd like to convert to. Supported formats are available in:
+        graphein.ml.conversion.SUPPORTED_FORMATS
+    :type dst_format:  Literal["nx", "pyg", "dgl"]
+    :param verbose: Select from "gnn", "default", "all_info" to determine how much information is preserved (features)
+        as some are unsupported by various downstream frameworks
+    :type verbose: graphein.ml.conversion.SUPPORTED_VERBOSITY
+    :param columns: List of columns in the node features to retain
+    :type columns: List[str], optional
+    """
+
     def __init__(
         self,
         src_format: str,
         dst_format: str,
-        verbose: str = "gnn",
+        verbose: SUPPORTED_VERBOSITY = "gnn",
         columns: Optional[List[str]] = None,
     ):
-        supported_format = ["nx", "pyg", "dgl"]
-        if (src_format not in supported_format) or (
-            dst_format not in supported_format
+        if (src_format not in SUPPORTED_FORMATS) or (
+            dst_format not in SUPPORTED_FORMATS
         ):
             raise ValueError(
                 "Please specify from supported format, "
-                + "/".join(supported_format)
+                + "/".join(SUPPORTED_FORMATS)
             )
         self.src_format = src_format
         self.dst_format = dst_format
 
-        supported_verbose_format = ["gnn", "default", "all_info"]
-        if (columns is None) and (verbose not in supported_verbose_format):
+        # supported_verbose_format = ["gnn", "default", "all_info"]
+        if (columns is None) and (verbose not in SUPPORTED_VERBOSITY):
             raise ValueError(
                 "Please specify the supported verbose mode ("
-                + "/".join(supported_verbose_format)
+                + "/".join(SUPPORTED_VERBOSITY)
                 + ") or specify column names!"
             )
 
@@ -104,6 +126,14 @@ class graph_format_convert:
         }
 
     def convert_nx_to_dgl(self, G: nx.Graph) -> dgl.DGLGraph:
+        """
+        Converts NetworkX graph to DGL
+
+        :param G: nx.Graph to convert to DGLGraph
+        :type G: nx.Graph
+        :return: DGLGraph object version of input NetworkX graph
+        :rtype: dgl.DGLGraph
+        """
         import dgl
 
         g = dgl.DGLGraph()
@@ -139,8 +169,7 @@ class graph_format_convert:
                 node_dict_transformed[i] = torch.Tensor(np.array(j))
 
         g.add_nodes(
-            len(node_id),
-            node_dict_transformed,
+            len(node_id), node_dict_transformed,
         )
 
         edge_dict = {}
@@ -176,6 +205,14 @@ class graph_format_convert:
         return g
 
     def convert_nx_to_pyg(self, G: nx.Graph) -> Data:
+        """
+        Converts NetworkX graph to pytorch_geometric.data.Data object
+
+        :param G: nx.Graph to convert to PyTorch Geometric
+        :type G: nx.Graph
+        :return: Data object containing networkx graph data
+        :rtype: pytorch_geometric.data.Data
+        """
         import torch_geometric
         from torch_geometric.data import Data
 
@@ -217,10 +254,28 @@ class graph_format_convert:
         data.num_nodes = G.number_of_nodes()
         return data
 
-    def convert_nx_to_nx(self, G: nx.Graph) -> nx.Graph:
+    @staticmethod
+    def convert_nx_to_nx(G: nx.Graph) -> nx.Graph:
+        """
+        Converts NetworkX Graph to NetworkX graph object. Redundant - returns itself
+
+        :param G: NetworkX Graph
+        :type G: nx.Graph
+        :return: NetworkX Graph
+        :rtype: nx.Graph
+        """
         return G
 
-    def convert_dgl_to_nx(self, G: dgl.DGLGraph) -> nx.Graph:
+    @staticmethod
+    def convert_dgl_to_nx(G: dgl.DGLGraph) -> nx.Graph:
+        """
+        Converts a DGL Graph (dgl.DGLGraph) to a NetworkX (nx.Graph) object. Preservers node and edge attributes.
+
+        :param G: dgl.DGLGraph to convert to NetworkX
+        :type G: dgl.DGLGraph
+        :return: NetworkX graph object
+        :rtype: nx.Graph
+        """
         import dgl
 
         node_attrs = G.node_attr_schemes().keys()
@@ -228,7 +283,15 @@ class graph_format_convert:
         nx_g = dgl.to_networkx(G, node_attrs, edge_attrs)
         return nx_g
 
-    def convert_pyg_to_nx(self, G: Data) -> nx.Graph:
+    @staticmethod
+    def convert_pyg_to_nx(G: Data) -> nx.Graph:
+        """Converts PyTorch Geometric Data object to NetworkX graph
+
+        :param G: Pytorch Geometric Data
+        :type G: torch_geometric.data.Data
+        :returns: NetworkX graph version
+        :rtype: nx.Graph
+        """
         import torch_geometric
 
         return torch_geometric.utils.to_networkx(G)
@@ -271,3 +334,19 @@ def convert_nx_to_pyg_data(G: nx.Graph) -> Data:
     data.num_nodes = G.number_of_nodes()
 
     return data
+
+
+if __name__ == "__main__":
+    from graphein.protein.config import ProteinGraphConfig
+    from graphein.protein.graphs import construct_graph
+
+    g = construct_graph(pdb_code="3eiy", config=ProteinGraphConfig())
+    assert type(g) is nx.Graph
+
+    # print(SUPPORTED_FORMATS)
+
+    convertor = GraphFormatConvertor(
+        src_format="nx", dst_format="pyg", verbose="gnn"
+    )
+    pyg = convertor(g)
+    assert type(pyg) is torch_geometric.data.Data
