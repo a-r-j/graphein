@@ -3,6 +3,7 @@ from typing import List, Optional
 import networkx as nx
 import numpy as np
 import torch
+import dgl
 
 from graphein.utils.utils import import_message
 
