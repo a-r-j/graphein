@@ -92,7 +92,9 @@ def compute_grn_graph(
     log.debug(f"Added {len(gene_list)} nodes to graph")
 
     nx.set_node_attributes(
-        G, dict(zip(gene_list, gene_list)), "gene_id",
+        G,
+        dict(zip(gene_list, gene_list)),
+        "gene_id",
     )
 
     # Annotate additional graph metadata

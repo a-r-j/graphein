@@ -128,7 +128,9 @@ def compute_edges(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
 
 def generate_feature_dataframe(
-    G: nx.Graph, funcs: List[Callable], return_array=False,
+    G: nx.Graph,
+    funcs: List[Callable],
+    return_array=False,
 ) -> pd.DataFrame:
     """
     Return a pandas DataFrame representation of node metadata.

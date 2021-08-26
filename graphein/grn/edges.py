@@ -31,7 +31,8 @@ def add_trrust_edges(
     """
     G.graph["sources"].append("trrust")
     G.graph["trrust_df"] = TRRUST_df(
-        G.graph["gene_list"], filtering_funcs=trrust_filtering_funcs,
+        G.graph["gene_list"],
+        filtering_funcs=trrust_filtering_funcs,
     )
     add_interacting_genes(G, df=G.graph["trrust_df"], kind="trrust")
 
@@ -50,7 +51,8 @@ def add_regnetwork_edges(
     """
     G.graph["sources"].append("regnetwork")
     G.graph["regnetwork_df"] = RegNetwork_df(
-        G.graph["gene_list"], filtering_funcs=regnetwork_filtering_funcs,
+        G.graph["gene_list"],
+        filtering_funcs=regnetwork_filtering_funcs,
     )
     add_interacting_genes(G, df=G.graph["regnetwork_df"], kind="regnetwork")
 

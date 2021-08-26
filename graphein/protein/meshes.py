@@ -35,7 +35,9 @@ def check_for_pymol_installation():
         )
 
 
-def configure_pymol_session(config: Optional[ProteinMeshConfig] = None,):
+def configure_pymol_session(
+    config: Optional[ProteinMeshConfig] = None,
+):
     """
     Configures a PyMol session based on config.parse_pymol_commands. Uses default parameters -"cKq".
     See: https://pymolwiki.org/index.php/Command_Line_Options

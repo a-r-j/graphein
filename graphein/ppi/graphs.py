@@ -91,7 +91,9 @@ def compute_ppi_graph(
     log.debug(f"Added {len(protein_list)} nodes to graph")
 
     nx.set_node_attributes(
-        G, dict(zip(protein_list, protein_list)), "protein_id",
+        G,
+        dict(zip(protein_list, protein_list)),
+        "protein_id",
     )
 
     # Annotate additional graph metadata

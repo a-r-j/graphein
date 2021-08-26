@@ -165,7 +165,9 @@ def construct_rna_graph(
         G.graph["dotbracket"] = dotbracket
 
         nx.set_node_attributes(
-            G, dict(zip(node_ids, dotbracket)), "dotbracket_symbol",
+            G,
+            dict(zip(node_ids, dotbracket)),
+            "dotbracket_symbol",
         )
 
     # Add nucleotide base info if sequence is provided

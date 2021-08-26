@@ -1,5 +1,6 @@
 """Functions for adding nodes features to a PPI Graph"""
-from typing import Dict, Any
+from typing import Any, Dict
+
 import networkx as nx
 from bioservices import HGNC, UniProt
 

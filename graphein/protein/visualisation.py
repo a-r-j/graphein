@@ -249,7 +249,11 @@ def plotly_protein_structure_graph(
             width=figsize[0],
             height=figsize[1],
             showlegend=False,
-            scene=dict(xaxis=dict(axis), yaxis=dict(axis), zaxis=dict(axis),),
+            scene=dict(
+                xaxis=dict(axis),
+                yaxis=dict(axis),
+                zaxis=dict(axis),
+            ),
             margin=dict(t=100),
         ),
     )

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional, TypeVar
 
+import dgl
 import networkx as nx
 import numpy as np
 import torch
-import dgl
 
 from graphein.utils.utils import import_message
 
@@ -170,7 +170,8 @@ class GraphFormatConvertor:
                 node_dict_transformed[i] = torch.Tensor(np.array(j))
 
         g.add_nodes(
-            len(node_id), node_dict_transformed,
+            len(node_id),
+            node_dict_transformed,
         )
 
         edge_dict = {}
