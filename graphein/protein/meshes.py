@@ -12,6 +12,7 @@ from typing import List, NamedTuple, Optional, Tuple
 
 from graphein.protein.config import ProteinMeshConfig
 from graphein.utils.utils import import_message
+from graphein.utils.pymol import MolViewer
 
 try:
     from pytorch3d.structures import Meshes
@@ -45,7 +46,7 @@ def configure_pymol_session(
     :param config: ProteinMeshConfig to use
     :type config: graphein.protein.config.ProteinMeshConfig
     """
-    from ipymol import viewer as pymol
+    pymol = MolViewer()
 
     # If no config is provided, use default
     if config is None:
@@ -75,7 +76,7 @@ def get_obj_file(
     :return: returns path to .obj file (str)
     :rtype: str
     """
-    from ipymol import viewer as pymol
+    pymol = MolViewer()
 
     check_for_pymol_installation()
 
@@ -136,7 +137,7 @@ def run_pymol_commands(commands: List[str]) -> None:
     :param commands: List of commands to pass to PyMol
     :type commands: List[str]
     """
-    from ipymol import viewer as pymol
+    pymol = MolViewer()
 
     for c in commands:
         log.debug(c)
