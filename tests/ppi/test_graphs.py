@@ -45,5 +45,5 @@ def test_construct_graph():
     for n, d in g.nodes(data=True):
         assert d["protein_id"] in PROTEIN_LIST
         if d["uniprot_ids"] is not None:
-            for id in d['uniprot_ids']:
+            for id in d["uniprot_ids"]:
                 assert d[f"sequence_{id}"] is not None
