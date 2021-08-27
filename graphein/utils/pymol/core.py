@@ -1,13 +1,13 @@
 from __future__ import print_function
 
 import os
-import time
-import tempfile
 import subprocess
+import tempfile
+import time
 
 from .compat import Server
 
-HOST = os.environ.get('PYMOL_RPCHOST', 'localhost')
+HOST = os.environ.get("PYMOL_RPCHOST", "localhost")
 PORT = 9123
 
 
@@ -49,7 +49,7 @@ class MolViewer(object):
         # wait for the server
         while True:
             try:
-                self._server.bg_color('white')
+                self._server.bg_color("white")
                 break
             except IOError:
                 time.sleep(0.1)
@@ -69,13 +69,12 @@ class MolViewer(object):
         -------
         fig : IPython.display.Image
         """
-        from IPython.display import Image
-        from IPython.display import display
+        from IPython.display import Image, display
         from ipywidgets import IntProgress
 
-        progress_max = int((timeout * 20)**0.5)
+        progress_max = int((timeout * 20) ** 0.5)
         progress = None
-        filename = tempfile.mktemp('.png')
+        filename = tempfile.mktemp(".png")
 
         try:
             self._server.png(filename, width, height, -1, int(ray))
@@ -92,7 +91,7 @@ class MolViewer(object):
                 time.sleep(i / 10.0)
 
             if not os.path.exists(filename):
-                raise RuntimeError('timeout exceeded')
+                raise RuntimeError("timeout exceeded")
 
             return Image(filename)
         finally:
