@@ -11,7 +11,7 @@ from graphein.protein.features.sequence.utils import (
     compute_feature_over_chains,
     subset_by_node_feature_value,
 )
-from graphein.utils import import_message
+from graphein.utils.utils import import_message
 
 try:
     import biovec
@@ -45,6 +45,7 @@ def _load_esm_model(model_name: str = "esm1b_t33_650M_UR50S"):
     esm1_t12_85M_UR50S 12 85M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
     esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
     :param model_name: Name of pre-trained model to load
+    :type model_name: str
     :return: loaded pre-trained model
     """
 
@@ -78,10 +79,15 @@ def compute_esm_embedding(
     esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
 
     :param sequence: Protein sequence to embed (str)
+    :type sequence: str
     :param representation: Type of embedding to extract. "residue: or "sequence". Sequence-level embeddings are averaged residue embeddings
+    :type representation: str
     :param model_name: Name of pre-trained model to use
+    :type model_name: str
     :param output_layer: integer indicating which layer the output should be taken from
+    :type output_layer: int
     :return: embedding (np.ndarray)
+    :rtype: np.ndarray
     """
     model, alphabet = _load_esm_model(model_name)
     batch_converter = alphabet.get_batch_converter()
@@ -138,9 +144,13 @@ def esm_residue_embedding(
     esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
 
     :param G: nx.Graph to add esm embedding to
+    :type G: nx.Graph
     :param model_name: Name of pre-trained model to use
+    :type model_name: str
     :param output_layer: index of output layer in pre-trained model
+    :type output_layer: int
     :return: nx.Graph with esm embedding feature added to nodes
+    :rtype: nx.Graph
     """
 
     for chain in G.graph["chain_ids"]:
@@ -163,8 +173,11 @@ def esm_residue_embedding(
 def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
     """
     Computes ESM sequence embedding feature over chains in a graph
+
     :param G: nx.Graph protein structure graph
+    :type G: nx.Graph
     :return: nx.Graphein protein structure graphein with esm embedding features added eg. G.graph["esm_embedding_A"]
+    :rtype: nx.Graph
     """
     func = partial(compute_esm_embedding, representation="sequence")
     G = compute_feature_over_chains(G, func, feature_name="esm_embedding")
@@ -195,8 +208,11 @@ def biovec_sequence_embedding(G: nx.Graph) -> nx.Graph:
 
     Source: ProtVec: A Continuous Distributed Representation of Biological Sequences
     Paper: http://arxiv.org/pdf/1503.05140v1.pdf
+
     :param G: nx.Graph protein structure graph
+    :type G: nx.Graph
     :return: nx.Graph protein structure graph with biovec embedding added. e.g. G.graph["biovec_embedding_A"]
+    :rtype: nx.Graph
     """
     pv = _load_biovec_model()
     func = pv.to_vecs

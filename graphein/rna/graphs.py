@@ -6,11 +6,11 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import logging
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import networkx as nx
 
-from graphein.utils import (
+from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
@@ -19,9 +19,9 @@ from graphein.utils import (
 
 log = logging.getLogger(__name__)
 
-RNA_BASES = ["A", "U", "G", "C", "I"]
+RNA_BASES: List[str] = ["A", "U", "G", "C", "I"]
 
-RNA_BASE_COLORS = {
+RNA_BASE_COLORS: Dict[str, str] = {
     "A": "r",
     "U": "b",
     "G": "g",
@@ -29,17 +29,45 @@ RNA_BASE_COLORS = {
     "I": "m",
 }
 
-SUPPORTED_DOTBRACKET_NOTATION = ["(", ".", ")"]
+CANONICAL_BASE_PAIRINGS: Dict[str, str] = {
+    "A": ["U"],
+    "U": ["A"],
+    "G": ["C"],
+    "C": ["G"],
+}
 
-# Todo Pseudoknots: Some secondary structure databases include other characters ( [] , {}, <>, a, etc...)
-#  to represent pairing in pseudoknots.
+WOBBLE_BASE_PAIRINGS: Dict[str, str] = {
+    "A": ["I"],
+    "U": ["G", "I"],
+    "G": ["U"],
+    "C": ["I"],
+    "I": ["A", "C", "U"],
+}
 
-# Todo checking of valid base-parings
+VALID_BASE_PAIRINGS = {
+    key: CANONICAL_BASE_PAIRINGS.get(key, [])
+    + WOBBLE_BASE_PAIRINGS.get(key, [])
+    for key in set(
+        list(CANONICAL_BASE_PAIRINGS.keys())
+        + list(WOBBLE_BASE_PAIRINGS.keys())
+    )
+}
+
+SIMPLE_DOTBRACKET_NOTATION = ["(", ".", ")"]
+SUPPORTED_PSEUDOKNOT_NOTATION = ["[", "]", "{", "}", "<", ">"]
+SUPPORTED_DOTBRACKET_NOTATION = (
+    SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION
+)
 
 
 def validate_rna_sequence(s: str) -> None:
     """
-    Validate RNA sequence. This ensures that it only has supported bases
+    Validate RNA sequence. This ensures that it only containts supported bases. Supported bases are: "A", "U", "G", "C", "I".
+    Supported bases can be accessed in graphein.rna.graphs.RNA_BASES
+
+    :param s: Sequence to validate
+    :type s: str
+    :raises ValueError: Raises ValueError if the sequence contains an unsupported base character
     """
     letters_used = set(s)
     if not letters_used.issubset(RNA_BASES):
@@ -53,6 +81,12 @@ def validate_rna_sequence(s: str) -> None:
 def validate_lengths(db: str, seq: str) -> None:
     """
     Check lengths of dotbracket and sequence match
+
+    :param db: Dotbracket string to check
+    :type db: str
+    :param seq: RNA nucleotide sequence to check.
+    :type seq: str
+    :raises ValueError: Raises ValueError if lengths of dotbracket and sequence do not match.
     """
     if len(db) != len(seq):
         raise ValueError(
@@ -60,13 +94,26 @@ def validate_lengths(db: str, seq: str) -> None:
         )
 
 
-def sanitize_dotbracket(db: str) -> str:
-    """Sanitize dotbracket string.
-
-    This ensures that it only has supported symobls.
+def validate_dotbracket(db: str) -> str:
     """
-    db = "".join(i if i in SUPPORTED_DOTBRACKET_NOTATION else "." for i in db)
-    return db
+    Sanitize dotbracket string. This ensures that it only has supported symbols.
+    SIMPLE_DOTBRACKET_NOTATION = ["(", ".", ")"]
+    SUPPORTED_PSEUDOKNOT_NOTATION = ["[", "]", "{", "}", "<", ">"]
+    SUPPORTED_DOTBRACKET_NOTATION = (
+        SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION
+    )
+
+    :param db: Dotbrack notation string
+    :type db: str
+    :raises ValueError: Raises ValueError if dotbracket notation contains unsupported symbols
+    """
+    chars_used = set(db)
+    if not chars_used.issubset(SUPPORTED_DOTBRACKET_NOTATION):
+        offending_letter = chars_used.difference(SUPPORTED_DOTBRACKET_NOTATION)
+        position = db.index(offending_letter)
+        raise ValueError(
+            f"Invalid letter {offending_letter} found at position {position} in the sequence {db}."
+        )
 
 
 def construct_rna_graph(
@@ -79,13 +126,21 @@ def construct_rna_graph(
 ) -> nx.Graph:
     """
     Constructs an RNA secondary structure graph from dotbracket notation
+
     :param dotbracket: Dotbracket notation representation of secondary structure
+    :type dotbracket: str, optional
     :param sequence: Corresponding sequence RNA bases
-    :param edge_construction_funcs: List of edge construction functions
-    :param edge_annotation_funcs: List of edge metadata annotation functions
-    :param node_annotation_funcs: List of node metadata annotation functions
-    :param graph_annotation_funcs: List of graph metadata annotation functions
+    :type sequence: str, optional
+    :param edge_construction_funcs: List of edge construction functions. Defaults to None.
+    :type edge_construction_funcs: List[Callable], optional
+    :param edge_annotation_funcs: List of edge metadata annotation functions. Defaults to None.
+    :type edge_annotation_funcs: List[Callable], optional
+    :param node_annotation_funcs: List of node metadata annotation functions. Defaults to None.
+    :type node_annotation_funcs: List[Callable], optional
+    :param graph_annotation_funcs: List of graph metadata annotation functions. Defaults to None
+    :type graph_annotation_funcs: List[Callable], optional
     :return: nx.Graph of RNA secondary structure
+    :rtype: nx.Graph
     """
     G = nx.Graph()
 
@@ -106,7 +161,7 @@ def construct_rna_graph(
 
     # Add dotbracket symbol if dotbracket is provided
     if dotbracket:
-        dotbracket = sanitize_dotbracket(dotbracket)
+        validate_dotbracket(dotbracket)
         G.graph["dotbracket"] = dotbracket
 
         nx.set_node_attributes(
@@ -148,23 +203,37 @@ if __name__ == "__main__":
         add_all_dotbracket_edges,
         add_base_pairing_interactions,
         add_phosphodiester_bonds,
+        add_pseudoknots,
     )
 
-    edge_funcs_1 = [add_base_pairing_interactions, add_phosphodiester_bonds]
+    edge_funcs_1 = [
+        add_base_pairing_interactions,
+        add_phosphodiester_bonds,
+        add_pseudoknots,
+    ]
     edge_funcs_2 = [add_all_dotbracket_edges]
 
+    # g = construct_rna_graph(
+    #    "((((....))))..(())",
+    #    "AUGAUGAUGAUGCICIAU",
+    #    edge_construction_funcs=edge_funcs_1,
+    # )
+
     g = construct_rna_graph(
-        "((((....))))..(())",
-        "AUGAUGAUGAUGCICIAU",
+        "......((((((......[[[))))))......]]]....",
+        sequence=None,
         edge_construction_funcs=edge_funcs_1,
     )
+
+    """
     h = construct_rna_graph(
         "((((....))))..(())",
         "AUGAUGAUGAUGCICIAU",
         edge_construction_funcs=edge_funcs_2,
     )
+    """
 
-    assert g.edges() == h.edges()
+    # assert g.edges() == h.edges()
 
     nx.info(g)
 
@@ -172,6 +241,6 @@ if __name__ == "__main__":
     node_colors = nx.get_node_attributes(g, "color").values()
 
     nx.draw(
-        g, edge_color=edge_colors, node_color=node_colors, with_labels=True
+        g, edge_color=edge_colors  # , node_color=node_colors, with_labels=True
     )
     plt.show()

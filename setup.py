@@ -1,6 +1,7 @@
 import io
 import os
 
+import versioneer
 from setuptools import find_packages, setup
 
 VERSION = None
@@ -24,7 +25,8 @@ install_reqs.append("setuptools")
 
 setup(
     name="graphein",
-    version=VERSION,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description="Machine Learning Library Extensions",
     author="Arian Jamasb",
     author_email="arian@jamasb.io",
@@ -34,7 +36,7 @@ setup(
         "": ["LICENSE.txt", "README.md", "requirements.txt", "*.csv"]
     },
     include_package_data=True,
-    install_requires=install_reqs,
+    # install_requires=install_reqs,
     license="MIT",
     platforms="any",
     classifiers=[

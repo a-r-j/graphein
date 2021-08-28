@@ -215,8 +215,8 @@ def test_sequence_features():
 
     sequence_feature_functions = {
         "graph_metadata_functions": [
-            esm_sequence_embedding,
-            esm_residue_embedding,
+            # esm_sequence_embedding,
+            # esm_residue_embedding,
             biovec_sequence_embedding,
             molecular_weight,
         ]
@@ -225,15 +225,15 @@ def test_sequence_features():
     G = construct_graph(pdb_path=str(file_path), config=config)
 
     # Check for existence on sequence-based features as node-level features
-    for n, d in G.nodes(data=True):
-        # Todo this can probably be improved.
-        # This only checks for the existence and shape of the esm_embedding for each node
-        assert "esm_embedding" in d
-        assert len(d["esm_embedding"]) == 1280
+    # for n, d in G.nodes(data=True):
+    # Todo this can probably be improved.
+    # This only checks for the existence and shape of the esm_embedding for each node
+    # assert "esm_embedding" in d
+    # assert len(d["esm_embedding"]) == 1280
 
     # Check for existence of sequence-based features as Graph-level features
     for chain in G.graph["chain_ids"]:
         assert f"sequence_{chain}" in G.graph
-        assert f"esm_embedding_{chain}" in G.graph
+        # assert f"esm_embedding_{chain}" in G.graph
         assert f"biovec_embedding_{chain}" in G.graph
         assert f"molecular_weight_{chain}" in G.graph

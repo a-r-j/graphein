@@ -11,7 +11,8 @@ import logging
 from typing import List, NamedTuple, Optional, Tuple
 
 from graphein.protein.config import ProteinMeshConfig
-from graphein.utils import import_message
+from graphein.utils.pymol import MolViewer
+from graphein.utils.utils import import_message
 
 try:
     from pytorch3d.structures import Meshes
@@ -26,7 +27,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-def check_for_pymol_installation() -> None:
+def check_for_pymol_installation():
     """Checks for presence of a pymol installation"""
     spec = importlib.util.find_spec("pymol")
     if spec is None:
@@ -37,14 +38,15 @@ def check_for_pymol_installation() -> None:
 
 def configure_pymol_session(
     config: Optional[ProteinMeshConfig] = None,
-) -> None:
+):
     """
     Configures a PyMol session based on config.parse_pymol_commands. Uses default parameters -"cKq".
     See: https://pymolwiki.org/index.php/Command_Line_Options
+
     :param config: ProteinMeshConfig to use
-    :return: None
+    :type config: graphein.protein.config.ProteinMeshConfig
     """
-    from ipymol import viewer as pymol
+    pymol = MolViewer()
 
     # If no config is provided, use default
     if config is None:
@@ -62,13 +64,19 @@ def get_obj_file(
 ) -> str:
     """
     Runs PyMol to compute surface/mesh for a given protein
+
     :param pdb_file:  path to pdb_file to use
+    :type pdb_file: str, optional
     :param pdb_code: 4-letter pdb accession code
+    :type pdb_code: str, optional
     :param out_dir: path to output. Defaults to /tmp/
+    :type out_dir: str, optional
     :param config: ProteinMeshConfig containing pymol commands to run. Default is "show surface"
+    :type config: graphein.protein.config.ProteinMeshConfig
     :return: returns path to .obj file (str)
+    :rtype: str
     """
-    from ipymol import viewer as pymol
+    pymol = MolViewer()
 
     check_for_pymol_installation()
 
@@ -108,8 +116,11 @@ def get_obj_file(
 def parse_pymol_commands(config: ProteinMeshConfig) -> List[str]:
     """
     Parses pymol commands from config. At the moment users can only supply a list of string commands.
-    :param config:
+
+    :param config: ProteinMeshConfig c
+    :type config: ProteinMeshConfig
     :return: list of pymol commands to run
+    :rtype: List[str]
     """
     if config is None:
         config = ProteinMeshConfig()
@@ -122,10 +133,11 @@ def parse_pymol_commands(config: ProteinMeshConfig) -> List[str]:
 def run_pymol_commands(commands: List[str]) -> None:
     """
     Runs Pymol Commands
-    :param commands::
-    :return: None
+
+    :param commands: List of commands to pass to PyMol
+    :type commands: List[str]
     """
-    from ipymol import viewer as pymol
+    pymol = MolViewer()
 
     for c in commands:
         log.debug(c)
@@ -140,11 +152,17 @@ def create_mesh(
 ) -> Tuple[torch.FloatTensor, NamedTuple, NamedTuple]:
     """
     Creates a PyTorch 3D mesh from a pdb_file or pdb code.
-    :param pdb_file: path to pdb pdb_file
-    :param pdb_code: 4-letter PDB accession code
+
+    :param pdb_file: path to pdb pdb_file. Defaults to None
+    :type pdb_file: str, optional
+    :param pdb_code: 4-letter PDB accession code. Defaults to None.
+    :type pdb_code: str, optional
     :param out_dir: output directory to store ".obj" file. Defaults to /tmp/
+    :type out_dir: str, optional
     :param config:  ProteinMeshConfig config to use. Defaults to default config in graphein.protein.config
+    :type config: graphein.protein.config.ProteinMeshConfig
     :return: verts, faces, aux
+    :rtype: Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
     """
     from pytorch3d.io import load_obj
 
@@ -158,13 +176,18 @@ def create_mesh(
     return verts, faces, aux
 
 
-def normalize_and_center_mesh_vertices(verts: torch.FloatTensor):
+def normalize_and_center_mesh_vertices(
+    verts: torch.FloatTensor,
+) -> torch.FloatTensor:
     """
     We scale normalize and center the target mesh to fit in a sphere of radius 1 centered at (0,0,0).
     (scale, center) will be used to bring the predicted mesh to its original center and scale
     Note that normalizing the target mesh, speeds up the optimization but is not necessary!
+
     :param verts: mesh vertices
+    :type verts: torch.FloatTensor
     :return: normalized and centered vertices
+    :rtype: torch.FloatTensor
     """
     center = verts.mean()
     verts = verts - center
@@ -178,9 +201,13 @@ def convert_verts_and_face_to_mesh(
 ) -> Meshes:
     """
     Converts vertices and faces into a pytorch3d.structures Meshes object.
+
     :param verts: vertices
+    :type verts: torch.FloatTensor
     :param faces: faces
+    :type faces: NamedTuple
     :return: Meshes object
+    :rtype: pytorch3d.structures.Meshes
     """
     faces_idx = faces.verts_idx
     return Meshes(verts=[verts], faces=[faces_idx])

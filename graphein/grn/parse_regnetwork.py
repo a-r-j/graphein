@@ -15,17 +15,35 @@ from typing import Callable, List, Optional
 import pandas as pd
 import wget
 
-from ..utils import filter_dataframe
+from graphein.utils.utils import filter_dataframe
 
 log = logging.getLogger(__name__)
 
 
-def _download_RegNetwork(root_dir: Optional[Path] = None) -> str:
+def _download_RegNetwork(
+    root_dir: Optional[Path] = None, network_type: str = "human"
+) -> str:
     """
-    Downloads RegNetwork regulatory interactions to the root directory
-    :param root_dir: Path object specifying the location to download RegNetwork to
+    Downloads RegNetwork regulatory interactions to the root directory. Returns the filepath.
+
+    :param root_dir: Path object specifying the location to download RegNetwork to. Default is None which downloads to the dataset/ directory inside graphein.
+    :type root_dir: patlib.Path, optional
+    :param network_type: Specifies whether to download human or mouse regulatory network. Supported values: "human" (default), "mouse".
+    :type network_type: str
+    :returns: path to downloaded RegNetwork
+    :rtype: str
     """
-    url = "http://www.regnetworkweb.org/download/human.zip"
+    human_url = "http://www.regnetworkweb.org/download/human.zip"
+    mouse_url = "http://regnetworkweb.org/download/mouse.zip"
+
+    if network_type == "human":
+        url = human_url
+    elif network_type == "mouse":
+        url = mouse_url
+    else:
+        raise ValueError(
+            f"network_type: {network_type} is unsupported. Please use 'human' or 'mouse'"
+        )
 
     # If no root dir is provided, use the dataset directory inside graphein.
     if root_dir is None:
@@ -51,6 +69,7 @@ def _download_RegNetwork(root_dir: Optional[Path] = None) -> str:
 def _download_RegNetwork_regtypes(root_dir: Optional[Path] = None) -> str:
     """
     Downloads RegNetwork regulatory interactions types to the root directory
+
     :param root_dir: Path object specifying the location to download RegNetwork to
     """
     url = "http://www.regnetworkweb.org/download/RegulatoryDirections.zip"
@@ -110,6 +129,7 @@ def parse_RegNetwork(
 ) -> pd.DataFrame:
     """
     Parser for RegNetwork interactions
+
     :param gene_list: List of gene identifiers
     :return Pandas dataframe with the regulatory interactions between genes in the gene list
     """
@@ -137,8 +157,8 @@ def filter_RegNetwork(
     df: pd.DataFrame, funcs: Optional[List[Callable]] = None
 ) -> pd.DataFrame:
     """
-    Filters results of RegNetwork call by providing a list of
-    user-defined functions that accept a dataframe and return a dataframe
+    Filters results of RegNetwork call by providing a list of user-defined functions that accept a dataframe and return a dataframe
+
     :param df: pd.Dataframe to filter
     :param funcs: list of functions that carry out dataframe processing
     :return: processed dataframe
@@ -152,8 +172,11 @@ def filter_RegNetwork(
 def standardise_RegNetwork(df: pd.DataFrame) -> pd.DataFrame:
     """
     Standardises STRING dataframe, e.g. puts everything into a common format
+
     :param df: Source specific Pandas dataframe
+    :type df: pd.DataFrame
     :return: Standardised dataframe
+    :rtype: pd.DataFrame
     """
     # Rename & delete columns
     df = df[["g1", "g2", "regtype"]]

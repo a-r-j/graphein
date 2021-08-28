@@ -23,8 +23,11 @@ log = logging.getLogger(__name__)
 def peptide_bonds(G: nx.Graph) -> nx.Graph:
     """
     Adds peptide backbone to residues in each chain
-    :param G: networkx protein graph
-    :return: networkx protein graph with added peptide bonds
+
+    :param G: nx.Graph protein graph
+    :type G: nx.Graph
+    :returns: nx.Graph protein graph with added peptide bonds
+    :rtype: nx.Graph
     """
     log.debug("Adding peptide bonds to graph")
     # Iterate over every chain
@@ -79,9 +82,13 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
 def get_contacts_df(config: GetContactsConfig, pdb_name: str) -> pd.DataFrame:
     """
     Reads GetContact File and returns it as a pd.DataFrame
+
     :param config: GetContactsConfig object
+    :type config: GetContactsConfig
     :param pdb_name: Name of PDB file. Contacts files are name {pdb_name}_contacts.tsv
-    :return: DataFrame of prased Getcontacts output
+    :type pdb_name: str
+    :return: DataFrame of prased GetContacts output
+    :rtype: pd.DataFrame
     """
     if not config.contacts_dir:
         config.contacts_dir = Path("/tmp/")
@@ -109,9 +116,13 @@ def run_get_contacts(
 ):
     """
     Runs GetContacts on a protein structure. If no file_name is provided, a PDB file is downloaded for the pdb_id
+
     :param config: GetContactsConfig object containing GetContacts parameters
+    :type config: graphein.protein.config.GetContactsConfig
     :param pdb_id: 4-character PDB accession code
+    :type pdb_id: str, optional
     :param file_name: PDB_name file to use, if annotations to be retrieved from the PDB
+    :type file_name: str, optional
     """
     # Check for GetContacts Installation
     assert os.path.isfile(
@@ -147,13 +158,17 @@ def run_get_contacts(
 
 
 def read_contacts_file(
-    config: GetContactsConfig, contacts_file
+    config: GetContactsConfig, contacts_file: str
 ) -> pd.DataFrame:
     """
     Parses GetContacts file to an edgelist (pd.DataFrame)
-    :param config: GetContactsConfig object
+
+    :param config: GetContactsConfig object (graphein.protein.config.GetContactsConfig)
+    :type config: GetContactsConfig
     :param contacts_file: file name of contacts file
+    :type contacts_file: str
     :return: Pandas Dataframe of edge list
+    :rtype: pd.DataFrame
     """
     log.debug(f"Parsing GetContacts output file at: {contacts_file}")
 
@@ -187,12 +202,14 @@ def read_contacts_file(
 
 def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     """
-    Adds specific interaction types to the protein graph
+    Adds specific interaction types to the protein graph.
+
     :param G: networkx protein graph
     :type G: nx.Graph
     :param interaction_type: interaction type to be added
     :type interaction_type: str
-    :return G: nx.Graph
+    :return G: nx.Graph with specified interaction-based edges added.
+    :rtype: nx.Graph
     """
     log.debug(f"Adding {interaction_type} edges to graph")
 
@@ -226,25 +243,35 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
 def hydrogen_bond(G: nx.Graph) -> nx.Graph:
     """
     Adds hydrogen bonds to protein structure graph
+
     :param G: nx.Graph to add hydrogen bonds to
+    :type G: nx.Graph
     :return: nx.Graph with hydrogen bonds added
+    :rtype: nx.Graph
     """
     return add_contacts_edge(G, "hb")
 
 
 def salt_bridge(G: nx.Graph) -> nx.Graph:
     """
-    Adds slat bridges to protein structure graph
+    Adds salt bridges to protein structure graph
+
     :param G: nx.Graph to add salt bridges to
-    :return: nx.Graph with salt bridges added"""
+    :type G: nx.Graph
+    :return: nx.Graph with salt bridges added
+    :rtype: nx.Graph
+    """
     return add_contacts_edge(G, "sb")
 
 
 def pi_cation(G: nx.Graph) -> nx.Graph:
     """
     Adds pi-cation interactions to protein structure graph
+
     :param G: nx.Graph to add pi-cation interactions to
+    :type G: nx.Graph
     :return: nx.Graph with pi-pi_cation interactions added
+    :rtype: nx.Graph
     """
 
     return add_contacts_edge(G, "pc")
@@ -253,8 +280,11 @@ def pi_cation(G: nx.Graph) -> nx.Graph:
 def pi_stacking(G: nx.Graph) -> nx.Graph:
     """
     Adds pi-stacking interactions to protein structure graph
+
     :param G: nx.Graph to add pi-stacking interactions to
+    :type G: nx.Graph
     :return: nx.Graph with pi-stacking interactions added
+    :rtype: nx.Graph
     """
     return add_contacts_edge(G, "ps")
 
@@ -262,8 +292,11 @@ def pi_stacking(G: nx.Graph) -> nx.Graph:
 def t_stacking(G: nx.Graph) -> nx.Graph:
     """
     Adds t-stacking interactions to protein structure graph
+
     :param G: nx.Graph to add t-stacking interactions to
+    :type G: nx.Graph
     :return: nx.Graph with t-stacking interactions added
+    :rtype: nx.Graph
     """
     return add_contacts_edge(G, "ts")
 
@@ -271,15 +304,22 @@ def t_stacking(G: nx.Graph) -> nx.Graph:
 def hydrophobic(G: nx.Graph) -> nx.Graph:
     """
     Adds hydrophobic interactions to protein structure graph
+
     :param G: nx.Graph to add hydrophobic interaction edges to
-    :return: nx.Graph with hydrophobic interactions added"""
+    :type G: nx.Graph
+    :return: nx.Graph with hydrophobic interactions added
+    :rtype: nx.Graph
+    """
     return add_contacts_edge(G, "hp")
 
 
 def van_der_waals(G: nx.Graph) -> nx.Graph:
     """
     Adds van der Waals interactions to protein structure graph
+
     :param G: nx.Graph to add van der Waals interactions to
+    :type G: nx.Graph
     :return: nx.Graph with van der Waals interactions added
+    :rtype: nx.Graph
     """
     return add_contacts_edge(G, "vdw")

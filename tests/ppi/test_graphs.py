@@ -32,7 +32,7 @@ def test_construct_graph():
 
     # Check nodes and edges
     assert len(g.nodes()) == 8
-    assert len(g.edges()) == 22
+    assert len(g.edges()) == 23
 
     # Check edge types are from string/biogrid
     # Check nodes are in our list
@@ -45,4 +45,5 @@ def test_construct_graph():
     for n, d in g.nodes(data=True):
         assert d["protein_id"] in PROTEIN_LIST
         if d["uniprot_ids"] is not None:
-            assert d["sequence"] is not None
+            for id in d["uniprot_ids"]:
+                assert d[f"sequence_{id}"] is not None

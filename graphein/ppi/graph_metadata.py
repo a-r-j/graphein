@@ -22,9 +22,13 @@ def add_string_metadata(
 ) -> nx.Graph:
     """
     Adds interaction dataframe from STRING to graph
-    :param G: PPIGraph to add metadata to
+
+    :param G: PPI Graph to add metadata to
+    :type G: nx.Graph
     :param kwargs:  Additional parameters for STRING API call
+    :type kwargs: Dict[str, Union[str, int]]
     :return: PPIGraph with added STRING interaction_df as metadata
+    :rtype: nx.Graph
     """
     G.graph["string_df"] = STRING_df(
         G.graph["protein_list"], G.graph["ncbi_taxon_id"], kwargs

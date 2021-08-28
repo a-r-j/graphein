@@ -4,6 +4,7 @@ from bioservices import HGNC, UniProt
 def add_sequence_to_nodes(n, d):
     """
     Maps UniProt ACC to UniProt ID. Retrieves sequence from UniProt and adds it to the node
+
     :param n: Graph node.
     :param d: Graph attribute dictionary.
     """

@@ -15,6 +15,7 @@ jobs:
       - name: Setup anaconda
         uses: s-weigand/setup-conda@v1
         with:
+          python-version: 3.8
           conda-channels: "conda-forge"
 
       # # Build cache of environment
@@ -42,6 +43,11 @@ jobs:
         run: |
           source activate graphein-dev
           pytest .
+
+      - name: Run example notebooks
+        run: |
+          source activate graphein-dev
+          grep -l smoke_test notebooks/*.ipynb | pytest --nbval-lax --current-env
 
       - name: Upload code coverage
         run: |

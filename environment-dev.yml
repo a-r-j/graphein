@@ -1,44 +1,79 @@
 name: graphein-dev
 channels:
-- conda-forge
 - pytorch
+- pytorch3d
+- dglteam
+- conda-forge
+- anaconda
+- bioconda
+- fvcore
+- iopath
+- nvidia
+- plotly
+- rusty1s
+- schrodinger
+- salilab
 dependencies:
 - python=3.8
 - biopython
 - biopandas
 - black
 - conda
+- click
+- cudatoolkit=11.1
+- dgl
+- dssp
 - flake8
+- furo
+- fvcore
+- interrogate
+- iopath
+- ipympl
 - isort
+- jupyter
+- jupyterlab
 - ipympl
 - mamba
 - matplotlib
+- anaconda::multipledispatch
 - mypy
+- nbsphinx
+- nbsphinx-link
+- sphinx_rtd_theme
 - nbstripout
+- nbval
 - networkx
+- nodejs
 - numpy
 - pandas
+- pandoc
 - pip
+- plotly
 - pre-commit
 - pycodestyle
+- pydantic
 - pydocstyle
+- pymol
 - pytest
 - pytest-cov
 - pytest-xdist
-- pytorch=1.7.1
+- pytorch=1.9.0=py3.8_cuda11.1_cudnn8.0.5_0
+- pytorch3d
+- pytorch-geometric
+- pytorch-lightning
+- pyyaml
 - rdkit
-- scipy
 - scikit-learn
+- scipy
+- sphinx
+- tqdm
+- torchvision
+- versioneer
+- python-wget
 - xarray
-- jupyter
-- jupyterlab
-- pydantic
-- interrogate
 - pip:
   - bioservices
-  - propy
   - biovec
+  - propy3
+  - pyaaisc
   - hypothesis
-  - multipledispatch
-  - pytorch3d
-  - wget
