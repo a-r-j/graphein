@@ -138,7 +138,7 @@ class ProteinGraphConfig(BaseModel):
     pdb_dir: Path = Path(
         "../examples/pdbs/"
     )  # Also suggest to avoid hard-coding paths if possible!
-    verbose: bool = True
+    verbose: bool = False
     exclude_waters: bool = True
     deprotonate: bool = False
 
