@@ -32,6 +32,7 @@ dependencies:
 - isort
 - jupyter
 - jupyterlab
+- ipympl
 - mamba
 - matplotlib
 - anaconda::multipledispatch
@@ -75,4 +76,4 @@ dependencies:
   - biovec
   - propy3
   - pyaaisc
-
+  - hypothesis

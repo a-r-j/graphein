@@ -4,6 +4,7 @@ from functools import partial
 from pathlib import Path
 
 import networkx as nx
+import pytest
 
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
@@ -18,16 +19,6 @@ from graphein.protein.edges.distance import (
     add_ionic_interactions,
     add_k_nn_edges,
     add_peptide_bonds,
-)
-from graphein.protein.edges.intramolecular import (
-    hydrogen_bond,
-    hydrophobic,
-    peptide_bonds,
-    pi_cation,
-    pi_stacking,
-    salt_bridge,
-    t_stacking,
-    van_der_waals,
 )
 from graphein.protein.features.nodes.aaindex import aaindex1
 from graphein.protein.features.nodes.amino_acid import (
@@ -47,10 +38,40 @@ from graphein.protein.features.sequence.embeddings import (
     esm_sequence_embedding,
 )
 from graphein.protein.features.sequence.sequence import molecular_weight
-from graphein.protein.graphs import construct_graph
+from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
+
+DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
 
 
-# Test Graph Construction
+def generate_graph():
+    """Generate PDB network.
+    This is a helper function.
+    """
+    return construct_graph(pdb_path=str(DATA_PATH))
+
+
+@pytest.fixture(scope="module")
+def net():
+    """Generate proteingraph from 2VUI.pdb."""
+    return generate_graph()
+
+
+@pytest.fixture()
+def pdb_df():
+    """Generate pdb_df from 2VIU.pdb."""
+    return read_pdb_to_dataframe(DATA_PATH)
+
+
+def test_nodes_are_strings(net):
+    """
+    Checks to make sure that the nodes are a string.
+    For expediency, checks only 1/4 of the nodes.
+    """
+    for n in net.nodes():
+        assert isinstance(n, str)
+
+
+# Example-based Graph Construction test
 def test_construct_graph():
     """Example-based test that graph construction works correctly.
 
@@ -186,6 +207,7 @@ def test_node_features():
         continue
 
 
+@pytest.mark.skip(reason="Pretrained model download is large.")
 def test_sequence_features():
     # Tests sequence featurisers for a residue graph:
     # ESM and BioVec embeddings, propy and sequence descriptors
@@ -215,8 +237,3 @@ def test_sequence_features():
         # assert f"esm_embedding_{chain}" in G.graph
         assert f"biovec_embedding_{chain}" in G.graph
         assert f"molecular_weight_{chain}" in G.graph
-
-
-if __name__ == "__main__":
-    test_distance_edges()
-    test_node_features()
