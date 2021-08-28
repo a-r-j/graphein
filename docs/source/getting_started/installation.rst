@@ -1,41 +1,61 @@
 Installation
 ============
-Graphein depends on a number of other libraries for constructing protein graphs and meshes. These should be installed in advance.
+Graphein depends on a number of other libraries for constructing graphs, meshes and adding features.
 
-.. note::
-    We recommend installing Graphein in a virtual environment.
-    ..
+The source code for Graphein can be viewed at `a-r-j/graphein <https://www.github.com/a-r-j/graphein>`_
 
+We are actively working on a simpler install path (via conda). However, we have a few core dependencies that are proving difficult.
+
+Core Install
+---------------------
+
+At present, the simplest installation is as follows:
+
+.. code-block:: bash
+
+    git clone https://www.github.com/a-r-j/graphein
+    cd graphein
+    conda env create -f environment.yml
+    pip install .
+
+
+Dev Install
+---------------------
+
+Alternatively, if you wish to install Graphein in the dev environment (includes GPU build of all relevant geometric deep learning libraries) you can run:
+
+.. code-block:: bash
+
+    git clone https://www.github.com/a-r-j/graphein
+    cd graphein
+    conda env create -f environment-dev.yml
+    pip install -e .
+
+Optional Dependencies
+---------------------
 .. note::
     Some of these packages have more involved setup depending on your requirements (i.e. CUDA). Please refer to the original packages for more detailed information
 
-.. code-block:: bash
 
-    conda create -n graphein python=3.7
-
-Installing PyTorch Libraries
------------------------------
+Installing Deep Learning Libraries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
-    pip install torch
-    pip install dgl
-    pip install pytorch3d
+    conda install -c pytorch pytorch
+    conda install -c pytorch3d pytorch3d #  NB requires fvcore and iopath
+    conda install -c dglteam dgl
+    conda install pytorch-geometric -c rusty1s -c conda-forge
 
-Installing Pytorch Geometric
-------------------------------
-.. code-block:: bash
 
-    $ pip install torch-scatter==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-1.5.0.html
-    $ pip install torch-sparse==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-1.5.0.html
-    $ pip install torch-cluster==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-1.5.0.html
-    $ pip install torch-spline-conv==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-1.5.0.html
-    $ python setup.py install or pip install torch-geometric
+GetContacts
+^^^^^^^^^^^^^^
 
-Install all needed packages with ${CUDA} replaced by either cpu, cu92, cu100 or cu101 depending on your PyTorch installation:
+GetContacts is an optional dependency for computing intramolecular contacts in `.pdb` files. We provide distance-based heuristics for this in `graphein.protein.edges.distance` so this is not a hard requirement.
 
-GetContacts Requirements
-------------------------
+Please see the `GetContacts documentation <https://getcontacts.github.io/getting_started.html>_` for up-to-date installation instructions.
+
+MacOS:
 
 .. code-block:: bash
 
@@ -66,37 +86,19 @@ GetContacts Requirements
                                --itypes hb \
                                --output 5xnd_hbonds.tsv
 
-Install DSSP
-------------
-
-We use DSSP to compute secondary structure features of proteins.
+Linux:
 
 .. code-block:: bash
 
-    conda install -c salilab dssp
+  # Install get_contact_ticc.py dependencies
+  conda install scipy numpy scikit-learn matplotlib pandas cython
+  pip install ticc==0.1.4
 
-IPyMol
-------
+  # Set up vmd-python library
+  conda install -c https://conda.anaconda.org/rbetz vmd-python
 
-Install IPyMol from GitHub. The release on PyPI appears to behind the repository and some required functionality is unavailable.
-https://github.com/cxhernandez/ipymol
-
-.. code-block:: bash
-
-    git clone https://github.com/cxhernandez/ipymol
-    cd ipymol
-    pip install .
-
-Install Graphein
-----------------
-
-.. code-block:: bash
-
-    git clone https://github.com/a-r-j/graphein
-    cd graphein
-    pip install -e .
-
-
-
-
+  # Set up getcontacts library
+  git clone https://github.com/getcontacts/getcontacts.git
+  echo "export PATH=`pwd`/getcontacts:\$PATH" >> ~/.bashrc
+  source ~/.bashrc
 
