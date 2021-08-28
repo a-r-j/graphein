@@ -36,7 +36,7 @@ setup(
         "": ["LICENSE.txt", "README.md", "requirements.txt", "*.csv"]
     },
     include_package_data=True,
-    install_requires=install_reqs,
+    # install_requires=install_reqs,
     license="MIT",
     platforms="any",
     classifiers=[
