@@ -8,7 +8,9 @@
 import logging
 from functools import lru_cache
 from pathlib import Path
+from typing import List, Optional, Union
 
+import numpy as np
 import pandas as pd
 
 log = logging.getLogger(__name__)
@@ -27,12 +29,9 @@ def load_expasy_scales() -> pd.DataFrame:
     :returns: pd.DataFrame containing expasy scales
     :rtype: pd.DataFrame
     """
-    log.debug(
-        f"Reading Expasy protein scales from: {Path(__file__).parent / 'amino_acid_properties.csv'}"
-    )
-    df = pd.read_csv(
-        Path(__file__).parent / "amino_acid_properties.csv", index_col=0
-    )
+    fpath = Path(__file__).parent / "amino_acid_properties.csv"
+    log.debug(f"Reading Expasy protein scales from: {fpath}")
+    df = pd.read_csv(fpath, index_col=0)
     return df
 
 
@@ -49,16 +48,15 @@ def load_meiler_embeddings() -> pd.DataFrame:
     :returns: pd.DataFrame containing Meiler Embeddings from Meiler et al. 2001
     :rtype: pd.DataFrame
     """
-    log.debug(
-        f"Reading meiler embeddings from: {Path(__file__).parent / 'meiler_embeddings.csv'}"
-    )
-    df = pd.read_csv(
-        Path(__file__).parent / "meiler_embeddings.csv", index_col=0
-    )
+    fpath = Path(__file__).parent / "meiler_embeddings.csv"
+    log.debug(f"Reading meiler embeddings from: {fpath}")
+    df = pd.read_csv(fpath, index_col=0)
     return df
 
 
-def expasy_protein_scale(n, d) -> pd.Series:
+def expasy_protein_scale(
+    n, d, selection: Optional[List[str]] = None, return_array: bool = False
+) -> Union[pd.Series, np.ndarray]:
     """
     Return amino acid features that come from the EXPASY protein scale.
 
@@ -66,15 +64,31 @@ def expasy_protein_scale(n, d) -> pd.Series:
 
     :param n: Node in a NetworkX graph
     :param d: NetworkX node attributes.
+    :param selection: List of columns to select. Viewable in graphein.protein.features.nodes.meiler_embeddings
+    :type selection: List[str], optional
+    :param return_array: Bool indicating whether or not to return a np.ndarray of the features. Default is pd.Series
+    :type return_array: bool
     :returns: pd.Series of amino acid features
     :rtype: pd.Series
     """
     df = load_expasy_scales()
     amino_acid = d["residue_name"]
-    return df[amino_acid]
+    try:
+        features = df[amino_acid]
+        if selection is not None:
+            features = features.filter(selection)
+    except:
+        features = pd.Series(np.zeros(len(df)))
+
+    if return_array:
+        features = np.array(features)
+
+    d["expasy"] = features
+
+    return n, d
 
 
-def meiler_embedding(n, d) -> pd.Series:
+def meiler_embedding(n, d) -> np.array:
     """
     Return amino acid features from reduced dimensional embeddings of amino acid physicochemical properties.
 
@@ -88,4 +102,10 @@ def meiler_embedding(n, d) -> pd.Series:
     """
     df = load_meiler_embeddings()
     amino_acid = d["residue_name"]
-    return df[amino_acid]
+    try:
+        features = np.array(df[amino_acid])
+    except:
+        features = np.zeros(len(df))
+    d["meiler"] = features
+
+    return n, d
