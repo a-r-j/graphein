@@ -1,4 +1,4 @@
-[![Docs](https://assets.readthedocs.org/static/projects/badges/passing-flat.svg)](http://wwww.github.com/a-r-j)
+[![Docs](https://assets.readthedocs.org/static/projects/badges/passing-flat.svg)](http://wwww.graphein.ai)
 [![DOI:10.1101/2020.07.15.204701](https://zenodo.org/badge/DOI/10.1101/2020.07.15.204701.svg)](https://doi.org/10.1101/2020.07.15.204701)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
     <a href="https://github.com/badges/shields/pulse" alt="Activity">
