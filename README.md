@@ -1,215 +1,119 @@
+[![Docs](https://assets.readthedocs.org/static/projects/badges/passing-flat.svg)](http://wwww.github.com/a-r-j)
 [![DOI:10.1101/2020.07.15.204701](https://zenodo.org/badge/DOI/10.1101/2020.07.15.204701.svg)](https://doi.org/10.1101/2020.07.15.204701)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![Documentation Status](https://readthedocs.com/projects/graphein-graphein/badge/?version=latest&token=e0e095fecfd2f1e2448613c1bc4676cb6c22851d7a5cfde0ea35ce822887bc3b)](https://graphein-graphein.readthedocs-hosted.com/en/latest/?badge=latest)
+    <a href="https://github.com/badges/shields/pulse" alt="Activity">
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![banner](imgs/graphein.png)
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+[![banner](docs/source/_static/graphein.png)](http://www.graphein.ai)
 
-[Documentation](https://graphein-graphein.readthedocs-hosted.com/en/latest/) | [Paper](https://www.biorxiv.org/content/10.1101/2020.07.15.204701v1)
 
-Protein Graph Library
+[Documentation](http://www.graphein.ai) | [Paper](https://www.biorxiv.org/content/10.1101/2020.07.15.204701v1) | [Tutorials](http://graphein.ai/notebooks_index.html)  
 
-This package provides functionality for producing a number of types of graph-based representations of proteins. We provide compatibility with standard formats, as well as graph objects designed for ease of use with popular deep learning libraries.
+Protein & Interactomic Graph Library
+
+This package provides functionality for producing geometric representations of protein and RNA structures, and biological interaction networks. We provide compatibility with standard PyData formats, as well as graph objects designed for ease of use with popular deep learning libraries.
 
 ## What's New?
-* Protein Graph Visualisation!
-* RNA Graph Construction from Dotbracket notation
+* [Protein Graph Creation from AlphaFold2!](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html)
+* [Protein Graph Visualisation!](http://graphein.ai/notebooks/protein_mesh_tutorial.html)
+* [RNA Graph Construction from Dotbracket notation](http://graphein.ai/modules/graphein.rna.html)
+* [Protein - Protein Interaction Network Support & Structural Interactomics (Using AlphaFold2!)](http://graphein.ai/notebooks/ppi_tutorial.html)
+* [High and Low-level API for massive flexibility - create your own bespoke workflows!](http://graphein.ai/notebooks/residue_graphs.html)
 
 ## Example usage
 ### Creating a Protein Graph
+[Tutorial (Residue-level)](http://graphein.ai/notebooks/residue_graphs.html) | [Tutorial - Atomic](http://graphein.ai/notebooks/atom_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
 ```python
-from graphein.construct_graphs import  ProteinGraph
+from graphein.protein.config import ProteinGraphConfig
+from graphein.protein.graphs import construct_graph
 
-# Initialise ProteinGraph class
-pg = ProteinGraph(granularity='CA', insertions=False, keep_hets=True,
-                  node_featuriser='meiler', get_contacts_path='/Users/arianjamasb/github/getcontacts',
-                  pdb_dir='examples/pdbs/',
-                  contacts_dir='examples/contacts/',
-                  exclude_waters=True, covalent_bonds=False, include_ss=True)
-
-# Create residue-level graphs. Chain selection is either 'all' or a list e.g. ['A', 'B', 'D'] specifying the polypeptide chains to capture
-
-# DGLGraph From PDB Accession Number
-graph = pg.dgl_graph_from_pdb_code('3eiy', chain_selection='all')
-# DGLGraph From PDB file
-graph = pg.dgl_graph_from_pdb_file(file_path='examples/pdbs/pdb3eiy.pdb', contact_file='examples/contacts/3eiy_contacts.tsv', chain_selection='all')
-
-# Create atom-level graphs
-graph = pg._make_atom_graph(pdb_code='3eiy', graph_type='bigraph')
+config = ProteinGraphConfig()
+g = construct_graph(config=config, pdb_code="3eiy")
 ```
-### Creating a Protein Mesh
-```python
-from graphein.construct_meshes import  ProteinMesh
-# Initialise ProteinMesh class
-pm = ProteinMesh()
 
-# Pytorch3D Mesh Object from PDB Code
-verts, faces, aux = pm.create_mesh(pdb_code='3eiy', out_dir='examples/meshes/')
-# Pytorch3D Mesh Object from PDB File
-verts, faces, aux = pm.create_mesh(pdb_file='examples/pdbs/pdb3eiy.pdb')
+### Creating a Protein Graph from the AlphaFold Protein Structure Database
+[Tutorial](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
+```python
+from graphein.protein.config import ProteinGraphConfig
+from graphein.protein.graphs import construct_graph
+from graphein.protein.utils import download_alphafold_structure
+
+config = ProteinGraphConfig()
+fp = download_alphafold_structure("Q5VSL9", aligned_score=False)
+g = construct_graph(config=config, pdb_path=fp)
+```
+
+### Creating a Protein Mesh
+[Tutorial](http://graphein.ai/notebooks/protein_mesh_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.meshes)
+```python
+from graphein.protein.config import ProteinMeshConfig
+from graphein.protein.meshes import create_mesh
+
+verts, faces, aux = create_mesh(pdb_code="3eiy", config=config)
 ```
 ### Creating an RNA Graph
+Tutorial | [Docs](http://graphein.ai/modules/graphein.rna.html)
 ```python
-from graphein.construct_graphs import RNAGraph
-# Initialise RNAGraph Constructor
-rg = RNAGraph()
+from graphein.rna.graphs import construct_rna_graph
 # Build the graph from a dotbracket & optional sequence
-rna = rg.dgl_graph_from_dotbracket('..(((((..(((...)))..)))))...', sequence='UUGGAGUACACAACCUGUACACUCUUUC')
+rna = construct_rna_graph(dotbracket='..(((((..(((...)))..)))))...',
+                          sequence='UUGGAGUACACAACCUGUACACUCUUUC')
 ```
 
+### Creating a Protein-Protein Interaction Graph
+[Tutorial](http://graphein.ai/notebooks/ppi_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.ppi.html)
+```python
+from graphein.ppi.config import PPIGraphConfig
+from graphein.ppi.graphs import compute_ppi_graph
+from graphein.ppi.edges import add_string_edges, add_biogrid_edges
 
+config = PPIGraphConfig()
+protein_list = ["CDC42", "CDK1", "KIF23", "PLK1", "RAC2", "RACGAP1", "RHOA", "RHOB"]
 
-
-## Parameters
-Graphs can be constructed according to walks through the graph in the figure below.
-![banner](imgs/graph_construction_overview.png)
+g = compute_ppi_graph(config=config,
+                      protein_list=protein_list,
+                      edge_construction_funcs=[add_string_edges, add_biogrid_edges]
+                     )
 ```
-granularity: {'CA', 'CB', 'atom'} - specifies node-level granularity of graph
-insertions: bool - keep atoms with multiple insertion positions
-keep_hets: bool - keep hetatoms
-node_featuriser: {'meiler', 'kidera'} low-dimensional embeddings of AA physico-chemical properties
-pdb_dir: path to pdb files
-contacts_dir: path to contact files generated by get_contacts
-get_contacts_path: path to GetContacts installation
-exclude_waters: bool - retain structural waters
-covalent_bonds: bool - maintain covalent bond edges or just use intramolecular interactions
-include_ss: bool - calculate protein SS and surface features using DSSP and assign them as node features
+
+### Creating a Gene Regulatory Network Graph
+[Tutorial](http://graphein.ai/notebooks/grn_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.grn.html)
+```python
+from graphein.grn.config import GRNGraphConfig
+from graphein.grn.graphs import compute_grn_graph
+from graphein.grn.edges import add_regnetwork_edges, add_trrust_edges
+
+config = GRNGraphConfig()
+gene_list = ["AATF", "MYC", "USF1", "SP1", "TP53", "DUSP1"]
+
+g = compute_grn_graph(
+    gene_list=gene_list,
+    edge_construction_funcs=[
+        partial(add_trrust_edges, trrust_filtering_funcs=config.trrust_config.filtering_functions),
+        partial(add_regnetwork_edges, regnetwork_filtering_funcs=config.regnetwork_config.filtering_functions),
+    ],
+)
 ```
 
 ## Installation
-1. Create env:
+The dev environment includes GPU Builds (CUDA 11.1) for each of the deep learning libraries integrated into graphein.
+```bash
+git clone https://www.github.com/a-r-j/graphein
+cd graphein
+conda create env -f environment-dev.yml
+pip install -e .
+```
 
-    ```bash
-    conda create --name graphein python=3.7
-    conda activate graphein
-    ```
-  
-2. Install [GetContacts](https://getcontacts.github.io/index.html)
+A lighter install can be performed with:
 
-    [Installation Instructions](https://getcontacts.github.io/getting_started.html)
-    #### MacOS
+```bash
+git clone https://www.github.com/a-r-j/graphein
+cd graphein
+conda create env -f environment.yml
+pip install -e .
+```
 
-    ```bash
-   
-     # Install get_contact_ticc.py dependencies
-     $ conda install scipy numpy scikit-learn matplotlib pandas cython seaborn
-     $ pip install ticc==0.1.4
-      
-     # Install vmd-python dependencies
-     $ conda install netcdf4 numpy pandas seaborn expat tk=8.5  # Alternatively use pip
-     $ brew install netcdf pyqt # Assumes https://brew.sh/ is installed
-    
-     # Install vmd-python library
-     $ conda install -c conda-forge vmd-python
-    
-     # Set up getcontacts library
-     $ git clone https://github.com/getcontacts/getcontacts.git
-     $ echo "export PATH=`pwd`/getcontacts:\$PATH" >> ~/.bash_profile
-     $ source ~/.bash_profile
-    
-     # Test installation
-     $ cd getcontacts/example/5xnd
-     $ get_dynamic_contacts.py --topology 5xnd_topology.pdb \
-                               --trajectory 5xnd_trajectory.dcd \
-                               --itypes hb \
-                               --output 5xnd_hbonds.tsv
-    ```
-    
-    #### Linux
-    ```bash
-       
-      # Make sure you have git and conda installed and then run
-    
-      # Install get_contact_ticc.py dependencies
-      conda install scipy numpy scikit-learn matplotlib pandas cython
-      pip install ticc==0.1.4
-      
-      # Set up vmd-python library
-      conda install -c https://conda.anaconda.org/rbetz vmd-python
-      
-      # Set up getcontacts library
-      git clone https://github.com/getcontacts/getcontacts.git
-      echo "export PATH=`pwd`/getcontacts:\$PATH" >> ~/.bashrc
-      source ~/.bashrc
-
-
-3. Install [Biopython](https://biopython.org) & [RDKit](https://www.rdkit.org/docs/):
-
-    N.B. DGLLife *requires* `rdkit==2018.09.3`
-
-    ```bash
-    conda install biopython
-    conda install -c conda-forge rdkit==2018.09.3
-    ``` 
-   
-
-4. Install [DSSP](https://github.com/cmbi/hssp):
-
-
-    We use DSSP for computing some protein features
-    
-    ```bash
-    $ conda install -c salilab dssp
-    ```
-5. Install [PyTorch](https://pytorch.org), [DGL](https://docs.dgl.ai/en/0.4.x/index.html) and [DGL LifeSci](https://lifesci.dgl.ai/install/index.html):
-    
-    N.B. Make sure to install appropriate version for your CUDA version
-
-    ```bash
-    # Install PyTorch: MacOS
-    $ conda install pytorch torchvision -c pytorch                      # Only CPU Build
-    
-    # Install PyTorch: Linux
-    $ conda install pytorch torchvision cpuonly -c pytorch              # For CPU Build
-    $ conda install pytorch torchvision cudatoolkit=9.2 -c pytorch      # For CUDA 9.2 Build
-    $ conda install pytorch torchvision cudatoolkit=10.1 -c pytorch     # For CUDA 10.1 Build
-    $ conda install pytorch torchvision cudatoolkit=10.2 -c pytorch     # For CUDA 10.2 Build
-   
-    # Install DGL. N.B. We require 0.4.3 until compatibility with DGL 0.5.0+ is implemented
-    $ pip install dgl==0.4.3
-    
-    # Install DGL LifeSci
-    $ conda install -c dglteam dgllife
-    ```
-
-
-5. Install [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html):
-
-
-
-    ```bash
-    $ pip install torch-scatter==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-${TORCH}.html
-    $ pip install torch-sparse==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-${TORCH}.html
-    $ pip install torch-cluster==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-${TORCH}.html
-    $ pip install torch-spline-conv==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-${TORCH}.html
-    $ pip install torch-geometric
-    ```
-   Where `${CUDA}` and `${TORCH}` should be replaced by your specific CUDA version (`cpu`, `cu92`, `cu101`, `cu102`) and PyTorch version (`1.4.0`, `1.5.0`, `1.6.0`), respectively 
-   
-   N.B. Follow the [instructions in the Torch-Geometric Docs](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html) to install the versions appropriate to your CUDA version.
-
-
-7. Install [PyMol](https://pymol.org/2/) and [IPyMol](https://github.com/cxhernandez/ipymol)
-
-    ```bash
-   $ conda install -c schrodinger pymol
-   $ git clone https://github.com/cxhernandez/ipymol
-   $ cd ipymol
-   $ pip install . 
-   ```
-   
-
-   N.B. The PyPi package seems to be behind the github repo. We require functionality that is not present in the PyPi package in order to construct meshes.
-
-
-8. Install graphein:
-
-    ```bash
-    $ git clone https://www.github.com/a-r-j/graphein
-    $ cd graphein
-    $ pip install -e .
-    ```
-   
 ## Citing Graphein
 
 Please consider citing graphein if it proves useful in your work.
