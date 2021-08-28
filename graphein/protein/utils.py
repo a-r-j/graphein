@@ -1,17 +1,18 @@
 """Provides utility functions for use across Graphein"""
-import os
-from pathlib import Path
-
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+import os
+from pathlib import Path
 from typing import Any, List, Tuple, Union
 
 import pandas as pd
 import wget
 from Bio.PDB import PDBList
+
+from .resi_atoms import RESI_THREE_TO_1
 
 
 def download_pdb(config, pdb_code: str) -> str:
@@ -20,7 +21,8 @@ def download_pdb(config, pdb_code: str) -> str:
 
     :param pdb_code: 4 character PDB accession code
     :type pdb_code: str
-    :return: # todo impl return
+    :return: returns filepath to downloaded structure
+    :rtype: str
     """
     if not config.pdb_dir:
         config.pdb_dir = Path("/tmp/")
@@ -44,8 +46,11 @@ def download_pdb(config, pdb_code: str) -> str:
 def get_protein_name_from_filename(pdb_path: str) -> str:
     """
     Extracts a filename from a pdb_path
+
     :param pdb_path: Path to extract filename from
+    :type pdb_path: str
     :return: file name
+    :rtype: str
     """
     head, tail = os.path.split(pdb_path)
     tail = os.path.splitext(tail)[0]
@@ -57,7 +62,7 @@ def filter_dataframe(
     by_column: str,
     list_of_values: List[Any],
     boolean: bool,
-):
+) -> pd.DataFrame:
     """
     Filter function for dataframe.
     Filters the [dataframe] such that the [by_column] values have to be
@@ -65,9 +70,15 @@ def filter_dataframe(
     if boolean == False
 
     :param dataframe: pd.DataFrame to filter
+    :type dataframe: pd.DataFrame
     :param by_column: str denoting by_column of dataframe to filter
+    :type by_column: str
     :param list_of_values: List of values to filter with
-    :param bool: indicates whether to keep or exclude matching list_of_values. True -> in list, false -> not in list
+    :type list_of_values: List[Any]
+    :param boolean: indicates whether to keep or exclude matching list_of_values. True -> in list, false -> not in list
+    :type boolean: bool
+    :returns: Filtered dataframe
+    :rtype: pd.DataFrame
     """
     df = dataframe.copy()
     df = df[df[by_column].isin(list_of_values) == boolean]
@@ -86,11 +97,17 @@ def download_alphafold_structure(
     BASE_URL = "https://alphafold.ebi.ac.uk/files/"
     """
     Downloads a structure from the Alphafold EBI database.
-    :param uniprot_id: UniProt ID of desirec protein
+    
+    :param uniprot_id: UniProt ID of desired protein
+    :type uniprot_id: str
     :param out_dir: string specifying desired otput location. Default is pwd.
+    :type out_dir: str
     :param mmcif: Bool specifying whether to download MMCiF or PDB. Default is false (downloads pdb)
+    :type mmcif: bool
     :param retrieve_aligned_score: Bool specifying whether or not to download score alignment json
+    :type retrieve_aligned_score: bool
     :return: path to output. Tuple if several outputs specified.
+    :rtype: Union[str, Tuple[str, str]]
     """
     if mmcif:
         query_url = BASE_URL + "AF-" + uniprot_id + "F1-model_v1.cif"
@@ -110,6 +127,18 @@ def download_alphafold_structure(
         return structure_filename, score_filename
 
     return structure_filename
+
+
+def three_to_one_with_mods(res: str) -> str:
+    """
+    Converts three letter AA codes into 1 letter. Allows for modified residues.
+
+    :param res: Three letter residue code str:
+    :type res: str
+    :return: 1-letter residue code
+    :rtype: str
+    """
+    return RESI_THREE_TO_1[res]
 
 
 if __name__ == "__main__":

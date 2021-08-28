@@ -26,6 +26,7 @@ from graphein.protein.resi_atoms import BACKBONE_ATOMS
 from graphein.protein.utils import (
     filter_dataframe,
     get_protein_name_from_filename,
+    three_to_one_with_mods,
 )
 from graphein.utils.utils import (
     annotate_edge_metadata,
@@ -51,13 +52,20 @@ def read_pdb_to_dataframe(
     """
     Reads PDB file to PandasPDB object.
 
-    Returns `atomic_df`,
-    which is a dataframe enumerating all atoms
-    and their cartesian coordinates in 3D space.
+    Returns `atomic_df`, which is a dataframe enumerating all atoms and their cartesian coordinates in 3D space. Also
+        contains associated metadata.
 
-    :param pdb_path: path to PDB file
-    :param pdb_code: 4-character PDB accession
+    :param pdb_path: path to PDB file. Defaults to None.
+    :type pdb_path: str, optional
+    :param pdb_code: 4-character PDB accession. Defaults to None.
+    :type pdb_code: str, optional
     :param verbose: print dataframe?
+    :type verbose: bool
+    :param granularity: Specifies granularity of dataframe. See graphein.protein.config.ProteinGraphConfig for further
+        details.
+    :type granularity: str
+    :returns: Pd.DataFrame containing protein structure
+    :rtype: pd.DataFrame
     """
     if pdb_code is None and pdb_path is None:
         raise NameError("One of pdb_code or pdb_path must be specified!")
@@ -91,7 +99,9 @@ def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
     """Remove protons from PDB dataframe.
 
     :param df: Atomic dataframe.
+    :type df: pd.DataFrame
     :returns: Atomic dataframe with all atom_name == "H" removed.
+    :rtype: pd.DataFrame
     """
     log.debug(
         "Deprotonating protein. This removes H atoms from the pdb_df dataframe"
@@ -106,7 +116,9 @@ def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
     """Overwrite existing (x, y, z) coordinates with centroids of the amino acids.
 
     :param df: Pandas Dataframe config protein structure to convert into a dataframe of centroid positions
-    :return: pd.Dataframe with atoms/residues positiions converted into centroid positions
+    :type df: pd.DataFrame
+    :return: pd.DataFrame with atoms/residues positiions converted into centroid positions
+    :rtype: pd.DataFrame
     """
     log.debug(
         "Converting dataframe to centroids. This averages XYZ coords of the atoms in a residue"
@@ -124,7 +136,14 @@ def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
 def subset_structure_to_atom_type(
     df: pd.DataFrame, granularity: str
 ) -> pd.DataFrame:
-    """Return a subset of atomic dataframe that contains only certain atom names."""
+    """
+    Return a subset of atomic dataframe that contains only certain atom names.
+
+    :param df: Protein Structure dataframe to subset
+    :type df: pd.DataFrame
+    :returns: Subsetted protein structure dataframe
+    :rtype: pd.DataFrame
+    """
     return filter_dataframe(
         df, by_column="atom_name", list_of_values=[granularity], boolean=True
     )
@@ -134,8 +153,11 @@ def subset_structure_to_atom_type(
 def remove_insertions(df: pd.DataFrame) -> pd.DataFrame:
     """
     This function removes insertions from PDB dataframes
-    :param df:
-    :return:
+
+    :param df: Protein Structure dataframe to remove insertions from
+    :type df: pd.DataFrame
+    :return: Protein structure dataframe with insertions removed
+    :rtype: pd.DataFrame
     """
     """Remove insertions from structure."""
     # Remove alt_loc residues
@@ -149,7 +171,14 @@ def remove_insertions(df: pd.DataFrame) -> pd.DataFrame:
 def filter_hetatms(
     df: pd.DataFrame, keep_hets: List[str]
 ) -> List[pd.DataFrame]:
-    """Return hetatms of interest."""
+    """Return hetatms of interest.
+
+    :param df: Protein Structure dataframe to filter hetatoms from.
+    :type df: pd.DataFrame
+    :param keep_hets: List of hetero atom names to keep
+    :returns: Protein structure dataframe with heteroatoms removed
+    :rtype pd.DataFrame
+    """
     hetatms_to_keep = []
     for hetatm in keep_hets:
         hetatms_to_keep.append(df.loc[df["residue_name"] == hetatm])
@@ -157,7 +186,13 @@ def filter_hetatms(
 
 
 def compute_rgroup_dataframe(pdb_df: pd.DataFrame) -> pd.DataFrame:
-    """Return the atoms that are in R-groups and not the backbone chain."""
+    """Return the atoms that are in R-groups and not the backbone chain.
+
+    :param pdb_df: DataFrame to compute R group dataframe from
+    :type pdb_df: pd.DataFrame
+    :returns: Dataframe containing R-groups only (backbone atoms removed)
+    :rtype: pd.DataFrame
+    """
     rgroup_df = filter_dataframe(pdb_df, "atom_name", BACKBONE_ATOMS, False)
     return rgroup_df
 
@@ -178,22 +213,34 @@ def process_dataframe(
 
     :param protein_df: Dataframe to process.
         Should be the object returned from `read_pdb_to_dataframe`.
-    :param atom_df_processing_funcs: List of functions to process dataframe. These must take in a dataframe and return a dataframe
+    :type protein_df: pd.DataFrame
+    :param atom_df_processing_funcs: List of functions to process dataframe. These must take in a dataframe and return a
+        dataframe. Defaults to None.
+    :type atom_df_processing_funcs: List[Callable], optional
     :param hetatom_df_processing_funcs: List of functions to process dataframe. These must take in a dataframe and return a dataframe
+    :type hetatom_df_processing_funcs: List[Callable], optional
     :param granularity: The level of granualrity for the graph.
         This determines the node definition.
         Acceptable values include:
         - "centroids"
         - "atoms"
         - any of the atom_names in the PDB file (e.g. "CA", "CB", "OG", etc.)
+    :type granularity: str
     :param insertions: Whether or not to keep insertions.
+    :param insertions: bool
     :param deprotonate: Whether or not to remove hydrogen atoms (i.e. deprotonation).
+    :type deprotonate: bool
     :param keep_hets: Hetatoms to keep. Defaults to an empty list.
         To keep a hetatom, pass it inside a list of hetatom names to keep.
+    :type keep_hets: List[str]
     :param verbose: Verbosity level.
-    :param chain_selection: Which protein chain to select. Defaults to "all".
+    :type verbose: bool
+    :param chain_selection: Which protein chain to select. Defaults to "all". Eg can use "ACF"
+        to select 3 chains (A, C & F :)
+    :type chain_selection: str
     :return: A protein dataframe that can be consumed by
         other graph construction functions.
+    :rtype: pd.DataFrame
     """
     # TODO: Need to properly define what "granularity" is supposed to do.
     atoms = protein_df.df["ATOM"]
@@ -263,6 +310,16 @@ def process_dataframe(
 def assign_node_id_to_dataframe(
     protein_df: pd.DataFrame, granularity: str
 ) -> pd.DataFrame:
+    """
+    Assigns the node ID back to the pdb_df dataframe
+
+    :param protein_df: Structure Dataframe
+    :type protein_df: pd.DataFrame
+    :param granularity: Granularity of graph. Atom-level, resiidue (e.g. CA) or centroids
+    :type granularity: str
+    :return: Returns dataframe with added node_ids
+    :rtype: pd.DataFrame
+    """
     protein_df["node_id"] = (
         protein_df["chain_id"].apply(str)
         + ":"
@@ -281,11 +338,15 @@ def select_chains(
 ) -> pd.DataFrame:
     """
     Extracts relevant chains from protein_df
+
     :param protein_df: pandas dataframe of PDB subsetted to relevant atoms (CA, CB)
-    :param chain_selection:
+    :type protein_df: pd.DataFrame
+    :param chain_selection: Specifies chains that should be extracted from the larger complexed structure
+    :type chain_selection: str
     :param verbose: Print dataframe
     :type verbose: bool
     :return Protein structure dataframe containing only entries in the chain selection
+    :rtype: pd.DataFrame
     """
     if chain_selection != "all":
         protein_df = filter_dataframe(
@@ -299,8 +360,25 @@ def select_chains(
 
 
 def initialise_graph_with_metadata(
-    protein_df, raw_pdb_df, pdb_id, granularity: str
+    protein_df: pd.DataFrame,
+    raw_pdb_df: pd.DataFrame,
+    pdb_id: str,
+    granularity: str,
 ) -> nx.Graph:
+    """
+    Initialises the nx Graph object with initial metadata
+
+    :param protein_df: Processed Dataframe of protein structure
+    :type protein_df: pd.DataFrame
+    :param raw_pdb_df: Unprocessed dataframe of protein structure for comparison and traceability downstream
+    :type raw_pdb_df: pd.DataFrame
+    :param pdb_id: PDB Accession code
+    :type pdb_id: str
+    :param granularity: Granularity of the graph (eg "atom", "CA", "CB" etc or "centroid")
+    :type granularity: str
+    :return: Returns initial protein structure graph with metadata
+    :rtype: nx.Graph
+    """
     G = nx.Graph(
         name=pdb_id,
         pdb_id=pdb_id,
@@ -318,7 +396,7 @@ def initialise_graph_with_metadata(
     for c in G.graph["chain_ids"]:
         G.graph[f"sequence_{c}"] = (
             protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
-            .apply(three_to_one)
+            .apply(three_to_one_with_mods)
             .str.cat()
         )
     return G
@@ -329,7 +407,17 @@ def add_nodes_to_graph(
     protein_df: Optional[pd.DataFrame] = None,
     verbose: bool = False,
 ) -> nx.Graph:
-    """Add nodes into protein graph."""
+    """Add nodes into protein graph.
+
+    :param G: nx.Graph with metadata to populate with nodes
+    :type G: nx.Graph
+    :protein_df: DataFrame of protein structure containing nodes & initial node metadata to add to the graph
+    :type protein_df: pd.DataFrame, optional
+    :param verbose: Controls verbosity of this step
+    :type verbose: bool
+    :returns: nx.Graph with nodes added
+    :rtype: nx.Graph
+    """
 
     # If no protein dataframe is supplied, use the one stored in the Graph object
     if protein_df is None:
@@ -373,8 +461,11 @@ def calculate_centroid_positions(
     Calculates position of sidechain centroids
 
     :param atoms: ATOM df of protein structure
-    :param verbose: bool
+    :type atoms: pd.DataFrame
+    :param verbose: bool controlling verbosity
+    :type verbose: bool
     :return: centroids (df)
+    :rtype: pd.DataFrame
     """
     centroids = (
         atoms.groupby("residue_number")
@@ -392,6 +483,19 @@ def compute_edges(
     funcs: List[Callable],
     get_contacts_config: Optional[GetContactsConfig] = None,
 ) -> nx.Graph:
+    """
+    Computes edges for the protein structure graph. Will compute an pairwise distance matrix between nodes which is
+    added to the graph metadata to facilitate some edge computations.
+
+    :param G: nx.Graph with nodes to add edges to
+    :type G: nx.Graph
+    :param funcs: List of edge construction functions
+    :type funcs: List[Callable]
+    :param get_contacts_config: Config object for getcontacts if intramolecular edges are being used
+    :type get_contacts_config: graphein.protein.config.GetContactsConfig
+    :return: Graph with added edges
+    :rtype: nx.Graph
+    """
     # This control flow prevents unnecessary computation of the distance matrices
     if "config" in G.graph:
         if G.graph["config"].granularity == "atom":
@@ -422,15 +526,25 @@ def construct_graph(
     However, config parameters can be overridden by passing arguments directly to the function.
 
     :param config: ProteinGraphConfig object. If None, defaults to config in graphein.protein.config
+    :type config: graphein.protein.config.ProteinGraphConfig, optional
     :param pdb_path: Path to pdb_file to build graph from
+    :type pdb_path: str, optional
     :param pdb_code: 4-character PDB accession pdb_code to build graph from
+    :type pdb_code: str, optional
     :param chain_selection: String of polypeptide chains to include in graph. E.g "ABDF" or "all"
+    :type chain_selection: str, optional
     :param df_processing_funcs: List of dataframe processing functions
+    :type df_processing_funcs: List[Callable], optional
     :param edge_construction_funcs: List of edge construction functions
+    :type edge_construction_funcs: List[Callable], optional
     :param edge_annotation_funcs: List of edge annotation functions
+    :type edge_annotation_funcs: List[Callable], optional
     :param node_annotation_funcs: List of node annotation functions
+    :type node_annotation_funcs: List[Callable], optional
     :param graph_annotation_funcs: List of graph annotation function
+    :type graph_annotation_funcs: List[Callable]
     :return: Protein Structure Graph
+    :type: nx.Graph
     """
 
     # If no config is provided, use default

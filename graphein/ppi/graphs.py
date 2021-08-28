@@ -27,8 +27,11 @@ EDGE_COLOR_MAPPING = {"string": "r", "biogrid": "b"}
 def parse_kwargs_from_config(config: PPIGraphConfig) -> PPIGraphConfig:
     """
     If configs for STRING and BIOGRID are provided in the Global PPIGraphConfig, we update the kwargs
+
     :param config: PPI graph configuration object.
+    :type config: PPIGraphConfig
     :return: config with updated config.kwargs
+    :rtype: PPIGraphConfig
     """
     if config.string_config is not None:
         string_config_dict = {
@@ -53,14 +56,22 @@ def compute_ppi_graph(
     config: Optional[PPIGraphConfig] = None,
 ) -> nx.Graph:
     """
-    Computes a PPI Graph from a list of protein IDs
+    Computes a PPI Graph from a list of protein IDs. This is the core function for
+
     :param protein_list: List of protein identifiers
+    :type protein_list: List[str]
     :param edge_construction_funcs:  List of functions to construct edges with
+    :type edge_construction_funcs: List[Callable], optional
     :param graph_annotation_funcs: List of functions functools annotate graph metadata
+    :type graph_annotation_funcs: List[Callable], optional
     :param node_annotation_funcs: List of functions to annotate node metadata
+    :type node_annotation_funcs: List[Callable], optional
     :param edge_annotation_funcs: List of function to annotate edge metadata
-    :param config: Config specifying additional parameters for STRING and BIOGRID
+    :type edge_annotation_funcs: List[Callable], optional
+    :param config: Config object specifying additional parameters for STRING and BIOGRID API calls
+    :type config: PPIGraphConfig, optional
     :return: nx.Graph of PPI network
+    :rtype: nx.Graph
     """
 
     # Load default config if none supplied

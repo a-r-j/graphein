@@ -45,8 +45,10 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     Design choice: passed in a DataFrame to enable easier testing on
     dummy data.
 
-    :param pdb_df: pd.Dataframe containing protein structure.
+    :param pdb_df: pd.Dataframe containing protein structure. Must contain columns ["x_coord", "y_coord", "z_coord"]
+    :type pdb_df: pd.DataFrame
     :return: pd.Dataframe of euclidean distance matrix
+    :rtype: pd.DataFrame
     """
     eucl_dists = pdist(
         pdb_df[["x_coord", "y_coord", "z_coord"]], metric="euclidean"
@@ -60,9 +62,12 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
 
 def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
     """
-    Adds peptide backbone to residues in each chain
+    Adds peptide backbone as edges to residues in each chain
+
     :param G: networkx protein graph
+    :type G: nx.Graph
     :return G; networkx protein graph with added peptide bonds
+    :rtype: nx.Graph
     """
     # for i (n, d) in G.nodes(data=True):
 
@@ -121,6 +126,12 @@ def add_hydrophobic_interactions(
     ALA, VAL, LEU, ILE, MET, PHE, TRP, PRO, TYR
 
     Criteria: R-group residues are within 5A distance.
+
+    :param G:
+    :type G: nx.Graph
+    :param rgroup_df:
+    :type rgroup_df: pd.DataFrame, optional
+
     """
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]

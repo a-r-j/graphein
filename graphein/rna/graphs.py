@@ -62,7 +62,12 @@ SUPPORTED_DOTBRACKET_NOTATION = (
 
 def validate_rna_sequence(s: str) -> None:
     """
-    Validate RNA sequence. This ensures that it only has supported bases
+    Validate RNA sequence. This ensures that it only containts supported bases. Supported bases are: "A", "U", "G", "C", "I".
+    Supported bases can be accessed in graphein.rna.graphs.RNA_BASES
+
+    :param s: Sequence to validate
+    :type s: str
+    :raises ValueError: Raises ValueError if the sequence contains an unsupported base character
     """
     letters_used = set(s)
     if not letters_used.issubset(RNA_BASES):
@@ -76,6 +81,12 @@ def validate_rna_sequence(s: str) -> None:
 def validate_lengths(db: str, seq: str) -> None:
     """
     Check lengths of dotbracket and sequence match
+
+    :param db: Dotbracket string to check
+    :type db: str
+    :param seq: RNA nucleotide sequence to check.
+    :type seq: str
+    :raises ValueError: Raises ValueError if lengths of dotbracket and sequence do not match.
     """
     if len(db) != len(seq):
         raise ValueError(
@@ -84,10 +95,17 @@ def validate_lengths(db: str, seq: str) -> None:
 
 
 def validate_dotbracket(db: str) -> str:
-    """Sanitize dotbracket string.
+    """
+    Sanitize dotbracket string. This ensures that it only has supported symbols.
+    SIMPLE_DOTBRACKET_NOTATION = ["(", ".", ")"]
+    SUPPORTED_PSEUDOKNOT_NOTATION = ["[", "]", "{", "}", "<", ">"]
+    SUPPORTED_DOTBRACKET_NOTATION = (
+        SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION
+    )
 
-    This ensures that it only has supported symobls.
     :param db: Dotbrack notation string
+    :type db: str
+    :raises ValueError: Raises ValueError if dotbracket notation contains unsupported symbols
     """
     chars_used = set(db)
     if not chars_used.issubset(SUPPORTED_DOTBRACKET_NOTATION):
@@ -108,13 +126,21 @@ def construct_rna_graph(
 ) -> nx.Graph:
     """
     Constructs an RNA secondary structure graph from dotbracket notation
+
     :param dotbracket: Dotbracket notation representation of secondary structure
+    :type dotbracket: str, optional
     :param sequence: Corresponding sequence RNA bases
-    :param edge_construction_funcs: List of edge construction functions
-    :param edge_annotation_funcs: List of edge metadata annotation functions
-    :param node_annotation_funcs: List of node metadata annotation functions
-    :param graph_annotation_funcs: List of graph metadata annotation functions
+    :type sequence: str, optional
+    :param edge_construction_funcs: List of edge construction functions. Defaults to None.
+    :type edge_construction_funcs: List[Callable], optional
+    :param edge_annotation_funcs: List of edge metadata annotation functions. Defaults to None.
+    :type edge_annotation_funcs: List[Callable], optional
+    :param node_annotation_funcs: List of node metadata annotation functions. Defaults to None.
+    :type node_annotation_funcs: List[Callable], optional
+    :param graph_annotation_funcs: List of graph metadata annotation functions. Defaults to None
+    :type graph_annotation_funcs: List[Callable], optional
     :return: nx.Graph of RNA secondary structure
+    :rtype: nx.Graph
     """
     G = nx.Graph()
 

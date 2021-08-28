@@ -20,9 +20,12 @@ def params_STRING(
     """
     Updates default parameters with user parameters for the method "network" of the STRING API REST.
     See also https://string-db.org/help/api/
+
     :param params: Dictionary of default parameters
+    :type params: Dict[str, Union[str, int, List[str], List[int]]]
     :param kwargs: User parameters for the method "network" of the STRING API REST. The key must start with "STRING"
     :return: Dictionary of parameters
+    :rtype: Dict[str, Union[str, int]]
     """
     # TODO: Might be possible to generalise this function for all sources
     fields = [
@@ -53,12 +56,16 @@ def parse_STRING(
     """
     Makes STRING API call and returns a source specific Pandas dataframe.
     See also [1] STRING: https://string-db.org/help/api/
+
     :param protein_list: Proteins to include in the graph
+    :type protein_list: List[str]
     :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism. Default is 9606 (Homo Sapiens)
+    :type ncbi_taxon_id: int
     :param kwargs: Parameters of the "network" method of the STRING API REST, used to select the results. The
                    parameter names are of the form STRING_<param>, where <param> is the name of the parameter.
                    Information about these parameters can be found at [1].
     :return: Source specific Pandas dataframe.
+    :rtype: pd.DataFrame
     """
     # Prepare call to STRING API
     string_api_url = "https://string-db.org/api"
@@ -85,10 +92,13 @@ def filter_STRING(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
     """
     Filters results of the STRING API call according to user kwargs, keeping rows where the input parameters are
     greater or equal than the input thresholds
+
     :param df: Source specific Pandas dataframe (STRING) with results of the API call
+    :type df: pd.DataFrame
     :param kwargs: User thresholds used to filter the results. The parameter names are of the form STRING_<param>,
                    where <param> is the name of the parameter. All the parameters are numerical values.
     :return: Source specific Pandas dataframe with filtered results
+    :rtype: pd.DataFrame
     """
     scores = [
         "score",  # combined score
@@ -111,8 +121,11 @@ def filter_STRING(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
 def standardise_STRING(df: pd.DataFrame) -> pd.DataFrame:
     """
     Standardises STRING dataframe, e.g. puts everything into a common format
+
     :param df: Source specific Pandas dataframe
+    :type df: pd.DataFrame
     :return: Standardised dataframe
+    :rtype: pd.DataFrame
     """
     if df.empty:
         return pd.DataFrame({"p1": [], "p2": [], "source": []})
@@ -134,10 +147,14 @@ def STRING_df(
 ) -> pd.DataFrame:
     """
     Generates standardised dataframe with STRING protein-protein interactions, filtered according to user's input
-    :protein_list: List of proteins (official symbol) that will be included in the PPI graph
-    :ncbi_taxon_id: NCBI taxonomy identifiers for the organism. 9606 corresponds to Homo Sapiens
+
+    :param protein_list: List of proteins (official symbol) that will be included in the PPI graph
+    :type protein_list: List[str]
+    :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism. 9606 corresponds to Homo Sapiens
+    :type ncbi_taxon_id: int
     :param kwargs:  Additional parameters to pass to STRING API calls
     :return: Standardised dataframe with STRING interactions
+    :rtype: pd.DataFrame
     """
     df = parse_STRING(
         protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs

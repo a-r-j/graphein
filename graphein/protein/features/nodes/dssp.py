@@ -44,7 +44,9 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
     Parse DSSP output to DataFrame
 
     :param dssp: Dictionary containing DSSP output
+    :type dssp: Dict[str, Any]
     :return: pd.Dataframe containing parsed DSSP output
+    :rtype: pd.DataFrame
     """
     appender = []
     for k in dssp[1]:
@@ -65,8 +67,11 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
 def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
     """
     Processes a DSSP DataFrame to make indexes align with node IDs
-    :param df: pd.Dataframe containing the parsed output from DSSP.
-    :return: pd.Dataframe with node IDs
+
+    :param df: pd.DataFrame containing the parsed output from DSSP.
+    :type df: pd.DataFrame
+    :return: pd.DataFrame with node IDs
+    :rtype: pd.DataFrame
     """
 
     # Convert 1 letter aa code to 3 letter
@@ -92,10 +97,13 @@ def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
 def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein graph
+
     :param G: Input protein graph
-    :param dssp_config: DSSPConfig object. Specifies which executable to run.
-    Located in graphein.protein.config
+    :param G: nx.Graph
+    :param dssp_config: DSSPConfig object. Specifies which executable to run. Located in graphein.protein.config
+    :type dssp_config: DSSPConfig, optional
     :return: Protein graph with DSSP dataframe added
+    :rtype: nx.Graph
     """
 
     config = G.graph["config"]
@@ -154,7 +162,10 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     "O_NH_2_energy",
 
     These names parse_dssp_df accessible in the DSSP_COLS list
+    :param G: Protein Graph to add features to
+    :type G: nx.Graph
     :return: Protein structure graph with DSSP feature added to nodes
+    :rtype: nx.Graph
     """
     if "dssp_df" not in G.graph:
         G = add_dssp_df(G, G.graph["config"].dssp_config)
@@ -194,7 +205,9 @@ def rsa(G: nx.Graph) -> nx.Graph:
     as calculated by DSSP.
 
     :param G: Input protein graph
+    :type G: nx.Graph
     :return: Protein graph with rsa values added
+    :rtype: nx.Graph
     """
 
     # Calculate RSA
@@ -213,7 +226,9 @@ def asa(G: nx.Graph) -> nx.Graph:
     Adds ASA of each residue in protein graph as calculated by DSSP.
 
     :param G: Input protein graph
+    :type G: nx.Graph
     :return: Protein graph with asa values added
+    :rtype: nx.Graph
     """
     return add_dssp_feature(G, "asa")
 
@@ -223,7 +238,9 @@ def phi(G: nx.Graph) -> nx.Graph:
     Adds phi-angles of each residue in protein graph as calculated by DSSP.
 
     :param G: Input protein graph
+    :type G: nx.Graph
     :return: Protein graph with phi-angles values added
+    :rtype: nx.Graph
     """
     return add_dssp_feature(G, "phi")
 
@@ -233,7 +250,9 @@ def psi(G: nx.Graph) -> nx.Graph:
     Adds psi-angles of each residue in protein graph as calculated by DSSP.
 
     :param G: Input protein graph
+    :type G: nx.Graph
     :return: Protein graph with psi-angles values added
+    :rtype: nx.Graph
     """
     return add_dssp_feature(G, "psi")
 
@@ -244,6 +263,8 @@ def secondary_structure(G: nx.Graph) -> nx.Graph:
     as calculated by DSSP in the form of a string
 
     :param G: Input protein graph
+    :type G: nx.Graph
     :return: Protein graph with secondary structure added
+    :rtype: nx.Graph
     """
     return add_dssp_feature(G, "ss")

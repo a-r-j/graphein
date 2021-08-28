@@ -19,7 +19,9 @@ def fetch_AAIndex(accession: str) -> Tuple[str, Dict[str, float]]:
     Fetches AAindex1 dictionary from an accession code. The dictionary maps one-letter AA codes to float values
 
     :param accession: Aaindex1 accession code
+    :type accession: str
     :return: tuple of record titel(str) and dictionary of AA:value mappings
+    :rtype: Tuple[str, Dict[str, float]]
     """
     # Initialise AAindex object and get data
     aaindex = Aaindex()
@@ -30,9 +32,13 @@ def fetch_AAIndex(accession: str) -> Tuple[str, Dict[str, float]]:
 
 def aaindex1(G: nx.Graph, accession: str) -> nx.Graph:
     """Adds AAIndex1 datavalues for a given accession as node features.
+
     :param G: nx.Graph protein structure graphein to featurise
+    :type G: nx.Graph
     :param accession: AAIndex1 accession code for values to use
+    :type accession: str
     :return: Protein Structure graph with AAindex1 node features added
+    :rtype: nx.Graph
     """
 
     title, index_data = fetch_AAIndex(accession)

@@ -13,8 +13,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from .protein.edges.distance import compute_distmat
-from .utils import format_adjacency, generate_feature_dataframe
+from graphein.protein.edges.distance import compute_distmat
+from graphein.utils.utils import format_adjacency, generate_feature_dataframe
 
 
 def identity_matrix(G: nx.Graph) -> xr.DataArray:
@@ -22,6 +22,11 @@ def identity_matrix(G: nx.Graph) -> xr.DataArray:
 
     This is nothing more than the identity matrix
     with diagonals of 1.
+
+    :param G: Graph to retrieve identity diffusion matrix from
+    :type G: nx.Graph
+    :returns: Identity diffusion matrix
+    :rtype: xr.DataArray
     """
     return format_adjacency(G, np.eye(len(G)), "identity")
 
@@ -32,14 +37,17 @@ def adjacency_matrix_power(
     with_identity: bool = True,
     power: float = 1,
 ) -> xr.DataArray:
-    """Return the matrix power of the adjacency matrix.
+    """
+    Return the matrix power of the adjacency matrix.
 
-    :param amat_kwargs: Keyword arguments to configure
-        NetworkX's adjacency_matrix function.
-    :param with_identity: Whether or not to add in the identity matrix
-        to the adjacency matrix.
-        Effectively adding "self loops".
-    :param power: Matrix power to raise the adjacency matrix.
+    :param amat_kwargs: Keyword arguments to configure NetworkX's adjacency_matrix function. Defaults to {}
+    :type amat_kwargs: Dict[str, Any]
+    :param with_identity: Whether or not to add in the identity matrix to the adjacency matrix. Effectively adding "self loops". Defaults to True.
+    :type with_identity: bool
+    :param power: Matrix power to raise the adjacency matrix, defaults to 1.
+    :type power: float
+    :returns: the matrix power of the adjacency matrix
+    :rtype: xr.DataArray
     """
     adjacency_matrix_kwargs = {"weight": "weight", "nodelist": None}
     adjacency_matrix_kwargs.update(amat_kwargs)
@@ -55,7 +63,8 @@ def adjacency_matrix_power(
 
 
 def inverse_distance_matrix(G: nx.Graph, power: float) -> xr.DataArray:
-    """Return the inverse distance matrix.
+    """
+    Return the inverse distance matrix.
 
     Using the coordinates present on the graph object,
     calculate the inverse power distance matrix.
@@ -66,18 +75,22 @@ def inverse_distance_matrix(G: nx.Graph, power: float) -> xr.DataArray:
     of the two graphs.
     Diagonals (entries [i, i]) are set to 0.
 
-    :param G: NetworkX Graph object.
-        Assumes that each node has `x_coord`, `y_coord`, and `z_coord`
-        as node attributes.
+    :param G: NetworkX Graph object. Assumes that each node has `x_coord`, `y_coord`, and `z_coord` as node attributes.
+    :type G: nx.Graph
     :param power: The power for the distance calculation.
+    :type power: float
+    :returns: the inverse distance matrix.
+    :type: xr.DaraArray
     """
 
     def extract_coords(n, d) -> pd.Series:
         """
         Extracts xyz coordinates from a node.
+
         :param n: node id
         :param d: node data
         :return: pd.Series containing x,y,z coordinates
+        :rtype: pd.Series
         """
         coord_names = ("x_coord", "y_coord", "z_coord")
         coords = pd.Series(

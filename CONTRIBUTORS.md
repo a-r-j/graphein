@@ -14,3 +14,6 @@ Charlie Harris: [cch1999](https://github.com/cch1999)
 
 Dominic Hall: [@dhall1995](https://github.com/dhall1995)
 
+Kexin Huang: [@kexinhuang12345](https://github.com/kexinhuang12345)
+
+Sean Aubi: [@Seanny123](https://github.com/Seanny123)

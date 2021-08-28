@@ -18,10 +18,13 @@ log = logging.getLogger(__name__)
 
 def add_string_edges(G: nx.Graph, **kwargs) -> nx.Graph:
     """
-    Adds edges from STRING to PPIGraph
+    Adds edges from STRING PPI database to a PPI Graph
+
     :param G: Graph to edges to (populated with protein_id nodes)
+    :type G: nx.Graph
     :param kwargs:  Additional parameters to pass to STRING API calls
-    :return: nx.Graph PPIGraph with STRING interactions added as edges
+    :return: PPI Graph with STRING interactions added as edges
+    :rtype: nx.Graph
     """
     G.graph["sources"].append("string")
     G.graph["string_df"] = STRING_df(
@@ -36,10 +39,13 @@ def add_string_edges(G: nx.Graph, **kwargs) -> nx.Graph:
 
 def add_biogrid_edges(G: nx.Graph, **kwargs) -> nx.Graph:
     """
-    Adds edges from BIOGRID to PPIGraph
+    Adds edges from the BIOGRID database to PPI Graph
+
     :param G: Graph to edges to (populated with protein_id nodes)
+    :type G: nx.Graph
     :param kwargs:  Additional parameters to pass to BIOGRID API calls
     :return: nx.Graph PPIGraph with BIOGRID interactions added as edges
+    :rtype: nx.Graph
     """
     G.graph["sources"].append("biogrid")
     G.graph["biogrid_df"] = BIOGRID_df(
@@ -57,9 +63,15 @@ def add_interacting_proteins(
 ) -> nx.Graph:
     """
     Generic function for adding interaction edges to PPIGraph
-    :param G: PPIGraph to populate with edges
+
+    :param G: PPI Graph to populate with edges
+    :type G: nx.Graph
     :param df: Dataframe containing edgelist
+    :type df: pd.DataFrame
     :param kind: name of interaction type
+    :type kind: str
+    :returns: PPI Graph with pre-computed edges added
+    :rtype: nx.Graph
     """
 
     protein_1 = df["p1"].values

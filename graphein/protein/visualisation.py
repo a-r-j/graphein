@@ -31,9 +31,13 @@ except ImportError:
 def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:
     """
     Plots pytorch3d Meshes object as pointcloud
+
     :param mesh: Meshes object to plot
+    :type mesh: pytorch3d.structures.meshes.Meshes
     :param title: Title of plot
-    :return:
+    :type title: str
+    :return: returns Axes3D containing plot
+    :rtype: Axes3D
     """
     # Sample points uniformly from the surface of the mesh.
     points = sample_points_from_meshes(mesh, 5000)
@@ -54,11 +58,15 @@ def colour_nodes(
 ) -> List[Tuple[float, float, float, float]]:
     """
     Computes node colours based on "degree", "seq_position" or node attributes
+
     :param G: Graph to compute node colours for
+    :type G: nx.Graph
     :param colour_map:  Colourmap to use.
-    :param colour_by: Manner in which to colour nodes.
-    If node_types "degree" or "seq_position", this must correspond to a node feature
+    :type colour_map: matplotlib.colors.ListedColormap
+    :param colour_by: Manner in which to colour nodes. If not "degree" or "seq_position", this must correspond to a node feature
+    :type colour_by: str
     :return: List of node colours
+    :rtype: List[Tuple[float, float, float, float]]
     """
     # get number of nodes
     n = G.number_of_nodes()
@@ -89,10 +97,15 @@ def colour_edges(
 ) -> List[Tuple[float, float, float, float]]:
     """
     Computes edge colours based on the kind of bond/interaction.
+
     :param G: nx.Graph protein structure graph to compute edge colours from
+    :type G: nx.Graph
     :param colour_map: Colourmap to use
+    :type colour_map: matplotlib.colors.ListedColormap
     :param colour_by: Edge attribute to colour by. Currently only "kind" is supported
+    :type colour_by: str
     :return: List of edge colours
+    :rtype: List[Tuple[float, float, float, float]]
     """
     if colour_by == "kind":
         edge_types = set(
@@ -121,21 +134,36 @@ def plotly_protein_structure_graph(
     colour_nodes_by: str = "degree",
     colour_edges_by: str = "type",
     edge_alpha: float = 0.5,
-):
+) -> go.Figure:
     """
     Plots protein structure graph using plotly.
+
     :param G:  nx.Graph Protein Structure graph to plot
-    :param plot_title: Title of plot
-    :param figsize: Size of figure
-    :param node_alpha: Controls node transparency
+    :type G: nx.Graph
+    :param plot_title: Title of plot, defaults to None
+    :type plot_title: str, optional
+    :param figsize: Size of figure, defaults to (620, 650)
+    :type figsize: Tuple[int, int]
+    :param node_alpha: Controls node transparency, defaults to 0.7
+    :type node_alpha: float
     :param node_size_min: Specifies node minimum size
+    :type node_size_min: float
     :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree.
+    :type node_size_multiplier: float
     :param label_node_ids: bool indicating whether or not to plot node_id labels
+    :type label_node_ids: bool
     :param node_colour_map: colour map to use for nodes
+    :type node_colour_map: plt.cm
     :param edge_color_map: colour map to use for edges
+    :type edge_color_map: plt.cm
     :param colour_nodes_by: Specifies how to colour nodes. "degree", "seq_position" or a node feature
+    :type colour_edges_by: str
     :param colour_edges_by: Specifies how to colour edges. Currently only "kind" is supported
+    :type colour_nodes_by: str
     :param edge_alpha: Controls edge transparency
+    :type edge_alpha: float
+    :returns: Plotly Graph Objects plot
+    :rtype: go.Figure
     """
 
     # Get Node Attributes
@@ -235,7 +263,7 @@ def plotly_protein_structure_graph(
 
 def plot_protein_structure_graph(
     G: nx.Graph,
-    angle: int,
+    angle: int = 30,
     plot_title: Optional[str] = None,
     figsize: Tuple[int, int] = (10, 7),
     node_alpha: float = 0.7,
@@ -245,7 +273,7 @@ def plot_protein_structure_graph(
     node_colour_map=plt.cm.plasma,
     edge_color_map=plt.cm.plasma,
     colour_nodes_by: str = "degree",
-    colour_edges_by: str = "type",
+    colour_edges_by: str = "kind",
     edge_alpha: float = 0.5,
     plot_style: str = "ggplot",
     out_path: Optional[str] = None,
@@ -253,17 +281,29 @@ def plot_protein_structure_graph(
 ) -> Axes3D:
     """
     Plots protein structure graph in Axes3D.
+
     :param G:  nx.Graph Protein Structure graph to plot
+    :type G: nx.Graph
     :param angle:  View angle
-    :param plot_title: Title of plot
-    :param figsize: Size of figure
-    :param node_alpha: Controls node transparency
-    :param node_size_min: Specifies node minimum size
+    :type angle: int
+    :param plot_title: Title of plot. Defaults to None
+    :type plot_title: str, optional
+    :param figsize: Size of figure, defaults to (10, 7)
+    :type figsize: Tuple[int, int]
+    :param node_alpha: Controls node transparency, defaults to 0.7
+    :type node_alpha: float
+    :param node_size_min: Specifies node minimum size, defaults to 20
+    :type node_size_min: float
     :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree.
+    :type node_size_multiplier: float
     :param label_node_ids: bool indicating whether or not to plot node_id labels
+    :type label_node_ids: bool
     :param node_colour_map: colour map to use for nodes
+    :type node_colour_map: plt.cm
     :param edge_color_map: colour map to use for edges
+    :type edge_color_map: plt.cm
     :param colour_nodes_by: Specifies how to colour nodes. "degree", "seq_position" or a node feature
+    :type colour_nodes_by: str
     :param colour_edges_by: Specifies how to colour edges. Currently only "kind" is supported
     :param edge_alpha: Controls edge transparency
     :param plot_style: matplotlib style sheet to use

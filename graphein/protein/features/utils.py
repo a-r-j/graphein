@@ -9,9 +9,13 @@ def convert_graph_dict_feat_to_series(
     """
     Takes in a graph and a graph-level feature_name. Converts this feature to a pd.Series.
     This is useful as some features are output as dictionaries and we wish to standardise this.
+
     :param G:  nx.Graph containing G.graph[f"{feature_name}"]: Dict[Any, Any]
+    :type G: nx.Graph
     :param feature_name: Name of feature to convert to dictionary
+    :type feature_name: str
     :return: nx.Graph containing G.graph[f"{feature_name}"]: pd.Series
+    :rtype: nx.Graph
     """
     G.graph[feature_name] = pd.Series(G.graph[feature_name])
     return G
@@ -22,10 +26,15 @@ def aggregate_graph_feature_over_chains(
 ) -> nx.Graph:
     """
     Performs aggregation of a feature over the chains. E.g. sums/averages/min/max molecular weights for each chain
+
     :param G: nx.Graph of protein containing chain-specific features
+    :type G: nx.Graph
     :param feature_name: name of features to aggregate
+    :type feature_name: str
     :param aggregation_type: Type of aggregation to perform (min/max/sum/mean)
+    :type aggregation_type: str
     :return: nx.Graph of protein with a new aggregated feature G.graph[f"{feature_name}_{aggregation_type}"]
+    :rtype: nx.Graph
     """
     if aggregation_type == "mean":
         func = np.mean

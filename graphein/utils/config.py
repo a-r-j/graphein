@@ -7,8 +7,10 @@ from graphein.protein.config import ProteinGraphConfig
 
 def parse_config(path: Path):
     """
-    Parses a yaml configuration file into a config object
+    Parses a yaml configuration file into a config object. Not implemented.
+
     :param path: Path to configuration file
+    :type path: pathlib.Path
     """
     with open(path) as file:
         config_dict = unsafe_load(file)
