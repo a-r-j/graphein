@@ -175,11 +175,6 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
 
     # Change to not allow for atom granuarlity?
     if config.granularity == "atom":
-        raise NameError(
-            f"DSSP residue features ({feature}) \
-            cannot be added to atom granularity graph"
-        )
-
         # TODO confirm below is not needed and remove
         """
         # If granularity is atom, apply residue feature to every atom
@@ -189,6 +184,10 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
 
             G.nodes[n][feature] = dssp_df.loc[residue, feature]
         """
+        raise NameError(
+            f"DSSP residue features ({feature}) \
+            cannot be added to atom granularity graph"
+        )
 
     else:
         nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
