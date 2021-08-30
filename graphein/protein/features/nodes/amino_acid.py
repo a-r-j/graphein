@@ -85,10 +85,12 @@ def expasy_protein_scale(
 
     d["expasy"] = features
 
-    return n, d
+    return features
 
 
-def meiler_embedding(n, d) -> np.array:
+def meiler_embedding(
+    n, d, return_array: bool = False
+) -> Union[pd.Series, np.array]:
     """
     Return amino acid features from reduced dimensional embeddings of amino acid physicochemical properties.
 
@@ -103,9 +105,13 @@ def meiler_embedding(n, d) -> np.array:
     df = load_meiler_embeddings()
     amino_acid = d["residue_name"]
     try:
-        features = np.array(df[amino_acid])
+        features = df[amino_acid]
     except:
-        features = np.zeros(len(df))
+        features = pd.Series(np.zeros(len(df)))
+
+    if return_array:
+        features = np.array(features)
+
     d["meiler"] = features
 
-    return n, d
+    return features
