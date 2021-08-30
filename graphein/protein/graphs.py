@@ -611,7 +611,9 @@ def construct_graph(
 
     # Compute graph edges
     g = compute_edges(
-        g, funcs=config.edge_construction_functions, get_contacts_config=None,
+        g,
+        funcs=config.edge_construction_functions,
+        get_contacts_config=None,
     )
 
     # Annotate additional graph metadata
@@ -645,7 +647,10 @@ if __name__ == "__main__":
         partial(add_k_nn_edges, k=3, long_interaction_threshold=0)
     ]
     # Test High-level API
-    g = construct_graph(config=config, pdb_path="../examples/pdbs/3eiy.pdb",)
+    g = construct_graph(
+        config=config,
+        pdb_path="../examples/pdbs/3eiy.pdb",
+    )
 
     """
     # Test Low-level API
