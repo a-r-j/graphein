@@ -4,6 +4,10 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
     <a href="https://github.com/badges/shields/pulse" alt="Activity">
 [![CodeFactor](https://www.codefactor.io/repository/github/a-r-j/graphein/badge)](https://www.codefactor.io/repository/github/a-r-j/graphein)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=alert_status)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=bugs)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
