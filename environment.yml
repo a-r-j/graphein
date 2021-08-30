@@ -45,4 +45,5 @@ dependencies:
   - biovec
   - propy3
   - pyaaisc
+  - git+https://github.com/a-r-j/graphein
 
