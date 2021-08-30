@@ -16,12 +16,13 @@ with io.open(
         break
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 
-REQUIREMENTS_FILE = os.path.join(PROJECT_ROOT, "requirements.txt")
+#REQUIREMENTS_FILE = os.path.join(PROJECT_ROOT, "requirements.txt")
 
-with open(REQUIREMENTS_FILE) as f:
-    install_reqs = f.read().splitlines()
+#with open(REQUIREMENTS_FILE) as f:
+#    install_reqs = f.read().splitlines()
 
-install_reqs.append("setuptools")
+install_reqs = ["setuptools"]
+#install_reqs.append("setuptools")
 
 setup(
     name="graphein",
