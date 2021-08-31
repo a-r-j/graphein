@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional, TypeVar
 
-import dgl
 import networkx as nx
 import numpy as np
 import torch
@@ -18,6 +17,17 @@ except ImportError:
         pip_install=True,
         conda_channel="rusty1s",
     )
+
+try:
+    import dgl
+except ImportError:
+    import_message(
+        submodule="graphein.ml.conversion",
+        package="dgl",
+        pip_install=True,
+        conda_channel="dglteam",
+    )
+
 
 SUPPORTED_FORMATS = ["nx", "pyg", "dgl"]
 SUPPORTED_VERBOSITY = ["gnn", "default", "all_info"]
@@ -135,8 +145,6 @@ class GraphFormatConvertor:
         :return: DGLGraph object version of input NetworkX graph
         :rtype: dgl.DGLGraph
         """
-        import dgl
-
         g = dgl.DGLGraph()
         node_id = [n for n in G.nodes()]
         G = nx.convert_node_labels_to_integers(G)
@@ -170,8 +178,7 @@ class GraphFormatConvertor:
                 node_dict_transformed[i] = torch.Tensor(np.array(j))
 
         g.add_nodes(
-            len(node_id),
-            node_dict_transformed,
+            len(node_id), node_dict_transformed,
         )
 
         edge_dict = {}
@@ -208,15 +215,13 @@ class GraphFormatConvertor:
 
     def convert_nx_to_pyg(self, G: nx.Graph) -> Data:
         """
-        Converts NetworkX graph to pytorch_geometric.data.Data object
+        Converts NetworkX graph to pytorch_geometric.data.Data object. Requires Torch Geometric to be installed.
 
         :param G: nx.Graph to convert to PyTorch Geometric
         :type G: nx.Graph
         :return: Data object containing networkx graph data
         :rtype: pytorch_geometric.data.Data
         """
-        import torch_geometric
-        from torch_geometric.data import Data
 
         # Initialise dict used to construct Data object
         data = {}
@@ -278,8 +283,6 @@ class GraphFormatConvertor:
         :return: NetworkX graph object
         :rtype: nx.Graph
         """
-        import dgl
-
         node_attrs = G.node_attr_schemes().keys()
         edge_attrs = G.edge_attr_schemes().keys()
         nx_g = dgl.to_networkx(G, node_attrs, edge_attrs)
@@ -294,8 +297,6 @@ class GraphFormatConvertor:
         :returns: NetworkX graph version
         :rtype: nx.Graph
         """
-        import torch_geometric
-
         return torch_geometric.utils.to_networkx(G)
 
     def __call__(self, G: nx.Graph):

@@ -5,13 +5,22 @@ from functools import lru_cache, partial
 from pathlib import Path
 
 import networkx as nx
-import torch
 
 from graphein.protein.features.sequence.utils import (
     compute_feature_over_chains,
     subset_by_node_feature_value,
 )
 from graphein.utils.utils import import_message
+
+try:
+    import torch
+except ImportError:
+    import_message(
+        submodule="graphein.protein.features.sequence.embeddings",
+        package="torch",
+        pip_install=True,
+        conda_channel="pytorch",
+    )
 
 try:
     import biovec
