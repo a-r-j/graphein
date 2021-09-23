@@ -10,7 +10,7 @@ Eric J. Ma: [@ericmjl](https://github.com/ericmjl)
 
 Ramon Vinas: [@rvinas](https://github.com/rvinas)
 
-Charlie Harris: [cch1999](https://github.com/cch1999)
+Charlie Harris: [@cch1999](https://github.com/cch1999)
 
 Dominic Hall: [@dhall1995](https://github.com/dhall1995)
 
