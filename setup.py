@@ -7,6 +7,8 @@ import io
 import os
 import re
 from pprint import pprint
+from shutil import rmtree
+from typing import List
 
 import versioneer
 from setuptools import Command, find_packages, setup
@@ -111,7 +113,7 @@ class UploadCommand(Command):
         """Publish package to PyPI."""
         try:
             self.status("Removing previous builds…")
-            rmtree(os.path.join(here, "dist"))
+            rmtree(os.path.join(HERE, "dist"))
         except OSError:
             pass
 
