@@ -16,6 +16,7 @@ from setuptools import Command, find_packages, setup
 
 VERSION = None
 HERE = os.path.abspath(os.path.dirname(__file__))
+NAME = "graphein"
 
 # Import the PYPI README and use it as the long-description.
 # Note: this will only work if "README.md" is present in your MANIFEST.in file!
@@ -127,7 +128,7 @@ class UploadCommand(Command):
         os.system("twine upload dist/*")
 
         self.status("Pushing git tags…")
-        os.system("git tag v{0}".format(about["__version__"]))
+        os.system("git tag v{0}".format(VERSION))
         os.system("git push --tags")
 
         sys.exit()
