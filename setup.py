@@ -78,8 +78,8 @@ pprint(EXTRA_REQUIRES)
 
 setup(
     name="graphein",
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    version="1.0.0"#versioneer.get_version(),
+    #cmdclass=versioneer.get_cmdclass(),
     description="Machine Learning Library Extensions",
     author="Arian Jamasb",
     author_email="arian@jamasb.io",
