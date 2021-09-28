@@ -1,3 +1,7 @@
+"""
+Module that defines a setup function and publishes the package to PyPI.
+Use the command `python setup.py upload`.
+"""
 import codecs
 import io
 import os
@@ -5,10 +9,19 @@ import re
 from pprint import pprint
 
 import versioneer
-from setuptools import find_packages, setup
+from setuptools import Command, find_packages, setup
 
 VERSION = None
 HERE = os.path.abspath(os.path.dirname(__file__))
+
+# Import the PYPI README and use it as the long-description.
+# Note: this will only work if "README.md" is present in your MANIFEST.in file!
+try:
+    with io.open(os.path.join(here, "README.md"), encoding="utf-8") as f:
+        long_description = "\n" + f.read()
+except FileNotFoundError:
+    long_description = DESCRIPTION
+
 
 with io.open(
     os.path.join(os.path.dirname(__file__), "graphein/__init__.py"),
@@ -76,11 +89,53 @@ EXTRA_REQUIRES["all"] = set(all_requires)
 
 pprint(EXTRA_REQUIRES)
 
+class UploadCommand(Command):
+    """Support setup.py upload."""
+
+    description = "Build and publish the package."
+    user_options: List = []
+
+    @staticmethod
+    def status(s):
+        """Print things in bold."""
+        print("\033[1m{0}\033[0m".format(s))
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        """Publish package to PyPI."""
+        try:
+            self.status("Removing previous builds…")
+            rmtree(os.path.join(here, "dist"))
+        except OSError:
+            pass
+
+        self.status("Building Source and Wheel (universal) distribution…")
+        os.system("{0} setup.py sdist bdist_wheel --universal".format(sys.executable))
+
+        self.status("Uploading the package to PyPI via Twine…")
+        os.system("twine upload dist/*")
+
+        self.status("Pushing git tags…")
+        os.system("git tag v{0}".format(about["__version__"]))
+        os.system("git push --tags")
+
+        sys.exit()
+
+
+
 setup(
     name="graphein",
-    version="1.0.0", #versioneer.get_version(),
+    version="1.0.0",
+    #versioneer.get_version(),
     #cmdclass=versioneer.get_cmdclass(),
-    description="Machine Learning Library Extensions",
+    description="Protein & Interactomic Graph Construction for Machine Learning",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Arian Jamasb",
     author_email="arian@jamasb.io",
     url="https://github.com/a-r-j/graphein",
@@ -108,14 +163,8 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Topic :: Scientific/Engineering",
     ],
-    long_description="""
-Graphein is a python package for working with protein structure graphs
-Contact
-=============
-If you have any questions or comments about graphein,
-please feel free to contact me via
-email: arian@jamasb.io
-or Twitter: https://twitter.com/arianjamasb
-This project is hosted at https://github.com/a-r-j/graphein
-""",
+    # $ setup.py publish support.
+    cmdclass={
+        "upload": UploadCommand,
+    },
 )
