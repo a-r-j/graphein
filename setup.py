@@ -6,6 +6,7 @@ import codecs
 import io
 import os
 import re
+import sys
 from pprint import pprint
 from shutil import rmtree
 from typing import List
