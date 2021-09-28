@@ -1,0 +1,9 @@
+furo
+nbsphinx
+nbsphinx-link
+sphinx_rtd_theme
+nbstripout
+pandoc
+pydocstyle
+sphinx
+ipython
