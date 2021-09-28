@@ -89,6 +89,7 @@ EXTRA_REQUIRES["all"] = set(all_requires)
 
 pprint(EXTRA_REQUIRES)
 
+
 class UploadCommand(Command):
     """Support setup.py upload."""
 
@@ -115,7 +116,9 @@ class UploadCommand(Command):
             pass
 
         self.status("Building Source and Wheel (universal) distribution…")
-        os.system("{0} setup.py sdist bdist_wheel --universal".format(sys.executable))
+        os.system(
+            "{0} setup.py sdist bdist_wheel --universal".format(sys.executable)
+        )
 
         self.status("Uploading the package to PyPI via Twine…")
         os.system("twine upload dist/*")
@@ -127,12 +130,11 @@ class UploadCommand(Command):
         sys.exit()
 
 
-
 setup(
     name="graphein",
     version="1.0.0",
-    #versioneer.get_version(),
-    #cmdclass=versioneer.get_cmdclass(),
+    # versioneer.get_version(),
+    # cmdclass=versioneer.get_cmdclass(),
     description="Protein & Interactomic Graph Construction for Machine Learning",
     long_description=long_description,
     long_description_content_type="text/markdown",
