@@ -178,7 +178,8 @@ class GraphFormatConvertor:
                 node_dict_transformed[i] = torch.Tensor(np.array(j))
 
         g.add_nodes(
-            len(node_id), node_dict_transformed,
+            len(node_id),
+            node_dict_transformed,
         )
 
         edge_dict = {}
