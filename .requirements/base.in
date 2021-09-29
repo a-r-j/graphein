@@ -8,7 +8,7 @@ numpy
 pandas
 plotly
 pydantic
-pyyaml
+pyyaml>=5.1
 sklearn
 scipy
 tqdm
