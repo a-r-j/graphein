@@ -32,7 +32,6 @@ dependencies:
 - isort
 - jupyter
 - jupyterlab
-- ipympl
 - mamba
 - matplotlib
 - anaconda::multipledispatch

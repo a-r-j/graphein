@@ -21,6 +21,7 @@ except ImportError:
         submodule="graphein.protein.meshes",
         package="pytorch3d",
         conda_channel="pytorch3d",
+        pip_install=True,
     )
 
 

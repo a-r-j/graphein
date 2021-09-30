@@ -1,8 +1,9 @@
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/a-r-j/graphein-binder/master?urlpath=git-pull%3Frepo%3Dhttps%253A%252F%252Fgithub.com%252Fa-r-j%252Fgraphein%26urlpath%3Dlab%252Ftree%252Fgraphein%252Fnotebooks%26branch%3Dmaster)
+[![PyPI version](https://badge.fury.io/py/graphein.svg)](https://badge.fury.io/py/graphein)
 [![Docs](https://assets.readthedocs.org/static/projects/badges/passing-flat.svg)](http://www.graphein.ai)
 [![DOI:10.1101/2020.07.15.204701](https://zenodo.org/badge/DOI/10.1101/2020.07.15.204701.svg)](https://doi.org/10.1101/2020.07.15.204701)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-    <a href="https://github.com/badges/shields/pulse" alt="Activity">
+<a href="https://github.com/badges/shields/pulse" alt="Activity">
 [![CodeFactor](https://www.codefactor.io/repository/github/a-r-j/graphein/badge)](https://www.codefactor.io/repository/github/a-r-j/graphein)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=alert_status)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=bugs)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
@@ -13,8 +14,9 @@
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 [![banner](docs/source/_static/graphein.png)](http://www.graphein.ai)
 
+<br></br>
 
-[Documentation](http://www.graphein.ai) | [Paper](https://www.biorxiv.org/content/10.1101/2020.07.15.204701v1) | [Tutorials](http://graphein.ai/notebooks_index.html)  
+[Documentation](http://www.graphein.ai) | [Paper](https://www.biorxiv.org/content/10.1101/2020.07.15.204701v1) | [Tutorials](http://graphein.ai/notebooks_index.html) | [Installation](#installation)   
 
 Protein & Interactomic Graph Library
 
@@ -29,7 +31,8 @@ This package provides functionality for producing geometric representations of p
 
 ## Example usage
 ### Creating a Protein Graph
-[Tutorial (Residue-level)](http://graphein.ai/notebooks/residue_graphs.html) | [Tutorial - Atomic](http://graphein.ai/notebooks/atom_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
+[Tutorial (Residue-level)](http://graphein.ai/notebooks/residue_graphs.html) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) | [Tutorial - Atomic](http://graphein.ai/notebooks/atom_graph_tutorial.html) [![Open In Colab(https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/atom_graph_tutorial.ipynb) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
+
 ```python
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.graphs import construct_graph
@@ -39,7 +42,7 @@ g = construct_graph(config=config, pdb_code="3eiy")
 ```
 
 ### Creating a Protein Graph from the AlphaFold Protein Structure Database
-[Tutorial](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
+ [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) [Tutorial](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
 ```python
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.graphs import construct_graph
@@ -103,6 +106,38 @@ g = compute_grn_graph(
 ```
 
 ## Installation
+### Pip
+The simplest install is via pip. *N.B this does not install ML/DL libraries which are required for conversion to their data formats and for generating protein structure meshes with PyTorch 3D.* [Further details]
+```bash
+pip install graphein # For base install
+pip install graphein[extras] # For additional featurisation dependencies
+pip install graphein[dev] # For dev dependencies
+pip install graphein[all] # To get the lot
+```
+
+However, there are a number of (optional) utilities ([DSSP](https://anaconda.org/salilab/dssp), [PyMol](https://pymol.org/2/), [GetContacts](https://getcontacts.github.io/)) that are not available via PyPI:
+
+```
+conda install -c salilab dssp # Required for computing secondary structural features
+conda install -c schrodinger pymol # Required for PyMol visualisations & mesh generation
+
+# GetContacts - used as an alternative way to compute intramolecular interactions
+conda install -c conda-forge vmd-python
+git clone https://github.com/getcontacts/getcontacts
+
+# Add folder to PATH
+echo "export PATH=\$PATH:`pwd`/getcontacts" >> ~/.bashrc
+source ~/.bashrc
+To test the installation, run:
+
+cd getcontacts/example/5xnd
+get_dynamic_contacts.py --topology 5xnd_topology.pdb \
+                        --trajectory 5xnd_trajectory.dcd \
+                        --itypes hb \
+                        --output 5xnd_hbonds.tsv
+```
+
+### Conda environment
 The dev environment includes GPU Builds (CUDA 11.1) for each of the deep learning libraries integrated into graphein.
 ```bash
 git clone https://www.github.com/a-r-j/graphein
@@ -119,6 +154,9 @@ cd graphein
 conda create env -f environment.yml
 pip install -e .
 ```
+
+### Dockerfile
+We also provide a [Dockerfile](https://www.github.com/a-r-j/graphein/blob/master/Dockerfile)
 
 ## Citing Graphein
 

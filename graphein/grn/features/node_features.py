@@ -1,4 +1,13 @@
-from bioservices import HGNC, UniProt
+from graphein.utils.utils import import_message
+
+try:
+    from bioservices import HGNC, UniProt
+except ImportError:
+    import_message(
+        submodule="graphein.grn.features.node_features",
+        conda_channel="bioconda",
+        pip_install=True,
+    )
 
 
 def add_sequence_to_nodes(n, d):
