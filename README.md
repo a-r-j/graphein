@@ -156,7 +156,7 @@ pip install -e .
 ```
 
 ### Dockerfile
-We also provide a [Dockerfile](https://www.github.com/a-r-j/graphein/blob/master/Dockerfile)
+We also provide a [Dockerfile](https://github.com/a-r-j/graphein/pull/69)
 
 ## Citing Graphein
 
