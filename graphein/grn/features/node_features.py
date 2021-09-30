@@ -5,6 +5,7 @@ try:
 except ImportError:
     import_message(
         submodule="graphein.grn.features.node_features",
+        package="bioservices",
         conda_channel="bioconda",
         pip_install=True,
     )
