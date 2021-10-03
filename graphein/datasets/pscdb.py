@@ -67,14 +67,12 @@ class PSCDB:
             self.bound_graphs: List[nx.Graph] = self.construct_graphs(
                 pdbs=self.bound_pdbs,
                 chains=self.bound_chains,
-                config=protein_graph_config,
             )
         if compute_free_graphs:
             self.config = protein_graph_config
             self.free_graphs: List[nx.Graph] = self.construct_graphs(
                 pdbs=self.free_pdbs,
                 chains=self.free_chains,
-                config=protein_graph_config,
             )
 
     @staticmethod
