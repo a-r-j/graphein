@@ -651,19 +651,21 @@ def _mp_graph_constructor(
         try:
             result = func(pdb_code=args[0], chain_selection=args[1])
             return result
-        except:
+        except Exception as ex:
             log.info(
                 f"Graph construction error (PDB={args[0]})! {traceback.format_exc()}"
             )
+            log.info(ex)
             return None
     elif not use_pdb_code:
         try:
             result = func(pdb_path=args[0], chain_selection=args[1])
             return result
-        except:
+        except Exception as ex:
             log.info(
                 f"Graph construction error (PDB={args[0]})! {traceback.format_exc()}"
             )
+            log.info(ex)
             return None
 
 
