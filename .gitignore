@@ -56,6 +56,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 pytestdebug.log
+.idea/
 
 # Translations
 *.mo
@@ -139,7 +140,7 @@ dmypy.json
 .pytype/
 
 # End of https://www.toptal.com/developers/gitignore/api/python
-.vscode/settings.json
+.vscode/
 
 # Local test files
 datasets/examples/*
