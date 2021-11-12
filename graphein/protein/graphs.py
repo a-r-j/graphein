@@ -268,7 +268,7 @@ def process_dataframe(
     if granularity == "centroids":
         atoms = convert_structure_to_centroids(atoms)
     elif granularity == "atom":
-        atoms = atoms
+        continue
     else:
         atoms = subset_structure_to_atom_type(atoms, granularity)
 
