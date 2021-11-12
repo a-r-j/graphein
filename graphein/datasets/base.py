@@ -215,7 +215,7 @@ class AbstractClassificationDataset(ABC):
         try:
             result = func(pdb_code=args[0], chain_selection=args[1])
             return result
-        except:
+        except Exception:
             log.info(
                 f"Graph construction error (PDB={args[0]})! {traceback.format_exc()}"
             )
