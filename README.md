@@ -142,7 +142,7 @@ The dev environment includes GPU Builds (CUDA 11.1) for each of the deep learnin
 ```bash
 git clone https://www.github.com/a-r-j/graphein
 cd graphein
-conda create env -f environment-dev.yml
+conda env create -f environment-dev.yml
 pip install -e .
 ```
 
@@ -151,7 +151,7 @@ A lighter install can be performed with:
 ```bash
 git clone https://www.github.com/a-r-j/graphein
 cd graphein
-conda create env -f environment.yml
+conda env create -f environment.yml
 pip install -e .
 ```
 
