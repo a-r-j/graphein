@@ -557,7 +557,9 @@ def get_edges_by_bond_type(
     ========
     - resis: (list) a list of tuples, where each tuple is an edge.
     """
-    return [(n1, n2) for n1, n2, d in G.edges(data=True) if bond_type in d["kind"]]
+    return [
+        (n1, n2) for n1, n2, d in G.edges(data=True) if bond_type in d["kind"]
+    ]
 
 
 def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
