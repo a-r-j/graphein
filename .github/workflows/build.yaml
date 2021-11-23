@@ -2,30 +2,31 @@ name: build
 
 on: [push, pull_request]
 
-build_cpu:
+jobs:
+  build_cpu:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
         python-version: [3.7]
-          torch: [1.6.0, 1.7.0, 1.8.0, 1.9.0]
-          include:
-            - torch: 1.6.0
-              torchvision: 0.7.0
-            - torch: 1.7.0
-              torchvision: 0.8.1
-            - torch: 1.8.0
-              torchvision: 0.9.0
-            - torch: 1.9.0
-              torchvision: 0.10.0
-            - torch: 1.8.0
-              torchvision: 0.9.0
-              python-version: 3.9
-            - torch: 1.9.0
-              torchvision: 0.10.0
-              python-version: 3.8
-            - torch: 1.9.0
-              torchvision: 0.10.0
-              python-version: 3.9
+        torch: [1.6.0, 1.7.0, 1.8.0, 1.9.0]
+        include:
+          - torch: 1.6.0
+            torchvision: 0.7.0
+          - torch: 1.7.0
+            torchvision: 0.8.1
+          - torch: 1.8.0
+            torchvision: 0.9.0
+          - torch: 1.9.0
+            torchvision: 0.10.0
+          - torch: 1.8.0
+            torchvision: 0.9.0
+            python-version: 3.9
+          - torch: 1.9.0
+            torchvision: 0.10.0
+            python-version: 3.8
+          - torch: 1.9.0
+            torchvision: 0.10.0
+            python-version: 3.9
     steps:
         - name: Checkout repository
           uses: actions/checkout@v2
@@ -39,5 +40,5 @@ build_cpu:
           run: pip install -e .
         - name: Install Dev Dependencies
           run: pip install -r .requirements/dev.in
-        - name: Run unittests and generate coverage report
+        - name: Run unit tests and generate coverage report
           run: pytest .
