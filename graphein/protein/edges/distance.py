@@ -69,11 +69,6 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
     :return G; networkx protein graph with added peptide bonds
     :rtype: nx.Graph
     """
-    # for i (n, d) in G.nodes(data=True):
-
-    # First we get all adjacent residues
-    # for i, (n, d) in enumerate(G.nodes(data=True)):
-
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
 
@@ -258,6 +253,9 @@ def add_aromatic_interactions(
         get_interacting_atoms), as they do not return centroid atom
         euclidean coordinates.
     """
+    if pdb_df is None:
+        pdb_df = G.graph["pdb_df"]
+
     dfs = []
     for resi in AROMATIC_RESIS:
         resi_rings_df = get_ring_atoms(pdb_df, resi)
@@ -274,9 +272,10 @@ def add_aromatic_interactions(
     distmat = distmat[(distmat >= 4.5) & (distmat <= 7)].fillna(0)
     indices = np.where(distmat > 0)
 
-    interacting_resis = []
-    for i, (r, c) in enumerate(zip(indices[0], indices[1])):
-        interacting_resis.append((distmat.index[r], distmat.index[c]))
+    interacting_resis = [
+        (distmat.index[r], distmat.index[c])
+        for i, (r, c) in enumerate(zip(indices[0], indices[1]))
+    ]
 
     for i, (n1, n2) in enumerate(interacting_resis):
         assert G.nodes[n1]["residue_name"] in AROMATIC_RESIS
@@ -537,13 +536,11 @@ def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
     - centroid_df: a dataframe containing just the centroid coordinates of
                     the ring atoms of each residue.
     """
-    centroid_df = (
+    return (
         ring_atom_df.groupby("node_id")
         .mean()[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )
-
-    return centroid_df
 
 
 def get_edges_by_bond_type(
@@ -560,11 +557,9 @@ def get_edges_by_bond_type(
     ========
     - resis: (list) a list of tuples, where each tuple is an edge.
     """
-    resis = []
-    for n1, n2, d in G.edges(data=True):
-        if bond_type in d["kind"]:
-            resis.append((n1, n2))
-    return resis
+    return [
+        (n1, n2) for n1, n2, d in G.edges(data=True) if bond_type in d["kind"]
+    ]
 
 
 def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
