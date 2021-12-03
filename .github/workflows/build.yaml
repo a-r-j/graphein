@@ -51,7 +51,7 @@ jobs:
         LANG: C.UTF-8
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: [3.8]
         torch: [1.6.0+cu101, 1.7.0+cu101, 1.8.0+cu101]
         include:
           - torch: 1.6.0+cu101
