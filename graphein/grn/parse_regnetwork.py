@@ -15,7 +15,7 @@ from typing import Callable, List, Optional
 import pandas as pd
 import wget
 
-from graphein.utils.utils import filter_dataframe
+from graphein.utils.utils import filter_dataframe, ping
 
 log = logging.getLogger(__name__)
 
@@ -33,10 +33,18 @@ def _download_RegNetwork(
     :returns: path to downloaded RegNetwork
     :rtype: str
     """
-    human_url = "http://www.regnetworkweb.org/download/human.zip"
+
+    # Ping server to check if file is available
+    ping_result = ping("regnetworkweb.org")
+    if not ping_result:
+        log.warning(
+            "RegNetwork is not available. Please check your internet connection or verify at: http://www.regnetworkweb.org"
+        )
+
     mouse_url = "http://regnetworkweb.org/download/mouse.zip"
 
     if network_type == "human":
+        human_url = "http://www.regnetworkweb.org/download/human.zip"
         url = human_url
     elif network_type == "mouse":
         url = mouse_url

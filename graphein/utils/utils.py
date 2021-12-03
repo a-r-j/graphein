@@ -7,6 +7,8 @@
 from __future__ import annotations
 
 import os
+import platform
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Callable, Iterable, List, Optional
@@ -291,9 +293,7 @@ def generate_adjacency_tensor(
     - xr.DataArray,
         which is of shape (n_nodes, n_nodes, n_funcs).
     """
-    mats = []
-    for func in funcs:
-        mats.append(func(G))
+    mats = [func(G) for func in funcs]
     da = xr.concat(mats, dim="name")
     if return_array:
         return da.data
@@ -310,8 +310,7 @@ def protein_letters_3to1_all_caps(amino_acid: str) -> str:
     :rtype: str
     """
     amino_acid = amino_acid[0] + amino_acid[1:].lower()
-    one_letter_code = protein_letters_3to1[amino_acid]
-    return one_letter_code
+    return protein_letters_3to1[amino_acid]
 
 
 def import_message(
@@ -343,12 +342,11 @@ def import_message(
             installation = f"{package} cannot be installed via conda"
         else:
             installation = f"conda install -c {conda_channel} {package}"
+    elif pip_install:
+        installation = f"pip install {package}"
     else:
-        if pip_install:
-            installation = f"pip install {package}"
-        else:
-            installable = False
-            installation = f"{package} cannot be installed via pip"
+        installable = False
+        installation = f"{package} cannot be installed via pip"
 
     print(
         f"To use the Graphein submodule {submodule}, you need to install "
@@ -363,7 +361,7 @@ def import_message(
         print(f"{installation}")
 
 
-def parse_config(path: Path):
+def parse_config(path: Path) -> ProteinGraphConfig:
     """
     Parses a yaml configuration file into a config object
     :param path: Path to configuration file
@@ -392,3 +390,23 @@ def parse_protein_graph_config(config_dict):
 
 def parse_dssp_config(config_dict):
     raise NotImplementedError
+
+
+def ping(host: str) -> bool:
+    """
+    Returns True if host (str) responds to a ping request.
+    Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
+
+    :param host: IP or hostname
+    :type host: str
+    :returns: True if host responds to a ping request.
+    :rtype: bool
+    """
+
+    # Option for the number of packets as a function of
+    param = "-n" if platform.system().lower() == "windows" else "-c"
+
+    # Building the command. Ex: "ping -c 1 google.com"
+    command = ["ping", param, "1", host]
+
+    return subprocess.call(command) == 0
