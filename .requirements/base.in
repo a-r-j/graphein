@@ -9,7 +9,7 @@ pandas
 plotly
 pydantic
 pyyaml>=5.1
-sklearn
+scikit-learn
 scipy
 tqdm
 wget
