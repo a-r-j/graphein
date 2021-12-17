@@ -1,14 +1,18 @@
 from graphein.utils.utils import import_message
+import logging
+
+log = logging.getLogger(__name__)
 
 try:
     from bioservices import HGNC, UniProt
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.grn.features.node_features",
         package="bioservices",
         conda_channel="bioconda",
         pip_install=True,
     )
+    log.warning(message)
 
 
 def add_sequence_to_nodes(n, d):

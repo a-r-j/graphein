@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
+import logging
 from functools import lru_cache, partial
 from pathlib import Path
 
+log = logging.getLogger(__name__)
 import networkx as nx
 
 from graphein.protein.features.sequence.utils import (
@@ -15,21 +17,23 @@ from graphein.utils.utils import import_message
 try:
     import torch
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.protein.features.sequence.embeddings",
         package="torch",
         pip_install=True,
         conda_channel="pytorch",
     )
+    log.warning(message)
 
 try:
     import biovec
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.protein.features.sequence.embeddings",
         package="biovec",
         pip_install=True,
     )
+    log.warning(message)
 
 
 @lru_cache()

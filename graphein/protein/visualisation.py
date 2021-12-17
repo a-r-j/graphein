@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from itertools import count
 from typing import List, Optional, Tuple
+import logging
 
+log = logging.getLogger(__name__)
 import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -21,11 +23,12 @@ from graphein.utils.utils import import_message
 try:
     from pytorch3d.ops import sample_points_from_meshes
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.protein.visualisation",
         package="pytorch3d",
         conda_channel="pytorch3d",
     )
+    log.warning(message)
 
 
 def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:

@@ -1,5 +1,7 @@
 from typing import Dict, Tuple
+import logging
 
+log = logging.getLogger(__name__)
 import networkx as nx
 
 from graphein.utils.utils import import_message, protein_letters_3to1_all_caps
@@ -7,11 +9,12 @@ from graphein.utils.utils import import_message, protein_letters_3to1_all_caps
 try:
     from pyaaisc import Aaindex
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.protein.features.nodes.aaindex",
         package="pyaaisc",
         pip_install=True,
     )
+    log.warning(message)
 
 
 def fetch_AAIndex(accession: str) -> Tuple[str, Dict[str, float]]:

@@ -1,4 +1,4 @@
-"""Utilities for working with graph objects"""
+"""Utilities for working with graph objects."""
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
 # License: MIT
@@ -319,7 +319,7 @@ def import_message(
     package: str,
     conda_channel: Optional[str] = None,
     pip_install: bool = False,
-):
+) -> str:
     """
     Return warning if package is not found.
     Generic message for indicating to the user when a function relies on an
@@ -350,17 +350,12 @@ def import_message(
             installable = False
             installation = f"{package} cannot be installed via pip"
 
-    print(
-        f"To use the Graphein submodule {submodule}, you need to install "
-        f"{package}."
-    )
-    print()
+    message = f"To use the Graphein submodule {submodule}, you need to install: {package} "
     if installable:
-        print("To do so, use the following command:")
-        print()
-        print(f"    {installation}")
+        message += f"\nTo do so, use the following command: {installation}"
     else:
-        print(f"{installation}")
+        message += f"\n{installation}"
+    return message
 
 
 def parse_config(path: Path):

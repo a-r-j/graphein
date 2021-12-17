@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import importlib.util
 import logging
+
+log = logging.getLogger(__name__)
 from typing import List, NamedTuple, Optional, Tuple
 
 from graphein.protein.config import ProteinMeshConfig
@@ -17,15 +19,13 @@ from graphein.utils.utils import import_message
 try:
     from pytorch3d.structures import Meshes
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.protein.meshes",
         package="pytorch3d",
         conda_channel="pytorch3d",
         pip_install=True,
     )
-
-
-log = logging.getLogger(__name__)
+    log.warning(message)
 
 
 def check_for_pymol_installation():

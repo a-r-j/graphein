@@ -6,7 +6,9 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from typing import Any, Dict
+import logging
 
+log = logging.getLogger(__name__)
 import networkx as nx
 
 from graphein.utils.utils import import_message
@@ -14,12 +16,13 @@ from graphein.utils.utils import import_message
 try:
     from bioservices import HGNC, UniProt
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.ppi.features.nodes_features",
         package="bioservices",
         conda_channel="bioconda",
         pip_install=True,
     )
+    log.warning(message)
 
 
 def add_sequence_to_nodes(n: str, d: Dict[str, Any]):
