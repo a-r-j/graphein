@@ -1,4 +1,6 @@
 """Functions for adding nodes features to a PPI Graph"""
+import logging
+
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
@@ -6,12 +8,13 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from typing import Any, Dict
-import logging
 
-log = logging.getLogger(__name__)
 import networkx as nx
 
 from graphein.utils.utils import import_message
+
+log = logging.getLogger(__name__)
+
 
 try:
     from bioservices import HGNC, UniProt

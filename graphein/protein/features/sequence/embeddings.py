@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import os
 import logging
+import os
 from functools import lru_cache, partial
 from pathlib import Path
 
-log = logging.getLogger(__name__)
 import networkx as nx
 
 from graphein.protein.features.sequence.utils import (
@@ -13,6 +12,9 @@ from graphein.protein.features.sequence.utils import (
     subset_by_node_feature_value,
 )
 from graphein.utils.utils import import_message
+
+log = logging.getLogger(__name__)
+
 
 try:
     import torch

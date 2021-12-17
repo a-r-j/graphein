@@ -1,5 +1,6 @@
-from graphein.utils.utils import import_message
 import logging
+
+from graphein.utils.utils import import_message
 
 log = logging.getLogger(__name__)
 

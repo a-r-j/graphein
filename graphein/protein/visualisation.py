@@ -6,11 +6,10 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import logging
 from itertools import count
 from typing import List, Optional, Tuple
-import logging
 
-log = logging.getLogger(__name__)
 import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -19,6 +18,9 @@ import plotly.graph_objects as go
 from mpl_toolkits.mplot3d import Axes3D
 
 from graphein.utils.utils import import_message
+
+log = logging.getLogger(__name__)
+
 
 try:
     from pytorch3d.ops import sample_points_from_meshes

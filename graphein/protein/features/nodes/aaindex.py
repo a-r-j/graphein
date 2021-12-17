@@ -1,10 +1,12 @@
-from typing import Dict, Tuple
 import logging
+from typing import Dict, Tuple
 
-log = logging.getLogger(__name__)
 import networkx as nx
 
 from graphein.utils.utils import import_message, protein_letters_3to1_all_caps
+
+log = logging.getLogger(__name__)
+
 
 try:
     from pyaaisc import Aaindex
