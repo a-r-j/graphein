@@ -69,11 +69,6 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
     :return G; networkx protein graph with added peptide bonds
     :rtype: nx.Graph
     """
-    # for i (n, d) in G.nodes(data=True):
-
-    # First we get all adjacent residues
-    # for i, (n, d) in enumerate(G.nodes(data=True)):
-
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
 
@@ -152,7 +147,20 @@ def add_disulfide_interactions(
     Find all disulfide interactions between CYS residues.
 
     Criteria: sulfur atom pairs are within 2.2A of each other.
+
+    :param G: networkx protein graph
+    :type G: nx.Graph
+    :param rgroup_df: pd.DataFrame containing rgroup data, defaults to None, which retrieves the df from the provided nx graph.
+    :type rgroup_df: pd.DataFrame, optional
     """
+    # Check for existence of at least two Cysteine residues
+    residues = [d["residue_name"] for _, d in G.nodes(data=True)]
+    if residues.count("CYS") < 2:
+        log.debug(
+            f"{residues.count('CYS')} CYS residues found. Cannot add disulfide interactions with fewer than two CYS residues."
+        )
+        return
+
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
     disulfide_df = filter_dataframe(
@@ -274,11 +282,12 @@ def add_aromatic_interactions(
     distmat = distmat[(distmat >= 4.5) & (distmat <= 7)].fillna(0)
     indices = np.where(distmat > 0)
 
-    interacting_resis = []
-    for i, (r, c) in enumerate(zip(indices[0], indices[1])):
-        interacting_resis.append((distmat.index[r], distmat.index[c]))
+    interacting_resis = [
+        (distmat.index[r], distmat.index[c])
+        for r, c in zip(indices[0], indices[1])
+    ]
 
-    for i, (n1, n2) in enumerate(interacting_resis):
+    for n1, n2 in interacting_resis:
         assert G.nodes[n1]["residue_name"] in AROMATIC_RESIS
         assert G.nodes[n2]["residue_name"] in AROMATIC_RESIS
         if G.has_edge(n1, n2):
@@ -537,13 +546,11 @@ def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
     - centroid_df: a dataframe containing just the centroid coordinates of
                     the ring atoms of each residue.
     """
-    centroid_df = (
+    return (
         ring_atom_df.groupby("node_id")
         .mean()[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )
-
-    return centroid_df
 
 
 def get_edges_by_bond_type(
@@ -560,11 +567,9 @@ def get_edges_by_bond_type(
     ========
     - resis: (list) a list of tuples, where each tuple is an edge.
     """
-    resis = []
-    for n1, n2, d in G.edges(data=True):
-        if bond_type in d["kind"]:
-            resis.append((n1, n2))
-    return resis
+    return [
+        (n1, n2) for n1, n2, d in G.edges(data=True) if bond_type in d["kind"]
+    ]
 
 
 def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
@@ -628,6 +633,7 @@ def add_interacting_resis(
     resi2 = dataframe.loc[interacting_atoms[1]]["node_id"].values
 
     interacting_resis = set(list(zip(resi1, resi2)))
+    log.info(f"Found {len(interacting_resis)} {k} interactions.")
     for i1, i2 in interacting_resis:
         if i1 != i2:
             if G.has_edge(i1, i2):
