@@ -163,7 +163,7 @@ We also provide a [Dockerfile](https://github.com/a-r-j/graphein/pull/69)
 
 Please consider citing graphein if it proves useful in your work.
 
-```
+```biblatex
 @article{Jamasb2020,
   doi = {10.1101/2020.07.15.204701},
   url = {https://doi.org/10.1101/2020.07.15.204701},
