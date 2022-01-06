@@ -144,19 +144,23 @@ def subset_structure_to_atom_type(
     )
 
 
-def remove_insertions(df: pd.DataFrame) -> pd.DataFrame:
+def remove_insertions(df: pd.DataFrame, keep: str = "first") -> pd.DataFrame:
     """
     This function removes insertions from PDB dataframes
 
     :param df: Protein Structure dataframe to remove insertions from
     :type df: pd.DataFrame
+    :param keep: Specifies which insertion to keep. Options are "first" or "last".
+    :type keep: str
     :return: Protein structure dataframe with insertions removed
     :rtype: pd.DataFrame
     """
     """Remove insertions from structure."""
-    return filter_dataframe(
-        df, by_column="alt_loc", list_of_values=["", "A"], boolean=True
-    )
+    duplicates = df.duplicated(subset=["node_id", "atom_name"], keep=keep)
+    # return filter_dataframe(
+    #    df, by_column="alt_loc", list_of_values=["", "A"], boolean=True
+    # )
+    return df[~duplicates]
 
 
 def filter_hetatms(
