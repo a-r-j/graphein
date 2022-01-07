@@ -52,4 +52,4 @@ jobs:
       - name: Run unit tests and generate coverage report
         run: pytest .
       - name: Test notebook execution
-        run: pytest --nbval-lax notebooks/
+        run: pytest --nbval-lax notebooks/ --current-env
