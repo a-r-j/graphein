@@ -3,13 +3,13 @@ name: build
 on:
   push:
     paths-ignore:
-      - 'README.md'
-      - 'docs/**'
+      - "README.md"
+      - "docs/**"
 
   pull_request:
     paths-ignore:
-      - 'README.md'
-      - 'docs/*'
+      - "README.md"
+      - "docs/*"
 
 jobs:
   build_cpu:
@@ -37,17 +37,19 @@ jobs:
             torchvision: 0.10.0
             python-version: 3.9
     steps:
-        - name: Checkout repository
-          uses: actions/checkout@v2
-        - name: Set up Python ${{ matrix.python-version }}
-          uses: actions/setup-python@v2
-          with:
-            python-version: ${{ matrix.python-version }}
-        - name: Install PyTorch
-          run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-        - name: Install Graphein
-          run: pip install -e .
-        - name: Install Dev Dependencies
-          run: pip install -r .requirements/dev.in
-        - name: Run unit tests and generate coverage report
-          run: pytest .
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install PyTorch
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install Graphein
+        run: pip install -e .
+      - name: Install Dev Dependencies
+        run: pip install -r .requirements/dev.in
+      - name: Run unit tests and generate coverage report
+        run: pytest .
+      - name: Test notebook execution
+        run: pytest --nbval-lax notebooks/
