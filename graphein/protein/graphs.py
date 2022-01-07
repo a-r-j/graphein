@@ -157,9 +157,6 @@ def remove_insertions(df: pd.DataFrame, keep: str = "first") -> pd.DataFrame:
     """
     """Remove insertions from structure."""
     duplicates = df.duplicated(subset=["node_id", "atom_name"], keep=keep)
-    # return filter_dataframe(
-    #    df, by_column="alt_loc", list_of_values=["", "A"], boolean=True
-    # )
     return df[~duplicates]
 
 
