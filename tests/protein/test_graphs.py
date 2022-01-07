@@ -39,6 +39,11 @@ from graphein.protein.features.sequence.embeddings import (
 )
 from graphein.protein.features.sequence.sequence import molecular_weight
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
+from graphein.protein.utils import (
+    extract_subgraph_from_atom_types,
+    extract_subgraph_from_node_list,
+    extract_subgraph_from_residue_types,
+)
 
 DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
 
@@ -117,7 +122,7 @@ def test_chain_selection():
 # Removed - testing with GetContacts as a dependency is not a priority right now
 """
 def test_intramolecular_edges():
-    Example-based test that intramolecualr edge construction using GetContacts works correctly.
+    Example-based test that intramolecular edge construction using GetContacts works correctly.
 
     Uses 4hhb PDB file as an example test case.
 
@@ -152,7 +157,7 @@ def test_distance_edges():
         "edge_construction_functions": [
             partial(add_k_nn_edges, k=5, long_interaction_threshold=10),
             add_hydrophobic_interactions,
-            # add_aromatic_interactions, # Todo removed for now as ring centroids require precomputing
+            add_aromatic_interactions,  # Todo removed for now as ring centroids require precomputing
             add_aromatic_sulphur_interactions,
             add_delaunay_triangulation,
             add_cation_pi_interactions,
@@ -169,7 +174,7 @@ def test_distance_edges():
     }
     config = ProteinGraphConfig(**edge_functions)
     G = construct_graph(pdb_path=str(file_path), config=config)
-    # Todo complete
+    assert G is not None
 
 
 # Featurisation tests
@@ -237,3 +242,140 @@ def test_sequence_features():
         # assert f"esm_embedding_{chain}" in G.graph
         assert f"biovec_embedding_{chain}" in G.graph
         assert f"molecular_weight_{chain}" in G.graph
+
+
+def test_node_list_subgraphing():
+    """Tests subgraph extraction from a list of nodes."""
+    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    NODE_LIST = ["C:ALA:28", "C:ARG:31", "D:LEU:75", "A:THR:38"]
+
+    G = construct_graph(pdb_path=str(file_path))
+
+    g = extract_subgraph_from_node_list(G, NODE_LIST, filter_dataframe=True)
+
+    # Check we get back a graph and it contains the correct nodes
+    assert isinstance(g, nx.Graph)
+    assert len(g) == len(NODE_LIST)
+    for n in g.nodes():
+        assert n in NODE_LIST
+    assert (
+        g.graph["pdb_df"]["node_id"]
+        .str.contains("|".join(NODE_LIST), case=True)
+        .all()
+    )
+
+    # Check the list of nodes is the same as the list of nodes in the original graph
+    returned_node_list = extract_subgraph_from_node_list(
+        G, NODE_LIST, return_node_list=True
+    )
+    assert all(elem in NODE_LIST for elem in returned_node_list)
+
+    # Check there is no overlap when we inverse the selection
+    g = extract_subgraph_from_node_list(
+        G, NODE_LIST, inverse=True, filter_dataframe=True
+    )
+    assert len(g) == len(G) - len(NODE_LIST)
+    for n in g.nodes():
+        assert n not in NODE_LIST
+
+    assert not (
+        g.graph["pdb_df"]["node_id"]
+        .str.contains("|".join(NODE_LIST), case=True)
+        .any()
+    )
+
+    returned_node_list = extract_subgraph_from_node_list(
+        G, NODE_LIST, inverse=True, return_node_list=True
+    )
+
+    assert all(elem not in NODE_LIST for elem in returned_node_list)
+
+
+def test_extract_subgraph_from_atom_types():
+    """Tests subgraph extraction from a list of allowed atom types"""
+    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    ATOM_TYPES = ["C"]
+
+    G = construct_graph(pdb_path=str(file_path))
+
+    g = extract_subgraph_from_atom_types(G, ATOM_TYPES, filter_dataframe=True)
+    assert isinstance(g, nx.Graph)
+    assert len(g) == len(G)
+    assert g == G
+
+    # Test there are no N atoms
+    ATOM_TYPES = ["N"]
+    returned_node_list = extract_subgraph_from_atom_types(
+        G, ATOM_TYPES, filter_dataframe=True, return_node_list=True
+    )
+    assert len(returned_node_list) == 0
+
+
+def test_extract_subgraph_from_residue_types():
+    """Tests subgraph extraction from a list of nodes."""
+    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    RESIDUE_TYPES = ["ALA", "SER", "GLY"]
+    ALANINES = 72
+    SERINES = 32
+    GLYCINES = 40
+
+    G = construct_graph(pdb_path=str(file_path))
+
+    g = extract_subgraph_from_residue_types(
+        G, RESIDUE_TYPES, filter_dataframe=True
+    )
+
+    # Check we get back a graph and it contains the correct nodes
+    assert isinstance(g, nx.Graph)
+    assert len(g) == ALANINES + SERINES + GLYCINES
+    for n, d in g.nodes(data=True):
+        assert d["residue_name"] in RESIDUE_TYPES
+    assert (
+        g.graph["pdb_df"]["residue_name"]
+        .str.contains("|".join(RESIDUE_TYPES), case=True)
+        .all()
+    )
+
+    assert (
+        len([n for n, d in g.nodes(data=True) if d["residue_name"] == "ALA"])
+        == ALANINES
+    )
+    assert (
+        len([n for n, d in g.nodes(data=True) if d["residue_name"] == "GLY"])
+        == GLYCINES
+    )
+    assert (
+        len([n for n, d in g.nodes(data=True) if d["residue_name"] == "SER"])
+        == SERINES
+    )
+
+    # Check the list of nodes is the same as the list of nodes in the original graph
+    returned_node_list = extract_subgraph_from_node_list(
+        G, RESIDUE_TYPES, return_node_list=True
+    )
+    assert all(elem in RESIDUE_TYPES for elem in returned_node_list)
+
+    # Check there is no overlap when we inverse the selection
+    g = extract_subgraph_from_residue_types(
+        G, RESIDUE_TYPES, inverse=True, filter_dataframe=True
+    )
+
+    assert len(g) == len(G) - GLYCINES - ALANINES - SERINES
+    for n in g.nodes():
+        assert n not in RESIDUE_TYPES
+
+    assert not (
+        g.graph["pdb_df"]["residue_name"]
+        .str.contains("|".join(RESIDUE_TYPES), case=True)
+        .any()
+    )
+
+    returned_node_list = extract_subgraph_from_residue_types(
+        G, RESIDUE_TYPES, inverse=True, return_node_list=True
+    )
+
+    assert all(elem not in RESIDUE_TYPES for elem in returned_node_list)
+
+
+if __name__ == "__main__":
+    test_extract_subgraph_from_residue_types()
