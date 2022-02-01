@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Literal, Optional, TypeVar
+from typing import List, Optional, TypeVar
 
 import networkx as nx
 import numpy as np
