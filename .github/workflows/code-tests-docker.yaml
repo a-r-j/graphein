@@ -3,8 +3,8 @@ name: Code tests
 on: [pull_request]
 
 jobs:
-  code-tests:
-    name: Run code tests
+  code-tests-docker:
+    name: Run code tests (docker)
     runs-on: "ubuntu-18.04"
 
     steps:
