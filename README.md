@@ -157,7 +157,15 @@ pip install -e .
 ```
 
 ### Dockerfile
-We also provide a [Dockerfile](https://github.com/a-r-j/graphein/pull/69)
+We provide two `docker-compose` files for CPU (`docker-compose.cpu.yml`) and GPU usage (`docker-compose.yml`) locally. For GPU usage please ensure that you have [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) installed. Ensure that you install the locally mounted volume after entering the container (`pip install -e .`). This will also setup the dev environment locally. 
+
+To build (GPU) run:
+
+```
+docker-compose up -d --build # start the container
+docker-compose down # stop the container
+```
+
 
 ## Citing Graphein
 
