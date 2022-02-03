@@ -25,7 +25,7 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 RUN conda install -c conda-forge libgcc-ng
 RUN conda install scipy scikit-learn matplotlib pandas cython ipykernel
-RUN pip install ticc==0.1.4
+RUN pip install ticc==0.1.4 --no-cache-dir
 
 # # Set up vmd-python library
 RUN conda install -c conda-forge vmd-python
