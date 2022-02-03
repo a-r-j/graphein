@@ -6,7 +6,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # get iputils-ping for tests
-RUN apt-get update && apt install -y iputils-ping
+RUN apt-get update && apt-get install -y iputils-ping && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV CONDA_ALWAYS_YES=true
 
@@ -18,9 +19,9 @@ WORKDIR /graphein
 COPY .requirements /graphein/requirements
 RUN echo "$(cat requirements/base.in)" >> requirements.txt \
     && echo "$(cat requirements/dev.in)" >> requirements.txt \
-    && echo "$(cat requirements/extras.in)" >> requirements.txt 
+    && echo "$(cat requirements/extras.in)" >> requirements.txt
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --no-cache-dir
 
 RUN conda install -c conda-forge libgcc-ng
 RUN conda install scipy scikit-learn matplotlib pandas cython ipykernel
@@ -41,11 +42,11 @@ RUN conda install -c dglteam dgl
 ARG CUDA TORCH
 # gcc error with version 2.0.9. Therefore, using 2.0.8
 # install torch-geometric components separately in case of fail
-RUN pip install torch-scatter==2.0.7 -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html 
-RUN pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html 
-RUN pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html 
-RUN pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html 
-RUN pip install torch-geometric
+RUN pip install torch-scatter==2.0.7 -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir
+RUN pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir
+RUN pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir
+RUN pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir
+RUN pip install torch-geometric --no-cache-dir
 
 
 # Testing
@@ -53,4 +54,3 @@ RUN pip install torch-geometric
 # docker exec -it $(docker-compose ps -q) bash -c 'pip install -e .'
 # docker exec -it $(docker-compose ps -q) bash -c 'pytest .'
 # docker exec -it $(docker-compose ps -q) bash -c 'grep -l smoke_test notebooks/*.ipynb | pytest --nbval-lax --current-env'
-
