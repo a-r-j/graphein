@@ -4,11 +4,11 @@ services:
     graphein-cpu:
         image: 'graphein-cpu:latest'
         environment:
-          CUDA: cpu
-          TORCH: '1.7.1'
+            CUDA: cpu
+            TORCH: '1.7.1'
         build:
             context: ./
             dockerfile: Dockerfile
-        volumes: 
+        volumes:
             - ./:/graphein
         command: tail -f /dev/null
