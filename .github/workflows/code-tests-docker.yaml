@@ -45,7 +45,7 @@ jobs:
       - name: Run example notebooks (Docker)
         run: |
           docker exec -it $(docker-compose ps -q) bash -c 'grep -l smoke_test notebooks/*.ipynb | pytest --nbval-lax --current-env'
-          
+
       - name: Upload code coverage
         run: |
           bash <(curl -s https://codecov.io/bash)
