@@ -24,6 +24,7 @@ Protein & Interactomic Graph Library
 This package provides functionality for producing geometric representations of protein and RNA structures, and biological interaction networks. We provide compatibility with standard PyData formats, as well as graph objects designed for ease of use with popular deep learning libraries.
 
 ## What's New?
+
 * [Protein Graph Creation from AlphaFold2!](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html)
 * [Protein Graph Visualisation!](http://graphein.ai/notebooks/protein_mesh_tutorial.html)
 * [RNA Graph Construction from Dotbracket notation](http://graphein.ai/modules/graphein.rna.html)
@@ -31,7 +32,9 @@ This package provides functionality for producing geometric representations of p
 * [High and Low-level API for massive flexibility - create your own bespoke workflows!](http://graphein.ai/notebooks/residue_graphs.html)
 
 ## Example usage
+
 ### Creating a Protein Graph
+
 [Tutorial (Residue-level)](http://graphein.ai/notebooks/residue_graphs.html) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) | [Tutorial - Atomic](http://graphein.ai/notebooks/atom_graph_tutorial.html) [![Open In Colab(https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/atom_graph_tutorial.ipynb) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
 
 ```python
@@ -43,7 +46,9 @@ g = construct_graph(config=config, pdb_code="3eiy")
 ```
 
 ### Creating a Protein Graph from the AlphaFold Protein Structure Database
+
  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) [Tutorial](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
+
 ```python
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.graphs import construct_graph
@@ -55,15 +60,20 @@ g = construct_graph(config=config, pdb_path=fp)
 ```
 
 ### Creating a Protein Mesh
+
 [Tutorial](http://graphein.ai/notebooks/protein_mesh_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.meshes)
+
 ```python
 from graphein.protein.config import ProteinMeshConfig
 from graphein.protein.meshes import create_mesh
 
 verts, faces, aux = create_mesh(pdb_code="3eiy", config=config)
 ```
+
 ### Creating an RNA Graph
+
 Tutorial | [Docs](http://graphein.ai/modules/graphein.rna.html)
+
 ```python
 from graphein.rna.graphs import construct_rna_graph
 # Build the graph from a dotbracket & optional sequence
@@ -72,7 +82,9 @@ rna = construct_rna_graph(dotbracket='..(((((..(((...)))..)))))...',
 ```
 
 ### Creating a Protein-Protein Interaction Graph
+
 [Tutorial](http://graphein.ai/notebooks/ppi_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.ppi.html)
+
 ```python
 from graphein.ppi.config import PPIGraphConfig
 from graphein.ppi.graphs import compute_ppi_graph
@@ -88,7 +100,9 @@ g = compute_ppi_graph(config=config,
 ```
 
 ### Creating a Gene Regulatory Network Graph
+
 [Tutorial](http://graphein.ai/notebooks/grn_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.grn.html)
+
 ```python
 from graphein.grn.config import GRNGraphConfig
 from graphein.grn.graphs import compute_grn_graph
@@ -107,8 +121,11 @@ g = compute_grn_graph(
 ```
 
 ## Installation
+
 ### Pip
+
 The simplest install is via pip. *N.B this does not install ML/DL libraries which are required for conversion to their data formats and for generating protein structure meshes with PyTorch 3D.* [Further details]
+
 ```bash
 pip install graphein # For base install
 pip install graphein[extras] # For additional featurisation dependencies
@@ -139,7 +156,9 @@ get_dynamic_contacts.py --topology 5xnd_topology.pdb \
 ```
 
 ### Conda environment
+
 The dev environment includes GPU Builds (CUDA 11.1) for each of the deep learning libraries integrated into graphein.
+
 ```bash
 git clone https://www.github.com/a-r-j/graphein
 cd graphein
@@ -157,7 +176,15 @@ pip install -e .
 ```
 
 ### Dockerfile
-We also provide a [Dockerfile](https://github.com/a-r-j/graphein/pull/69)
+
+We provide two `docker-compose` files for CPU (`docker-compose.cpu.yml`) and GPU usage (`docker-compose.yml`) locally. For GPU usage please ensure that you have [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) installed. Ensure that you install the locally mounted volume after entering the container (`pip install -e .`). This will also setup the dev environment locally.
+
+To build (GPU) run:
+
+```
+docker-compose up -d --build # start the container
+docker-compose down # stop the container
+```
 
 ## Citing Graphein
 
@@ -165,16 +192,16 @@ Please consider citing graphein if it proves useful in your work.
 
 ```bibtex
 @article {Jamasb2020.07.15.204701,
-	author = {Jamasb, Arian R. and Vi{\~n}as, Ramon and Ma, Eric J. and Harris, Charlie and Huang, Kexin and Hall, Dominic and Li{\'o}, Pietro and Blundell, Tom L.},
-	title = {Graphein - a Python Library for Geometric Deep Learning and Network Analysis on Protein Structures and Interaction Networks},
-	elocation-id = {2020.07.15.204701},
-	year = {2021},
-	doi = {10.1101/2020.07.15.204701},
-	publisher = {Cold Spring Harbor Laboratory},
-	abstract = {Geometric deep learning has well-motivated applications in the context of biology, a domain where relational structure in datasets can be meaningfully leveraged. Currently, efforts in both geometric deep learning and, more broadly, deep learning applied to biomolecular tasks have been hampered by a scarcity of appropriate datasets accessible to domain specialists and machine learning researchers alike. However, there has been little exploration of how to best to integrate and construct geometric representations of these datatypes. To address this, we introduce Graphein as a turn-key tool for transforming raw data from widely-used bioinformatics databases into machine learning-ready datasets in a high-throughput and flexible manner. Graphein is a Python library for constructing graph and surface-mesh representations of protein structures and biological interaction networks for computational analysis. Graphein provides utilities for data retrieval from widely-used bioinformatics databases for structural data, including the Protein Data Bank, the recently-released AlphaFold Structure Database, and for biomolecular interaction networks from STRINGdb, BioGrid, TRRUST and RegNetwork. The library interfaces with popular geometric deep learning libraries: DGL, PyTorch Geometric and PyTorch3D though remains framework agnostic as it is built on top of the PyData ecosystem to enable inter-operability with scientific computing tools and libraries. Graphein is designed to be highly flexible, allowing the user to specify each step of the data preparation, scalable to facilitate working with large protein complexes and interaction graphs, and contains useful pre-processing tools for preparing experimental files. Graphein facilitates network-based, graph-theoretic and topological analyses of structural and interaction datasets in a high-throughput manner. As example workflows, we make available two new protein structure-related datasets, previously unused by the geometric deep learning community. We envision that Graphein will facilitate developments in computational biology, graph representation learning and drug discovery.Availability and implementation Graphein is written in Python. Source code, example usage and tutorials, datasets, and documentation are made freely available under the MIT License at the following URL: graphein.aiCompeting Interest StatementThe authors have declared no competing interest.},
-	URL = {https://www.biorxiv.org/content/early/2021/10/12/2020.07.15.204701},
-	eprint = {https://www.biorxiv.org/content/early/2021/10/12/2020.07.15.204701.full.pdf},
-	journal = {bioRxiv}
+ author = {Jamasb, Arian R. and Vi{\~n}as, Ramon and Ma, Eric J. and Harris, Charlie and Huang, Kexin and Hall, Dominic and Li{\'o}, Pietro and Blundell, Tom L.},
+ title = {Graphein - a Python Library for Geometric Deep Learning and Network Analysis on Protein Structures and Interaction Networks},
+ elocation-id = {2020.07.15.204701},
+ year = {2021},
+ doi = {10.1101/2020.07.15.204701},
+ publisher = {Cold Spring Harbor Laboratory},
+ abstract = {Geometric deep learning has well-motivated applications in the context of biology, a domain where relational structure in datasets can be meaningfully leveraged. Currently, efforts in both geometric deep learning and, more broadly, deep learning applied to biomolecular tasks have been hampered by a scarcity of appropriate datasets accessible to domain specialists and machine learning researchers alike. However, there has been little exploration of how to best to integrate and construct geometric representations of these datatypes. To address this, we introduce Graphein as a turn-key tool for transforming raw data from widely-used bioinformatics databases into machine learning-ready datasets in a high-throughput and flexible manner. Graphein is a Python library for constructing graph and surface-mesh representations of protein structures and biological interaction networks for computational analysis. Graphein provides utilities for data retrieval from widely-used bioinformatics databases for structural data, including the Protein Data Bank, the recently-released AlphaFold Structure Database, and for biomolecular interaction networks from STRINGdb, BioGrid, TRRUST and RegNetwork. The library interfaces with popular geometric deep learning libraries: DGL, PyTorch Geometric and PyTorch3D though remains framework agnostic as it is built on top of the PyData ecosystem to enable inter-operability with scientific computing tools and libraries. Graphein is designed to be highly flexible, allowing the user to specify each step of the data preparation, scalable to facilitate working with large protein complexes and interaction graphs, and contains useful pre-processing tools for preparing experimental files. Graphein facilitates network-based, graph-theoretic and topological analyses of structural and interaction datasets in a high-throughput manner. As example workflows, we make available two new protein structure-related datasets, previously unused by the geometric deep learning community. We envision that Graphein will facilitate developments in computational biology, graph representation learning and drug discovery.Availability and implementation Graphein is written in Python. Source code, example usage and tutorials, datasets, and documentation are made freely available under the MIT License at the following URL: graphein.aiCompeting Interest StatementThe authors have declared no competing interest.},
+ URL = {https://www.biorxiv.org/content/early/2021/10/12/2020.07.15.204701},
+ eprint = {https://www.biorxiv.org/content/early/2021/10/12/2020.07.15.204701.full.pdf},
+ journal = {bioRxiv}
 }
 
 ```
