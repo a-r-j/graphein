@@ -36,15 +36,15 @@ jobs:
 
       - name: Install Graphein (Docker)
         run: |
-          docker exec -it $(docker-compose ps -q) bash -c 'pip install -e .'
+          docker exec -it $(docker ps -q) bash -c 'pip install -e .'
 
       - name: Run tests (Docker)
         run: |
-          docker exec -it $(docker-compose ps -q) bash -c 'pytest .'
+          docker exec -it $(docker ps -q) bash -c 'pytest .'
 
       - name: Run example notebooks (Docker)
         run: |
-          docker exec -it $(docker-compose ps -q) bash -c 'grep -l smoke_test notebooks/*.ipynb | pytest --nbval-lax --current-env'
+          docker exec -it $(docker ps -q) bash -c 'grep -l smoke_test notebooks/*.ipynb | pytest --nbval-lax --current-env'
 
       - name: Upload code coverage
         run: |
