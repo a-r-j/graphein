@@ -7,9 +7,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, List, Literal, Optional, Union
+from typing import Callable, List, Optional, Union
 
 from pydantic import BaseModel
+from typing_extensions import Literal
 
 from graphein.protein.edges.distance import add_peptide_bonds
 from graphein.protein.features.nodes.amino_acid import meiler_embedding
