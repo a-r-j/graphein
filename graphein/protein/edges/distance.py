@@ -197,21 +197,25 @@ def add_hydrogen_bond_interactions(
         "O",
     ]
     hbond_df = filter_dataframe(rgroup_df, "atom_name", HBOND_ATOMS, True)
-    distmat = compute_distmat(hbond_df)
-    interacting_atoms = get_interacting_atoms(3.5, distmat)
-    add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
+    if len(hbond_df.index) > 0:
+        distmat = compute_distmat(hbond_df)
+        interacting_atoms = get_interacting_atoms(3.5, distmat)
+        add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
 
     # For these atoms, find those that are within 4.0A of one another.
     HBOND_ATOMS_SULPHUR = ["SD", "SG"]
     hbond_df = filter_dataframe(
         rgroup_df, "atom_name", HBOND_ATOMS_SULPHUR, True
     )
-    distmat = compute_distmat(hbond_df)
-    interacting_atoms = get_interacting_atoms(4.0, distmat)
-    add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
+    if len(hbond_df.index) > 0:
+        distmat = compute_distmat(hbond_df)
+        interacting_atoms = get_interacting_atoms(4.0, distmat)
+        add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
 
 
-def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame = None):
+def add_ionic_interactions(
+    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+):
     """
     Find all ionic interactions.
 
@@ -222,9 +226,7 @@ def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame = None):
     ionic_df = filter_dataframe(rgroup_df, "residue_name", IONIC_RESIS, True)
     distmat = compute_distmat(ionic_df)
     interacting_atoms = get_interacting_atoms(6, distmat)
-
     add_interacting_resis(G, interacting_atoms, ionic_df, ["ionic"])
-
     # Check that the interacting residues are of opposite charges
     for r1, r2 in get_edges_by_bond_type(G, "ionic"):
         condition1 = (
@@ -266,16 +268,16 @@ def add_aromatic_interactions(
         get_interacting_atoms), as they do not return centroid atom
         euclidean coordinates.
     """
+    if pdb_df is None:
+        pdb_df = G.graph["raw_pdb_df"]
     dfs = []
     for resi in AROMATIC_RESIS:
         resi_rings_df = get_ring_atoms(pdb_df, resi)
         resi_centroid_df = get_ring_centroids(resi_rings_df)
         dfs.append(resi_centroid_df)
-
     aromatic_df = (
         pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
     )
-
     distmat = compute_distmat(aromatic_df)
     distmat.set_index(aromatic_df["node_id"], inplace=True)
     distmat.columns = aromatic_df["node_id"]
@@ -286,7 +288,7 @@ def add_aromatic_interactions(
         (distmat.index[r], distmat.index[c])
         for r, c in zip(indices[0], indices[1])
     ]
-
+    log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
     for n1, n2 in interacting_resis:
         assert G.nodes[n1]["residue_name"] in AROMATIC_RESIS
         assert G.nodes[n2]["residue_name"] in AROMATIC_RESIS
