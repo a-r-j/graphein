@@ -1,6 +1,7 @@
 ### 1.0.12 - UNRELEASED
 
 * [Packaging] - #100 adds docker support.
+* [Packaging] - #101 adds support for devcontainers for remote development.
 
 * [Bugfixes] - #95 adds improved robustness for edge construction functions in certain edge cases. Insertions in the PDB were occasionally not picked up due to a brittle implementations. Resolves #74 and #98
 
