@@ -1,6 +1,7 @@
 ### 1.0.12 - UNRELEASED
 
 * [Packaging] - #100 adds docker support.
+* [Packaging] - #101 adds support for devcontainers for remote development.
 
 ### 1.0.11 - 01/02/2022
 
