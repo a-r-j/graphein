@@ -2,6 +2,8 @@
 
 * [Packaging] - #100 adds docker support.
 
+* [Bugfixes] - #95 adds improved robustness for edge construction functions in certain edge cases. Insertions in the PDB were occasionally not picked up due to a brittle implementations. Resolves #74 and #98
+
 ### 1.0.11 - 01/02/2022
 
 * [Improvement] - #79 Replaces `Literal` references with `typing_extensions.Literal` for Python 3.7 support.
