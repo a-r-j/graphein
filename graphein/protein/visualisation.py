@@ -13,8 +13,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import plotly.graph_objects as go
 import plotly.express as px
+import plotly.graph_objects as go
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -436,6 +436,77 @@ def plot_distance_matrix(
         fig = sns.heatmap(
             dist_mat, xticklabels=tick_labels, yticklabels=tick_labels
         ).set(title=title)
+
+    return fig
+
+
+def plot_distance_landscape(
+    g: Optional[nx.Graph] = None,
+    dist_mat: Optional[np.ndarray] = None,
+    add_contour: bool = True,
+    title: Optional[str] = None,
+    width: int = 500,
+    height: int = 500,
+    autosize: bool = False,
+) -> go.Figure:
+    """Plots a distance landscape of the graph.
+
+    :param g: Graph to plot (must contain a distance matrix in `g.graph["dist_mat"]).
+    :type g: nx.Graph
+    :param add_contour: Whether or not to show the contour, defaults to True
+    :type add_contour: bool, optional
+    :param width: Plot width, defaults to 500
+    :type width: int, optional
+    :param height: Plot height, defaults to 500
+    :type height: int, optional
+    :param autosize: Whether or not to autosize the plot, defaults to False
+    :type autosize: bool, optional
+    :return: Plotly figure of distance landscape.
+    :rtype: go.Figure
+    """
+    if g:
+        dist_mat = g.graph["dist_mat"]
+        if not title:
+            title = g.graph["name"] + " - Distance Landscape"
+        tick_labels = list(g.nodes)
+    else:
+        if not title:
+            title = "Distance landscape"
+        tick_labels = list(range(dist_mat.shape[0]))
+
+    fig = go.Figure(data=[go.Surface(z=dist_mat)])
+
+    if add_contour:
+        fig.update_traces(
+            contours_z=dict(
+                show=True,
+                usecolormap=True,
+                highlightcolor="limegreen",
+                project_z=True,
+            )
+        )
+
+    fig.update_layout(
+        title=title,
+        autosize=autosize,
+        width=width,
+        height=height,
+        scene=dict(
+            zaxis_title="Distance",
+            xaxis=dict(
+                ticktext=tick_labels,
+                tickvals=list(range(len(tick_labels))),
+                nticks=10,
+                showticklabels=False,
+            ),
+            yaxis=dict(
+                ticktext=tick_labels,
+                tickvals=list(range(len(tick_labels))),
+                nticks=10,
+                showticklabels=False,
+            ),
+        ),
+    )
 
     return fig
 
