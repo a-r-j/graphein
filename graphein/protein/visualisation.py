@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import plotly.graph_objects as go
+import plotly.express as px
+import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
 
 from graphein.utils.utils import import_message
@@ -54,7 +56,9 @@ def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:
 
 
 def colour_nodes(
-    G: nx.Graph, colour_map: matplotlib.colors.ListedColormap, colour_by: str
+    G: nx.Graph,
+    colour_by: str,
+    colour_map: matplotlib.colors.ListedColormap = plt.cm.plasma,
 ) -> List[Tuple[float, float, float, float]]:
     """
     Computes node colours based on "degree", "seq_position" or node attributes
@@ -377,6 +381,63 @@ def plot_protein_structure_graph(
         plt.close("all")
 
     return ax
+
+
+def plot_distance_matrix(
+    g: Optional[nx.Graph],
+    dist_mat: Optional[np.ndarray] = None,
+    use_plotly: bool = True,
+    title: Optional[str] = None,
+    show_residue_labels: bool = True,
+) -> go.Figure:
+    """Plots a distance matrix of the graph.
+
+    :param g: NetworkX graph containing a distance matrix as a graph attribute (g.graph['dist_mat']).
+    :type g: nx.Graph, optional
+    :param dist_mat: Distance matrix to plot. If not provided, the distance matrix is taken from the graph.
+    :type dist_mat: np.ndarray, optional
+    :param use_plotly: Whether to use plotly or seaborn for plotting.
+    :type use_plotly: bool
+    :param title: Title of the plot.
+    :type title: str, optional
+    :show_residue_labels: Whether to show residue labels on the plot.
+    :type show_residue_labels: bool
+    :return: Plotly figure.
+    :rtype: px.Figure
+    """
+    if not g and not dist_mat:
+        raise ValueError("Must provide either a graph or a distance matrix.")
+
+    if g:
+        dist_mat = g.graph["dist_mat"]
+        x_range = list(g.nodes)
+        y_range = list(g.nodes)
+        if not title:
+            title = g.graph["name"] + " - Distance Matrix"
+    else:
+        x_range = list(range(dist_mat.shape[0]))
+        y_range = list(range(dist_mat.shape[1]))
+        if not title:
+            title = "Distance matrix"
+
+    if use_plotly:
+        fig = px.imshow(
+            dist_mat,
+            x=x_range,
+            y=y_range,
+            labels=dict(color="Distance"),
+            title=title,
+        )
+    else:
+        if show_residue_labels:
+            tick_labels = x_range
+        else:
+            tick_labels = []
+        fig = sns.heatmap(
+            dist_mat, xticklabels=tick_labels, yticklabels=tick_labels
+        ).set(title=title)
+
+    return fig
 
 
 if __name__ == "__main__":
