@@ -6,6 +6,7 @@ from .graphs import *
 from .resi_atoms import *
 from .utils import *
 from .visualisation import plot_protein_structure_graph
+from .subgraphs import *
 
 try:
     from .meshes import *
