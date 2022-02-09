@@ -8,15 +8,13 @@ import logging
 # Code Repository: https://github.com/a-r-j/graphein
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 import wget
 from Bio.PDB import PDBList
-
-from graphein.proteins.edges.distance import compute_distmat
 
 from .resi_atoms import RESI_THREE_TO_1
 
