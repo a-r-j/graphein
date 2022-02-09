@@ -40,7 +40,6 @@ from graphein.protein.features.sequence.embeddings import (
 from graphein.protein.features.sequence.sequence import molecular_weight
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 
-
 DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
 
 

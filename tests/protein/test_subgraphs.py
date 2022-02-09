@@ -5,28 +5,29 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-import pytest
 from pathlib import Path
+
 import networkx as nx
 import numpy as np
+import pytest
 from sklearn import neighbors
 
 from graphein.protein.config import ProteinGraphConfig
-from graphein.protein.graphs import construct_graph
 from graphein.protein.edges.distance import (
     add_ionic_interactions,
     add_peptide_bonds,
 )
+from graphein.protein.graphs import construct_graph
 from graphein.protein.subgraphs import (
-    extract_subgraph_from_node_list,
     extract_k_hop_subgraph,
-    extract_subgraph_by_sequence_position,
+    extract_subgraph,
     extract_subgraph_by_bond_type,
+    extract_subgraph_by_sequence_position,
     extract_subgraph_from_atom_types,
     extract_subgraph_from_chains,
+    extract_subgraph_from_node_list,
     extract_subgraph_from_point,
     extract_subgraph_from_residue_types,
-    extract_subgraph,
 )
 
 
