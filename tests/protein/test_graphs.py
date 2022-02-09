@@ -117,7 +117,7 @@ def test_chain_selection():
 # Removed - testing with GetContacts as a dependency is not a priority right now
 """
 def test_intramolecular_edges():
-    Example-based test that intramolecualr edge construction using GetContacts works correctly.
+    Example-based test that intramolecular edge construction using GetContacts works correctly.
 
     Uses 4hhb PDB file as an example test case.
 
@@ -152,7 +152,7 @@ def test_distance_edges():
         "edge_construction_functions": [
             partial(add_k_nn_edges, k=5, long_interaction_threshold=10),
             add_hydrophobic_interactions,
-            # add_aromatic_interactions, # Todo removed for now as ring centroids require precomputing
+            add_aromatic_interactions,  # Todo removed for now as ring centroids require precomputing
             add_aromatic_sulphur_interactions,
             add_delaunay_triangulation,
             add_cation_pi_interactions,
@@ -169,7 +169,7 @@ def test_distance_edges():
     }
     config = ProteinGraphConfig(**edge_functions)
     G = construct_graph(pdb_path=str(file_path), config=config)
-    # Todo complete
+    assert G is not None
 
 
 # Featurisation tests

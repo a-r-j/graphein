@@ -71,14 +71,19 @@ def colour_nodes(
     # get number of nodes
     n = G.number_of_nodes()
 
-    # Get max number of edges connected to a single node
-    edge_max = max([G.degree[i] for i in G.nodes()])
-
     # Define color range proportional to number of edges adjacent to a single node
     if colour_by == "degree":
+        # Get max number of edges connected to a single node
+        edge_max = max([G.degree[i] for i in G.nodes()])
         colors = [colour_map(G.degree[i] / edge_max) for i in G.nodes()]
     elif colour_by == "seq_position":
         colors = [colour_map(i / n) for i in range(n)]
+    elif colour_by == "chain":
+        chains = G.graph["chain_ids"]
+        chain_colours = dict(
+            zip(chains, list(colour_map(1 / len(chains), 1, len(chains))))
+        )
+        colors = [chain_colours[d["chain_id"]] for n, d in G.nodes(data=True)]
     else:
         node_types = set(nx.get_node_attributes(G, colour_by).values())
         mapping = dict(zip(sorted(node_types), count()))
@@ -114,10 +119,15 @@ def colour_edges(
         mapping = dict(zip(sorted(edge_types), count()))
         colors = [
             colour_map(
-                mapping[frozenset(G.edges[i]["kind"])] / len(edge_types)
+                mapping[frozenset(G.edges[i]["kind"])]
+                / (len(edge_types) + 1)  # avoid division by zero error
             )
             for i in G.edges()
         ]
+    else:
+        raise NotImplementedError(
+            "Other edge colouring methods not implemented."
+        )
     return colors
 
 
@@ -132,8 +142,7 @@ def plotly_protein_structure_graph(
     node_colour_map=plt.cm.plasma,
     edge_color_map=plt.cm.plasma,
     colour_nodes_by: str = "degree",
-    colour_edges_by: str = "type",
-    edge_alpha: float = 0.5,
+    colour_edges_by: str = "kind",
 ) -> go.Figure:
     """
     Plots protein structure graph using plotly.
@@ -160,8 +169,6 @@ def plotly_protein_structure_graph(
     :type colour_edges_by: str
     :param colour_edges_by: Specifies how to colour edges. Currently only "kind" is supported
     :type colour_nodes_by: str
-    :param edge_alpha: Controls edge transparency
-    :type edge_alpha: float
     :returns: Plotly Graph Objects plot
     :rtype: go.Figure
     """
@@ -236,7 +243,7 @@ def plotly_protein_structure_graph(
         mode="lines",
         line={"color": edge_colors, "width": 10},
         text=[
-            str(list(edge_type))
+            " / ".join(list(edge_type))
             for edge_type in nx.get_edge_attributes(G, "kind").values()
         ],
         hoverinfo="text",
@@ -407,12 +414,10 @@ if __name__ == "__main__":
     ]
 
     config.node_metadata_functions = [meiler_embedding, expasy_protein_scale]
-    # g = construct_graph(config=config, pdb_path="../../examples/pdbs/1a1e.pdb", pdb_code="1a1e")
 
     g = construct_graph(
         config=config, pdb_path="../examples/pdbs/3eiy.pdb", pdb_code="3eiy"
     )
-    print(nx.info(g))
 
     p = plotly_protein_structure_graph(
         g,
