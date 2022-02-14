@@ -9,6 +9,7 @@ pandas
 plotly
 pydantic
 pyyaml>=5.1
+seaborn
 scikit-learn
 scipy
 tqdm
