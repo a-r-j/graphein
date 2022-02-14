@@ -1,4 +1,4 @@
-name: Code tests
+name: Code tests (docker)
 
 on: [pull_request]
 
@@ -36,16 +36,16 @@ jobs:
 
       - name: Install Graphein (Docker)
         run: |
-          docker exec -it $(docker-compose ps -q) bash -c 'pip install -e .'
+          docker exec $(docker ps -q) bash -c 'pip install -e .'
 
       - name: Run tests (Docker)
         run: |
-          docker exec -it $(docker-compose ps -q) bash -c 'pytest .'
+          docker exec $(docker ps -q) bash -c 'pytest .'
 
       - name: Run example notebooks (Docker)
         run: |
-          docker exec -it $(docker-compose ps -q) bash -c 'grep -l smoke_test notebooks/*.ipynb | pytest --nbval-lax --current-env'
-          
+          docker exec $(docker ps -q) bash -c 'grep -l smoke_test notebooks/*.ipynb | pytest --nbval-lax --current-env'
+
       - name: Upload code coverage
         run: |
           bash <(curl -s https://codecov.io/bash)

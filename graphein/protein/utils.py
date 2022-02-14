@@ -1,4 +1,6 @@
-"""Provides utility functions for use across Graphein"""
+"""Provides utility functions for use across Graphein."""
+import logging
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -6,16 +8,20 @@
 # Code Repository: https://github.com/a-r-j/graphein
 import os
 from pathlib import Path
-from typing import Any, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
+import networkx as nx
+import numpy as np
 import pandas as pd
 import wget
 from Bio.PDB import PDBList
 
 from .resi_atoms import RESI_THREE_TO_1
 
+log = logging.getLogger(__name__)
 
-def download_pdb(config, pdb_code: str) -> str:
+
+def download_pdb(config, pdb_code: str) -> Path:
     """
     Download PDB structure from PDB
 
@@ -39,7 +45,7 @@ def download_pdb(config, pdb_code: str) -> str:
     )
     # Assert file has been downloaded
     assert any(pdb_code in s for s in os.listdir(config.pdb_dir))
-    print(f"Downloaded PDB file for: {pdb_code}")
+    log.info(f"Downloaded PDB file for: {pdb_code}")
     return config.pdb_dir / (pdb_code + ".pdb")
 
 
@@ -52,7 +58,7 @@ def get_protein_name_from_filename(pdb_path: str) -> str:
     :return: file name
     :rtype: str
     """
-    head, tail = os.path.split(pdb_path)
+    _, tail = os.path.split(pdb_path)
     tail = os.path.splitext(tail)[0]
     return tail
 
@@ -97,10 +103,10 @@ def download_alphafold_structure(
     BASE_URL = "https://alphafold.ebi.ac.uk/files/"
     """
     Downloads a structure from the Alphafold EBI database.
-    
+
     :param uniprot_id: UniProt ID of desired protein
     :type uniprot_id: str
-    :param out_dir: string specifying desired otput location. Default is pwd.
+    :param out_dir: string specifying desired output location. Default is pwd.
     :type out_dir: str
     :param mmcif: Bool specifying whether to download MMCiF or PDB. Default is false (downloads pdb)
     :type mmcif: bool
@@ -109,6 +115,8 @@ def download_alphafold_structure(
     :return: path to output. Tuple if several outputs specified.
     :rtype: Union[str, Tuple[str, str]]
     """
+    if not mmcif and not pdb:
+        raise ValueError("Must specify either mmcif or pdb.")
     if mmcif:
         query_url = BASE_URL + "AF-" + uniprot_id + "F1-model_v1.cif"
     if pdb:
@@ -139,7 +147,3 @@ def three_to_one_with_mods(res: str) -> str:
     :rtype: str
     """
     return RESI_THREE_TO_1[res]
-
-
-if __name__ == "__main__":
-    download_alphafold_structure(uniprot_id="Q8W3K0", aligned_score=True)

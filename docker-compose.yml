@@ -1,21 +1,21 @@
 version: "3.3"
 
 services:
-    graphein-gpu:
-        image: 'graphein-gpu:latest'
-        environment:
-          CUDA: cu110
-          TORCH: '1.7.1'
-        build:
-            context: ./
-            dockerfile: Dockerfile
-        volumes: 
-            - ./:/graphein
-        command: tail -f /dev/null
-        ipc: host
-        deploy:
-            resources:
-              reservations:
-                devices:
-                  - capabilities: [gpu]
-                    driver: nvidia
+  graphein-gpu:
+    image: 'graphein-gpu:latest'
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        CUDA: cpu
+        TORCH: '1.7.1'
+    volumes:
+      - ./:/graphein
+    command: tail -f /dev/null
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [ gpu ]
+              driver: nvidia

@@ -51,3 +51,5 @@ jobs:
         run: pip install -r .requirements/dev.in
       - name: Run unit tests and generate coverage report
         run: pytest .
+      - name: Test notebook execution
+        run: pytest --nbval-lax notebooks/ --current-env
