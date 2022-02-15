@@ -1,5 +1,6 @@
 ### 1.1.0 - UNRELEASED
 
+* [Feature] - #104 adds support for asteroid plots.
 * [Packaging] - #100 adds docker support.
 * [Feature] - #96 Adds support for extracting subgraphs
 * [Packaging] - #101 adds support for devcontainers for remote development.

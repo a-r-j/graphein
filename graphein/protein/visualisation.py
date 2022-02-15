@@ -6,8 +6,9 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import logging
 from itertools import count
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -18,6 +19,7 @@ import plotly.graph_objects as go
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
 
+from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.utils import import_message
 
 try:
@@ -28,6 +30,8 @@ except ImportError:
         package="pytorch3d",
         conda_channel="pytorch3d",
     )
+
+log = logging.getLogger()
 
 
 def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:
@@ -509,6 +513,153 @@ def plot_distance_landscape(
     )
 
     return fig
+
+
+def asteroid_plot(
+    g: nx.Graph,
+    node_id: str,
+    k: int = 2,
+    colour_by: str = "shell",  # residue_name
+    show_labels: bool = True,
+    title: Optional[str] = None,
+    width: int = 600,
+    height: int = 500,
+    use_plotly: bool = True,
+    show_edges: bool = False,
+    node_size_multiplier: float = 10,
+) -> Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]:
+    """"Plots a k-hop subgraph around a node as concentric shells.
+
+    Radius of each point is proportional to the degree of the node (modified by node_size_multiplier).
+
+    :param g: NetworkX graph to plot.
+    :type g: nx.Graph
+    :param node_id: Node to centre the plot around.
+    :type node_id: str
+    :param k: Number of hops to plot
+    :type k: int, defaults to 2
+    :param colour_by: Colour the nodes by this attribute. Currently only "shell" is supported.
+    :type colour_by: str, defaults to "shell"
+    :param title: Title of the plot.
+    :type title: str, defaults to None
+    :param width: Width of the plot.
+    :height: Height of the plot.
+    :param use_plotly: Use plotly to render the graph.
+    :type use_plotly: bool, defaults to True
+    :param show_edges: Whether or not to show edges in the plot.
+    :type show_edges: bool, defaults to False
+    :param node_size_multiplier: Multiplier for the size of the nodes.
+    :type node_size_multiplier: float, defaults to 10
+    :returns: Plotly figure or matplotlib figure.
+    :rtpye: Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]
+    """ ""
+    assert node_id in g.nodes(), f"Node {node_id} not in graph"
+
+    nodes: Dict[int, List[str]] = {}
+    nodes[0] = [node_id]
+    node_list: List[str] = [node_id]
+    # Iterate over the number of hops and extract nodes in each shell
+    for i in range(1, k):
+        subgraph = extract_k_hop_subgraph(g, node_id, k=i)
+        candidate_nodes = subgraph.nodes()
+        # Check we've not already found nodes in the previous shells
+        nodes[i] = [n for n in candidate_nodes if n not in node_list]
+        node_list += candidate_nodes
+    shells = [nodes[i] for i in range(k)]
+    log.debug(f"Plotting shells: {shells}")
+
+    if use_plotly:
+        # Get shell layout and set as node attributes.
+        pos = nx.shell_layout(subgraph, shells)
+        nx.set_node_attributes(subgraph, pos, "pos")
+
+        if show_edges:
+            edge_x: List[str] = []
+            edge_y: List[str] = []
+            for edge in subgraph.edges():
+                x0, y0 = subgraph.nodes[edge[0]]["pos"]
+                x1, y1 = subgraph.nodes[edge[1]]["pos"]
+                edge_x.append(x0)
+                edge_x.append(x1)
+                edge_x.append(None)
+                edge_y.append(y0)
+                edge_y.append(y1)
+                edge_y.append(None)
+            edge_trace = go.Scatter(
+                x=edge_x,
+                y=edge_y,
+                line=dict(width=0.5, color="#888"),
+                hoverinfo="none",
+                mode="lines",
+            )
+
+        node_x: List[str] = []
+        node_y: List[str] = []
+        for node in subgraph.nodes():
+            x, y = subgraph.nodes[node]["pos"]
+            node_x.append(x)
+            node_y.append(y)
+
+        degrees = [
+            subgraph.degree(n) * node_size_multiplier for n in subgraph.nodes()
+        ]
+
+        if colour_by == "shell":
+            node_colours = []
+            for n in subgraph.nodes():
+                for k, v in nodes.items():
+                    if n in v:
+                        node_colours.append(k)
+        else:
+            raise NotImplementedError(
+                f"Colour by {colour_by} not implemented."
+            )
+            # TODO colour by AA type
+        node_trace = go.Scatter(
+            x=node_x,
+            y=node_y,
+            text=list(subgraph.nodes()),
+            mode="markers+text" if show_labels else "markers",
+            hoverinfo="text",
+            textposition="bottom center",
+            marker=dict(
+                colorscale="YlGnBu",
+                reversescale=True,
+                color=node_colours,
+                size=degrees,
+                colorbar=dict(
+                    thickness=15,
+                    title="Shell",
+                    tickvals=list(range(k)),
+                    xanchor="left",
+                    titleside="right",
+                ),
+                line_width=2,
+            ),
+        )
+
+        data = [edge_trace, node_trace] if show_edges else [node_trace]
+        fig = go.Figure(
+            data=data,
+            layout=go.Layout(
+                title=title if title else f'Asteroid Plot - {g.graph["name"]}',
+                width=width,
+                height=height,
+                titlefont_size=16,
+                showlegend=False,
+                hovermode="closest",
+                margin=dict(b=20, l=5, r=5, t=40),
+                xaxis=dict(
+                    showgrid=False, zeroline=False, showticklabels=False
+                ),
+                yaxis=dict(
+                    showgrid=False, zeroline=False, showticklabels=False
+                ),
+            ),
+        )
+        return fig
+    else:
+        nx.draw_shell(subgraph, nlist=shells, with_labels=show_labels)
 
 
 if __name__ == "__main__":

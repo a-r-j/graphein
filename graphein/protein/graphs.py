@@ -156,7 +156,6 @@ def remove_insertions(df: pd.DataFrame, keep: str = "first") -> pd.DataFrame:
     :rtype: pd.DataFrame
     """
     """Remove insertions from structure."""
-
     duplicates = df.duplicated(
         subset=["chain_id", "residue_number", "atom_name"], keep=keep
     )
