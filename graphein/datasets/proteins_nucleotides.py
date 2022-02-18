@@ -21,8 +21,7 @@ class PROTEINS_NUCLEOTIDES(AbstractClassificationDataset):
             / "proteins_nucleotides"
             / "PROTEINS_NUCLEOTIDES.csv"
         )
-        df = pd.read_csv(file_path)
-        return df
+        return pd.read_csv(file_path)
 
     def split_data(
         self,

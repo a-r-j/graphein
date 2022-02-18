@@ -1,9 +1,11 @@
 """Class for working with the PROTEINS_NUCLEIC dataset"""
-# Graphein
-# Author: Arian Jamasb <arian@jamasb.io>
+
+
 # License: MIT
 # Code Repository: https://github.com/a-r-j/graphein
 from functools import lru_cache
+# Graphein
+# Author: Arian Jamasb <arian@jamasb.io>
 from pathlib import Path
 
 import pandas as pd
@@ -20,8 +22,7 @@ class PROTEINS_NUCLEIC(AbstractClassificationDataset):
             / "proteins_nucleic"
             / "PROTEINS_NUCLEIC.csv"
         )
-        df = pd.read_csv(file_path)
-        return df
+        return pd.read_csv(file_path)
 
     def split_data(
         self,

@@ -1,7 +1,6 @@
 """Base class for working with the PROTEINS_X datasets"""
 import logging
 import multiprocessing
-
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -34,10 +33,7 @@ class AbstractClassificationDataset(ABC):
         ] = ProteinGraphConfig(),
         num_cores: int = 16,
     ):
-        if df is not None:
-            self.df = df
-        else:
-            self.df: pd.DataFrame = self._load_dataset()
+        self.df = self._load_dataset() if df is None else df
         self._num_cores: int = num_cores
         self.config = protein_graph_config
 
@@ -48,7 +44,7 @@ class AbstractClassificationDataset(ABC):
         self.pdb_list: List[str] = self.get_pdb_list(self.df)
         self.chain_list: List[str] = self.get_chain_list(self.df)
         self.chain_length: List[str] = self.get_chain_lengths(self.df)
-        self.node_labels: List[np.array] = [
+        self.node_labels: List[np.ndarray] = [
             self.encode_interactions(ex) for ex in self.residue_labels
         ]
         if protein_graph_config is not None:
@@ -158,7 +154,7 @@ class AbstractClassificationDataset(ABC):
         return list(df["length"])
 
     @staticmethod
-    def encode_interactions(s: str) -> np.array:
+    def encode_interactions(s: str) -> np.ndarray:
         """
         Encodes interacting residue string as a binary numpy array
 
@@ -167,8 +163,7 @@ class AbstractClassificationDataset(ABC):
         :return: binary numpy array representation of interacting residues (nodes)
         :rtype: np.array
         """
-        arr = np.array([1 if c == "+" else 0 for c in s])
-        return arr
+        return np.array([1 if c == "+" else 0 for c in s])
 
     def construct_graphs(self) -> List[nx.Graph]:
         """
@@ -213,8 +208,7 @@ class AbstractClassificationDataset(ABC):
         )
         func = partial(construct_graph, config=self.config)
         try:
-            result = func(pdb_code=args[0], chain_selection=args[1])
-            return result
+            return func(pdb_code=args[0], chain_selection=args[1])
         except Exception:
             log.info(
                 f"Graph construction error (PDB={args[0]})! {traceback.format_exc()}"
@@ -223,7 +217,7 @@ class AbstractClassificationDataset(ABC):
 
     def download_pdbs(self, path: str):
         """
-        Downloads dataset PDBs to a specified directories
+        Downloads dataset PDBs to a specified directories.
 
         :param path: Path to desired output location
         :type path: str
@@ -232,7 +226,7 @@ class AbstractClassificationDataset(ABC):
         pdbl.download_pdb_files(pdb_codes=self.pdb_list, pdir=path)
 
     def __len__(self) -> int:
-        """Returns length of the dataset
+        """Returns length of the dataset.
 
         :returns: Dataset length
         :rtype: int

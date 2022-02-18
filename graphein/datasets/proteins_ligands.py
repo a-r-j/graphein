@@ -21,8 +21,7 @@ class PROTEINS_LIGANDS(AbstractClassificationDataset):
             / "proteins_ligands"
             / "PROTEINS_LIGANDS.csv"
         )
-        df = pd.read_csv(file_path)
-        return df
+        return pd.read_csv(file_path)
 
     def split_data(
         self,

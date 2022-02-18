@@ -2,7 +2,6 @@
 import logging
 import multiprocessing
 import time
-
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -80,8 +79,7 @@ class PSCDB:
         file_path = Path(
             "../../datasets/pscdb/structural_rearrangement_data.csv"
         )
-        df = pd.read_csv(file_path)
-        return df
+        return pd.read_csv(file_path)
 
     def get_pscid(self) -> List[str]:
         """

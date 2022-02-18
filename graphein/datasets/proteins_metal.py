@@ -22,8 +22,7 @@ class PROTEINS_METAL(AbstractClassificationDataset):
             / "proteins_metal"
             / "PROTEINS_METAL.csv"
         )
-        df = pd.read_csv(file_path)
-        return df
+        return pd.read_csv(file_path)
 
     def split_data(
         self,
