@@ -1,4 +1,4 @@
-### 1.1.0 - UNRELEASED
+### 1.1.0 - 19/02/2022
 
 * [Packaging] - #100 adds docker support.
 * [Feature] - #96 Adds support for extracting subgraphs
