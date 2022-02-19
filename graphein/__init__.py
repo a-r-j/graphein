@@ -13,5 +13,5 @@ from .rna import *
 __author__ = "Arian Jamasb <arian@jamasb.io>"
 
 
-__version__ = "1.0.11"  # get_versions()["version"]
+__version__ = "1.1.0"  # get_versions()["version"]
 # del get_versions
