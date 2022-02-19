@@ -6,6 +6,7 @@ from pathlib import Path
 import networkx as nx
 import pytest
 
+from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
     add_aromatic_interactions,
@@ -237,3 +238,47 @@ def test_sequence_features():
         # assert f"esm_embedding_{chain}" in G.graph
         assert f"biovec_embedding_{chain}" in G.graph
         assert f"molecular_weight_{chain}" in G.graph
+
+
+def test_insertion_handling():
+    configs = {
+        "granularity": "CA",
+        "keep_hets": False,
+        "insertions": False,
+        "verbose": False,
+        "node_metadata_functions": [meiler_embedding, expasy_protein_scale],
+        "edge_construction_functions": [
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+            add_ionic_interactions,
+            add_aromatic_sulphur_interactions,
+            add_hydrophobic_interactions,
+            add_cation_pi_interactions,
+        ],
+    }
+
+    config = ProteinGraphConfig(**configs)
+    format_convertor = GraphFormatConvertor(
+        "nx",
+        "pyg",
+        verbose="all_info",
+        columns=[
+            "edge_index",
+            "meiler",
+            "coords",
+            "expasy",
+            "node_id",
+            "name",
+            "dist_mat",
+            "num_nodes",
+        ],
+    )
+
+    # This is a nasty PDB with a lot of insertions and altlocs
+    g = construct_graph(config=config, pdb_code="6OGE")
+    g = format_convertor(g)
+
+    assert len(g.node_id) == len(g.meiler)
+    assert len(g.meiler) == len(g.expasy)
+    assert g.coords[0].shape[0] == len(g.meiler)
+    assert g.coords[0].shape[0] == g.num_nodes

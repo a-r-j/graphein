@@ -146,7 +146,7 @@ def subset_structure_to_atom_type(
 
 def remove_insertions(df: pd.DataFrame, keep: str = "first") -> pd.DataFrame:
     """
-    This function removes insertions from PDB dataframes
+    This function removes insertions from PDB dataframes.
 
     :param df: Protein Structure dataframe to remove insertions from
     :type df: pd.DataFrame
@@ -155,14 +155,23 @@ def remove_insertions(df: pd.DataFrame, keep: str = "first") -> pd.DataFrame:
     :return: Protein structure dataframe with insertions removed
     :rtype: pd.DataFrame
     """
-    """Remove insertions from structure."""
+    # Catches unnamed insertions
     duplicates = df.duplicated(
         subset=["chain_id", "residue_number", "atom_name"], keep=keep
     )
-    # return filter_dataframe(
-    #    df, by_column="alt_loc", list_of_values=["", "A"], boolean=True
-    # )
-    return df[~duplicates]
+    df = df[~duplicates]
+
+    # Catches explicit insertions
+    df = filter_dataframe(
+        df, by_column="insertion", list_of_values=[""], boolean=True
+    )
+
+    # Remove alt_locs
+    df = filter_dataframe(
+        df, by_column="alt_loc", list_of_values=["", "A"], boolean=True
+    )
+
+    return df
 
 
 def filter_hetatms(
@@ -381,7 +390,7 @@ def initialise_graph_with_metadata(
         chain_ids=list(protein_df["chain_id"].unique()),
         pdb_df=protein_df,
         raw_pdb_df=raw_pdb_df,
-        rgroup_df=compute_rgroup_dataframe(raw_pdb_df),
+        rgroup_df=compute_rgroup_dataframe(remove_insertions(raw_pdb_df)),
         coords=np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]]),
     )
 
