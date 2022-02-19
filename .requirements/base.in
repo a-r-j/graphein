@@ -1,14 +1,14 @@
 biopandas
 biopython
 bioservices
-matplotlib
+matplotlib>=3.4.3
 multipledispatch
 networkx
 numpy
 pandas
 plotly
 pydantic
-pyyaml>=5.1
+pyyaml==5.4.1
 scikit-learn
 scipy
 tqdm
