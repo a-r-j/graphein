@@ -1,6 +1,7 @@
 ### 1.1.1 - 19/02/2022
 
 * [Bugfix] - #107 improves robustness of removing insertions and hetatms, resolves #98
+* [Packaging] - #108 fixes version mismatches in pytorch_geometric in docker install
 
 ### 1.1.0 - 19/02/2022
 
