@@ -6,7 +6,6 @@ from pathlib import Path
 import networkx as nx
 import pytest
 
-from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
     add_aromatic_interactions,
@@ -258,27 +257,13 @@ def test_insertion_handling():
     }
 
     config = ProteinGraphConfig(**configs)
-    format_convertor = GraphFormatConvertor(
-        "nx",
-        "pyg",
-        verbose="all_info",
-        columns=[
-            "edge_index",
-            "meiler",
-            "coords",
-            "expasy",
-            "node_id",
-            "name",
-            "dist_mat",
-            "num_nodes",
-        ],
-    )
 
     # This is a nasty PDB with a lot of insertions and altlocs
     g = construct_graph(config=config, pdb_code="6OGE")
-    g = format_convertor(g)
 
     assert len(g.node_id) == len(g.meiler)
     assert len(g.meiler) == len(g.expasy)
-    assert g.coords[0].shape[0] == len(g.meiler)
-    assert g.coords[0].shape[0] == g.num_nodes
+    assert len(g.graph["sequence_A"]) + len(g.graph["sequence_B"]) + len(
+        g.graph["sequence_C"]
+    ) + len(g.graph["sequence_D"]) + len(g.graph["sequence_E"]) == len(g)
+    assert g.graph["coords"].shape[0] == len(g)
