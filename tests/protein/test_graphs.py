@@ -261,8 +261,6 @@ def test_insertion_handling():
     # This is a nasty PDB with a lot of insertions and altlocs
     g = construct_graph(config=config, pdb_code="6OGE")
 
-    assert len(g.node_id) == len(g.meiler)
-    assert len(g.meiler) == len(g.expasy)
     assert len(g.graph["sequence_A"]) + len(g.graph["sequence_B"]) + len(
         g.graph["sequence_C"]
     ) + len(g.graph["sequence_D"]) + len(g.graph["sequence_E"]) == len(g)
