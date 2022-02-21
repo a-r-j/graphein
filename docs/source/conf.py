@@ -19,11 +19,11 @@ sys.path.insert(0, os.path.abspath("."))
 # -- Project information -----------------------------------------------------
 
 project = "Graphein"
-copyright = "2020, Arian Jamasb"
+copyright = "2022, Arian Jamasb"
 author = "Arian Jamasb"
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.0"
+release = "1.0.11"
 
 
 # -- General configuration ---------------------------------------------------

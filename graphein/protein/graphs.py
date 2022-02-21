@@ -1,4 +1,4 @@
-"""Functions for working with Protein Structure Graphs"""
+"""Functions for working with Protein Structure Graphs."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma, Charlie Harris
@@ -37,10 +37,6 @@ from graphein.utils.utils import (
     annotate_node_metadata,
     compute_edges,
 )
-
-# from rdkit.Chem import MolFromPDBFile
-# from graphein.protein.visualisation import protein_graph_plot_3d
-
 
 logging.basicConfig(level="DEBUG")
 log = logging.getLogger(__name__)
@@ -109,7 +105,6 @@ def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
     log.debug(
         "Deprotonating protein. This removes H atoms from the pdb_df dataframe"
     )
-    # return df.loc[df["atom_name"] != "H"].reset_index(drop=True)
     return filter_dataframe(
         df, by_column="atom_name", list_of_values=["H"], boolean=False
     )
@@ -120,7 +115,7 @@ def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
 
     :param df: Pandas Dataframe config protein structure to convert into a dataframe of centroid positions
     :type df: pd.DataFrame
-    :return: pd.DataFrame with atoms/residues positiions converted into centroid positions
+    :return: pd.DataFrame with atoms/residues positions converted into centroid positions
     :rtype: pd.DataFrame
     """
     log.debug(
@@ -150,25 +145,27 @@ def subset_structure_to_atom_type(
     return filter_dataframe(
         df, by_column="atom_name", list_of_values=[granularity], boolean=True
     )
-    # return df.loc[df["atom_name"] == granularity]
 
 
-def remove_insertions(df: pd.DataFrame) -> pd.DataFrame:
+def remove_insertions(df: pd.DataFrame, keep: str = "first") -> pd.DataFrame:
     """
     This function removes insertions from PDB dataframes
 
     :param df: Protein Structure dataframe to remove insertions from
     :type df: pd.DataFrame
+    :param keep: Specifies which insertion to keep. Options are "first" or "last".
+    :type keep: str
     :return: Protein structure dataframe with insertions removed
     :rtype: pd.DataFrame
     """
     """Remove insertions from structure."""
-    # Remove alt_loc residues
-    # Todo log.debug(f"Detected X insertions")
-    # return df.loc[df["alt_loc"].isin(["", "A"])]
-    return filter_dataframe(
-        df, by_column="alt_loc", list_of_values=["", "A"], boolean=True
+    duplicates = df.duplicated(
+        subset=["chain_id", "residue_number", "atom_name"], keep=keep
     )
+    # return filter_dataframe(
+    #    df, by_column="alt_loc", list_of_values=["", "A"], boolean=True
+    # )
+    return df[~duplicates]
 
 
 def filter_hetatms(
@@ -196,8 +193,7 @@ def compute_rgroup_dataframe(pdb_df: pd.DataFrame) -> pd.DataFrame:
     :returns: Dataframe containing R-groups only (backbone atoms removed)
     :rtype: pd.DataFrame
     """
-    rgroup_df = filter_dataframe(pdb_df, "atom_name", BACKBONE_ATOMS, False)
-    return rgroup_df
+    return filter_dataframe(pdb_df, "atom_name", BACKBONE_ATOMS, False)
 
 
 def process_dataframe(
@@ -222,7 +218,7 @@ def process_dataframe(
     :type atom_df_processing_funcs: List[Callable], optional
     :param hetatom_df_processing_funcs: List of functions to process dataframe. These must take in a dataframe and return a dataframe
     :type hetatom_df_processing_funcs: List[Callable], optional
-    :param granularity: The level of granualrity for the graph.
+    :param granularity: The level of granularity for the graph.
         This determines the node definition.
         Acceptable values include:
         - "centroids"
@@ -268,16 +264,16 @@ def process_dataframe(
         atoms = deprotonate_structure(atoms)
 
     # Restrict DF to desired granularity
-    if granularity == "centroids":
+    if granularity == "atom":
+        pass
+    elif granularity == "centroids":
         atoms = convert_structure_to_centroids(atoms)
-    # elif granularity == "atom":
-    #    atoms = atoms
     else:
         atoms = subset_structure_to_atom_type(atoms, granularity)
 
     protein_df = atoms
 
-    if len(keep_hets) > 0:
+    if keep_hets:
         hetatms_to_keep = filter_hetatms(atoms, keep_hets)
         protein_df = pd.concat([atoms, hetatms_to_keep])
 
@@ -318,7 +314,7 @@ def assign_node_id_to_dataframe(
 
     :param protein_df: Structure Dataframe
     :type protein_df: pd.DataFrame
-    :param granularity: Granularity of graph. Atom-level, resiidue (e.g. CA) or centroids
+    :param granularity: Granularity of graph. Atom-level, residue (e.g. CA) or centroids
     :type granularity: str
     :return: Returns dataframe with added node_ids
     :rtype: pd.DataFrame
@@ -369,7 +365,7 @@ def initialise_graph_with_metadata(
     granularity: str,
 ) -> nx.Graph:
     """
-    Initialises the nx Graph object with initial metadata
+    Initializes the nx Graph object with initial metadata
 
     :param protein_df: Processed Dataframe of protein structure
     :type protein_df: pd.DataFrame

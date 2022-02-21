@@ -1,7 +1,5 @@
 from graphein.utils.utils import *
 
-from ._version import get_versions
-
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: BSD 3 clause
@@ -9,8 +7,11 @@ from ._version import get_versions
 from .protein import *
 from .rna import *
 
+# from ._version import get_versions
+
+
 __author__ = "Arian Jamasb <arian@jamasb.io>"
 
 
-__version__ = "1.0.0"  # get_versions()["version"]
-del get_versions
+__version__ = "1.1.0"  # get_versions()["version"]
+# del get_versions

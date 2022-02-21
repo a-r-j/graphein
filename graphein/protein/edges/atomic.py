@@ -1,4 +1,6 @@
 """Functions for computing atomic structure of proteins"""
+import logging
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
@@ -19,6 +21,8 @@ from graphein.protein.resi_atoms import (
     DEFAULT_BOND_STATE,
     RESIDUE_ATOM_BOND_STATE,
 )
+
+log = logging.getLogger(__name__)
 
 # Todo dealing with metals
 # Todo There are other check and balances that can be implemented from here: https://www.daylight.com/meetings/mug01/Sayle/m4xbondage.html
@@ -187,9 +191,16 @@ def add_bond_order(G: nx.Graph) -> nx.Graph:
             # We need this try block as the dictionary keys may be X-Y, whereas the query we construct may be Y-X
             try:
                 identify_bond_type_from_mapping(G, u, v, a, query)
-            except:
+            except KeyError:
                 query = f"{atom_b}-{atom_a}"
-                identify_bond_type_from_mapping(G, u, v, a, query)
+                try:
+                    identify_bond_type_from_mapping(G, u, v, a, query)
+                except KeyError:
+                    log.debug(
+                        f"Could not identify bond type for {query}. Adding a single bond."
+                    )
+                    G.edges[u, v]["kind"].add("SINGLE")
+
     return G
 
 
@@ -221,7 +232,7 @@ def identify_bond_type_from_mapping(
     """
     # Perform lookup of allowable bond orders for the given atom pair
     allowable_order = BOND_ORDERS[query]
-    # If max souble, compare the length to the double watershed distance, w_sd, else assign single
+    # If max double, compare the length to the double watershed distance, w_sd, else assign single
     if len(allowable_order) == 2:
         if a["bond_length"] < BOND_LENGTHS[query]["w_sd"]:
             G.edges[u, v]["kind"].add("DOUBLE")
