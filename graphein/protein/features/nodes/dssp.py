@@ -210,7 +210,11 @@ def rsa(G: nx.Graph) -> nx.Graph:
     """
 
     # Calculate RSA
-    dssp_df = G.graph["dssp_df"]
+    try:
+        dssp_df = G.graph["dssp_df"]
+    except KeyError:
+        G = add_dssp_df(G, G.graph["config"].dssp_config)
+        dssp_df = G.graph["dssp_df"]
     dssp_df["max_acc"] = dssp_df["aa"].map(residue_max_acc["Sander"].get)
     dssp_df[["asa", "max_acc"]] = dssp_df[["asa", "max_acc"]].astype(float)
     dssp_df["rsa"] = dssp_df["asa"] / dssp_df["max_acc"]

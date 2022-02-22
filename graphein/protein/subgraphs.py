@@ -12,6 +12,7 @@ import networkx as nx
 import numpy as np
 
 from graphein.protein.edges.distance import compute_distmat
+from graphein.protein.utils import ProteinGraphConfigurationError
 
 log = logging.getLogger(__name__)
 
@@ -364,6 +365,114 @@ def extract_subgraph_by_bond_type(
     )
 
 
+def extract_subgraph_from_secondary_structure(
+    g: nx.Graph,
+    ss_elements: List[str],
+    inverse: bool = False,
+    filter_dataframe: bool = True,
+    recompute_distmat: bool = False,
+    update_coords: bool = True,
+    return_node_list: bool = False,
+) -> Union[nx.Graph, List[str]]:
+    """Extracts subgraphs for nodes that have a secondary structure element in the list.
+
+    :param g: The graph to extract the subgraph from.
+    :type g: nx.Graph
+    :param ss_elements: List of secondary structure elements to extract.
+    :type ss_elements: List[str]
+    :param inverse: Whether to inverse the selection. Defaults to False.
+    :type inverse: bool
+    :param filter_dataframe: Whether to filter the pdb_df of the graph, defaults to True
+    :type filter_dataframe: bool, optional
+    :param recompute_distmat: Whether to recompute the distance matrix of the graph. Defaults to False.
+    :type recompute_distmat: bool
+    :param update_coords: Whether to update the coordinates of the graph. Defaults to True.
+    :type update_coords: bool
+    :param return_node_list: Whether to return the node list. Defaults to False.
+    :raises ProteinGraphConfigurationError: If the graph does not contain ss features on the nodes (`d['ss'] not in d.keys() for _, d in g.nodes(data=True)`).
+    :return: The subgraph or node list if return_node_list is True.
+    :rtype: Union[nx.Graph, List[str]]
+    """
+
+    node_list: List[str] = []
+
+    for n, d in g.nodes(data=True):
+        if "ss" not in d.keys():
+            raise ProteinGraphConfigurationError(
+                f"Secondary structure not defined for all nodes ({n}). Please ensure you have used graphein.protein.nodes.features.dssp.secondary_structure as a graph annotation function."
+            )
+        if d["ss"] in ss_elements:
+            node_list.append(n)
+
+    node_list = list(set(node_list))
+    log.debug(
+        f"Found {len(node_list)} nodes in the secondary structure subgraph."
+    )
+
+    return extract_subgraph_from_node_list(
+        g,
+        node_list,
+        inverse=inverse,
+        return_node_list=return_node_list,
+        filter_dataframe=filter_dataframe,
+        recompute_distmat=recompute_distmat,
+        update_coords=update_coords,
+    )
+
+
+def extract_surface_subgraph(
+    g: nx.Graph,
+    rsa_threshold: float = 0.2,
+    inverse: bool = False,
+    filter_dataframe: bool = True,
+    recompute_distmat: bool = False,
+    update_coords: bool = True,
+    return_node_list: bool = False,
+) -> Union[nx.Graph, List[str]]:
+    """Extracts a subgraph based on thresholding the Relative Solvent Accessibility (RSA). This can be used for extracting a surface graph.
+
+    :param g: The graph to extract the subgraph from.
+    :type g: nx.Graph
+    :param rsa_threshold: The threshold to use for the RSA. Defaults to 0.2 (20%)
+    :type rsa_threshold: float
+    :param filter_dataframe: Whether to filter the pdb_df of the graph, defaults to True
+    :type filter_dataframe: bool, optional
+    :param update_coords: Whether to update the coordinates of the graph. Defaults to True.
+    :type update_coords: bool
+    :param recompute_distmat: Whether to recompute the distance matrix of the graph. Defaults to False.
+    :type recompute_distmat: bool
+    :param inverse: Whether to inverse the selection, defaults to False
+    :type inverse: bool, optional
+    :param return_node_list: Whether to return the node list. Defaults to False.
+    :type return_node_list: bool
+    :raises ProteinGraphConfigurationError: If the graph does not contain RSA features on the nodes (`d['rsa'] not in d.keys() for _, d in g.nodes(data=True)`).
+    :return: The subgraph or node list if return_node_list is True.
+    :rtype: Union[nx.Graph, List[str]]
+    """
+    node_list: List[str] = []
+
+    for n, d in g.nodes(data=True):
+        if "rsa" not in d.keys():
+            raise ProteinGraphConfigurationError(
+                f"RSA not defined for all nodes ({n}). Please ensure you have used graphein.protein.nodes.features.dssp.rsa as a graph annotation function."
+            )
+        if d["rsa"] >= rsa_threshold:
+            node_list.append(n)
+
+    node_list = list(set(node_list))
+    log.debug(f"Found {len(node_list)} nodes in the surface subgraph.")
+
+    return extract_subgraph_from_node_list(
+        g,
+        node_list,
+        inverse=inverse,
+        return_node_list=return_node_list,
+        filter_dataframe=filter_dataframe,
+        recompute_distmat=recompute_distmat,
+        update_coords=update_coords,
+    )
+
+
 def extract_k_hop_subgraph(
     g: nx.Graph,
     central_node: str,
@@ -410,7 +519,7 @@ def extract_k_hop_subgraph(
         node_list = neighbours[k]
     else:
         node_list = list(
-            set([value for values in neighbours.values() for value in values])
+            {value for values in neighbours.values() for value in values}
         )
 
     log.debug(f"Found {len(node_list)} nodes in the k-hop subgraph.")
@@ -429,7 +538,7 @@ def extract_k_hop_subgraph(
 def extract_subgraph(
     g: nx.Graph,
     node_list: Optional[List[str]] = None,
-    sequence_positions: Optional[List[str]] = None,
+    sequence_positions: Optional[List[int]] = None,
     chains: Optional[List[str]] = None,
     residue_types: Optional[List[str]] = None,
     atom_types: Optional[List[str]] = None,
@@ -438,6 +547,8 @@ def extract_subgraph(
         Union[np.ndarray, Tuple[float, float, float]]
     ] = None,
     radius: Optional[float] = None,
+    ss_elements: Optional[List[str]] = None,
+    rsa_threshold: Optional[float] = None,
     k_hop_central_node: Optional[str] = None,
     k_hops: Optional[int] = None,
     k_only: Optional[bool] = None,
@@ -454,7 +565,7 @@ def extract_subgraph(
     :param node_list: List of nodes to extract specified by their node_id. Defaults to None.
     :type node_list: List[str], optional
     :param sequence_positions: The sequence positions to extract. Defaults to None.
-    :type sequence_positions: List[str], optional
+    :type sequence_positions: List[int], optional
     :param chains: The chain(s) to extract. Defaults to None.
     :type chains: List[str], optional
     :param residue_types: List of allowable residue types (3 letter residue names). Defaults to None.
@@ -465,6 +576,17 @@ def extract_subgraph(
     :type centre_point: Union[np.ndarray, Tuple[float, float, float]], optional
     :param radius: The radius to extract the subgraph from. Defaults to None.
     :type radius: float, optional
+    :param ss_elements: List of secondary structure elements to extract. `["H", "B", "E", "G", "I", "T", "S", "-"]` corresponding to Alpha helix
+        Beta bridge, Strand, Helix-3, Helix-5, Turn, Bend, None. Defaults to None.
+    :type ss_elements: List[str], optional
+    :param rsa_threshold: The threshold to use for the RSA. Defaults to None.
+    :type rsa_threshold: float, optional
+    :param central_node: The central node to extract the subgraph from. Defaults to None.
+    :type central_node: str, optional
+    :param k: The number of hops to extract.
+    :type k: int
+    :param k_only: Whether to only extract the exact k-hop subgraph (e.g. include 2-hop neighbours in 5-hop graph). Defaults to False.
+    :type k_only: bool
     :param filter_dataframe: Whether to filter the pdb_df dataframe of the graph. Defaults to True. Defaults to None.
     :type filter_dataframe: bool, optional
     :param update_coords: Whether to update the coordinates of the graph. Defaults to True.
@@ -507,6 +629,16 @@ def extract_subgraph(
     if centre_point is not None and radius is not None:
         node_list += extract_subgraph_from_point(
             g, centre_point, radius, return_node_list=True
+        )
+
+    if ss_elements is not None:
+        node_list += extract_subgraph_from_secondary_structure(
+            g, ss_elements, return_node_list=True
+        )
+
+    if rsa_threshold is not None:
+        node_list += extract_surface_subgraph(
+            g, rsa_threshold, return_node_list=True
         )
 
     if k_hop_central_node is not None and k_hops and k_only is not None:
