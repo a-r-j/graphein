@@ -38,6 +38,7 @@ ENV PATH /getcontacts:$PATH
 RUN conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 RUN conda install -c pytorch3d pytorch3d
 RUN conda install -c dglteam dgl
+RUN conda install -c salilab dssp
 
 ARG CUDA TORCH
 # gcc error with version 2.0.9. Therefore, using 2.0.8
