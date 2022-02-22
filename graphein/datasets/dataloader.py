@@ -373,6 +373,9 @@ class GrapheinDataLoader:
             summary += "Using node labels.\n"
         return summary
 
+    def __len__(self) -> int:
+        return len(self.pdb_list) if not self.graphs else len(self.graphs)
+
 
 if __name__ == "__main__":
     import numpy as np
