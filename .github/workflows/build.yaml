@@ -39,10 +39,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        # See: https://github.com/marketplace/actions/setup-conda
+      - name: Setup anaconda
+        uses: s-weigand/setup-conda@v1
         with:
           python-version: ${{ matrix.python-version }}
+          conda-channels: "conda-forge, salilab"
+
+      #- name: Set up Python ${{ matrix.python-version }}
+      #  uses: actions/setup-python@v2
+      #  with:
+      #python-version: ${{ matrix.python-version }}
+      - name: Setup conda environment
+        run: conda env create -n graphein-dev python=${{ matrix.python-version }}
+      - name: Activate Conda Environment
+        run: source activate graphein-dev
+      - name: Install DSSP
+        run: conda install -c salilab dssp
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install Graphein
