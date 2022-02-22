@@ -1,5 +1,4 @@
-FROM pytorch/pytorch:1.7.1-cuda11.0-cudnn8-runtime
-
+FROM pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
 
 RUN apt-get update \
     && apt-get -y install build-essential ffmpeg libsm6 libxext6 wget git \
@@ -40,14 +39,16 @@ RUN conda install -c pytorch3d pytorch3d
 RUN conda install -c dglteam dgl
 RUN conda install -c salilab dssp
 
-ARG CUDA TORCH
-# gcc error with version 2.0.9. Therefore, using 2.0.8
-# install torch-geometric components separately in case of fail
-RUN pip install torch-scatter==2.0.7 -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir
-RUN pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir
-RUN pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir
-RUN pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir
-RUN pip install torch-geometric --no-cache-dir
+RUN conda install -c conda-forge ipywidgets
+RUN jupyter nbextension enable --py widgetsnbextension
+
+RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace('.',''))") \
+    && export TORCH=$(python -c "import torch; print(torch.__version__)") \
+    && pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir \
+    && pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir \
+    && pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir \
+    && pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir \
+    && pip install torch-geometric --no-cache-dir
 
 
 # Testing
