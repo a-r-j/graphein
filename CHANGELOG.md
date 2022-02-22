@@ -1,11 +1,19 @@
-### 1.1.0 - UNRELEASED
-
+### 1.2.0
 * [Feature] - #104 adds support for asteroid plots.
+* [Feature] - #110 adds support for secondary structure & surface-based subgraphs
+* [Bugfix] - #110 fixes minor bug in `asa` where it would fail if added as a first/only dssp feature.
+
+### 1.1.1 - 19/02/2022
+
+* [Bugfix] - #107 improves robustness of removing insertions and hetatms, resolves #98
+* [Packaging] - #108 fixes version mismatches in pytorch_geometric in docker install
+
+### 1.1.0 - 19/02/2022
+
 * [Packaging] - #100 adds docker support.
 * [Feature] - #96 Adds support for extracting subgraphs
 * [Packaging] - #101 adds support for devcontainers for remote development.
 * [Bugfixes] - #95 adds improved robustness for edge construction functions in certain edge cases. Insertions in the PDB were occasionally not picked up due to a brittle implementations. Resolves #74 and #98
-
 
 ### 1.0.11 - 01/02/2022
 
