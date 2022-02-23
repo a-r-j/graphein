@@ -1,7 +1,12 @@
-### 1.2.0
-* [Feature] - #104 adds support for asteroid plots.
+### 1.2.0 - 23/02/2022
+
+* [Feature] - #104 adds support for asteroid plots and distance matrix visualisation.
+* [Feature] - #104 adds support for protein graph analytics (`graphein.protein.analysis`)
 * [Feature] - #110 adds support for secondary structure & surface-based subgraphs
 * [Bugfix] - #110 fixes minor bug in `asa` where it would fail if added as a first/only dssp feature.
+* [Bugfix] - #110 Adds install for DSSP in Dockerfile
+* [Bugfix] - #110 Adds conda install & DSSP to tests
+* [Documentation] - #104 Adds notebooks for visualisation, RNA SS Graphs, protein graph analytics
 
 ### 1.1.1 - 19/02/2022
 
