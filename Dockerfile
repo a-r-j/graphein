@@ -37,6 +37,7 @@ ENV PATH /getcontacts:$PATH
 RUN conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 RUN conda install -c pytorch3d pytorch3d
 RUN conda install -c dglteam dgl
+RUN conda install -c salilab dssp
 
 RUN conda install -c conda-forge ipywidgets
 RUN jupyter nbextension enable --py widgetsnbextension

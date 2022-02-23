@@ -55,7 +55,11 @@ def load_meiler_embeddings() -> pd.DataFrame:
 
 
 def expasy_protein_scale(
-    n, d, selection: Optional[List[str]] = None, return_array: bool = False
+    n,
+    d,
+    selection: Optional[List[str]] = None,
+    add_separate: bool = False,
+    return_array: bool = False,
 ) -> Union[pd.Series, np.ndarray]:
     """
     Return amino acid features that come from the EXPASY protein scale.
@@ -66,6 +70,7 @@ def expasy_protein_scale(
     :param d: NetworkX node attributes.
     :param selection: List of columns to select. Viewable in graphein.protein.features.nodes.meiler_embeddings
     :type selection: List[str], optional
+    :param add_separate: Whether or not to add the expasy features as indvidual entries or as a series.
     :param return_array: Bool indicating whether or not to return a np.ndarray of the features. Default is pd.Series
     :type return_array: bool
     :returns: pd.Series of amino acid features
@@ -83,7 +88,11 @@ def expasy_protein_scale(
     if return_array:
         features = np.array(features)
 
-    d["expasy"] = features
+    if add_separate:
+        for k, v in features.to_dict().items():
+            d[k] = v
+    else:
+        d["expasy"] = features
 
     return features
 
