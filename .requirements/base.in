@@ -8,6 +8,7 @@ numpy
 pandas
 plotly
 pydantic
+seaborn
 pyyaml>=5.1,<6.*
 scikit-learn
 scipy

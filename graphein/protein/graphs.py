@@ -185,10 +185,7 @@ def filter_hetatms(
     :returns: Protein structure dataframe with heteroatoms removed
     :rtype pd.DataFrame
     """
-    hetatms_to_keep = []
-    for hetatm in keep_hets:
-        hetatms_to_keep.append(df.loc[df["residue_name"] == hetatm])
-    return hetatms_to_keep
+    return [df.loc[df["residue_name"] == hetatm] for hetatm in keep_hets]
 
 
 def compute_rgroup_dataframe(pdb_df: pd.DataFrame) -> pd.DataFrame:
@@ -333,9 +330,9 @@ def assign_node_id_to_dataframe(
         + protein_df["residue_number"].apply(str)
     )
     if granularity == "atom":
-        protein_df["node_id"] = (
-            protein_df["node_id"] + ":" + protein_df["atom_name"]
-        )
+        protein_df[
+            "node_id"
+        ] = f'{protein_df["node_id"]}:{protein_df["atom_name"]}'
 
 
 def select_chains(

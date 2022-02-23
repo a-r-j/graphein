@@ -21,6 +21,16 @@ from .resi_atoms import RESI_THREE_TO_1
 log = logging.getLogger(__name__)
 
 
+class ProteinGraphConfigurationError(Exception):
+    """Exception when an invalid Graph configuration if provided to a downstream function or method."""
+
+    def __init__(self, message: str):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
 def download_pdb(config, pdb_code: str) -> Path:
     """
     Download PDB structure from PDB
