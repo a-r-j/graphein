@@ -5,6 +5,7 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+# This submodule is heavily inspired by: https://github.com/emalgorithm/rna-design/blob/aec77a18abe4850958d6736ec185a6f8cbfdf20c/src/util.py#L9
 import logging
 from typing import Callable, Dict, List, Optional
 
@@ -29,14 +30,14 @@ RNA_BASE_COLORS: Dict[str, str] = {
     "I": "m",
 }
 
-CANONICAL_BASE_PAIRINGS: Dict[str, str] = {
+CANONICAL_BASE_PAIRINGS: Dict[str, List[str]] = {
     "A": ["U"],
     "U": ["A"],
     "G": ["C"],
     "C": ["G"],
 }
 
-WOBBLE_BASE_PAIRINGS: Dict[str, str] = {
+WOBBLE_BASE_PAIRINGS: Dict[str, List[str]] = {
     "A": ["I"],
     "U": ["G", "I"],
     "G": ["U"],
@@ -53,8 +54,8 @@ VALID_BASE_PAIRINGS = {
     )
 }
 
-SIMPLE_DOTBRACKET_NOTATION = ["(", ".", ")"]
-SUPPORTED_PSEUDOKNOT_NOTATION = ["[", "]", "{", "}", "<", ">"]
+SIMPLE_DOTBRACKET_NOTATION: List[str] = ["(", ".", ")"]
+SUPPORTED_PSEUDOKNOT_NOTATION: List[str] = ["[", "]", "{", "}", "<", ">"]
 SUPPORTED_DOTBRACKET_NOTATION = (
     SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION
 )
@@ -62,8 +63,10 @@ SUPPORTED_DOTBRACKET_NOTATION = (
 
 def validate_rna_sequence(s: str) -> None:
     """
-    Validate RNA sequence. This ensures that it only containts supported bases. Supported bases are: "A", "U", "G", "C", "I".
-    Supported bases can be accessed in graphein.rna.graphs.RNA_BASES
+    Validate RNA sequence. This ensures that it only containts supported bases.
+
+    Supported bases are: `"A", "U", "G", "C", "I"`.
+    Supported bases can be accessed in `graphein.rna.graphs.RNA_BASES`
 
     :param s: Sequence to validate
     :type s: str
@@ -80,7 +83,7 @@ def validate_rna_sequence(s: str) -> None:
 
 def validate_lengths(db: str, seq: str) -> None:
     """
-    Check lengths of dotbracket and sequence match
+    Check lengths of dotbracket and sequence match.
 
     :param db: Dotbracket string to check
     :type db: str
@@ -94,16 +97,15 @@ def validate_lengths(db: str, seq: str) -> None:
         )
 
 
-def validate_dotbracket(db: str) -> str:
+def validate_dotbracket(db: str):
     """
     Sanitize dotbracket string. This ensures that it only has supported symbols.
-    SIMPLE_DOTBRACKET_NOTATION = ["(", ".", ")"]
-    SUPPORTED_PSEUDOKNOT_NOTATION = ["[", "]", "{", "}", "<", ">"]
-    SUPPORTED_DOTBRACKET_NOTATION = (
-        SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION
-    )
 
-    :param db: Dotbrack notation string
+    `SIMPLE_DOTBRACKET_NOTATION = ["(", ".", ")"]`
+    `SUPPORTED_PSEUDOKNOT_NOTATION = ["[", "]", "{", "}", "<", ">"]`
+    `SUPPORTED_DOTBRACKET_NOTATION = (SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION)`
+
+    :param db: Dotbracket notation string
     :type db: str
     :raises ValueError: Raises ValueError if dotbracket notation contains unsupported symbols
     """
