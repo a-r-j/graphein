@@ -455,7 +455,7 @@ def plot_distance_landscape(
 ) -> go.Figure:
     """Plots a distance landscape of the graph.
 
-    :param g: Graph to plot (must contain a distance matrix in `g.graph["dist_mat"]).
+    :param g: Graph to plot (must contain a distance matrix in `g.graph["dist_mat"]`).
     :type g: nx.Graph
     :param add_contour: Whether or not to show the contour, defaults to True
     :type add_contour: bool, optional
