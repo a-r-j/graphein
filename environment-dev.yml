@@ -70,6 +70,8 @@ dependencies:
 - versioneer
 - python-wget
 - xarray
+- deepdiff
+- click
 - pip:
   - bioservices
   - biovec
