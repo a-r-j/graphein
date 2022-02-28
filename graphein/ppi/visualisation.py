@@ -5,7 +5,10 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+from typing import List, Optional
+
 import networkx as nx
+import plotly.graph_objects as go
 
 
 def plot_ppi_graph(
@@ -38,6 +41,161 @@ def plot_ppi_graph(
     nx.draw(g, with_labels=with_labels, edge_color=edge_colors, **kwargs)
 
 
+def plotly_ppi_graph(
+    g: nx.Graph,
+    layout: nx.layout = nx.layout.circular_layout,
+    title: Optional[str] = None,
+    show_labels: bool = False,
+    node_size_multiplier: float = 5.0,
+    node_colourscale: str = "Viridis",
+    edge_colours: List[str] = None,
+):
+    """Plots a PPI graph.
+
+    :param g: PPI graph
+    :type g: nx.Graph
+    :param layout: Layout algorithm to use. Default is circular_layout.
+    :type layout: nx.layout
+    :param title: Title of the graph. Default is None.
+    :type title: str, optional
+    :param show_labels: If True, shows labels on nodes. Default is False.
+    :type show_labels: bool
+    :param node_size_multiplier: Multiplier for node size. Default is 5.0.
+    :type node_size_multiplier: float
+    :param node_colourscale: Colour scale to use for node colours. Default is "Viridis". Options:
+        'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
+        'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
+        'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
+    :type node_colourscale: str
+    :return: Plotly figure of PPI Network
+    :rtype: go.Figure
+    """
+    if edge_colours is None:
+        edge_colours = ["red", "blue", "yellow"]
+    # Set positions
+    nx.set_node_attributes(g, layout(g), "pos")
+
+    # Get node and edge traces
+    node_trace = get_node_trace(g, node_size_multiplier, node_colourscale)
+    edge_trace = get_edge_trace(g, edge_colours)
+    traces = [node_trace] + edge_trace
+
+    # Get node labels if using them.
+    if show_labels:
+        text_trace = go.Scatter(
+            x=node_trace["x"],
+            y=node_trace["y"],
+            mode="text",
+            text=list(g.nodes()),
+            textposition="bottom center",
+            hoverinfo="text",
+        )
+        traces.append(text_trace)
+
+    # Assemble plot from traces
+    return go.Figure(
+        data=traces,
+        layout=go.Layout(
+            title=title,
+            titlefont_size=16,
+            showlegend=False,
+            width=500,
+            hovermode="closest",
+            margin=dict(b=20, l=5, r=5, t=40),
+            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        ),
+    )
+
+
+def get_node_trace(
+    g: nx.Graph, node_size_multiplier: float, node_colourscale: str = "Viridis"
+) -> go.Scatter:
+    """Produces the node trace for the plotly plot.
+
+    :param g: PPI graph with ['pos'] added to the nodes (eg via nx.layout function)
+    :type g: nx.Graph
+    :param node_size_multiplier: Multiplier for node size. Default is 5.0.
+    :type node_size_multiplier: float
+    :param node_colourscale: Colourscale to use for the nodes, defaults to "Viridis"
+    :type node_colourscale: str, optional
+    :return: Node trace for plotly plot
+    :rtype: go.Scatter
+    """
+    node_x = []
+    node_y = []
+    node_size = []
+    for n in g.nodes():
+        x, y = g.nodes[n]["pos"]
+        node_x.append(x)
+        node_y.append(y)
+        node_size.append(g.degree(n) * node_size_multiplier)
+
+    node_trace = go.Scatter(
+        x=node_x,
+        y=node_y,
+        mode="markers",
+        hoverinfo="text",
+        marker=dict(
+            showscale=False,
+            colorscale=node_colourscale,
+            reversescale=True,
+            color=[],
+            size=node_size,
+            colorbar=dict(
+                thickness=15,
+                title="Node Connections",
+                xanchor="left",
+                titleside="right",
+            ),
+            line_width=2,
+        ),
+    )
+    node_text = list(g.nodes())
+    node_trace.marker.color = node_size
+    node_trace.text = node_text
+    return node_trace
+
+
+def get_edge_trace(
+    g: nx.Graph, edge_colours: Optional[List[str]] = None
+) -> List[go.Scatter]:
+    """Gets edge traces from PPI graph. Returns a list of traces enabling edge colours to be set individually.
+
+    :param g: _description_
+    :type g: nx.Graph
+    :return: _description_
+    :rtype: List[go.Scatter]
+    """
+    if edge_colours is None:
+        edge_colours = ["red", "blue", "yellow"]
+    traces = []
+    for u, v, d in g.edges(data=True):
+        # Get positions
+        x0, y0 = g.nodes[u]["pos"]
+        x1, y1 = g.nodes[v]["pos"]
+        # Assign colour
+        if d["kind"] == {"string"}:
+            colour = edge_colours[0]
+        elif d["kind"] == {"biogrid"}:
+            colour = edge_colours[1]
+        else:
+            colour = edge_colours[2]
+
+        edge_trace = go.Scatter(
+            line=dict(width=2, color=colour),
+            hoverinfo="text",
+            x=(x0, x1),
+            y=(y0, y1),
+            mode="lines",
+            text=[
+                " / ".join(list(edge_type)) for edge_type in g[u][v]["kind"]
+            ],
+        )
+        traces.append(edge_trace)
+    return traces
+
+
 if __name__ == "__main__":
     from functools import partial
 
@@ -67,3 +225,6 @@ if __name__ == "__main__":
     )
 
     plot_ppi_graph(g)
+    plotly_ppi_graph(g)
+
+# %%
