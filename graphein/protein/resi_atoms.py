@@ -11,6 +11,30 @@ from sklearn.preprocessing import StandardScaler
 
 BACKBONE_ATOMS: List[str] = ["N", "CA", "C", "O"]
 
+
+BASE_AMINO_ACIDS: List[str] = [
+    "A",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "K",
+    "L",
+    "M",
+    "N",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "V",
+    "W",
+    "Y",
+]
+
 STANDARD_AMINO_ACIDS: List[str] = [
     "A",
     "B",

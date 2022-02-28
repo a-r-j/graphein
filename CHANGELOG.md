@@ -3,6 +3,7 @@
 * [Feature] - #104 adds support for asteroid plots and distance matrix visualisation.
 * [Feature] - #104 adds support for protein graph analytics (`graphein.protein.analysis`)
 * [Feature] - #110 adds support for secondary structure & surface-based subgraphs
+* [Feature] - #116 adds support for onehot-encoded amino acid features as node attributes.
 * [Bugfix] - #110 fixes minor bug in `asa` where it would fail if added as a first/only dssp feature.
 * [Bugfix] - #110 Adds install for DSSP in Dockerfile
 * [Bugfix] - #110 Adds conda install & DSSP to tests
