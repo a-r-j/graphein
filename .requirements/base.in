@@ -1,6 +1,8 @@
 biopandas
 biopython
 bioservices
+click
+deepdiff
 matplotlib>=3.4.3
 multipledispatch
 networkx
