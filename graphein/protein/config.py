@@ -207,8 +207,7 @@ class ProteinGraphConfig(BaseModel):
                 )
                 == {}
             )
-        else:
-            return self.dict() == other
+        return self.dict() == other
 
 
 class ProteinMeshConfig(BaseModel):
