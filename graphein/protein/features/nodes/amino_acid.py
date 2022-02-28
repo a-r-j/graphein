@@ -132,7 +132,7 @@ def meiler_embedding(
 def amino_acid_one_hot(
     n,
     d: Dict[str, Any],
-    return_array=True,
+    return_array: bool = True,
     allowable_set: Optional[List[str]] = None,
 ) -> Union[pd.Series, np.ndarray]:
     """Adds a one-hot encoding of amino acid types as a node attribute.
