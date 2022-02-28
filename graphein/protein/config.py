@@ -6,14 +6,51 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
+from deepdiff import DeepDiff
+from deepdiff.operator import BaseOperator
 from pydantic import BaseModel
 from typing_extensions import Literal
 
 from graphein.protein.edges.distance import add_peptide_bonds
 from graphein.protein.features.nodes.amino_acid import meiler_embedding
+
+
+def partial_functions_equal(func1: partial, func2: partial):
+    """
+    Determine whether two partial functions are equal.
+
+    :param func1: Partial function to check
+    :type func1: partial
+    :param func2: Partial function to check
+    :type func2: partial
+    """
+    if not (isinstance(func1, partial) and isinstance(func2, partial)):
+        return False
+    are_equal = all(
+        [
+            getattr(func1, attr) == getattr(func2, attr)
+            for attr in ["func", "args", "keywords"]
+        ]
+    )
+    return are_equal
+
+
+class PartialMatchOperator(BaseOperator):
+    """Custom operator for deepdiff comparison. This operator compares whether the two partials are equal."""
+
+    def give_up_diffing(self, level, diff_instance):
+        return partial_functions_equal(level.t1, level.t2)
+
+
+class PathMatchOperator(BaseOperator):
+    """Custom operator for deepdiff comparison. This operator compares whether the two pathlib Paths are equal."""
+
+    def give_up_diffing(self, level, diff_instance):
+        return level.t1 == level.t2
 
 
 class DSSPConfig(BaseModel):
@@ -157,6 +194,22 @@ class ProteinGraphConfig(BaseModel):
     # External Dependency configs
     get_contacts_config: Optional[GetContactsConfig] = None
     dssp_config: Optional[DSSPConfig] = None
+
+    def __eq__(self, other: Any) -> bool:
+        """Overwrites the BaseModel __eq__ function in order to check more specific cases (like partial functions)."""
+        if isinstance(other, ProteinGraphConfig):
+            return (
+                DeepDiff(
+                    self,
+                    other,
+                    custom_operators=[
+                        PartialMatchOperator(types=[partial]),
+                        PathMatchOperator(types=[Path]),
+                    ],
+                )
+                == {}
+            )
+        return self.dict() == other
 
 
 class ProteinMeshConfig(BaseModel):

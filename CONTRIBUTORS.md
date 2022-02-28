@@ -21,3 +21,5 @@ Kexin Huang: [@kexinhuang12345](https://github.com/kexinhuang12345)
 Sean Aubin: [@Seanny123](https://github.com/Seanny123)
 
 Ryan Greenhalgh: [@rg314](https://github.com/rg314)
+
+Rico Meinl: [@ricomnl](https://github.com/ricomnl)

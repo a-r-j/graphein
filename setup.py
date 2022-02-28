@@ -173,4 +173,9 @@ setup(
     cmdclass={
         "upload": UploadCommand,
     },
+    entry_points={
+        "console_scripts": [
+            "graphein = graphein.cli:main",
+        ],
+    },
 )
