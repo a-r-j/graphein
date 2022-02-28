@@ -41,12 +41,14 @@ def partial_functions_equal(func1: partial, func2: partial):
 
 class PartialMatchOperator(BaseOperator):
     """Custom operator for deepdiff comparison. This operator compares whether the two partials are equal."""
+
     def give_up_diffing(self, level, diff_instance):
         return partial_functions_equal(level.t1, level.t2)
 
 
 class PathMatchOperator(BaseOperator):
     """Custom operator for deepdiff comparison. This operator compares whether the two pathlib Paths are equal."""
+
     def give_up_diffing(self, level, diff_instance):
         return level.t1 == level.t2
 
