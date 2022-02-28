@@ -1,14 +1,21 @@
 Usage
 ========
 
-Graphein has a simple command line interface to get started and convert PDB files into graphs.
+Command Line Interface
+---------------------
+Graphein has a simple command line interface to get started and convert PDB files into graphs. It reads a `ProteinGraphConfig` object from the `config.yaml`, constructs a graph for the given PDB file(s) and saves them in the output directory in gpickle format.
 
 .. code-block:: bash
+
     graphein -c config.yaml -p path/to/pdbs -o path/to/output
 
-A .yaml config file can be specified to specify any of the config objects.
+YAML Config
+---------------------
+A .yaml config file can be specified to specify any of the config objects. To specify functions, use the `!func:` tag. To specify one of the config objects defined in graphein use the format "!<config_name>" (e.g. "!ProteinGraphConfig").
 
 .. code-block:: yaml
+
+    # protein_graph_config.yml
     !ProteinGraphConfig
         granularity: "CA"
         keep_hets: False
@@ -25,12 +32,14 @@ A .yaml config file can be specified to specify any of the config objects.
         dssp_config: !DSSPConfig
 
 .. code-block:: python
+
     from graphein.utils.config import parse_config
     yml_config = parse_config(PATH / "protein_graph_config.yml")
 
 Reading the example .yaml file above with the `parse_config` function, would be the equivalent of specifying a Python dict of arguments and loading it into the ProteinGraphConfig.
 
 .. code-block:: python
+
     protein_graph_config = {
         "granularity": "CA",
         "keep_hets": False,
