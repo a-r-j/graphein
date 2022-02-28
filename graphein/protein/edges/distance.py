@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from itertools import combinations
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import networkx as nx
 import numpy as np
@@ -361,7 +361,9 @@ def get_interacting_atoms(angstroms: float, distmat: pd.DataFrame):
     return np.where(distmat <= angstroms)
 
 
-def add_delaunay_triangulation(G: nx.Graph):
+def add_delaunay_triangulation(
+    G: nx.Graph, allowable_nodes: Optional[List[str]] = None
+):
     """
     Compute the Delaunay triangulation of the protein structure.
     This has been used in prior work. References:
@@ -376,17 +378,40 @@ def add_delaunay_triangulation(G: nx.Graph):
         interaction is computed on the CA atoms. Therefore, there is code
         duplication. For now, I have chosen to leave this code duplication
         in.
+
+    :param G: The networkx graph to add the triangulation to.
+    :type G: nx.Graph
+    :param allowable_nodes: The nodes to include in the triangulation. If `None` (default), no filtering is done.
+        This parameter is used to filter out nodes that are not desired in the triangulation. Eg if you wanted to construct a delaunay triangulation of the CA atoms of an atomic graph.
+    :type allowable_nodes: List[str], optional
     """
-    ca_coords = G.graph["pdb_df"].query("atom_name == 'CA'")
+    if allowable_nodes is None:
+        coords = np.array([d["coords"] for _, d in G.nodes(data=True)])
+        node_map: Dict[int, str] = dict(enumerate(G.nodes()))
+    else:
+        coords = np.array(
+            [
+                d["coords"]
+                for _, d in G.nodes(data=True)
+                if d["atom_type"] in allowable_nodes
+            ]
+        )
+        node_map: Dict[int, str] = {
+            i: n
+            for i, (n, d) in enumerate(G.nodes(data=True))
+            if d["atom_type"] in allowable_nodes
+        }
+        node_map: Dict[int, str] = dict(enumerate(node_map.values()))
 
-    tri = Delaunay(
-        ca_coords[["x_coord", "y_coord", "z_coord"]]
-    )  # this is the triangulation
+    tri = Delaunay(coords)  # this is the triangulation
+    log.debug(
+        f"Detected {len(tri.simplices)} simplices in the Delaunay Triangulaton."
+    )
     for simplex in tri.simplices:
-
-        nodes = ca_coords.reset_index(drop=True).loc[simplex, "node_id"]
-
+        nodes = [node_map[s] for s in simplex]
         for n1, n2 in combinations(nodes, 2):
+            if n1 not in G.nodes or n2 not in G.nodes:
+                next
             if G.has_edge(n1, n2):
                 G.edges[n1, n2]["kind"].add("delaunay")
             else:
