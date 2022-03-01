@@ -19,6 +19,7 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
 
    getting_started/installation
    getting_started/introduction
+   getting_started/usage
    license
 
 
@@ -27,7 +28,10 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
    :maxdepth: 2
    :caption: Tutorials
 
-   notebooks_index
+   protein_notebooks
+   rna_notebooks
+   ppi_notebooks
+   grn_notebooks
 
 .. toctree::
    :glob:
