@@ -13,7 +13,12 @@
 import os
 import sys
 
+# os.environ["PLOTLY_RENDERER"] = "notebook"
+import plotly.io as pio
+
 sys.path.insert(0, os.path.abspath("."))
+
+pio.renderers.default = "sphinx_gallery"
 
 
 # -- Project information -----------------------------------------------------
@@ -23,7 +28,7 @@ copyright = "2022, Arian Jamasb"
 author = "Arian Jamasb"
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.11"
+release = "1.2.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -33,12 +38,40 @@ master_doc = "index"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "sphinx_copybutton",
     "nbsphinx",
     "nbsphinx_link",
 ]
 nbsphinx_allow_errors = True
+nbsphinx_require_js_path = (
+    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
+)
+nbsphinx_kernel_name = "graphein-wip"
+# nbsphinx_execute = "always"
+nbsphinx_execute = "never"
 
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+    "scikit-learn": ("https://scikit-learn.org/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
+    "Sphinx": ("https://www.sphinx-doc.org/en/stable/", None),
+}
+
+mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+mathjax2_config = {
+    "tex2jax": {
+        "inlineMath": [["$", "$"], ["\\(", "\\)"]],
+        "processEscapes": True,
+        "ignoreClass": "document",
+        "processClass": "math|output_area",
+    }
+}
 
 autodoc_default_options = {
     "special-members": "__init__",
@@ -57,11 +90,17 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = "sphinx_rtd_theme"
-html_theme = "furo"
+# html_theme = "furo"
+html_theme = "sphinx_book_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_logo = "_static/graphein.png"
+
+
+def setup(app):
+    app.add_js_file(
+        "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
+    )
