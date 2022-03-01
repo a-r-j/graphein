@@ -1,4 +1,4 @@
-"""Functions for adding metadata to PPI Graphs from STRING and BIOGRID"""
+"""Functions for adding metadata to PPI Graphs from STRING and BIOGRID."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas
@@ -21,7 +21,7 @@ def add_string_metadata(
     G: nx.Graph, kwargs: Dict[str, Union[str, int]]
 ) -> nx.Graph:
     """
-    Adds interaction dataframe from STRING to graph
+    Adds interaction dataframe from STRING to graph.
 
     :param G: PPI Graph to add metadata to
     :type G: nx.Graph
@@ -41,10 +41,14 @@ def add_biogrid_metadata(
     G: nx.Graph, kwargs: Dict[str, Union[str, int]]
 ) -> nx.Graph:
     """
-    Adds interaction dataframe from BIOGRID to graph
+    Adds interaction dataframe from BIOGRID to graph.
+
     :param G: PPIGraph to add metadata to
+    :type G: nx.Graph
     :param kwargs:  Additional parameters for BIOGRID API call
+    :type kwargs: Dict[str, Union[str, int]]
     :return: PPIGraph with added BIOGRID interaction_df as metadata
+    :rtype: nx.Graph
     """
     G.graph["string_df"] = BIOGRID_df(
         G.graph["protein_list"], G.graph["ncbi_taxon_id"], kwargs
@@ -57,10 +61,14 @@ def add_string_biogrid_metadata(
     G: nx.Graph, kwargs: Dict[str, Union[str, int]]
 ) -> nx.Graph:
     """
-    Adds interaction dataframe from STRING and BIOGRID to graph
+    Adds interaction dataframe from STRING and BIOGRID to graph.
+
     :param G: PPIGraph to add metadata to
+    :type G: nx.Graph
     :param kwargs:  Additional parameters for STRING and BIOGRID API calls
+    :type kwargs: Dict[str, Union[str, int]]
     :return: PPIGraph with added STRING and BIOGRID interaction_df as metadata
+    :rtype: nx.Graph
     """
     G.graph["string_df"] = STRING_df(
         G.graph["protein_list"], G.graph["ncbi_taxon_id"], kwargs
