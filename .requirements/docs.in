@@ -1,7 +1,8 @@
 furo
 nbsphinx
 nbsphinx-link
-sphinx_rtd_theme
+sphinx-book-theme
+sphinx-copybutton
 nbstripout
 pandoc
 pydocstyle
