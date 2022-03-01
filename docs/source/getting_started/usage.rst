@@ -1,9 +1,11 @@
 Usage
 ========
 
+Graphein provides both a programmatic API via the Python library as well as a command-line interface.
+
 Command Line Interface
 ---------------------
-Graphein has a simple command line interface to get started and convert PDB files into graphs. It reads a `ProteinGraphConfig` object from the `config.yaml`, constructs a graph for the given PDB file(s) and saves them in the output directory in gpickle format.
+Graphein has a simple command line interface to get started and convert PDB files into graphs. It reads a ``ProteinGraphConfig`` object from the ``config.yaml``, constructs a graph for the given PDB file(s) and saves them in the output directory in ``gpickle`` format.
 
 .. code-block:: bash
 
@@ -11,7 +13,7 @@ Graphein has a simple command line interface to get started and convert PDB file
 
 YAML Config
 ---------------------
-A .yaml config file can be specified to specify any of the config objects. To specify functions, use the `!func:` tag. To specify one of the config objects defined in graphein use the format "!<config_name>" (e.g. "!ProteinGraphConfig").
+A ``.yaml`` config file can be specified to specify any of the config objects. To specify functions, use the ``!func:`` tag. To specify one of the config objects defined in graphein use the format ``!<config_name>`` (e.g. ``!ProteinGraphConfig``).
 
 .. code-block:: yaml
 
@@ -36,7 +38,7 @@ A .yaml config file can be specified to specify any of the config objects. To sp
     from graphein.utils.config import parse_config
     yml_config = parse_config(PATH / "protein_graph_config.yml")
 
-Reading the example .yaml file above with the `parse_config` function, would be the equivalent of specifying a Python dict of arguments and loading it into the ProteinGraphConfig.
+Reading the example ``.yaml file`` above with the ``parse_config`` function, would be the equivalent of specifying a Python dict of arguments and loading it into the ``ProteinGraphConfig``.
 
 .. code-block:: python
 
