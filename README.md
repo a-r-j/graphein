@@ -33,6 +33,14 @@ This package provides functionality for producing geometric representations of p
 
 ## Example usage
 
+Graphein provides both a programmatic API and a command-line interface for constructing graphs.
+
+### CLI
+
+```bash
+graphein -c config.yaml -p path/to/pdbs -o path/to/output
+```
+
 ### Creating a Protein Graph
 
 [Tutorial (Residue-level)](http://graphein.ai/notebooks/residue_graphs.html) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) | [Tutorial - Atomic](http://graphein.ai/notebooks/atom_graph_tutorial.html) [![Open In Colab(https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/atom_graph_tutorial.ipynb) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
