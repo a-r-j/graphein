@@ -11,3 +11,7 @@ Edges
 .. automodule:: graphein.rna.edges
     :members:
 
+Visualisation
+--------------
+.. automodule:: graphein.rna.visualisation
+    :members:

@@ -61,7 +61,10 @@ Utils
 
 
 
-
+Subgraphs
+---------
+.. automodule:: graphein.protein.subgraphs
+    :members:
 
 Meshes
 ------
