@@ -17,10 +17,9 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import seaborn as sns
-from mpl_toolkits.mplot3d import Axes3D
-
 from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.utils import import_message
+from mpl_toolkits.mplot3d import Axes3D
 
 try:
     from pytorch3d.ops import sample_points_from_meshes
@@ -409,11 +408,12 @@ def plot_distance_matrix(
     :return: Plotly figure.
     :rtype: px.Figure
     """
-    if not g and not dist_mat:
+    if g is None and dist_mat is None:
         raise ValueError("Must provide either a graph or a distance matrix.")
 
-    if g:
+    if dist_mat is None:
         dist_mat = g.graph["dist_mat"]
+    if g is not None:
         x_range = list(g.nodes)
         y_range = list(g.nodes)
         if not title:
@@ -519,7 +519,9 @@ def asteroid_plot(
     g: nx.Graph,
     node_id: str,
     k: int = 2,
-    colour_by: str = "shell",  # residue_name
+    colour_nodes_by: str = "shell",  # residue_name
+    colour_edges_by: str = "kind",
+    edge_colour_map: plt.cm.Colormap = plt.cm.plasma,
     show_labels: bool = True,
     title: Optional[str] = None,
     width: int = 600,
@@ -528,7 +530,7 @@ def asteroid_plot(
     show_edges: bool = False,
     node_size_multiplier: float = 10,
 ) -> Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]:
-    """"Plots a k-hop subgraph around a node as concentric shells.
+    """Plots a k-hop subgraph around a node as concentric shells.
 
     Radius of each point is proportional to the degree of the node (modified by node_size_multiplier).
 
@@ -538,8 +540,12 @@ def asteroid_plot(
     :type node_id: str
     :param k: Number of hops to plot
     :type k: int, defaults to 2
-    :param colour_by: Colour the nodes by this attribute. Currently only "shell" is supported.
-    :type colour_by: str, defaults to "shell"
+    :param colour_nodes_by: Colour the nodes by this attribute. Currently only "shell" is supported.
+    :type colour_nodes_by: str, defaults to "shell"
+    :param colour_edges_by: Colour the edges by this attribute. Currently only "edges" is supported.
+    :type colour_edges_by: str, defaults to "kind"
+    :param edge_colour_map: Colour map for edges.
+    :type edge_colour_map: plt.cm.Colormap,
     :param title: Title of the plot.
     :type title: str, defaults to None
     :param width: Width of the plot.
@@ -552,7 +558,7 @@ def asteroid_plot(
     :type node_size_multiplier: float, defaults to 10
     :returns: Plotly figure or matplotlib figure.
     :rtpye: Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]
-    """ ""
+    """
     assert node_id in g.nodes(), f"Node {node_id} not in graph"
 
     nodes: Dict[int, List[str]] = {}
@@ -574,11 +580,16 @@ def asteroid_plot(
         nx.set_node_attributes(subgraph, pos, "pos")
 
         if show_edges:
+            edge_colors = colour_edges(
+                subgraph, colour_map=edge_colour_map, colour_by=colour_edges_by
+            )
+
             edge_x: List[str] = []
             edge_y: List[str] = []
-            for edge in subgraph.edges():
-                x0, y0 = subgraph.nodes[edge[0]]["pos"]
-                x1, y1 = subgraph.nodes[edge[1]]["pos"]
+            edge_type: List[str] = []
+            for u, v in subgraph.edges():
+                x0, y0 = subgraph.nodes[u]["pos"]
+                x1, y1 = subgraph.nodes[v]["pos"]
                 edge_x.append(x0)
                 edge_x.append(x1)
                 edge_x.append(None)
@@ -588,9 +599,15 @@ def asteroid_plot(
             edge_trace = go.Scatter(
                 x=edge_x,
                 y=edge_y,
-                line=dict(width=0.5, color="#888"),
-                hoverinfo="none",
+                line=dict(width=1, color=edge_colors),
+                hoverinfo="text",
                 mode="lines",
+                text=[
+                    " / ".join(list(edge_type))
+                    for edge_type in nx.get_edge_attributes(
+                        subgraph, "kind"
+                    ).values()
+                ],
             )
 
         node_x: List[str] = []
@@ -604,7 +621,7 @@ def asteroid_plot(
             subgraph.degree(n) * node_size_multiplier for n in subgraph.nodes()
         ]
 
-        if colour_by == "shell":
+        if colour_nodes_by == "shell":
             node_colours = []
             for n in subgraph.nodes():
                 for k, v in nodes.items():
@@ -612,7 +629,7 @@ def asteroid_plot(
                         node_colours.append(k)
         else:
             raise NotImplementedError(
-                f"Colour by {colour_by} not implemented."
+                f"Colour by {colour_nodes_by} not implemented."
             )
             # TODO colour by AA type
         node_trace = go.Scatter(
