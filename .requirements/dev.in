@@ -1,6 +1,5 @@
 black
 flake8
-furo
 hypothesis
 interrogate
 isort

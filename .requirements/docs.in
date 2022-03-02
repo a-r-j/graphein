@@ -1,7 +1,6 @@
 furo
 nbsphinx
 nbsphinx-link
-sphinx-book-theme
 sphinx-copybutton
 nbstripout
 pandoc
