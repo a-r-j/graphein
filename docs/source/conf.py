@@ -13,8 +13,9 @@
 import os
 import sys
 
-# os.environ["PLOTLY_RENDERER"] = "notebook"
 import plotly.io as pio
+
+os.environ["PLOTLY_RENDERER"] = "sphinx_gallery"
 
 sys.path.insert(0, os.path.abspath("."))
 
@@ -49,8 +50,8 @@ nbsphinx_require_js_path = (
     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
 )
 nbsphinx_kernel_name = "graphein-wip"
-# nbsphinx_execute = "always"
-nbsphinx_execute = "never"
+nbsphinx_execute = "always"
+# nbsphinx_execute = "never"
 
 
 intersphinx_mapping = {
@@ -90,8 +91,11 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = "furo"
-html_theme = "sphinx_book_theme"
+html_theme = "furo"
+# html_theme = "sphinx_book_theme"
+# html_js_files = [
+#    'js/require.js',
+# ]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
