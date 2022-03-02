@@ -10,7 +10,6 @@ import os
 import platform
 import subprocess
 import sys
-from pathlib import Path
 from typing import Any, Callable, Iterable, List, Optional
 
 import networkx as nx
@@ -18,7 +17,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from Bio.Data.IUPACData import protein_letters_3to1
-from yaml import unsafe_load
 
 
 def onek_encoding_unk(
@@ -359,37 +357,6 @@ def import_message(
         print(f"    {installation}")
     else:
         print(f"{installation}")
-
-
-def parse_config(path: Path) -> ProteinGraphConfig:
-    """
-    Parses a yaml configuration file into a config object
-    :param path: Path to configuration file
-    """
-    with open(path) as file:
-        config_dict = unsafe_load(file)
-
-    print(config_dict)
-    if config_dict["mode"] == "protein_graph":
-        return parse_protein_graph_config(config_dict)
-    elif config_dict["mode"] == "protein_mesh":
-        raise NotImplementedError
-    elif config_dict["mode"] == "rna":
-        raise NotImplementedError
-    elif config_dict["mode"] == "ppi":
-        raise NotImplementedError
-
-
-def parse_protein_graph_config(config_dict):
-    from graphein.protein.config import ProteinGraphConfig
-
-    config = ProteinGraphConfig(**config_dict)
-    print(config)
-    return config
-
-
-def parse_dssp_config(config_dict):
-    raise NotImplementedError
 
 
 def ping(host: str) -> bool:
