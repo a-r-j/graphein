@@ -2,8 +2,11 @@ furo
 nbsphinx
 nbsphinx-link
 sphinx-copybutton
+m2r2
 nbstripout
 pandoc
 pydocstyle
 sphinx
+sphinxext-opengraph
+sphinxcontrib-gtagjs
 ipython
