@@ -42,6 +42,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
+    "m2r2",
     "nbsphinx",
     "nbsphinx_link",
 ]
@@ -50,8 +51,8 @@ nbsphinx_require_js_path = (
     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
 )
 nbsphinx_kernel_name = "graphein-wip"
-nbsphinx_execute = "always"
-# nbsphinx_execute = "never"
+# nbsphinx_execute = "always"
+nbsphinx_execute = "never"
 
 
 intersphinx_mapping = {
@@ -84,6 +85,7 @@ templates_path = ["_templates"]
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
+source_suffix = [".rst", ".md"]
 
 
 # -- Options for HTML output -------------------------------------------------

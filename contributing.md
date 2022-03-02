@@ -1,4 +1,4 @@
-# Introduction
+## Introduction
 
 Hey, what up! if you're reading this then I'm super psyched because that means that you're thinking about contributing to Graphein! Thanks so much for your time and consideration. It's rad people like you that make Graphein such a cool computational biology tool.
 
@@ -21,9 +21,9 @@ Here's a list of ideas but feel free to suggest anything I may have forgotten to
 * Art! Dreams! Your excellence!
 * Code that can be pulled into Graphein itself.
 
-# Contributor guidelines
+## Contributor guidelines
 
-### Excellence, and the contributor's code of conduct
+#### Excellence, and the contributor's code of conduct
 
 First up, most importantly we have a contributor's code of conduct. For some reason the internet is a dehumanizing experience and it's easy to forget that aside from the bots we're all humans on this thing. Approach each other with kindness. Please read our [contributor's code of conduct](CODE_OF_CONDUCT.md) and when in doubt just remember our one true rule as once spoken by the ever so wise duo of Bill and Ted.
 
@@ -33,11 +33,11 @@ First up, most importantly we have a contributor's code of conduct. For some rea
 
 ![Abraham Licoln saying, "Be Excellent to each other and party on dudes!". [sic]](https://media.giphy.com/media/ef0zYcF7AKu4b0Sns6/giphy-downsized-large.gif)
 
-### Do-ocracy
+#### Do-ocracy
 
 Graphein runs on do-ocracy. Do-ocracy is a simple concept. If you don't like something you don't need permission to fix it, you can just go ahead and fix it! If you actually want to merge your fix, or contribute in someway that benefits everybody, it'd really, really, really help if you got some light consensus from the rest of the Graphein development community but hey, if you really need to do something then you just gotta do it! Just don't expect me to merge it if it doesn't meet our technical criteria or isn't quite right for Graphein.
 
-### Technical requirements
+#### Technical requirements
 
 Part of what makes Graphein so special is that we have standards. DNA is already spaghetti code on its own and we just don't need to add to that.
 
@@ -55,11 +55,11 @@ All successfully merged pull requests must meet the following criteria:
 
 Don't worry if you submit a pull request and all the tests break and the code is not readable. We won't merge it just yet and then you can get some feedback about what needs to be changed before we do!
 
-### Be welcoming
+#### Be welcoming
 
 As one final guideline please be welcoming to newcomers and encourage new contributors from all walks of life. I want Graphein to be for everyone and that includes you and people who don't look, sound, or act like you!
 
-# Your first contribution
+## Your first contribution
 
 Unsure where to begin contributing to Graphein? You can start by looking through these beginner and help-wanted issues:
 
@@ -71,7 +71,7 @@ Unsure where to begin contributing to Graphein? You can start by looking through
 
 [Feature requests](https://github.com/a-r-j/graphein/labels/enhancement) - before requesting a new feature search through previous feature requests to see if it's already been requested. If not then feel free to submit a request and tag it with the enhancement tag!
 
-### Working on your first Pull Request?
+#### Working on your first Pull Request?
 
 You can learn how from this *free* series, [How to Contribute to an Open Source Project on GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
 
@@ -79,7 +79,7 @@ You can also check out [these](http://makeapullrequest.com/) [tutorials](http://
 
 At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first :smile_cat:
 
-# Getting started
+## Getting started
 
 For something that is bigger than a one or two line fix:
 
@@ -88,17 +88,17 @@ For something that is bigger than a one or two line fix:
 3. Do the changes in your fork's branch.
 4. Send a pull request.
 
-## Virtual Environments and Development Containers
+### Virtual Environments and Development Containers
 
 In order to simplify the development experience, and environment setup, the Graphein Github repository comes packaged to support *Github CodeSpaces* and [*VSCode Development Containers*](https://code.visualstudio.com/docs/remote/containers#_getting-started). *Github CodeSpaces* will give you ability to spin up a Github hosted instance of Ubuntu that would allow you run, test, develop Graphein from the browser. *VSCode Development Containers* in turn will allow your installation of VSCode to spin up a docker instance of Ubuntu on your computer and automatically mount your code onto it so that you continue developing on this docker instance that has all the required development environment setup.
 
-## Recommended Plugins
+### Recommended Plugins
 
 Whether you're a beginner with Python or you're an experienced developer, You should see the suggestions popup automatically when you goto the *Plugins* tab in VSCode. Using these plugins can help accelerate the development experience and also allow you to work more collaboratively with other Graphein developers.
 
-# How to report a bug
+## How to report a bug
 
-### Security disclosures
+#### Security disclosures
 
 If you find a security vulnerability, do NOT open an issue. I've yet to set up a security email for this so please in the interim DM me on twitter for my email [@arian_jamasb](https://twitter.com/arian_jamasb) or grab my contact from my [website](jamasb.io).
 
@@ -109,18 +109,18 @@ In order to determine whether you are dealing with a security issue, ask yoursel
 
 If the answer to either of those two questions are "yes", then you're probably dealing with a security issue. Note that even if you answer "no" to both questions, you may still be dealing with a security issue, so if you're unsure, just DM me [@arian_jamasb](https://twitter.com/arian_jamasb) for my personal email until I can set up a security related email.
 
-### Non-security related bugs
+#### Non-security related bugs
 
 For non-security bug reports please [submit it using this template!](https://github.com/a-r-j/graphein/issues/new?assignees=&labels=&template=bug_report.md&title=)
 
-# How to suggest a feature or enhancement
+## How to suggest a feature or enhancement
 
 If you want to suggest a feature it's as easy as filling out this [issue template](https://github.com/a-r-j/graphein/issues/new?assignees=&labels=&template=feature_request.md&title=), but before you do please [check to see if it's already been suggested!](https://github.com/a-r-j/graphein/labels/enhancement)
 
-# How add a recommended VSCode Plugin
+## How add a recommended VSCode Plugin
 
 Graphein comes with a set of recommended plugins for VSCode. If you have suggestions that will simplify life for the Graphein dev community, consider doing a pull-request after modifying `.vscode/extensions.json`.
 
-# In closing
+## In closing
 
 Thanks, for reading and I'm super psyched to see what you'll do with Graphein!

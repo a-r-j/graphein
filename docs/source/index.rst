@@ -50,7 +50,16 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
    modules/graphein.ppi
    modules/graphein.grn
    modules/graphein.ml
+   modules/graphein.utils
 
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :caption: Contributing
+
+   contributing/contributing
+   contributing/code_of_conduct
+   contributing/contributors
 
 
 If Graphein proves useful to your work, please consider citing:

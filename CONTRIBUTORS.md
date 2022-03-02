@@ -1,4 +1,4 @@
-# Contributing to Graphein
+## Contributing to Graphein
 
 Contribution is always welcomed. A good starting place is the roadmap issue, where you can find our current milestones. All contributions must go through pull requests and be reviewed by the committers. See our contribution guide for more details.
 
