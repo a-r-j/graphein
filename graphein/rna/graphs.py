@@ -10,6 +10,7 @@ import logging
 from typing import Callable, Dict, List, Optional
 
 import networkx as nx
+
 from graphein.rna.constants import (
     RNA_BASE_COLORS,
     RNA_BASES,

@@ -12,6 +12,7 @@ from itertools import chain
 from typing import Dict, List
 
 import networkx as nx
+
 from graphein.rna.graphs import RNA_BASE_COLORS
 
 log = logging.getLogger(__name__)

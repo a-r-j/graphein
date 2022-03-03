@@ -8,6 +8,7 @@
 import logging
 
 import networkx as nx
+
 from graphein.rna.constants import (
     CANONICAL_BASE_PAIRINGS,
     PSEUDOKNOT_CLOSING_SYMBOLS,
