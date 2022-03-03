@@ -68,7 +68,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "xarray": ("http://xarray.pydata.org/en/stable/", None),
+    "xarray": ("https://xarray.pydata.org/en/stable/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
@@ -104,10 +104,6 @@ source_suffix = [".rst", ".md"]
 # a list of builtin themes.
 #
 html_theme = "furo"
-# html_theme = "sphinx_book_theme"
-# html_js_files = [
-#    'js/require.js',
-# ]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
