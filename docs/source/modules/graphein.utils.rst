@@ -7,7 +7,7 @@ Utils
     :members:
 
 CLI & Config
-_____
+_____________
 .. automodule:: graphein.utils.config
     :members:
 
@@ -17,4 +17,3 @@ PyMol
     :members:
 .. automodule:: graphein.utils.pymol.compat
     :members:
-
