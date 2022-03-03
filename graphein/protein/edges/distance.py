@@ -411,7 +411,7 @@ def add_delaunay_triangulation(
         nodes = [node_map[s] for s in simplex]
         for n1, n2 in combinations(nodes, 2):
             if n1 not in G.nodes or n2 not in G.nodes:
-                next
+                continue
             if G.has_edge(n1, n2):
                 G.edges[n1, n2]["kind"].add("delaunay")
             else:
