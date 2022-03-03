@@ -49,7 +49,7 @@ VALID_BASE_PAIRINGS = {
 }
 """
 Mapping of RNA bases (:const:`~graphein.rna.constants.RNA_BASES`) to their allowable pairings.
-Amalgam of :const"`~graphein.rna.constants.CANONICAL_BASE_PAIRINGS` and :const"`~graphein.rna.constants.WOBBLE_BASE_PAIRINGS`.
+Amalgam of :const:`~graphein.rna.constants.CANONICAL_BASE_PAIRINGS` and :const:`~graphein.rna.constants.WOBBLE_BASE_PAIRINGS`.
 """
 
 SIMPLE_DOTBRACKET_NOTATION: List[str] = ["(", ".", ")"]
