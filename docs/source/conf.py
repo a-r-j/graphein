@@ -42,6 +42,9 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
+    "sphinx_inline_tabs",
+    "sphinxcontrib.gtagjs",
+    "sphinxext.opengraph",
     "m2r2",
     "nbsphinx",
     "nbsphinx_link",
@@ -54,11 +57,18 @@ nbsphinx_kernel_name = "graphein-wip"
 # nbsphinx_execute = "always"
 nbsphinx_execute = "never"
 
+ogp_site_url = "https://graphein.ai/"
+ogp_image = "https://graphein.ai/_static/graphein.png"
+
+gtagjs_ids = [
+    "G-ZKD1FQDEYH",
+]
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
+    "xarray": ("http://xarray.pydata.org/en/stable/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
@@ -104,6 +114,7 @@ html_theme = "furo"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_logo = "_static/graphein.png"
+html_title = f"{project} {release}"
 
 
 def setup(app):
