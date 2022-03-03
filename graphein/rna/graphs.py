@@ -10,6 +10,11 @@ import logging
 from typing import Callable, Dict, List, Optional
 
 import networkx as nx
+from graphein.rna.constants import (
+    RNA_BASE_COLORS,
+    RNA_BASES,
+    SUPPORTED_DOTBRACKET_NOTATION,
+)
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
@@ -19,70 +24,13 @@ from graphein.utils.utils import (
 
 log = logging.getLogger(__name__)
 
-RNA_BASES: List[str] = ["A", "U", "G", "C", "I"]
-"""List of allowable RNA Bases"""
-
-RNA_BASE_COLORS: Dict[str, str] = {
-    "A": "r",
-    "U": "b",
-    "G": "g",
-    "C": "y",
-    "I": "m",
-}
-"""Maps RNA bases (:const:`~graphein.rna.graphs.RNA_BASES`) to a colour for visualisations"""
-
-CANONICAL_BASE_PAIRINGS: Dict[str, List[str]] = {
-    "A": ["U"],
-    "U": ["A"],
-    "G": ["C"],
-    "C": ["G"],
-}
-"""Maps standard RNA bases to their canonical base pairings"""
-
-WOBBLE_BASE_PAIRINGS: Dict[str, List[str]] = {
-    "A": ["I"],
-    "U": ["G", "I"],
-    "G": ["U"],
-    "C": ["I"],
-    "I": ["A", "C", "U"],
-}
-"""
-Maps RNA bases (:const:`~graphein.rna.graphs.RNA_BASES`) to their wobble base pairings.
-"""
-
-VALID_BASE_PAIRINGS = {
-    key: CANONICAL_BASE_PAIRINGS.get(key, [])
-    + WOBBLE_BASE_PAIRINGS.get(key, [])
-    for key in set(
-        list(CANONICAL_BASE_PAIRINGS.keys())
-        + list(WOBBLE_BASE_PAIRINGS.keys())
-    )
-}
-"""
-Mapping of RNA bases (:const:`~graphein.rna.graphs.RNA_BASES`) to their allowable pairings.
-Amalgam of :const"`~graphein.rna.graphs.CANONICAL_BASE_PAIRINGS` and :const"`~graphein.rna.graphs.WOBBLE_BASE_PAIRINGS`
-"""
-
-SIMPLE_DOTBRACKET_NOTATION: List[str] = ["(", ".", ")"]
-"""List of characters in simplest dotbracket notation"""
-
-SUPPORTED_PSEUDOKNOT_NOTATION: List[str] = ["[", "]", "{", "}", "<", ">"]
-"""List of characters denoting pseudoknots in dotbracket notation"""
-
-SUPPORTED_DOTBRACKET_NOTATION = (
-    SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION
-)
-"""List of all valid dotbracket symbols.
-Amalgamation of :const:`~graphein.rna.graphs.SIMPLE_DOTBRACKET_NOTATION` and :const:`~graphein.rna.graphs.SUPPORTED_PSEUDOKNOT_NOTATION`
-"""
-
 
 def validate_rna_sequence(s: str) -> None:
     """
     Validate RNA sequence. This ensures that it only containts supported bases.
 
     Supported bases are: ``"A", "U", "G", "C", "I"``
-    Supported bases can be accessed in :const:`~graphein.rna.graphs.RNA_BASES`
+    Supported bases can be accessed in :const:`~graphein.rna.constants.RNA_BASES`
 
     :param s: Sequence to validate
     :type s: str
@@ -117,7 +65,7 @@ def validate_dotbracket(db: str):
     """
     Sanitize dotbracket string. This ensures that it only has supported symbols.
 
-    See: :const:`~graphein.rna.graphs.SUPPORTED_DOTBRACKET_NOTATION`
+    See: :const:`~graphein.rna.constants.SUPPORTED_DOTBRACKET_NOTATION`
 
     :param db: Dotbracket notation string
     :type db: str
