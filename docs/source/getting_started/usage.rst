@@ -4,7 +4,7 @@ Usage
 Graphein provides both a programmatic API via the Python library as well as a command-line interface.
 
 Command Line Interface
----------------------
+------------------------
 Graphein has a simple command line interface to get started and convert PDB files into graphs. It reads a ``ProteinGraphConfig`` object from the ``config.yaml``, constructs a graph for the given PDB file(s) and saves them in the output directory in ``gpickle`` format.
 
 .. code-block:: bash
