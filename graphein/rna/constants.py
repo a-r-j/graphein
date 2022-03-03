@@ -9,7 +9,7 @@
 from typing import Dict, List
 
 RNA_BASES: List[str] = ["A", "U", "G", "C", "I"]
-"""List of allowable RNA Bases"""
+"""List of allowable RNA Bases."""
 
 RNA_BASE_COLORS: Dict[str, str] = {
     "A": "r",
@@ -18,7 +18,7 @@ RNA_BASE_COLORS: Dict[str, str] = {
     "C": "y",
     "I": "m",
 }
-"""Maps RNA bases (:const:`~graphein.rna.constants.RNA_BASES`) to a colour for visualisations"""
+"""Maps RNA bases (:const:`~graphein.rna.constants.RNA_BASES`) to a colour for visualisations."""
 
 CANONICAL_BASE_PAIRINGS: Dict[str, List[str]] = {
     "A": ["U"],
@@ -26,7 +26,7 @@ CANONICAL_BASE_PAIRINGS: Dict[str, List[str]] = {
     "G": ["C"],
     "C": ["G"],
 }
-"""Maps standard RNA bases to their canonical base pairings"""
+"""Maps standard RNA bases to their canonical base pairings."""
 
 WOBBLE_BASE_PAIRINGS: Dict[str, List[str]] = {
     "A": ["I"],
