@@ -1,4 +1,4 @@
 Contributors
-===========
+=============
 
 .. mdinclude:: ../../../CONTRIBUTORS.md
