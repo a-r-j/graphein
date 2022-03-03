@@ -8,8 +8,13 @@
 import logging
 
 import networkx as nx
-
-from .graphs import CANONICAL_BASE_PAIRINGS, WOBBLE_BASE_PAIRINGS
+from graphein.rna.constants import (
+    CANONICAL_BASE_PAIRINGS,
+    PSEUDOKNOT_CLOSING_SYMBOLS,
+    PSEUDOKNOT_OPENING_SYMBOLS,
+    SIMPLE_DOTBRACKET_NOTATION,
+    WOBBLE_BASE_PAIRINGS,
+)
 
 log = logging.getLogger(__name__)
 
@@ -18,11 +23,11 @@ def check_base_pairing_type(base_1: str, base_2: str) -> str:
     """
     Checks type and validity of base pairing interactions.
 
-    :param base_1: str RNA Base letter for base 1
+    :param base_1: str RNA Base letter for base 1.
     :type base_1: str
-    :param base_2: str RNA base letter for base 2
+    :param base_2: str RNA base letter for base 2.
     :type base_2: str
-    :return: string referencing the type of base pairing:
+    :return: string referencing the type of base pairing ``"canonical"``, ``"wobble"`` or ``"invalid"``.
     :rtype: str
     """
     try:
@@ -30,7 +35,7 @@ def check_base_pairing_type(base_1: str, base_2: str) -> str:
             return "canonical"
         elif base_2 in WOBBLE_BASE_PAIRINGS[base_1]:
             return "wobble"
-    except:
+    except KeyError:
         return "invalid"
 
 
@@ -38,9 +43,9 @@ def add_phosphodiester_bonds(G: nx.Graph) -> nx.Graph:
     """
     Adds phosphodiester bonds between adjacent nucleotides to an RNA secondary structure graph.
 
-    :param G: RNA Graph to add edges to
+    :param G: RNA Graph to add edges to.
     :type G: nx.Graph
-    :return: RNA graph with phosphodiester_bond edges added
+    :return: RNA graph with ``phosphodiester_bond`` edges added.
     :rtype: nx.Graph
     """
     # Iterate over dotbracket to build connectivity
@@ -55,11 +60,12 @@ def add_phosphodiester_bonds(G: nx.Graph) -> nx.Graph:
 
 def add_base_pairing_interactions(G: nx.Graph) -> nx.Graph:
     """
-    Adds base_pairing interactions between nucleotides to an RNA secondary structure graph.
+    Adds base pairing interactions between nucleotides to an RNA secondary structure graph.
 
-    :param G: RNA Graph to add edges to
+    :param G: RNA Graph to add edges to.
     :type G: nx.Graph
-    :return: RNA graph with base_pairing edges added
+    :raises ValueError: if ``dotbracket`` contains an unsupported character.
+    :return: RNA graph with ``base_pairing`` edges added.
     :rtype: nx.Graph
     """
     # Check sequence is used
@@ -99,9 +105,9 @@ def add_pseudoknots(G: nx.Graph) -> nx.Graph:
     """
     Adds pseudoknots nucleotides to an RNA secondary structure graph.
 
-    :param G: RNA Graph to add edges to
+    :param G: RNA Graph to add edges to.
     :type G: nx.Graph
-    :return: RNA graph with pseudoknot edges added
+    :return: RNA graph with pseudoknot edges added.
     :rtype: nx.Graph
     """
     # Check sequence is used
@@ -112,17 +118,16 @@ def add_pseudoknots(G: nx.Graph) -> nx.Graph:
     knot_bases_3 = []  # for <<<>>> knots
 
     for i, c in enumerate(G.graph["dotbracket"]):
-        if c in ["[", "{", "<"]:
+        if c in PSEUDOKNOT_OPENING_SYMBOLS:
             if c == "<":
                 knot_bases_3.append(i)
             elif c == "[":
                 knot_bases_1.append(i)
             elif c == "{":
                 knot_bases_2.append(i)
-        elif c in ["]", "}", ">"]:
+        elif c in PSEUDOKNOT_CLOSING_SYMBOLS:
             if c == ">":
                 neighbor = knot_bases_3.pop()
-
             elif c == "]":
                 neighbor = knot_bases_1.pop()
             elif c == "}":
@@ -140,7 +145,7 @@ def add_pseudoknots(G: nx.Graph) -> nx.Graph:
                 pairing_type=pairing_type,
                 color="g",
             )
-        elif c in ["(", ")", "."]:
+        elif c in SIMPLE_DOTBRACKET_NOTATION:
             continue
         else:
             raise ValueError("Input is not in dot-bracket notation!")
@@ -152,9 +157,9 @@ def add_all_dotbracket_edges(G: nx.Graph) -> nx.Graph:
     """
     Adds phosphodiester bonds between adjacent nucleotides and base_pairing interactions to an RNA secondary structure graph.
 
-    :param G: RNA Graph to add edges to
+    :param G: RNA Graph to add edges to.
     :type G: nx.Graph
-    :return: RNA graph with phosphodiester_bond and base_pairing edges added
+    :return: RNA graph with ``phosphodiester_bond`` and ``base_pairing`` edges added.
     :rtype: nx.Graph
     """
     # Iterate over dotbracket to build connectivity
