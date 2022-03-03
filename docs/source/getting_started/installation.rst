@@ -54,6 +54,7 @@ The Dockerfile is viewable `here <https://github.com/a-r-j/graphein/blob/master/
 
         docker-compose up -d --build        # start the container
         docker-compose down                 # stop the container
+
 Dev Install
 ---------------------
 The Dev install of Graphein contains additional dependendencies for development, such as testing frameworks and documentation tools. If you wish to contribute to Graphein, this is the installation method you should use.
