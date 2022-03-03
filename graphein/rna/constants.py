@@ -18,7 +18,7 @@ RNA_BASE_COLORS: Dict[str, str] = {
     "C": "y",
     "I": "m",
 }
-"""Maps RNA bases (:const:`~graphein.rna.graphs.RNA_BASES`) to a colour for visualisations"""
+"""Maps RNA bases (:const:`~graphein.rna.constants.RNA_BASES`) to a colour for visualisations"""
 
 CANONICAL_BASE_PAIRINGS: Dict[str, List[str]] = {
     "A": ["U"],
@@ -36,7 +36,7 @@ WOBBLE_BASE_PAIRINGS: Dict[str, List[str]] = {
     "I": ["A", "C", "U"],
 }
 """
-Maps RNA bases (:const:`~graphein.rna.graphs.RNA_BASES`) to their wobble base pairings.
+Maps RNA bases (:const:`~graphein.rna.constants.RNA_BASES`) to their wobble base pairings.
 """
 
 VALID_BASE_PAIRINGS = {
@@ -48,8 +48,8 @@ VALID_BASE_PAIRINGS = {
     )
 }
 """
-Mapping of RNA bases (:const:`~graphein.rna.graphs.RNA_BASES`) to their allowable pairings.
-Amalgam of :const"`~graphein.rna.graphs.CANONICAL_BASE_PAIRINGS` and :const"`~graphein.rna.graphs.WOBBLE_BASE_PAIRINGS`.
+Mapping of RNA bases (:const:`~graphein.rna.constants.RNA_BASES`) to their allowable pairings.
+Amalgam of :const"`~graphein.rna.constants.CANONICAL_BASE_PAIRINGS` and :const"`~graphein.rna.constants.WOBBLE_BASE_PAIRINGS`.
 """
 
 SIMPLE_DOTBRACKET_NOTATION: List[str] = ["(", ".", ")"]
@@ -64,12 +64,16 @@ PSEUDOKNOT_CLOSING_SYMBOLS: List[str] = ["]", "}", ">"]
 SUPPORTED_PSEUDOKNOT_NOTATION: List[str] = (
     PSEUDOKNOT_OPENING_SYMBOLS + PSEUDOKNOT_CLOSING_SYMBOLS
 )
-"""List of characters denoting pseudoknots in dotbracket notation."""
+"""
+List of characters denoting pseudoknots in dotbracket notation.
+Amalgam of :const:`~graphein.rna.constants.PSEUDOKNOT_OPENING_SYMBOLS` and :const:`~graphein.rna.constants.PSEUDOKNOT_CLOSING_SYMBOLS`.
+"""
 
 SUPPORTED_DOTBRACKET_NOTATION = (
     SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION
 )
-"""List of all valid dotbracket symbols.
+"""
+List of all valid dotbracket symbols.
 Amalgamation of :const:`~graphein.rna.graphs.SIMPLE_DOTBRACKET_NOTATION` and :const:`~graphein.rna.graphs.SUPPORTED_PSEUDOKNOT_NOTATION`.
 """
 
