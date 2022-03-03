@@ -74,7 +74,7 @@ SUPPORTED_DOTBRACKET_NOTATION = (
 )
 """
 List of all valid dotbracket symbols.
-Amalgamation of :const:`~graphein.rna.graphs.SIMPLE_DOTBRACKET_NOTATION` and :const:`~graphein.rna.graphs.SUPPORTED_PSEUDOKNOT_NOTATION`.
+Amalgamation of :const:`~graphein.rna.constants.SIMPLE_DOTBRACKET_NOTATION` and :const:`~graphein.rna.constants.SUPPORTED_PSEUDOKNOT_NOTATION`.
 """
 
 
