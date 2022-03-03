@@ -1,4 +1,4 @@
-"""Functions to compute edges for an RNA secondary structure graph"""
+"""Functions to compute edges for an RNA secondary structure graph."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Emmanuele Rossi, Eric Ma
@@ -36,7 +36,7 @@ def check_base_pairing_type(base_1: str, base_2: str) -> str:
 
 def add_phosphodiester_bonds(G: nx.Graph) -> nx.Graph:
     """
-    Adds phosphodiester bonds between adjacent nucleotides to an RNA secondary structure graph
+    Adds phosphodiester bonds between adjacent nucleotides to an RNA secondary structure graph.
 
     :param G: RNA Graph to add edges to
     :type G: nx.Graph
@@ -55,7 +55,7 @@ def add_phosphodiester_bonds(G: nx.Graph) -> nx.Graph:
 
 def add_base_pairing_interactions(G: nx.Graph) -> nx.Graph:
     """
-    Adds base_pairing interactions between nucleotides to an RNA secondary structure graph
+    Adds base_pairing interactions between nucleotides to an RNA secondary structure graph.
 
     :param G: RNA Graph to add edges to
     :type G: nx.Graph
@@ -63,11 +63,7 @@ def add_base_pairing_interactions(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     # Check sequence is used
-    if "sequence" in G.graph.keys():
-        check_base_pairing = True
-    else:
-        check_base_pairing = False
-
+    check_base_pairing = "sequence" in G.graph.keys()
     # Iterate over dotbracket to build connectivity
     bases = []
     for i, c in enumerate(G.graph["dotbracket"]):
@@ -101,7 +97,7 @@ def add_base_pairing_interactions(G: nx.Graph) -> nx.Graph:
 
 def add_pseudoknots(G: nx.Graph) -> nx.Graph:
     """
-    Adds pseudoknots nucleotides to an RNA secondary structure graph
+    Adds pseudoknots nucleotides to an RNA secondary structure graph.
 
     :param G: RNA Graph to add edges to
     :type G: nx.Graph
@@ -109,11 +105,7 @@ def add_pseudoknots(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     # Check sequence is used
-    if "sequence" in G.graph.keys():
-        check_base_pairing = True
-    else:
-        check_base_pairing = False
-
+    check_base_pairing = "sequence" in G.graph.keys()
     # Iterate over dotbracket to build connectivity
     knot_bases_1 = []  # for [[[]]] knots
     knot_bases_2 = []  # for {{{}}} knots
@@ -121,20 +113,20 @@ def add_pseudoknots(G: nx.Graph) -> nx.Graph:
 
     for i, c in enumerate(G.graph["dotbracket"]):
         if c in ["[", "{", "<"]:
-            if c == "[":
+            if c == "<":
+                knot_bases_3.append(i)
+            elif c == "[":
                 knot_bases_1.append(i)
             elif c == "{":
                 knot_bases_2.append(i)
-            elif c == "<":
-                knot_bases_3.append(i)
         elif c in ["]", "}", ">"]:
-            if c == "]":
+            if c == ">":
+                neighbor = knot_bases_3.pop()
+
+            elif c == "]":
                 neighbor = knot_bases_1.pop()
             elif c == "}":
                 neighbor = knot_bases_2.pop()
-            elif c == ">":
-                neighbor = knot_bases_3.pop()
-
             if check_base_pairing:
                 pairing_type = check_base_pairing_type(
                     G.nodes[i]["nucleotide"], G.nodes[neighbor]["nucleotide"]
@@ -158,7 +150,7 @@ def add_pseudoknots(G: nx.Graph) -> nx.Graph:
 
 def add_all_dotbracket_edges(G: nx.Graph) -> nx.Graph:
     """
-    Adds phosphodiester bonds between adjacent nucleotides and base_pairing interactions to an RNA secondary structure graph
+    Adds phosphodiester bonds between adjacent nucleotides and base_pairing interactions to an RNA secondary structure graph.
 
     :param G: RNA Graph to add edges to
     :type G: nx.Graph
