@@ -17,9 +17,10 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import seaborn as sns
+from mpl_toolkits.mplot3d import Axes3D
+
 from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.utils import import_message
-from mpl_toolkits.mplot3d import Axes3D
 
 try:
     from pytorch3d.ops import sample_points_from_meshes
@@ -243,16 +244,31 @@ def plotly_protein_structure_graph(
         title="",
     )
 
+    repeated_edge_colours = []
+    for (
+        edge_col
+    ) in (
+        edge_colors
+    ):  # Repeat as each line segment is ({x,y,z}_start, {x,y,z}_end, None)
+        repeated_edge_colours.extend((edge_col, edge_col, edge_col))
+
+    edge_colors = repeated_edge_colours
+
+    edge_text = [
+        " / ".join(list(edge_type))
+        for edge_type in nx.get_edge_attributes(G, "kind").values()
+    ]
+    edge_text = np.repeat(
+        edge_text, 3
+    )  # Repeat as each line segment is ({x,y,z}_start, {x,y,z}_end, None)
+
     edges = go.Scatter3d(
         x=x_edges,
         y=y_edges,
         z=z_edges,
         mode="lines",
         line={"color": edge_colors, "width": 10},
-        text=[
-            " / ".join(list(edge_type))
-            for edge_type in nx.get_edge_attributes(G, "kind").values()
-        ],
+        text=edge_text,
         hoverinfo="text",
     )
 
