@@ -15,3 +15,8 @@ Visualisation
 --------------
 .. automodule:: graphein.rna.visualisation
     :members:
+
+Constants
+---------
+.. automodule:: graphein.rna.constants
+    :members:
