@@ -80,3 +80,8 @@ Utils
 -----
 .. automodule:: graphein.protein.utils
     :members:
+
+Constants
+----------
+.. automodule:: graphein.protein.resi_atoms
+    :members:
