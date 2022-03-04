@@ -66,6 +66,11 @@ Subgraphs
 .. automodule:: graphein.protein.subgraphs
     :members:
 
+Analysis
+---------
+.. automodule:: graphein.protein.analysis
+    :members:
+
 Meshes
 ------
 .. automodule:: graphein.protein.meshes
