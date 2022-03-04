@@ -1,12 +1,8 @@
 black
 flake8
-furo
 hypothesis
 interrogate
 isort
-nbsphinx
-nbsphinx-link
-sphinx_rtd_theme
 nbstripout
 nbval
 pandoc
@@ -16,4 +12,3 @@ pydocstyle
 pytest
 pytest-cov
 pytest-xdist
-sphinx

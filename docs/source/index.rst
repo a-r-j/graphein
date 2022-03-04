@@ -12,33 +12,44 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
 .. note::
    This is an early-stage project and a lot more documentation and functionality is planned to be included. If you are a structural biologist or machine learning researcher in computational biology, my inbox is always open for suggestions and assistance!
 
+.. include:: readme.rst
+
+
 .. toctree::
    :glob:
    :maxdepth: 1
+   :hidden:
    :caption: Getting Started
 
    getting_started/installation
    getting_started/introduction
+   getting_started/usage
    license
 
 
 .. toctree::
    :glob:
    :maxdepth: 2
+   :hidden:
    :caption: Tutorials
 
-   notebooks_index
+   protein_notebooks
+   rna_notebooks
+   ppi_notebooks
+   grn_notebooks
 
 .. toctree::
    :glob:
    :maxdepth: 2
-   :caption: Datasets
+   :hidden:
+   :caption: Machine Learning
 
    datasets
 
 .. toctree::
    :glob:
    :maxdepth: 4
+   :hidden:
    :caption: API Reference
 
    modules/graphein.protein
@@ -46,7 +57,17 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
    modules/graphein.ppi
    modules/graphein.grn
    modules/graphein.ml
+   modules/graphein.utils
 
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+   :caption: Contributing
+
+   contributing/contributing
+   contributing/code_of_conduct
+   contributing/contributors
 
 
 If Graphein proves useful to your work, please consider citing:

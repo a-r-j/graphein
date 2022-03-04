@@ -1,14 +1,23 @@
-### 1.2.0 - Unreleased
+### 1.2.0 - 4/3/2022
 
 * [Feature] - #104 adds support for asteroid plots and distance matrix visualisation.
 * [Feature] - #104 adds support for protein graph analytics (`graphein.protein.analysis`)
 * [Feature] - #110 adds support for secondary structure & surface-based subgraphs
 * [Feature] - #113 adds CLI support(!)
 * [Feature] - #116 adds support for onehot-encoded amino acid features as node attributes.
+* [Feature] - #119 Adds plotly-based visualisation for PPI Graphs
 * [Bugfix] - #110 fixes minor bug in `asa` where it would fail if added as a first/only dssp feature.
 * [Bugfix] - #110 Adds install for DSSP in Dockerfile
 * [Bugfix] - #110 Adds conda install & DSSP to tests
+* [Bugfix] - #119 Delaunay Triangulation computed over all atoms by default. Adds an option to restrict it to certain atom types.
+* [Bugfix] - #119 Minor fixes to stability of RNA Graph Plotting
+* [Bugfix] - #119 add tolerance parameter to add_atomic_edges
 * [Documentation] - #104 Adds notebooks for visualisation, RNA SS Graphs, protein graph analytics
+* [Documentation] - #119 Overhaul of docs & tutorial notebooks. Adds interactive plots to docs, improves docstrings, doc formatting, doc requirements.
+
+#### Breaking Changes
+
+* #119 - Refactor RNA Graph constants from graphein.rna.graphs to graphein.rna.constants. Only problematic if constants were accessed directly. All internal references have been moved accordingly.
 
 ### 1.1.1 - 19/02/2022
 

@@ -61,7 +61,15 @@ Utils
 
 
 
+Subgraphs
+---------
+.. automodule:: graphein.protein.subgraphs
+    :members:
 
+Analysis
+---------
+.. automodule:: graphein.protein.analysis
+    :members:
 
 Meshes
 ------
@@ -76,4 +84,9 @@ Visualisation
 Utils
 -----
 .. automodule:: graphein.protein.utils
+    :members:
+
+Constants
+----------
+.. automodule:: graphein.protein.resi_atoms
     :members:

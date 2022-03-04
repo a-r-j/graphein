@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, TypeVar
+from typing import List, Optional
 
 import networkx as nx
 import numpy as np
@@ -30,21 +30,31 @@ except ImportError:
 
 
 SUPPORTED_FORMATS = ["nx", "pyg", "dgl"]
+"""Supported conversion formats.
+
+``"nx"``: NetworkX graph
+
+``"pyg"``: PyTorch Geometric Data object
+
+``"dgl"``: DGL graph
+"""
+
 SUPPORTED_VERBOSITY = ["gnn", "default", "all_info"]
+"""Supported verbosity levels for preserving graph features in conversion."""
 
 
 class GraphFormatConvertor:
     """
     Provides conversion utilities between NetworkX Graphs and geometric deep learning library destination formats.
-    Currently, we provide support for converstion from nx.Graphs to dgl.DGLGraph and pytorch_geometric.Data. Supported conversion
-    formats can be retrieved from graphein.ml.conversion.SUPPORTED_FORMATS.
+    Currently, we provide support for converstion from ``nx.Graph`` to ``dgl.DGLGraph`` and ``pytorch_geometric.Data``. Supported conversion
+    formats can be retrieved from :const:`~graphein.ml.conversion.SUPPORTED_FORMATS`.
 
-    :param src_format: The type of graph you'd like to convert from. Supported formats are available in graphein.ml.conversion.SUPPORTED_FORMATS
+    :param src_format: The type of graph you'd like to convert from. Supported formats are available in :const:`~graphein.ml.conversion.SUPPORTED_FORMATS`
     :type src_format: Literal["nx", "pyg", "dgl"]
     :param dst_format: The type of graph format you'd like to convert to. Supported formats are available in:
-        graphein.ml.conversion.SUPPORTED_FORMATS
+        ``graphein.ml.conversion.SUPPORTED_FORMATS``
     :type dst_format:  Literal["nx", "pyg", "dgl"]
-    :param verbose: Select from "gnn", "default", "all_info" to determine how much information is preserved (features)
+    :param verbose: Select from ``"gnn"``, ``"default"``, ``"all_info"`` to determine how much information is preserved (features)
         as some are unsupported by various downstream frameworks
     :type verbose: graphein.ml.conversion.SUPPORTED_VERBOSITY
     :param columns: List of columns in the node features to retain
@@ -138,11 +148,11 @@ class GraphFormatConvertor:
 
     def convert_nx_to_dgl(self, G: nx.Graph) -> dgl.DGLGraph:
         """
-        Converts NetworkX graph to DGL
+        Converts ``NetworkX`` graph to ``DGL``
 
-        :param G: nx.Graph to convert to DGLGraph
+        :param G: ``nx.Graph`` to convert to ``DGLGraph``
         :type G: nx.Graph
-        :return: DGLGraph object version of input NetworkX graph
+        :return: ``DGLGraph`` object version of input ``NetworkX`` graph
         :rtype: dgl.DGLGraph
         """
         g = dgl.DGLGraph()
@@ -216,19 +226,16 @@ class GraphFormatConvertor:
 
     def convert_nx_to_pyg(self, G: nx.Graph) -> Data:
         """
-        Converts NetworkX graph to pytorch_geometric.data.Data object. Requires Torch Geometric to be installed.
+        Converts ``NetworkX`` graph to ``pytorch_geometric.data.Data`` object. Requires ``PyTorch Geometric`` (https://pytorch-geometric.readthedocs.io/en/latest/) to be installed.
 
-        :param G: nx.Graph to convert to PyTorch Geometric
+        :param G: ``nx.Graph`` to convert to PyTorch Geometric ``Data`` object
         :type G: nx.Graph
-        :return: Data object containing networkx graph data
+        :return: ``Data`` object containing networkx graph data
         :rtype: pytorch_geometric.data.Data
         """
 
-        # Initialise dict used to construct Data object
-        data = {}
-
-        # Assign node ids as a feature
-        data["node_id"] = [n for n in G.nodes()]
+        # Initialise dict used to construct Data object & Assign node ids as a feature
+        data = {"node_id": list(G.nodes())}
         G = nx.convert_node_labels_to_integers(G)
 
         # Construct Edge Index
@@ -251,7 +258,7 @@ class GraphFormatConvertor:
                     )
 
         # Add graph-level features
-        for i, feat_name in enumerate(G.graph):
+        for feat_name in G.graph:
             if str(feat_name) in self.columns:
                 data[str(feat_name)] = [G.graph[feat_name]]
 
@@ -265,7 +272,7 @@ class GraphFormatConvertor:
     @staticmethod
     def convert_nx_to_nx(G: nx.Graph) -> nx.Graph:
         """
-        Converts NetworkX Graph to NetworkX graph object. Redundant - returns itself
+        Converts NetworkX graph (``nx.Graph``) to NetworkX graph (``nx.Graph``) object. Redundant - returns itself
 
         :param G: NetworkX Graph
         :type G: nx.Graph
@@ -277,25 +284,24 @@ class GraphFormatConvertor:
     @staticmethod
     def convert_dgl_to_nx(G: dgl.DGLGraph) -> nx.Graph:
         """
-        Converts a DGL Graph (dgl.DGLGraph) to a NetworkX (nx.Graph) object. Preservers node and edge attributes.
+        Converts a DGL Graph (``dgl.DGLGraph``) to a NetworkX (``nx.Graph``) object. Preserves node and edge attributes.
 
-        :param G: dgl.DGLGraph to convert to NetworkX
+        :param G: ``dgl.DGLGraph`` to convert to ``NetworkX`` graph.
         :type G: dgl.DGLGraph
-        :return: NetworkX graph object
+        :return: NetworkX graph object.
         :rtype: nx.Graph
         """
         node_attrs = G.node_attr_schemes().keys()
         edge_attrs = G.edge_attr_schemes().keys()
-        nx_g = dgl.to_networkx(G, node_attrs, edge_attrs)
-        return nx_g
+        return dgl.to_networkx(G, node_attrs, edge_attrs)
 
     @staticmethod
     def convert_pyg_to_nx(G: Data) -> nx.Graph:
-        """Converts PyTorch Geometric Data object to NetworkX graph
+        """Converts PyTorch Geometric ``Data`` object to NetworkX graph (``nx.Graph``).
 
-        :param G: Pytorch Geometric Data
+        :param G: Pytorch Geometric Data.
         :type G: torch_geometric.data.Data
-        :returns: NetworkX graph version
+        :returns: NetworkX graph.
         :rtype: nx.Graph
         """
         return torch_geometric.utils.to_networkx(G)
@@ -308,10 +314,8 @@ class GraphFormatConvertor:
 
 def convert_nx_to_pyg_data(G: nx.Graph) -> Data:
     # Initialise dict used to construct Data object
-    data = {}
+    data = {"node_id": list(G.nodes())}
 
-    # Assign node ids as a feature
-    data["node_id"] = [n for n in G.nodes()]
     G = nx.convert_node_labels_to_integers(G)
 
     # Construct Edge Index
@@ -330,7 +334,7 @@ def convert_nx_to_pyg_data(G: nx.Graph) -> Data:
             )
 
     # Add graph-level features
-    for i, feat_name in enumerate(G.graph):
+    for feat_name in G.graph:
         data[str(feat_name)] = [G.graph[feat_name]]
 
     data["edge_index"] = edge_index.view(2, -1)

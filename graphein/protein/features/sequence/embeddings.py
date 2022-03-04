@@ -1,3 +1,9 @@
+"""Functions to add embeddings from pre-trained language models protein structure graphs."""
+# Graphein
+# Author: Arian Jamasb <arian@jamasb.io>
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
+# Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
 import os
@@ -37,22 +43,24 @@ def _load_esm_model(model_name: str = "esm1b_t33_650M_UR50S"):
     """
     Loads pre-trained FAIR ESM model from torch hub.
 
-    Sources:
-    Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
-    Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
-    Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
+        Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
+        Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
+        Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
 
-    Transformer protein language models are unsupervised structure learners 2020
-    Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
+
+        Transformer protein language models are unsupervised structure learners 2020
+        Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
 
     Pre-trained models:
     Full Name layers params Dataset Embedding Dim Model URL
-    ESM-1b esm1b_t33_650M_UR50S 33 650M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
+    ========= ====== ====== ======= ============= =========
+    ESM-1b   esm1b_t33_650M_UR50S 33 650M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
     ESM1-main esm1_t34_670M_UR50S34 670M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
     esm1_t34_670M_UR50D 34 670M UR50/D 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
     esm1_t34_670M_UR100 34 670M UR100 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
     esm1_t12_85M_UR50S 12 85M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
     esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
+
     :param model_name: Name of pre-trained model to load
     :type model_name: str
     :return: loaded pre-trained model
@@ -70,16 +78,18 @@ def compute_esm_embedding(
     """
     Computes sequence embedding using Pre-trained ESM model from FAIR
 
-    Sources:
-    Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
-    Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
-    Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
+        Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
+        Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
+        Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
 
-    Transformer protein language models are unsupervised structure learners 2020
-    Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
+
+        Transformer protein language models are unsupervised structure learners 2020
+        Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
 
     Pre-trained models:
+
     Full Name layers params Dataset Embedding Dim Model URL
+    ========= ====== ====== ======= ============= =========
     ESM-1b esm1b_t33_650M_UR50S 33 650M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
     ESM1-main esm1_t34_670M_UR50S 34 670M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
     esm1_t34_670M_UR50D 34 670M UR50/D 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
@@ -89,13 +99,13 @@ def compute_esm_embedding(
 
     :param sequence: Protein sequence to embed (str)
     :type sequence: str
-    :param representation: Type of embedding to extract. "residue: or "sequence". Sequence-level embeddings are averaged residue embeddings
+    :param representation: Type of embedding to extract. ``"residue"`` or ``"sequence"``. Sequence-level embeddings are averaged residue embeddings
     :type representation: str
     :param model_name: Name of pre-trained model to use
     :type model_name: str
     :param output_layer: integer indicating which layer the output should be taken from
     :type output_layer: int
-    :return: embedding (np.ndarray)
+    :return: embedding (``np.ndarray``)
     :rtype: np.ndarray
     """
     model, alphabet = _load_esm_model(model_name)
@@ -135,30 +145,34 @@ def esm_residue_embedding(
     """
     Computes ESM residue embeddings from a protein sequence and adds the to the graph.
 
-    Sources:
-    Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
-    Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
-    Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
+        Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
+        Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
+        Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
 
-    Transformer protein language models are unsupervised structure learners 2020
-    Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
 
-    Pre-trained models:
-    Full Name layers params Dataset Embedding Dim Model URL
-    ESM-1b esm1b_t33_650M_UR50S 33 650M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
-    ESM1-main esm1_t34_670M_UR50S 34 670M UR50/S 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
-    esm1_t34_670M_UR50D 34 670M UR50/D 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
-    esm1_t34_670M_UR100 34 670M UR100 1280 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
-    esm1_t12_85M_UR50S 12 85M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
-    esm1_t6_43M_UR50S 6 43M UR50/S 768 https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
+        Transformer protein language models are unsupervised structure learners 2020
+        Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
 
-    :param G: nx.Graph to add esm embedding to
+    **Pre-trained models**
+
+    =========                     ====== ====== ======= ============= =========
+    Full Name                     layers params Dataset Embedding Dim Model URL
+    =========                     ====== ====== ======= ============= =========
+    ESM-1b esm1b_t33_650M_UR50S   33    650M   UR50/S     1280        https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
+    ESM1-main esm1_t34_670M_UR50S 34    670M   UR50/S     1280        https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50S.pt
+    esm1_t34_670M_UR50D           34    670M   UR50/D     1280        https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR50D.pt
+    esm1_t34_670M_UR100           34    670M   UR100      1280        https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t34_670M_UR100.pt
+    esm1_t12_85M_UR50S            12    85M    UR50/S     768         https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t12_85M_UR50S.pt
+    esm1_t6_43M_UR50S             6     43M    UR50/S     768         https://dl.fbaipublicfiles.com/fair-esm/models/esm1_t6_43M_UR50S.pt
+    =========                     ====== ====== ======= ============= =========
+
+    :param G: ``nx.Graph`` to add esm embedding to.
     :type G: nx.Graph
-    :param model_name: Name of pre-trained model to use
+    :param model_name: Name of pre-trained model to use.
     :type model_name: str
-    :param output_layer: index of output layer in pre-trained model
+    :param output_layer: index of output layer in pre-trained model.
     :type output_layer: int
-    :return: nx.Graph with esm embedding feature added to nodes
+    :return: ``nx.Graph`` with esm embedding feature added to nodes.
     :rtype: nx.Graph
     """
 
@@ -181,11 +195,11 @@ def esm_residue_embedding(
 
 def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
     """
-    Computes ESM sequence embedding feature over chains in a graph
+    Computes ESM sequence embedding feature over chains in a graph.
 
-    :param G: nx.Graph protein structure graph
+    :param G: nx.Graph protein structure graph.
     :type G: nx.Graph
-    :return: nx.Graphein protein structure graphein with esm embedding features added eg. G.graph["esm_embedding_A"]
+    :return: nx.Graph protein structure graph with esm embedding features added eg. ``G.graph["esm_embedding_A"]`` for chain A.
     :rtype: nx.Graph
     """
     func = partial(compute_esm_embedding, representation="sequence")
@@ -196,9 +210,12 @@ def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
 
 @lru_cache()
 def _load_biovec_model():
-    """Loads pretrained ProtVec Model
+    """Loads pretrained ProtVec Model.
 
-    Source: ProtVec: A Continuous Distributed Representation of Biological Sequences
+    **Source**
+
+        ProtVec: A Continuous Distributed Representation of Biological Sequences
+
     Paper: http://arxiv.org/pdf/1503.05140v1.pdf
     """
 
@@ -213,14 +230,16 @@ def _load_biovec_model():
 
 def biovec_sequence_embedding(G: nx.Graph) -> nx.Graph:
     """
-    Adds BioVec sequence embedding feature to the graph. Computed over chains
+    Adds BioVec sequence embedding feature to the graph. Computed over chains.
 
-    Source: ProtVec: A Continuous Distributed Representation of Biological Sequences
+    **Source**
+        ProtVec: A Continuous Distributed Representation of Biological Sequences
+
     Paper: http://arxiv.org/pdf/1503.05140v1.pdf
 
-    :param G: nx.Graph protein structure graph
+    :param G: nx.Graph protein structure graph.
     :type G: nx.Graph
-    :return: nx.Graph protein structure graph with biovec embedding added. e.g. G.graph["biovec_embedding_A"]
+    :return: nx.Graph protein structure graph with biovec embedding added. e.g. ``G.graph["biovec_embedding_A"]`` for chain ``A``.
     :rtype: nx.Graph
     """
     pv = _load_biovec_model()

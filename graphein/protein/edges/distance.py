@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from itertools import combinations
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import networkx as nx
 import numpy as np
@@ -62,11 +62,11 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
 
 def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
     """
-    Adds peptide backbone as edges to residues in each chain
+    Adds peptide backbone as edges to residues in each chain.
 
-    :param G: networkx protein graph
+    :param G: networkx protein graph.
     :type G: nx.Graph
-    :return G; networkx protein graph with added peptide bonds
+    :return G: networkx protein graph with added peptide bonds.
     :rtype: nx.Graph
     """
     # Iterate over every chain
@@ -118,15 +118,14 @@ def add_hydrophobic_interactions(
     Find all hydrophobic interactions.
 
     Performs searches between the following residues:
-    ALA, VAL, LEU, ILE, MET, PHE, TRP, PRO, TYR
+    ``[ALA, VAL, LEU, ILE, MET, PHE, TRP, PRO, TYR]`` (:const:`~graphein.protein.resi_atoms.HYDROPHOBIC_RESIS`).
 
     Criteria: R-group residues are within 5A distance.
 
-    :param G:
+    :param G: nx.Graph to add hydrophobic interactions to.
     :type G: nx.Graph
-    :param rgroup_df:
+    :param rgroup_df: Optional dataframe of R-group atoms.
     :type rgroup_df: pd.DataFrame, optional
-
     """
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
@@ -144,7 +143,7 @@ def add_disulfide_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
     """
-    Find all disulfide interactions between CYS residues.
+    Find all disulfide interactions between CYS residues (:const:`~graphein.protein.resi_atoms.DISULFIDE_RESIS`, :const:`~graphein.protein.resi_atoms.DISULFIDE_ATOMS`).
 
     Criteria: sulfur atom pairs are within 2.2A of each other.
 
@@ -219,7 +218,8 @@ def add_ionic_interactions(
     """
     Find all ionic interactions.
 
-    Criteria: ARG, LYS, HIS, ASP, and GLU residues are within 6A.
+    Criteria: ``[ARG, LYS, HIS, ASP, and GLU]`` (:const:`~graphein.protein.resi_atoms.IONIC_RESIS`) residues are within 6A.
+    We also check for opposing charges (:const:`~graphein.protein.resi_atoms.POS_AA`, :const:`~graphein.protein.resi_atoms.NEG_AA`)
     """
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
@@ -251,8 +251,9 @@ def add_aromatic_interactions(
 ):
     """
     Find all aromatic-aromatic interaction.
+
     Criteria: phenyl ring centroids separated between 4.5A to 7A.
-    Phenyl rings are present on PHE, TRP, HIS and TYR.
+    Phenyl rings are present on ``PHE, TRP, HIS, TYR`` (:const:`~graphein.protein.resi_atoms.AROMATIC_RESIS`).
     Phenyl ring atoms on these amino acids are defined by the following
     atoms:
     - PHE: CG, CD, CE, CZ
@@ -361,32 +362,62 @@ def get_interacting_atoms(angstroms: float, distmat: pd.DataFrame):
     return np.where(distmat <= angstroms)
 
 
-def add_delaunay_triangulation(G: nx.Graph):
+def add_delaunay_triangulation(
+    G: nx.Graph, allowable_nodes: Optional[List[str]] = None
+):
     """
     Compute the Delaunay triangulation of the protein structure.
+
     This has been used in prior work. References:
-    - Harrison, R. W., Yu, X. & Weber, I. T. Using triangulation to include
+
+        Harrison, R. W., Yu, X. & Weber, I. T. Using triangulation to include
         target structure improves drug resistance prediction accuracy. in 1–1
         (IEEE, 2013). doi:10.1109/ICCABS.2013.6629236
-    - Yu, X., Weber, I. T. & Harrison, R. W. Prediction of HIV drug
+
+        Yu, X., Weber, I. T. & Harrison, R. W. Prediction of HIV drug
         resistance from genotype with encoded three-dimensional protein
         structure. BMC Genomics 15 Suppl 5, S1 (2014).
+
     Notes:
     1. We do not use the add_interacting_resis function, because this
-        interaction is computed on the CA atoms. Therefore, there is code
+        interaction is computed on the ``CA`` atoms. Therefore, there is code
         duplication. For now, I have chosen to leave this code duplication
         in.
+
+    :param G: The networkx graph to add the triangulation to.
+    :type G: nx.Graph
+    :param allowable_nodes: The nodes to include in the triangulation. If ``None`` (default), no filtering is done.
+        This parameter is used to filter out nodes that are not desired in the triangulation.
+        Eg if you wanted to construct a delaunay triangulation of the CA atoms of an atomic graph.
+    :type allowable_nodes: List[str], optional
     """
-    ca_coords = G.graph["pdb_df"].query("atom_name == 'CA'")
+    if allowable_nodes is None:
+        coords = np.array([d["coords"] for _, d in G.nodes(data=True)])
+        node_map: Dict[int, str] = dict(enumerate(G.nodes()))
+    else:
+        coords = np.array(
+            [
+                d["coords"]
+                for _, d in G.nodes(data=True)
+                if d["atom_type"] in allowable_nodes
+            ]
+        )
+        node_map: Dict[int, str] = {
+            i: n
+            for i, (n, d) in enumerate(G.nodes(data=True))
+            if d["atom_type"] in allowable_nodes
+        }
+        node_map: Dict[int, str] = dict(enumerate(node_map.values()))
 
-    tri = Delaunay(
-        ca_coords[["x_coord", "y_coord", "z_coord"]]
-    )  # this is the triangulation
+    tri = Delaunay(coords)  # this is the triangulation
+    log.debug(
+        f"Detected {len(tri.simplices)} simplices in the Delaunay Triangulaton."
+    )
     for simplex in tri.simplices:
-
-        nodes = ca_coords.reset_index(drop=True).loc[simplex, "node_id"]
-
+        nodes = [node_map[s] for s in simplex]
         for n1, n2 in combinations(nodes, 2):
+            if n1 not in G.nodes or n2 not in G.nodes:
+                continue
             if G.has_edge(n1, n2):
                 G.edges[n1, n2]["kind"].add("delaunay")
             else:
@@ -399,9 +430,13 @@ def add_distance_threshold(
     """
     Adds edges to any nodes within a given distance of each other. Long interaction threshold is used
     to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+
     :param G: Protein Structure graph to add distance edges to
+    :type G: nx.Graph
     :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :type long_interaction_threshold: int
     :param threshold: Distance in angstroms, below which two nodes are connected
+    :type threshold: float
     :return: Graph with distance-based edges added
     """
     dist_mat = compute_distmat(G.graph["pdb_df"])
@@ -435,24 +470,33 @@ def add_k_nn_edges(
     mode: str = "connectivity",
     metric: str = "minkowski",
     p: int = 2,
-    include_self: bool = False,
+    include_self: Union[bool, str] = False,
 ):
     """
     Adds edges to nodes based on K nearest neighbours. Long interaction threshold is used
     to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+
     :param G: Protein Structure graph to add distance edges to
+    :type G: nx.Graph
     :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :type long_interaction_threshold: int
     :param k: Number of neighbors for each sample.
-    :param mode: Type of returned matrix: ‘connectivity’ will return the connectivity matrix with ones and zeros,
-    and ‘distance’ will return the distances between neighbors according to the given metric.
+    :type k: int
+    :param mode: Type of returned matrix: ``"connectivity"`` will return the connectivity matrix with ones and zeros,
+        and ``"distance"`` will return the distances between neighbors according to the given metric.
+    :type mode: str
     :param metric: The distance metric used to calculate the k-Neighbors for each sample point.
-    The DistanceMetric class gives a list of available metrics.
-    The default distance is ‘euclidean’ (‘minkowski’ metric with the p param equal to 2.)
-    :param p: Power parameter for the Minkowski metric. When p = 1, this is equivalent to using manhattan_distance (l1),
-     and euclidean_distance (l2) for p = 2. For arbitrary p, minkowski_distance (l_p) is used.
+        The DistanceMetric class gives a list of available metrics.
+        The default distance is ``"euclidean"`` (``"minkowski"`` metric with the ``p`` param equal to ``2``).
+    :type metric: str
+    :param p: Power parameter for the Minkowski metric. When ``p = 1``, this is equivalent to using ``manhattan_distance`` (l1),
+        and ``euclidean_distance`` (l2) for ``p = 2``. For arbitrary ``p``, ``minkowski_distance`` (l_p) is used. Default is ``2`` (euclidean).
+    :type p: int
     :param include_self: Whether or not to mark each sample as the first nearest neighbor to itself.
-    If ‘auto’, then True is used for mode=’connectivity’ and False for mode=’distance’.
+        If ``"auto"``, then ``True`` is used for ``mode="connectivity"`` and ``False`` for ``mode="distance"``. Default is ``False``.
+    :type include_self: Union[bool, str]
     :return: Graph with knn-based edges added
+    :rtype: nx.Graph
     """
     dist_mat = compute_distmat(G.graph["pdb_df"])
 
@@ -576,12 +620,15 @@ def get_edges_by_bond_type(
 
 def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
     """
-    Return the x, y, z coordinates of a node.
+    Return the ``x, y, z`` coordinates of a node.
     This is a helper function. Simplifies the code.
 
     :param G: nx.Graph protein structure graph to extract coordinates from
+    :type G: nx.Graph
     :param n: str node ID in graph to extract coordinates from
-    :return: Tuple of coordinates (x, y, z)
+    :type n: str
+    :return: Tuple of coordinates ``(x, y, z)``
+    :rtype: Tuple[float, float, float]
     """
     x = G.nodes[n]["x_coord"]
     y = G.nodes[n]["y_coord"]

@@ -21,7 +21,7 @@ def identity_matrix(G: nx.Graph) -> xr.DataArray:
     """Return the identity diffusion matrix.
 
     This is nothing more than the identity matrix
-    with diagonals of 1.
+    with diagonals of ``1``.
 
     :param G: Graph to retrieve identity diffusion matrix from
     :type G: nx.Graph
@@ -40,7 +40,7 @@ def adjacency_matrix_power(
     """
     Return the matrix power of the adjacency matrix.
 
-    :param amat_kwargs: Keyword arguments to configure NetworkX's adjacency_matrix function. Defaults to {}
+    :param amat_kwargs: Keyword arguments to configure NetworkX's ``adjacency_matrix`` function. Defaults to ``{}``
     :type amat_kwargs: Dict[str, Any]
     :param with_identity: Whether or not to add in the identity matrix to the adjacency matrix. Effectively adding "self loops". Defaults to True.
     :type with_identity: bool
@@ -75,12 +75,12 @@ def inverse_distance_matrix(G: nx.Graph, power: float) -> xr.DataArray:
     of the two graphs.
     Diagonals (entries [i, i]) are set to 0.
 
-    :param G: NetworkX Graph object. Assumes that each node has `x_coord`, `y_coord`, and `z_coord` as node attributes.
+    :param G: NetworkX Graph object. Assumes that each node has ``x_coord``, ``y_coord``, and ``z_coord`` as node attributes.
     :type G: nx.Graph
     :param power: The power for the distance calculation.
     :type power: float
     :returns: the inverse distance matrix.
-    :type: xr.DaraArray
+    :type: xr.DataArray
     """
 
     def extract_coords(n, d) -> pd.Series:
@@ -93,10 +93,9 @@ def inverse_distance_matrix(G: nx.Graph, power: float) -> xr.DataArray:
         :rtype: pd.Series
         """
         coord_names = ("x_coord", "y_coord", "z_coord")
-        coords = pd.Series(
+        return pd.Series(
             {coord_name: d[coord_name] for coord_name in coord_names}, name=n
         )
-        return coords
 
     coords = generate_feature_dataframe(G, funcs=[extract_coords])
     distmat = compute_distmat(coords).values
