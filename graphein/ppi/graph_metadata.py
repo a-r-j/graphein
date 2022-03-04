@@ -10,6 +10,7 @@ from typing import Dict, Union
 
 import networkx as nx
 import pandas as pd
+
 from graphein.ppi.parse_biogrid import BIOGRID_df
 from graphein.ppi.parse_stringdb import STRING_df
 
