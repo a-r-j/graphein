@@ -1,4 +1,4 @@
-"""Functions for adding edges to a PPI Graph from parsed STRING & BIOGRID API call outputs"""
+"""Functions for adding edges to a PPI Graph from parsed STRING & BIOGRID API call outputs."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas
@@ -18,12 +18,12 @@ log = logging.getLogger(__name__)
 
 def add_string_edges(G: nx.Graph, **kwargs) -> nx.Graph:
     """
-    Adds edges from STRING PPI database to a PPI Graph
+    Adds edges from STRING PPI database (https://string-db.org/) to a PPI Graph.
 
-    :param G: Graph to edges to (populated with protein_id nodes)
+    :param G: Graph to edges to (populated with ``protein_id`` nodes).
     :type G: nx.Graph
-    :param kwargs:  Additional parameters to pass to STRING API calls
-    :return: PPI Graph with STRING interactions added as edges
+    :param kwargs:  Additional parameters to pass to STRING API calls.
+    :return: PPI Graph with STRING interactions added as edges.
     :rtype: nx.Graph
     """
     G.graph["sources"].append("string")
@@ -39,12 +39,12 @@ def add_string_edges(G: nx.Graph, **kwargs) -> nx.Graph:
 
 def add_biogrid_edges(G: nx.Graph, **kwargs) -> nx.Graph:
     """
-    Adds edges from the BIOGRID database to PPI Graph
+    Adds edges from the BIOGRID database (https://thebiogrid.org/) to PPI Graph.
 
-    :param G: Graph to edges to (populated with protein_id nodes)
+    :param G: Graph to edges to (populated with ``protein_id`` nodes).
     :type G: nx.Graph
-    :param kwargs:  Additional parameters to pass to BIOGRID API calls
-    :return: nx.Graph PPIGraph with BIOGRID interactions added as edges
+    :param kwargs:  Additional parameters to pass to BIOGRID API calls.
+    :return: nx.Graph PPIGraph with BIOGRID interactions added as edges.
     :rtype: nx.Graph
     """
     G.graph["sources"].append("biogrid")
@@ -62,15 +62,16 @@ def add_interacting_proteins(
     G: nx.Graph, df: pd.DataFrame, kind: str
 ) -> nx.Graph:
     """
-    Generic function for adding interaction edges to PPIGraph
+    Generic function for adding interaction edges to PPI Graph.
+    You can use this function to additional interactions using a dataframe with columns ``"p1"`` and ``"p2"``.
 
-    :param G: PPI Graph to populate with edges
+    :param G: PPI Graph to populate with edges.
     :type G: nx.Graph
-    :param df: Dataframe containing edgelist
+    :param df: Dataframe containing edgelist.
     :type df: pd.DataFrame
-    :param kind: name of interaction type
+    :param kind: name of interaction type.
     :type kind: str
-    :returns: PPI Graph with pre-computed edges added
+    :returns: PPI Graph with pre-computed edges added.
     :rtype: nx.Graph
     """
 
