@@ -10,7 +10,6 @@ from typing import Dict, Union
 
 import networkx as nx
 import pandas as pd
-
 from graphein.ppi.parse_biogrid import BIOGRID_df
 from graphein.ppi.parse_stringdb import STRING_df
 
@@ -43,7 +42,7 @@ def add_biogrid_metadata(
     """
     Adds interaction dataframe from BIOGRID to graph.
 
-    :param G: PPIGraph to add metadata to
+    :param G: PPI Graph to add metadata to
     :type G: nx.Graph
     :param kwargs:  Additional parameters for BIOGRID API call
     :type kwargs: Dict[str, Union[str, int]]
