@@ -1,4 +1,4 @@
-"""Functions for plotting protein graphs and meshes"""
+"""Functions for plotting protein graphs and meshes."""
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -36,11 +36,11 @@ log = logging.getLogger()
 
 def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:
     """
-    Plots pytorch3d Meshes object as pointcloud
+    Plots pytorch3d Meshes object as pointcloud.
 
-    :param mesh: Meshes object to plot
+    :param mesh: Meshes object to plot.
     :type mesh: pytorch3d.structures.meshes.Meshes
-    :param title: Title of plot
+    :param title: Title of plot.
     :type title: str
     :return: returns Axes3D containing plot
     :rtype: Axes3D
@@ -65,13 +65,13 @@ def colour_nodes(
     colour_map: matplotlib.colors.ListedColormap = plt.cm.plasma,
 ) -> List[Tuple[float, float, float, float]]:
     """
-    Computes node colours based on "degree", "seq_position" or node attributes
+    Computes node colours based on ``"degree"``, ``"seq_position"`` or node attributes.
 
     :param G: Graph to compute node colours for
     :type G: nx.Graph
     :param colour_map:  Colourmap to use.
     :type colour_map: matplotlib.colors.ListedColormap
-    :param colour_by: Manner in which to colour nodes. If not "degree" or "seq_position", this must correspond to a node feature
+    :param colour_by: Manner in which to colour nodes. If not ``"degree"`` or ``"seq_position"``, this must correspond to a node feature.
     :type colour_by: str
     :return: List of node colours
     :rtype: List[Tuple[float, float, float, float]]
@@ -111,13 +111,13 @@ def colour_edges(
     """
     Computes edge colours based on the kind of bond/interaction.
 
-    :param G: nx.Graph protein structure graph to compute edge colours from
+    :param G: nx.Graph protein structure graph to compute edge colours from.
     :type G: nx.Graph
-    :param colour_map: Colourmap to use
+    :param colour_map: Colourmap to use.
     :type colour_map: matplotlib.colors.ListedColormap
-    :param colour_by: Edge attribute to colour by. Currently only "kind" is supported
+    :param colour_by: Edge attribute to colour by. Currently only ``"kind"`` is supported.
     :type colour_by: str
-    :return: List of edge colours
+    :return: List of edge colours.
     :rtype: List[Tuple[float, float, float, float]]
     """
     if colour_by == "kind":
@@ -157,25 +157,25 @@ def plotly_protein_structure_graph(
 
     :param G:  nx.Graph Protein Structure graph to plot
     :type G: nx.Graph
-    :param plot_title: Title of plot, defaults to None
+    :param plot_title: Title of plot, defaults to ``None``.
     :type plot_title: str, optional
-    :param figsize: Size of figure, defaults to (620, 650)
+    :param figsize: Size of figure, defaults to ``(620, 650)``.
     :type figsize: Tuple[int, int]
-    :param node_alpha: Controls node transparency, defaults to 0.7
+    :param node_alpha: Controls node transparency, defaults to ``0.7``.
     :type node_alpha: float
-    :param node_size_min: Specifies node minimum size
+    :param node_size_min: Specifies node minimum size. Defaults to ``20.0``.
     :type node_size_min: float
-    :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree.
+    :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree. Defaults to ``20.0``.
     :type node_size_multiplier: float
-    :param label_node_ids: bool indicating whether or not to plot node_id labels
+    :param label_node_ids: bool indicating whether or not to plot ``node_id`` labels. Defaults to ``True``.
     :type label_node_ids: bool
-    :param node_colour_map: colour map to use for nodes
+    :param node_colour_map: colour map to use for nodes. Defaults to ``plt.cm.plasma``.
     :type node_colour_map: plt.cm
-    :param edge_color_map: colour map to use for edges
+    :param edge_color_map: colour map to use for edges. Defaults to ``plt.cm.plasma``.
     :type edge_color_map: plt.cm
-    :param colour_nodes_by: Specifies how to colour nodes. "degree", "seq_position" or a node feature
+    :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``, ``"seq_position"`` or a node feature.
     :type colour_edges_by: str
-    :param colour_edges_by: Specifies how to colour edges. Currently only "kind" is supported
+    :param colour_edges_by: Specifies how to colour edges. Currently only ``"kind"`` is supported.
     :type colour_nodes_by: str
     :returns: Plotly Graph Objects plot
     :rtype: go.Figure
@@ -272,7 +272,7 @@ def plotly_protein_structure_graph(
         hoverinfo="text",
     )
 
-    fig = go.Figure(
+    return go.Figure(
         data=[nodes, edges],
         layout=go.Layout(
             title=plot_title,
@@ -287,8 +287,6 @@ def plotly_protein_structure_graph(
             margin=dict(t=100),
         ),
     )
-
-    return fig
 
 
 def plot_protein_structure_graph(
@@ -310,36 +308,42 @@ def plot_protein_structure_graph(
     out_format: str = ".png",
 ) -> Axes3D:
     """
-    Plots protein structure graph in Axes3D.
+    Plots protein structure graph in ``Axes3D``.
 
-    :param G:  nx.Graph Protein Structure graph to plot
+    :param G:  nx.Graph Protein Structure graph to plot.
     :type G: nx.Graph
-    :param angle:  View angle
+    :param angle:  View angle. Defaults to ``30``.
     :type angle: int
-    :param plot_title: Title of plot. Defaults to None
+    :param plot_title: Title of plot. Defaults to ``None``.
     :type plot_title: str, optional
-    :param figsize: Size of figure, defaults to (10, 7)
+    :param figsize: Size of figure, defaults to ``(10, 7)``.
     :type figsize: Tuple[int, int]
-    :param node_alpha: Controls node transparency, defaults to 0.7
+    :param node_alpha: Controls node transparency, defaults to ``0.7``.
     :type node_alpha: float
-    :param node_size_min: Specifies node minimum size, defaults to 20
+    :param node_size_min: Specifies node minimum size, defaults to ``20``.
     :type node_size_min: float
-    :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree.
+    :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree. Defaults to ``20``.
     :type node_size_multiplier: float
-    :param label_node_ids: bool indicating whether or not to plot node_id labels
+    :param label_node_ids: bool indicating whether or not to plot ``node_id`` labels. Defaults to ``True``.
     :type label_node_ids: bool
-    :param node_colour_map: colour map to use for nodes
+    :param node_colour_map: colour map to use for nodes. Defaults to ``plt.cm.plasma``.
     :type node_colour_map: plt.cm
-    :param edge_color_map: colour map to use for edges
+    :param edge_color_map: colour map to use for edges. Defaults to ``plt.cm.plasma``.
     :type edge_color_map: plt.cm
-    :param colour_nodes_by: Specifies how to colour nodes. "degree", "seq_position" or a node feature
+    :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``, ``"seq_position"`` or a node feature.
     :type colour_nodes_by: str
-    :param colour_edges_by: Specifies how to colour edges. Currently only "kind" is supported
-    :param edge_alpha: Controls edge transparency
-    :param plot_style: matplotlib style sheet to use
-    :param out_path: If not none, writes plot to this location
+    :param colour_edges_by: Specifies how to colour edges. Currently only ``"kind"`` is supported.
+    :type colour_edges_by: str
+    :param edge_alpha: Controls edge transparency. Defaults to ``0.5``.
+    :type edge_alpha: float
+    :param plot_style: matplotlib style sheet to use. Defaults to ``"ggplot"``.
+    :type plot_style: str
+    :param out_path: If not none, writes plot to this location. Defaults to ``None`` (does not save).
+    :type out_path: str, optional
     :param out_format: Fileformat to use for plot
-    :return:
+    :type out_format: str
+    :return: matplotlib Axes3D object.
+    :rtype: Axes3D
     """
 
     # Get Node Attributes
@@ -411,16 +415,17 @@ def plot_distance_matrix(
 ) -> go.Figure:
     """Plots a distance matrix of the graph.
 
-    :param g: NetworkX graph containing a distance matrix as a graph attribute (g.graph['dist_mat']).
+    :param g: NetworkX graph containing a distance matrix as a graph attribute (``g.graph['dist_mat']``).
     :type g: nx.Graph, optional
-    :param dist_mat: Distance matrix to plot. If not provided, the distance matrix is taken from the graph.
+    :param dist_mat: Distance matrix to plot. If not provided, the distance matrix is taken from the graph. Defaults to ``None``.
     :type dist_mat: np.ndarray, optional
-    :param use_plotly: Whether to use plotly or seaborn for plotting.
+    :param use_plotly: Whether to use ``plotly`` or ``seaborn`` for plotting. Defaults to ``True``.
     :type use_plotly: bool
-    :param title: Title of the plot.
+    :param title: Title of the plot.Defaults to ``None``.
     :type title: str, optional
-    :show_residue_labels: Whether to show residue labels on the plot.
+    :show_residue_labels: Whether to show residue labels on the plot. Defaults to ``True``.
     :type show_residue_labels: bool
+    :raises: ValueError if neither a graph ``g`` or a ``dist_mat`` are provided.
     :return: Plotly figure.
     :rtype: px.Figure
     """
@@ -471,15 +476,15 @@ def plot_distance_landscape(
 ) -> go.Figure:
     """Plots a distance landscape of the graph.
 
-    :param g: Graph to plot (must contain a distance matrix in `g.graph["dist_mat"]`).
+    :param g: Graph to plot (must contain a distance matrix in ``g.graph["dist_mat"]``).
     :type g: nx.Graph
-    :param add_contour: Whether or not to show the contour, defaults to True
+    :param add_contour: Whether or not to show the contour, defaults to ``True``.
     :type add_contour: bool, optional
-    :param width: Plot width, defaults to 500
+    :param width: Plot width, defaults to ``500``.
     :type width: int, optional
-    :param height: Plot height, defaults to 500
+    :param height: Plot height, defaults to ``500``.
     :type height: int, optional
-    :param autosize: Whether or not to autosize the plot, defaults to False
+    :param autosize: Whether or not to autosize the plot, defaults to ``False``.
     :type autosize: bool, optional
     :return: Plotly figure of distance landscape.
     :rtype: go.Figure
@@ -554,24 +559,26 @@ def asteroid_plot(
     :type g: nx.Graph
     :param node_id: Node to centre the plot around.
     :type node_id: str
-    :param k: Number of hops to plot
-    :type k: int, defaults to 2
-    :param colour_nodes_by: Colour the nodes by this attribute. Currently only "shell" is supported.
-    :type colour_nodes_by: str, defaults to "shell"
-    :param colour_edges_by: Colour the edges by this attribute. Currently only "edges" is supported.
-    :type colour_edges_by: str, defaults to "kind"
-    :param edge_colour_map: Colour map for edges.
-    :type edge_colour_map: plt.cm.Colormap,
-    :param title: Title of the plot.
-    :type title: str, defaults to None
-    :param width: Width of the plot.
-    :height: Height of the plot.
-    :param use_plotly: Use plotly to render the graph.
-    :type use_plotly: bool, defaults to True
-    :param show_edges: Whether or not to show edges in the plot.
-    :type show_edges: bool, defaults to False
-    :param node_size_multiplier: Multiplier for the size of the nodes.
-    :type node_size_multiplier: float, defaults to 10
+    :param k: Number of hops to plot. Defaults to ``2``.
+    :type k: int
+    :param colour_nodes_by: Colour the nodes by this attribute. Currently only ``"shell"`` is supported.
+    :type colour_nodes_by: str
+    :param colour_edges_by: Colour the edges by this attribute. Currently only ``"kind"`` is supported.
+    :type colour_edges_by: str
+    :param edge_colour_map: Colour map for edges. Defaults to ``plt.cm.plasma``.
+    :type edge_colour_map: plt.cm.Colormap
+    :param title: Title of the plot. Defaults to ``None``.
+    :type title: str
+    :param width: Width of the plot. Defaults to ``600``.
+    :type width: int
+    :param height: Height of the plot. Defaults to ``500``.
+    :type height: int
+    :param use_plotly: Use plotly to render the graph. Defaults to ``True``.
+    :type use_plotly: bool
+    :param show_edges: Whether or not to show edges in the plot. Defaults to ``False``.
+    :type show_edges: bool
+    :param node_size_multiplier: Multiplier for the size of the nodes. Defaults to ``10``.
+    :type node_size_multiplier: float.
     :returns: Plotly figure or matplotlib figure.
     :rtpye: Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]
     """

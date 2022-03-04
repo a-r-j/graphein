@@ -1,4 +1,4 @@
-"""Contains utilities for computing analytics on Protein Structure Graphs."""
+"""Contains utilities for computing analytics on and plotting summaries of Protein Structure Graphs."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
@@ -25,7 +25,7 @@ def plot_degree_distribution(
 
     :param g: networkx graph to plot the distribution of node degrees in.
     :type g: nx.Graph
-    :param title: Title of plot. defaults to None
+    :param title: Title of plot. defaults to ``None``.
     :type title: Optional[str], optional
     :return: Plotly figure.
     :rtpe: plotly.graph_objects.Figure
@@ -44,11 +44,11 @@ def plot_residue_composition(
 
     :param g: Protein graph to plot the residue composition of.
     :type g: nx.Graph
-    :param sort_by: How to sort the values (`"alphabetical"`, `"count"`), defaults to None
+    :param sort_by: How to sort the values (``"alphabetical"``, ``"count"``), defaults to ``None`` (no sorting).
     :type sort_by: Optional[str], optional
-    :param plot_type: How to plot the composition (`"bar"`, `"pie"`), defaults to "bar"
+    :param plot_type: How to plot the composition (``"bar"``, ``"pie"``), defaults to ``"bar"``.
     :type plot_type: str, optional
-    :raises ValueError: Raises ValueError if `sort_by` is not one of `"alphabetical"`, `"count"`
+    :raises ValueError: Raises ValueError if ``sort_by`` is not one of ``"alphabetical"``, ``"count"``.
     :return: Plotly figure.
     :rtype: plotly.graph_objects.Figure
     """
@@ -75,8 +75,16 @@ def plot_residue_composition(
 
 def plot_degree_by_residue_type(
     g: nx.Graph, normalise_by_residue_occurrence: bool = True
-):
-    """Plots the distribution of node degrees in the graph."""
+) -> plotly.graph_objects.Figure:
+    """Plots the distribution of node degrees in the graph.
+
+    :param g: networkx graph to plot the distribution of node degrees by residue type of.
+    :type g: nx.Graph
+    :param normalise_by_residue_occurrence: Whether to normalise the degree by the number of residues of the same type.
+    :type normalise_by_residue_occurrence: bool
+    :return: Plotly figure.
+    :rtpe: plotly.graph_objects.Figure
+    """
 
     title = g.graph["name"] + " - Total Degree by Residue Type"
 
@@ -93,23 +101,22 @@ def plot_degree_by_residue_type(
         df = df.divide(counts)
         title += " (Normalised by Residue Occurrence)"
 
-    fig = ply.hist_frame(df, x=df.index, y=df.values, title=title)
-    return fig
+    return ply.hist_frame(df, x=df.index, y=df.values, title=title)
 
 
 def plot_edge_type_distribution(
     g: nx.Graph, plot_type: str = "bar", title: Optional[str] = None
-):
+) -> plotly.graph_objects.Figure:
     """Plots the distribution of edge types in the graph.
 
     :param g: NetworkX graph to plot the distribution of edge types in.
     :type g: nx.Graph
-    :param plot_type: Type of plot to produce, defaults to "bar". One of "bar", "pie".
+    :param plot_type: Type of plot to produce, defaults to ``"bar"``. One of ``"bar"``, ``"pie"``.
     :type plot_type: str, optional
     :param title: Title of plot. defaults to None
     :type title: Optional[str], optional
     :return: Plotly figure.
-    :rtype: px.Figure
+    :rtype: plotly.graph_objects.Figure
     """
     if not title:
         title = g.graph["name"]
@@ -144,8 +151,8 @@ def graph_summary(
 
     :param G: NetworkX graph to get summary of.
     :type G: nx.Graph
-    :param plot: Whether or not to plot the summary as a heatmap, defaults to False
-    :type plot: bool, optional
+    :param plot: Whether or not to plot the summary as a heatmap, defaults to ``False``.
+    :type plot: bool
     :return: Dataframe of summary or plot.
     :rtype: pd.DataFrame
     """
@@ -186,8 +193,7 @@ def graph_summary(
         df = pd.concat([df, custom_data], axis=1)
 
     if plot:
-        fig = px.imshow(df.T)
-        return fig
+        return px.imshow(df.T)
 
     chain = [id.split(":")[0] for id in list(df.index)]
     residue_type = [id.split(":")[1] for id in list(df.index)]
@@ -221,23 +227,24 @@ def plot_graph_metric_property_correlation(
 
     :param g: Protein graph to plot the correlation of.
     :type g: nx.Graph
-    :param summary_statistics: List of graph metrics to employ in plot, defaults to [ "degree", "betweenness_centrality", "closeness_centrality", "eigenvector_centrality", "communicability_betweenness_centrality", ]
+    :param summary_statistics: List of graph metrics to employ in plot, defaults to
+        ``["degree", "betweenness_centrality", "closeness_centrality", "eigenvector_centrality", "communicability_betweenness_centrality"]``.
     :type summary_statistics: List[str], optional
-    :param properties: List of node properties to use in plot, defaults to ["asa"]
+    :param properties: List of node properties to use in plot, defaults to ``["asa"]``.
     :type properties: List[str], optional
-    :param colour_by: Controls colouring of points in plot. Options: `"residue_type"`, `"position"`, `"chain"`, defaults to "residue_type"
+    :param colour_by: Controls colouring of points in plot. Options: ``"residue_type"``, ``"position"``, ``"chain"``, defaults to ``"residue_type"``.
     :type colour_by: Optional[str], optional
-    :param opacity: Opacity of plot points, defaults to 0.2
+    :param opacity: Opacity of plot points, defaults to ``0.2``.
     :type opacity: float, optional
-    :param diagonal_visible: Whether or not to show the diagonal plots, defaults to True
+    :param diagonal_visible: Whether or not to show the diagonal plots, defaults to ``True``.
     :type diagonal_visible: bool, optional
-    :param title: Title of plot, defaults to None
+    :param title: Title of plot, defaults to ``None``.
     :type title: Optional[str], optional
-    :param height: Height of plot, defaults to 1000
+    :param height: Height of plot, defaults to ``1000``.
     :type height: int, optional
-    :param width: Width of plot, defaults to 1000
+    :param width: Width of plot, defaults to ``1000``.
     :type width: int, optional
-    :param font_size: Font size for plot text, defaults to 10
+    :param font_size: Font size for plot text, defaults to ``10``.
     :type font_size: int, optional
     :return: Scatter plot matrix of graph metrics and protein properties.
     :rtype: plotly.graph_objects.Figure
