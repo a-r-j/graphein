@@ -25,7 +25,7 @@ def onek_encoding_unk(
     """
     Function for perfroming one hot encoding
 
-    :param x: value to one-hot
+    :param x: values to one-hot
     :type x: Iterable[Any]
     :param allowable_set: set of options to encode
     :type allowable_set: List[Any]
@@ -38,9 +38,19 @@ def onek_encoding_unk(
 
 
 def filter_dataframe(df: pd.DataFrame, funcs: List[Callable]) -> pd.DataFrame:
-    """ """
+    """
+    Applies transformation functions to a dataframe. Each function in ``funcs`` must accept a ``pd.DataFrame`` and return a ``pd.DataFrame``.
+
+    Additional parameters can be provided by using partial functions.
+
+    :param df: Dataframe to apply transformations to.
+    :type df: pd.DataFrame
+    :param funcs: List of transformation functions.
+    :type funcs: List[Callable]
+    :rtype: nx.Graph
+    """
     for func in funcs:
-        df = func(df)
+        func(df)
     return df
 
 
@@ -62,7 +72,9 @@ def annotate_graph_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
 def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     """
-    Annotates Graph edges with edge metadata
+    Annotates Graph edges with edge metadata. Each function in ``funcs`` must take the three arguments ``u``, ``v`` and ``d``, where ``u`` and ``v`` are the nodes of the edge, and ``d`` is the edge data dictionary.
+
+    Additional parameters can be provided by using partial functions.
 
     :param G: Graph to add edge metadata to
     :type G: nx.Graph
@@ -79,7 +91,9 @@ def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
 def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     """
-    Annotates nodes with metadata
+    Annotates nodes with metadata. Each function in ``funcs`` must take two arguments ``n`` and ``d``, where ``n`` is the node and ``d`` is the node data dictionary.
+
+    Additional parameters can be provided by using partial functions.
 
     :param G: Graph to add node metadata to
     :type G: nx.Graph
@@ -113,7 +127,7 @@ def annotate_node_features(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
 def compute_edges(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     """
-    Computes edges for an Graph from a list of edge construction functions
+    Computes edges for an Graph from a list of edge construction functions. Each func in ``funcs`` must take an ``nx.Graph`` and return an ``nx.Graph``.
 
     :param G: Graph to add features to
     :type G: nx.Graph
@@ -135,20 +149,20 @@ def generate_feature_dataframe(
     """
     Return a pandas DataFrame representation of node metadata.
 
-    `funcs` has to be list of callables whose signature is
+    ``funcs`` has to be list of callables whose signature is
 
         f(n, d) -> pd.Series
 
-    where `n` is the graph node,
-    `d` is the node metadata dictionary.
+    where ``n`` is the graph node,
+    ``d`` is the node metadata dictionary.
     The function must return a pandas Series whose name is the node.
 
     Example function:
 
-    ```python
-    def x_vec(n: Hashable, d: Dict[Hashable, Any]) -> pd.Series:
-        return pd.Series({"x_coord": d["x_coord"]}, name=n)
-    ```
+    .. code-block:: python
+
+        def x_vec(n: Hashable, d: Dict[Hashable, Any]) -> pd.Series:
+            return pd.Series({"x_coord": d["x_coord"]}, name=n)
 
     One fairly strong assumption is that each func
     has all the information it needs to act
@@ -156,23 +170,23 @@ def generate_feature_dataframe(
     If you need to reference an external piece of information,
     such as a dictionary to look up values,
     set up the function to accept the dictionary,
-    and use `functools.partial`
-    to "reduce" the function signature to just `(n, d)`.
+    and use ``functools.partial``
+    to "reduce" the function signature to just ``(n, d)``.
     An example below:
 
-    ```python
-    from functools import partial
-    def get_molweight(n, d, mw_dict):
-        return pd.Series({"mw": mw_dict[d["amino_acid"]]}, name=n)
+    .. code-block:: python
 
-    mw_dict = {"PHE": 165, "GLY": 75, ...}
-    get_molweight_func = partial(get_molweight, mw_dict=mw_dict)
+        from functools import partial
+        def get_molweight(n, d, mw_dict):
+            return pd.Series({"mw": mw_dict[d["amino_acid"]]}, name=n)
 
-    generate_feature_dataframe(G, [get_molweight_func])
-    ```
+        mw_dict = {"PHE": 165, "GLY": 75, ...}
+        get_molweight_func = partial(get_molweight, mw_dict=mw_dict)
 
-    The `name=n` piece is important;
-    the `name` becomes the row index in the resulting dataframe.
+        generate_feature_dataframe(G, [get_molweight_func])
+
+    The ``name=n`` piece is important;
+    the ``name`` becomes the row index in the resulting dataframe.
 
     The series that is returned from each function
     need not only contain one key-value pair.
@@ -183,19 +197,19 @@ def generate_feature_dataframe(
     to make inspecting the data easy,
     but for consumption in tensor libraries,
     you can turn on returning a NumPy array
-    by switching `return_array` to True.
+    by switching ``return_array=True``.
 
-    ## Parameters
 
-    - `G`: A NetworkX-compatible graph object.
-    - `funcs`: A list of functions.
-    - `return_array`: Whether or not to return
+    :param G: A NetworkX-compatible graph object.
+    :type G: nx.Graph
+    :param funcs: A list of functions.
+    :type funcs: List[Callable]
+    :param return_array: Whether or not to return
         a NumPy array version of the data.
         Useful for consumption in tensor libs, like PyTorch or JAX.
-
-    ## Returns
-
-    - A pandas DataFrame.
+    :type return_array: bool
+    :return: pandas DataFrame representation of node metadata.
+    :rtype: pd.DataFrame
     """
     matrix = []
     for n, d in G.nodes(data=True):
@@ -221,32 +235,31 @@ def format_adjacency(G: nx.Graph, adj: np.ndarray, name: str) -> xr.DataArray:
     Format adjacency matrix nicely.
 
     Intended to be used when computing an adjacency-like matrix
-    off a graph object G.
+    of a graph object ``G``.
     For example, in defining a func:
 
-    ```python
-    def my_adj_matrix_func(G):
-        adj = some_adj_func(G)
-        return format_adjacency(G, adj, "xarray_coord_name")
-    ```
+    .. code-block:: python
 
-    ## Assumptions
+        def my_adj_matrix_func(G):
+            adj = some_adj_func(G)
+            return format_adjacency(G, adj, "xarray_coord_name")
 
-    1. `adj` should be a 2D matrix of shape (n_nodes, n_nodes)
-    1. `name` is something that is unique amongst all names used
+    **Assumptions**
+
+    #. ``adj`` should be a 2D matrix of shape ``(n_nodes, n_nodes)``
+    #. ``name`` is something that is unique amongst all names used
     in the final adjacency tensor.
 
-    ## Parameters
-
-    - `G`: NetworkX-compatible Graph
-    - `adj`: 2D numpy array
-    - `name`: A unique name for the kind of adjacency matrix
+    :param G: NetworkX-compatible Graph
+    :type param: nx.Graph
+    :param adj: 2D numpy array of shape ``(n_nodes, n_nodes)``
+    :type adj: np.ndarray
+    :param name: A unique name for the kind of adjacency matrix
         being constructed.
-        Gets used in xarray as a coordinate in the "name" dimension.
-
-    ## Returns
-
-    - An XArray DataArray of shape (n_nodes, n_nodes, 1)
+        Gets used in xarray as a coordinate in the ``"name"`` dimension.
+    :type name: str
+    :returns: An XArray DataArray of shape ``(n_nodes, n_nodes, 1)``
+    :rtype: xr.DataArray
     """
     expected_shape = (len(G), len(G))
     if adj.shape != expected_shape:
@@ -270,7 +283,7 @@ def generate_adjacency_tensor(
     """
     Generate adjacency tensor for a graph.
 
-    Uses the collection of functions in `funcs`
+    Uses the collection of functions in ``funcs``
     to build an xarray DataArray
     that houses the resulting "adjacency tensor".
 
@@ -279,17 +292,16 @@ def generate_adjacency_tensor(
     to make inspecting the data easy,
     but for consumption in tensor libraries,
     you can turn on returning a NumPy array
-    by switching `return_array` to True.
+    by switching ``return_array=True``.
 
-    ## Parameters
-
-    - G: NetworkX Graph.
-    - funcs: A list of functions that take in G
+    :param G: NetworkX Graph.
+    :type G: nx.Graph
+    :param funcs: A list of functions that take in G
         and return an xr.DataArray
-
-    ## Returns
-    - xr.DataArray,
-        which is of shape (n_nodes, n_nodes, n_funcs).
+    :type funcs: List[Callable]
+    :returns: xr.DataArray,
+        which is of shape ``(n_nodes, n_nodes, n_funcs)``.
+    :rtype: xr.DataArray
     """
     mats = [func(G) for func in funcs]
     da = xr.concat(mats, dim="name")
@@ -302,7 +314,7 @@ def protein_letters_3to1_all_caps(amino_acid: str) -> str:
     """
     Converts capitalised 3 letter amino acid code to single letter. Not provided in default biopython.
 
-    :param amino_acid: Capitalised 3-letter amino acid code (eg. "GLY")
+    :param amino_acid: Capitalised 3-letter amino acid code (eg. ``"GLY"``)
     :type amino_acid: str
     :returns: Single-letter amino acid code
     :rtype: str
@@ -361,7 +373,7 @@ def import_message(
 
 def ping(host: str) -> bool:
     """
-    Returns True if host (str) responds to a ping request.
+    Returns ``True`` if host (str) responds to a ping request.
     Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
 
     :param host: IP or hostname
