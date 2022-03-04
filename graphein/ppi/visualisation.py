@@ -8,7 +8,9 @@
 from typing import List, Optional
 
 import networkx as nx
+import plotly.express as px
 import plotly.graph_objects as go
+from matplotlib.colors import to_rgb
 
 
 def plot_ppi_graph(
@@ -70,7 +72,7 @@ def plotly_ppi_graph(
         'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
         'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
     :type node_colourscale: str
-    :param edge_colours: List of colours to use for edges. Default is None (red - string, blue - biogrid, yellow - both).
+    :param edge_colours: List of colours (hexcode) to use for edges. Default is None (px.colours.qualitative.T10).
     :type edge_colours: List[str], optional
     :param edge_opacity: Opacity of edges. Default is 0.5.
     :type edge_opacity: float
@@ -82,13 +84,17 @@ def plotly_ppi_graph(
     :rtype: go.Figure
     """
     if edge_colours is None:
-        edge_colours = ["red", "blue", "yellow"]
+        edge_colours = px.colors.qualitative.T10
+    edge_colours = [
+        f"rgba{tuple(list(to_rgb(c)) + [edge_opacity])}" for c in edge_colours
+    ]
+
     # Set positions
     nx.set_node_attributes(g, layout(g), "pos")
 
     # Get node and edge traces
     node_trace = get_node_trace(g, node_size_multiplier, node_colourscale)
-    edge_trace = get_edge_trace(g, edge_colours, edge_opacity)
+    edge_trace = get_edge_trace(g, edge_colours)
     traces = [node_trace] + edge_trace
 
     # Get node labels if using them.
@@ -172,7 +178,6 @@ def get_node_trace(
 def get_edge_trace(
     g: nx.Graph,
     edge_colours: Optional[List[str]] = None,
-    edge_opacity: float = 0.5,
 ) -> List[go.Scatter]:
     """Gets edge traces from PPI graph. Returns a list of traces enabling edge colours to be set individually.
 
@@ -181,6 +186,7 @@ def get_edge_trace(
     :return: _description_
     :rtype: List[go.Scatter]
     """
+
     if edge_colours is None:
         edge_colours = ["red", "blue", "yellow"]
     traces = []
@@ -197,7 +203,7 @@ def get_edge_trace(
             colour = edge_colours[2]
 
         edge_trace = go.Scatter(
-            line=dict(width=2, color=colour, opacity=edge_opacity),
+            line=dict(width=2, color=colour),
             hoverinfo="text",
             x=(x0, x1),
             y=(y0, y1),
