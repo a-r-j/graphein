@@ -51,13 +51,13 @@ def download_pdb(config, pdb_code: str) -> Path:
     # Rename file to .pdb from .ent
     os.rename(
         config.pdb_dir / f"pdb{pdb_code}.ent",
-        config.pdb_dir / f'{pdb_code}.pdb',
+        config.pdb_dir / f"{pdb_code}.pdb",
     )
 
     # Assert file has been downloaded
     assert any(pdb_code in s for s in os.listdir(config.pdb_dir))
     log.info(f"Downloaded PDB file for: {pdb_code}")
-    return config.pdb_dir / f'{pdb_code}.pdb'
+    return config.pdb_dir / f"{pdb_code}.pdb"
 
 
 def get_protein_name_from_filename(pdb_path: str) -> str:
@@ -130,9 +130,9 @@ def download_alphafold_structure(
     if not mmcif and not pdb:
         raise ValueError("Must specify either mmcif or pdb.")
     if mmcif:
-        query_url = f'{BASE_URL}AF-{uniprot_id}F1-model_v1.cif'
+        query_url = f"{BASE_URL}AF-{uniprot_id}F1-model_v1.cif"
     if pdb:
-        query_url = f'{BASE_URL}AF-{uniprot_id}-F1-model_v1.pdb'
+        query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v1.pdb"
 
     structure_filename = wget.download(query_url, out=out_dir)
 

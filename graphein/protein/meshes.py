@@ -98,7 +98,9 @@ def get_obj_file(
     # Load structure
     pymol.load(pdb_file) if pdb_file else pymol.fetch(pdb_code)
     # Create file_name
-    file_name = f'{pdb_file[:-3]}obj' if pdb_file else out_dir + pdb_code + ".obj"
+    file_name = (
+        f"{pdb_file[:-3]}obj" if pdb_file else out_dir + pdb_code + ".obj"
+    )
 
     if config is None:
         config = ProteinMeshConfig()

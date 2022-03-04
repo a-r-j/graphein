@@ -129,8 +129,8 @@ GranularityOpts = Literal["atom", "centroids"]
 class ProteinGraphConfig(BaseModel):
     """
     Config Object for Protein Structure Graph Construction.
-    
-    If you encounter a problematic structure, perusing https://www.umass.edu/microbio/chime/pe_beta/pe/protexpl/badpdbs.htm may provide some additional insight. 
+
+    If you encounter a problematic structure, perusing https://www.umass.edu/microbio/chime/pe_beta/pe/protexpl/badpdbs.htm may provide some additional insight.
     PDBs are notoriously troublesome and this is an excellent overview.
 
     :param granularity: Controls the granularity of the graph construction. ``"atom"`` builds an atomic-scale graph where
