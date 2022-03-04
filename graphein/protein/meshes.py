@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import importlib.util
 import logging
+import os
+import time
 from typing import List, NamedTuple, Optional, Tuple
 
 from graphein.protein.config import ProteinMeshConfig
@@ -49,6 +51,7 @@ def configure_pymol_session(
     :type config: graphein.protein.config.ProteinMeshConfig
     """
     pymol = MolViewer()
+    pymol.delete("all")  # delete all objects from other sessions if necessary.
 
     # If no config is provided, use default
     if config is None:
@@ -75,6 +78,7 @@ def get_obj_file(
     :type out_dir: str, optional
     :param config: :class:`~graphein.protein.config.ProteinMeshConfig` containing pymol commands to run. Default is ``None`` (``"show surface"``).
     :type config: graphein.protein.config.ProteinMeshConfig
+    :raises: ValueError if both or neither ``pdb_file`` or ``pdb_code`` are provided.
     :return: returns path to ``.obj`` file (str)
     :rtype: str
     """
@@ -174,6 +178,10 @@ def create_mesh(
     obj_file = get_obj_file(
         pdb_code=pdb_code, pdb_file=pdb_file, out_dir=out_dir, config=config
     )
+    # Wait for PyMol to finish
+    while os.path.isfile(obj_file) is False:
+        time.sleep(0.1)
+
     verts, faces, aux = load_obj(obj_file)
     return verts, faces, aux
 
