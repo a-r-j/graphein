@@ -14,7 +14,6 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
 
 .. include:: readme.rst
 
-.. include:: readme
 
 .. toctree::
    :glob:
