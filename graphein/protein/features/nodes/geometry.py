@@ -90,15 +90,15 @@ def add_beta_carbon_vector(
             vec = np.array([0, 0, 0])
         else:
             if reverse:
+                vec = d["coords"] - np.array(
+                    c_beta_coords.loc[n][["x_coord", "y_coord", "z_coord"]]
+                )
+            else:
                 vec = (
                     np.array(
                         c_beta_coords.loc[n][["x_coord", "y_coord", "z_coord"]]
                     )
                     - d["coords"]
-                )
-            else:
-                vec = d["coords"] - np.array(
-                    c_beta_coords.loc[n][["x_coord", "y_coord", "z_coord"]]
                 )
 
             if scale:
@@ -159,7 +159,7 @@ def add_sequence_neighbour_vector(
 
             # If this checks out, we compute the vector
             if (cond_1) and (cond_2):
-                vec = residue[1]["coords"] - chain_residues[i + 1][1]["coords"]
+                vec = chain_residues[i + 1][1]["coords"] - residue[1]["coords"]
 
                 if reverse:
                     vec = -vec

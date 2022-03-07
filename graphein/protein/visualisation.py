@@ -406,6 +406,106 @@ def plot_protein_structure_graph(
     return ax
 
 
+def add_vector_to_plot(
+    g: nx.Graph,
+    fig,
+    vector: str = "sidechain_vector",
+    scale: float = 5,
+    colour: str = "red",
+    width: int = 10,
+) -> go.Figure:
+    """Adds representations of vector features to the protein graph.
+
+    Requires all nodes have a vector feature (1 x 3 array).
+
+    :param g: Protein graph containing vector features
+    :type g: nx.Graph
+    :param fig: 3D plotly figure to add vectors to.
+    :type fig: go.Figure
+    :param vector: Name of node vector feature to add, defaults to "sidechain_vector"
+    :type vector: str, optional
+    :param scale: How much to scale the vectors by, defaults to 5
+    :type scale: float, optional
+    :param colour: Colours for vectors, defaults to "red"
+    :type colour: str, optional
+    :return: 3D Plotly plot with vectors added.
+    :rtype: go.Figure
+    """
+    # Compute line segment positions
+    x_edges = []
+    y_edges = []
+    z_edges = []
+    edge_text = []
+    for _, d in g.nodes(data=True):
+        x_edges.extend(
+            [d["coords"][0], d["coords"][0] + d[vector][0] * scale, None]
+        )
+        y_edges.extend(
+            [d["coords"][1], d["coords"][1] + d[vector][1] * scale, None]
+        )
+        z_edges.extend(
+            [d["coords"][2], d["coords"][2] + d[vector][2] * scale, None]
+        )
+        edge_text.extend([None, f"{vector}", None])
+
+    edge_trace = go.Scatter3d(
+        x=x_edges,
+        y=y_edges,
+        z=z_edges,
+        mode="lines",
+        line={"color": colour, "width": width},
+        text=3 * [f"{vector}" for _ in range(len(g))],
+        hoverinfo="text",
+    )
+    # Compute cone positions.
+    arrow_tip_ratio = 0.1
+    arrow_starting_ratio = 0.98
+    x = []
+    y = []
+    z = []
+    u = []
+    v = []
+    w = []
+    for _, d in g.nodes(data=True):
+        x.extend(
+            [d["coords"][0] + d[vector][0] * scale * arrow_starting_ratio]
+        )
+        y.extend(
+            [d["coords"][1] + d[vector][1] * scale * arrow_starting_ratio]
+        )
+        z.extend(
+            [d["coords"][2] + d[vector][2] * scale * arrow_starting_ratio]
+        )
+        u.extend([d[vector][0]])  # * arrow_tip_ratio])
+        v.extend([d[vector][1]])  # * arrow_tip_ratio])
+        w.extend([d[vector][2]])  # * arrow_tip_ratio])
+
+    if colour == "red":
+        colour = [[0, "rgb(255,0,0)"], [1, "rgb(255,0,0)"]]
+    elif colour == "blue":
+        colour = [[0, "rgb(0,0,255)"], [1, "rgb(0,0,255)"]]
+    elif colour == "green":
+        colour = [[0, "rgb(0,255,0)"], [1, "rgb(0,255,0)"]]
+
+    cone_trace = go.Cone(
+        x=x,
+        y=y,
+        z=z,
+        u=u,
+        v=v,
+        w=w,
+        text=[f"{vector}" for _ in range(len(g.nodes()))],
+        hoverinfo="u+v+w+text",
+        colorscale=colour,
+        showlegend=False,
+        showscale=False,
+        sizemode="absolute",
+    )
+    fig.add_trace(edge_trace)
+    fig.add_trace(cone_trace)
+    return fig
+
+
 def plot_distance_matrix(
     g: Optional[nx.Graph],
     dist_mat: Optional[np.ndarray] = None,
