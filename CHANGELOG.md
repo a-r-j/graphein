@@ -1,6 +1,7 @@
 ### 1.2.1 - UNRELEASED
 
 * [Feature] - #124 adds support for vector features associated protein protein geometry. #120 #122
+* [Feature] - #124 adds visualisation of vector features in 3D graph plots.
 
 ### 1.2.0 - 4/3/2022
 
