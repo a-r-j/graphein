@@ -39,6 +39,8 @@ Node
     :members:
 .. automodule:: graphein.protein.features.nodes.dssp
     :members:
+.. automodule:: graphein.protein.features.nodes.geometry
+    :members:
 
 Sequence
 ^^^^^^^^^

@@ -1,3 +1,12 @@
+### 1.2.1 - UNRELEASED
+
+* [Feature] - #124 adds support for vector features associated protein protein geometry. #120 #122
+* [Feature] - #124 adds visualisation of vector features in 3D graph plots.
+
+#### Breaking Changes
+
+* #124 refactors `graphein.protein.graphs.compute_rgroup_dataframe` and moves it to `graphein.protein.utils`. All internal references have been moved accordingly.
+
 ### 1.2.0 - 4/3/2022
 
 * [Feature] - #104 adds support for asteroid plots and distance matrix visualisation.

@@ -16,7 +16,7 @@ import pandas as pd
 import wget
 from Bio.PDB import PDBList
 
-from .resi_atoms import RESI_THREE_TO_1
+from .resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 
 log = logging.getLogger(__name__)
 
@@ -103,6 +103,17 @@ def filter_dataframe(
     df.reset_index(inplace=True, drop=True)
 
     return df
+
+
+def compute_rgroup_dataframe(pdb_df: pd.DataFrame) -> pd.DataFrame:
+    """Return the atoms that are in R-groups and not the backbone chain.
+
+    :param pdb_df: DataFrame to compute R group dataframe from.
+    :type pdb_df: pd.DataFrame
+    :returns: Dataframe containing R-groups only (backbone atoms removed).
+    :rtype: pd.DataFrame
+    """
+    return filter_dataframe(pdb_df, "atom_name", BACKBONE_ATOMS, False)
 
 
 def download_alphafold_structure(

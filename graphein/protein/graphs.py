@@ -24,6 +24,7 @@ from graphein.protein.config import (
 from graphein.protein.edges.distance import compute_distmat
 from graphein.protein.resi_atoms import BACKBONE_ATOMS
 from graphein.protein.utils import (
+    compute_rgroup_dataframe,
     filter_dataframe,
     get_protein_name_from_filename,
     three_to_one_with_mods,
@@ -187,17 +188,6 @@ def filter_hetatms(
     :rtype pd.DataFrame
     """
     return [df.loc[df["residue_name"] == hetatm] for hetatm in keep_hets]
-
-
-def compute_rgroup_dataframe(pdb_df: pd.DataFrame) -> pd.DataFrame:
-    """Return the atoms that are in R-groups and not the backbone chain.
-
-    :param pdb_df: DataFrame to compute R group dataframe from.
-    :type pdb_df: pd.DataFrame
-    :returns: Dataframe containing R-groups only (backbone atoms removed).
-    :rtype: pd.DataFrame
-    """
-    return filter_dataframe(pdb_df, "atom_name", BACKBONE_ATOMS, False)
 
 
 def process_dataframe(
