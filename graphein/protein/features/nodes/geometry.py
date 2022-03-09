@@ -43,15 +43,15 @@ def add_sidechain_vector(
             vec = np.array([0, 0, 0])
         else:
             if reverse:
+                vec = d["coords"] - np.array(
+                    sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]]
+                )
+            else:
                 vec = (
                     np.array(
                         sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]]
                     )
                     - d["coords"]
-                )
-            else:
-                vec = d["coords"] - np.array(
-                    sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]]
                 )
 
             if scale:
