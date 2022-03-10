@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import wget
 from Bio.PDB import PDBList
+from biopandas.pdb import PandasPdb
 
 from .resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 
@@ -172,3 +173,59 @@ def three_to_one_with_mods(res: str) -> str:
     :rtype: str
     """
     return RESI_THREE_TO_1[res]
+
+
+def save_graph_to_pdb(g: nx.Graph, path: str, gz: bool = False):
+    """Saves processed ``pdb_df`` (``g.graph["pdb_df"]``) dataframe to a PDB file.
+
+    N.B. PDBs do not contain connectivity information.
+    This only captures the nodes in the graph.
+    Connectivity is filled in according to standard rules by visualisation programs.
+
+    :param g: Protein graph to save dataframe from.
+    :type g: nx.Graph
+    :param path: Path to save PDB file to.
+    :type path: str
+    :param gz: Whether to gzip the file. Defaults to ``False``.
+    :type gz: bool
+    """
+    ppd = PandasPdb()
+    ppd.df["ATOM"] = g.graph["pdb_df"]
+    ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
+    log.info(f"Successfully saved graph to {path}")
+
+
+def save_pdb_df_to_pdb(df: pd.DataFrame, path: str, gz: bool = False):
+    """Saves pdb dataframe to a PDB file.
+
+    :param g: Dataframe to save as PDB
+    :type g: pd.DataFrame
+    :param path: Path to save PDB file to.
+    :type path: str
+    :param gz: Whether to gzip the file. Defaults to ``False``.
+    :type gz: bool
+    """
+    ppd = PandasPdb()
+    ppd.df["ATOM"] = df
+    ppd.to_pdb(path=path, records=None, gz=False, append_newline=True)
+    log.info(f"Successfully saved PDB dataframe to {path}")
+
+
+def save_rgroup_df_to_pdb(g: nx.Graph, path: str, gz: bool = False):
+    """Saves R-group (``g.graph["rgroup_df"]``) dataframe to a PDB file.
+
+    N.B. PDBs do not contain connectivity information.
+    This only captures the atoms in the r groups.
+    Connectivity is filled in according to standard rules by visualisation programs.
+
+    :param g: Protein graph to save R group dataframe from.
+    :type g: nx.Graph
+    :param path: Path to save PDB file to.
+    :type path: str
+    :param gz: Whether to gzip the file. Defaults to ``False``.
+    :type gz: bool
+    """
+    ppd = PandasPdb()
+    ppd.df["ATOM"] = g.graph["rgroup_df"]
+    ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
+    log.info(f"Successfully saved rgroup data to {path}")
