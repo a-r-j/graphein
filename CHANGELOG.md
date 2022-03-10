@@ -2,6 +2,7 @@
 
 * [Feature] - #124 adds support for vector features associated protein protein geometry. #120 #122
 * [Feature] - #124 adds visualisation of vector features in 3D graph plots.
+* [Feature] - #121 adds functions for saving graph data to PDB files.
 
 #### Breaking Changes
 
