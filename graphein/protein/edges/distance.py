@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from itertools import combinations
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -132,6 +132,9 @@ def add_hydrophobic_interactions(
     hydrophobics_df = filter_dataframe(
         rgroup_df, "residue_name", HYDROPHOBIC_RESIS, True
     )
+    hydrophobics_df = filter_dataframe(
+        hydrophobics_df, "node_id", list(G.nodes()), True
+    )
     distmat = compute_distmat(hydrophobics_df)
     interacting_atoms = get_interacting_atoms(5, distmat)
     add_interacting_resis(
@@ -180,6 +183,7 @@ def add_hydrogen_bond_interactions(
     # For these atoms, find those that are within 3.5A of one another.
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
+    rgroup_df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
     HBOND_ATOMS = [
         "ND",  # histidine and asparagine
         "NE",  # glutamate, tryptophan, arginine, histidine
@@ -224,6 +228,7 @@ def add_ionic_interactions(
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
     ionic_df = filter_dataframe(rgroup_df, "residue_name", IONIC_RESIS, True)
+    ionic_df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
     distmat = compute_distmat(ionic_df)
     interacting_atoms = get_interacting_atoms(6, distmat)
     add_interacting_resis(G, interacting_atoms, ionic_df, ["ionic"])
@@ -274,6 +279,9 @@ def add_aromatic_interactions(
     dfs = []
     for resi in AROMATIC_RESIS:
         resi_rings_df = get_ring_atoms(pdb_df, resi)
+        resi_rings_df = filter_dataframe(
+            resi_rings_df, "node_id", list(G.nodes()), True
+        )
         resi_centroid_df = get_ring_centroids(resi_rings_df)
         dfs.append(resi_centroid_df)
     aromatic_df = (
@@ -312,9 +320,12 @@ def add_aromatic_sulphur_interactions(
     aromatic_sulphur_df = filter_dataframe(
         rgroup_df, "residue_name", RESIDUES, True
     )
+    aromatic_sulphur_df = filter_dataframe(
+        aromatic_sulphur_df, "node_id", list(G.nodes()), True
+    )
     distmat = compute_distmat(aromatic_sulphur_df)
     interacting_atoms = get_interacting_atoms(5.3, distmat)
-    interacting_atoms = zip(interacting_atoms[0], interacting_atoms[1])
+    interacting_atoms = list(zip(interacting_atoms[0], interacting_atoms[1]))
 
     for (a1, a2) in interacting_atoms:
         resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
@@ -339,9 +350,12 @@ def add_cation_pi_interactions(
     cation_pi_df = filter_dataframe(
         rgroup_df, "residue_name", CATION_PI_RESIS, True
     )
+    cation_pi_df = filter_dataframe(
+        cation_pi_df, "node_id", list(G.nodes()), True
+    )
     distmat = compute_distmat(cation_pi_df)
     interacting_atoms = get_interacting_atoms(6, distmat)
-    interacting_atoms = zip(interacting_atoms[0], interacting_atoms[1])
+    interacting_atoms = list(zip(interacting_atoms[0], interacting_atoms[1]))
 
     for (a1, a2) in interacting_atoms:
         resi1 = cation_pi_df.loc[a1, "node_id"]
@@ -411,7 +425,7 @@ def add_delaunay_triangulation(
 
     tri = Delaunay(coords)  # this is the triangulation
     log.debug(
-        f"Detected {len(tri.simplices)} simplices in the Delaunay Triangulaton."
+        f"Detected {len(tri.simplices)} simplices in the Delaunay Triangulation."
     )
     for simplex in tri.simplices:
         nodes = [node_map[s] for s in simplex]
@@ -439,10 +453,14 @@ def add_distance_threshold(
     :type threshold: float
     :return: Graph with distance-based edges added
     """
-    dist_mat = compute_distmat(G.graph["pdb_df"])
+    pdb_df = filter_dataframe(
+        G.graph["pdb_df"], "node_id", list(G.nodes()), True
+    )
+    dist_mat = compute_distmat(pdb_df)
     interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
     interacting_nodes = zip(interacting_nodes[0], interacting_nodes[1])
 
+    log.info(f"Found: {len(list(interacting_nodes))} distance edges")
     for a1, a2 in interacting_nodes:
         n1 = G.graph["pdb_df"].loc[a1, "node_id"]
         n2 = G.graph["pdb_df"].loc[a2, "node_id"]
@@ -456,7 +474,7 @@ def add_distance_threshold(
             abs(n1_position - n2_position) > long_interaction_threshold
         )
 
-        if condition_1 or (condition_2 and not condition_1):
+        if condition_1 or condition_2:
             if G.has_edge(n1, n2):
                 G.edges[n1, n2]["kind"].add("distance_threshold")
             else:
@@ -498,7 +516,10 @@ def add_k_nn_edges(
     :return: Graph with knn-based edges added
     :rtype: nx.Graph
     """
-    dist_mat = compute_distmat(G.graph["pdb_df"])
+    pdb_df = filter_dataframe(
+        G.graph["pdb_df"], "node_id", list(G.nodes()), True
+    )
+    dist_mat = compute_distmat(pdb_df)
 
     nn = kneighbors_graph(
         X=dist_mat,
@@ -512,8 +533,8 @@ def add_k_nn_edges(
     # Create iterable of node indices
     outgoing = np.repeat(np.array(range(len(G.graph["pdb_df"]))), k)
     incoming = nn.indices
-    interacting_nodes = zip(outgoing, incoming)
-
+    interacting_nodes = list(zip(outgoing, incoming))
+    log.info(f"Found: {len(interacting_nodes)} KNN edges")
     for a1, a2 in interacting_nodes:
         # Get nodes IDs from indices
         n1 = G.graph["pdb_df"].loc[a1, "node_id"]
@@ -536,7 +557,7 @@ def add_k_nn_edges(
 
         # If not on same chain add edge or
         # If on same chain and separation is sufficient add edge
-        if condition_1 or (condition_2 and not condition_1):
+        if condition_1 or condition_2:
             if G.has_edge(n1, n2):
                 G.edges[n1, n2]["kind"].add("k_nn")
             else:
@@ -639,7 +660,7 @@ def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
 
 def add_interacting_resis(
     G: nx.Graph,
-    interacting_atoms: np.array,
+    interacting_atoms: np.ndarray,
     dataframe: pd.DataFrame,
     kind: List[str],
 ):
