@@ -5,6 +5,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+import pickle
 from pathlib import Path
 from typing import List
 
@@ -354,6 +355,31 @@ def test_secondary_structure_subgraph():
     for n, d in G.nodes(data=True):
         if d["ss"] in SS_ELEMENTS:
             assert n in s_g.nodes()
+
+
+def test_successful_pickle():
+    """Tests subgraphs can be successfully pickled and unpickled"""
+    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    config = ProteinGraphConfig(
+        graph_metadata_functions=[secondary_structure],
+        dssp_config=DSSPConfig(),
+    )
+    G = construct_graph(pdb_path=str(file_path), config=config)
+    s_g = extract_subgraph_from_residue_types(
+        G,
+        residue_types=["ALA", "SER", "MET"],
+        update_coords=True,
+        filter_dataframe=True,
+        recompute_distmat=True,
+    )
+
+    with open("/tmp/test_graph.p", "wb") as f:
+        pickle.dump(s_g, f)
+
+    with open("/tmp/test_graph.p", "rb") as f:
+        loaded_graph = pickle.load(f)
+
+    assert nx.is_isomorphic(s_g, loaded_graph)
 
 
 if __name__ == "__main__":

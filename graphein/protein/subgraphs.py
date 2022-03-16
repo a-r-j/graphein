@@ -62,7 +62,7 @@ def extract_subgraph_from_node_list(
             ]
         if update_coords:
             g.graph["coords"] = np.array(
-                d["coords"] for d in g.nodes(data=True)
+                [d["coords"] for _, d in g.nodes(data=True)]
             )
         if recompute_distmat:
             if not filter_dataframe:
