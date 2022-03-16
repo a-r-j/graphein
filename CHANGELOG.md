@@ -1,8 +1,10 @@
-### 1.2.1 - UNRELEASED
+### 1.2.1 - 16/3/21
 
 * [Feature] - #124 adds support for vector features associated protein protein geometry. #120 #122
 * [Feature] - #124 adds visualisation of vector features in 3D graph plots.
 * [Feature] - #121 adds functions for saving graph data to PDB files.
+* [Bugfix] - #136 changes generator comprehension when updating coordinates in subgraphs to list comprehension to allow pickling
+* [Bugfix] - #136 fixes bug in edge construction functions using chain selections where nodes from unselected chains would be added to the graph.
 
 #### Breaking Changes
 

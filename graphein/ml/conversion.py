@@ -1,3 +1,11 @@
+"""Utilities for converting Graphein Networks to Geometric Deep Learning formats.
+"""
+# %%
+# Graphein
+# Author: Kexin Huang, Arian Jamasb <arian@jamasb.io>
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
+# Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
 from typing import List, Optional
@@ -272,7 +280,7 @@ class GraphFormatConvertor:
     @staticmethod
     def convert_nx_to_nx(G: nx.Graph) -> nx.Graph:
         """
-        Converts NetworkX graph (``nx.Graph``) to NetworkX graph (``nx.Graph``) object. Redundant - returns itself
+        Converts NetworkX graph (``nx.Graph``) to NetworkX graph (``nx.Graph``) object. Redundant - returns itself.
 
         :param G: NetworkX Graph
         :type G: nx.Graph
