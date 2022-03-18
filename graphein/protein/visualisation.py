@@ -22,14 +22,18 @@ from mpl_toolkits.mplot3d import Axes3D
 from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.utils import import_message
 
+log = logging.getLogger(__name__)
+
+
 try:
     from pytorch3d.ops import sample_points_from_meshes
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.protein.visualisation",
         package="pytorch3d",
         conda_channel="pytorch3d",
     )
+    log.warning(message)
 
 log = logging.getLogger()
 

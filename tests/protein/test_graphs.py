@@ -38,7 +38,11 @@ from graphein.protein.features.sequence.embeddings import (
     esm_sequence_embedding,
 )
 from graphein.protein.features.sequence.sequence import molecular_weight
-from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
+from graphein.protein.graphs import (
+    construct_graph,
+    construct_graphs_mp,
+    read_pdb_to_dataframe,
+)
 
 DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
 
@@ -89,6 +93,37 @@ def test_construct_graph():
         if d["kind"] == {"peptide_bond"}
     ]
     assert len(peptide_bond_edges) == 570
+
+
+def test_construct_graphs_mp():
+    graph_list = [
+        "2olg",
+        "1bjq",
+        "1omr",
+        "1a4g",
+        "2je9",
+        "3vm5",
+        "1el1",
+        "3fzo",
+        "1mn1",
+        "1ff5",
+        "1fic",
+        "3a47",
+        "1bir",
+    ] * 5
+
+    g = construct_graphs_mp(
+        pdb_code_it=graph_list, config=ProteinGraphConfig(), return_dict=True
+    )
+    assert isinstance(g, dict)
+    assert len(g.keys()) == len(graph_list) / 5
+    for k, v in g.items():
+        assert isinstance(v, (nx.Graph, None))
+    g = construct_graphs_mp(
+        pdb_code_it=graph_list, config=ProteinGraphConfig(), return_dict=False
+    )
+    assert isinstance(g, list)
+    assert len(g) == len(graph_list)
 
 
 def test_chain_selection():
