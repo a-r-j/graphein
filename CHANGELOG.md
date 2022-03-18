@@ -1,3 +1,6 @@
+### 1.2.2 - Unreleased
+* [Feature] - #141 adds edge construction based on sequence distance.
+
 ### 1.2.1 - 16/3/21
 
 * [Feature] - #124 adds support for vector features associated protein protein geometry. #120 #122
