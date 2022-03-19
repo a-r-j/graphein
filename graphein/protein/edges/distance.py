@@ -60,15 +60,23 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     return eucl_dists
 
 
-def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
+def add_sequence_distance_edges(
+    G: nx.Graph, d: int, name: str = "sequence_edge"
+) -> nx.Graph:
     """
-    Adds peptide backbone as edges to residues in each chain.
+    Adds edges based on sequence distance to residues in each chain.
+
+    Eg. if ``d=6`` then we join: nodes ``(1,7), (2,8), (3,9)..`` based on their sequence number.
 
     :param G: networkx protein graph.
     :type G: nx.Graph
+    :param d: Sequence separation to add edges on.
+    :param name: Name of the edge type. Defaults to ``"sequence_edge"``.
+    :type name: str
     :return G: networkx protein graph with added peptide bonds.
     :rtype: nx.Graph
     """
+    print(len(G))
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
 
@@ -79,36 +87,50 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
 
         # Iterate over every residue in chain
         for i, residue in enumerate(chain_residues):
-            # Checks not at chain terminus - is this versatile enough?
-            if i == len(chain_residues) - 1:
-                continue
-            # Asserts residues are on the same chain
-            cond_1 = (
-                residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
-            )
-            # Asserts residue numbers are adjacent
-            cond_2 = (
-                abs(
-                    residue[1]["residue_number"]
-                    - chain_residues[i + 1][1]["residue_number"]
+            try:
+                # Checks not at chain terminus - is this versatile enough?
+                if i == len(chain_residues) - d:
+                    continue
+                # Asserts residues are on the same chain
+                cond_1 = (
+                    residue[1]["chain_id"]
+                    == chain_residues[i + d][1]["chain_id"]
                 )
-                == 1
-            )
-
-            # If this checks out, we add a peptide bond
-            if (cond_1) and (cond_2):
-                # Adds "peptide bond" between current residue and the next
-                if G.has_edge(i, i + 1):
-                    G.edges[i, i + 1]["kind"].add("peptide_bond")
-                else:
-                    G.add_edge(
-                        residue[0],
-                        chain_residues[i + 1][0],
-                        kind={"peptide_bond"},
+                # Asserts residue numbers are adjacent
+                cond_2 = (
+                    abs(
+                        residue[1]["residue_number"]
+                        - chain_residues[i + d][1]["residue_number"]
                     )
-            else:
+                    == d
+                )
+
+                # If this checks out, we add a peptide bond
+                if (cond_1) and (cond_2):
+                    # Adds "peptide bond" between current residue and the next
+                    if G.has_edge(i, i + d):
+                        G.edges[i, i + d]["kind"].add(name)
+                    else:
+                        G.add_edge(
+                            residue[0],
+                            chain_residues[i + d][0],
+                            kind={name},
+                        )
+            except IndexError:
                 continue
     return G
+
+
+def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
+    """
+    Adds peptide backbone as edges to residues in each chain.
+
+    :param G: networkx protein graph.
+    :type G: nx.Graph
+    :return G: networkx protein graph with added peptide bonds.
+    :rtype: nx.Graph
+    """
+    return add_sequence_distance_edges(G, d=1, name="peptide_bond")
 
 
 def add_hydrophobic_interactions(
