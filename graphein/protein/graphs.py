@@ -765,7 +765,7 @@ def compute_secondary_structure_graph(
 
     # Number SS elements
     ss_list = pd.Series(number_groups_of_runs(ss_list))
-    ss_list.index = [n for n in g.nodes()]
+    ss_list.index = list(g.nodes())
 
     # Remove unstructured elements if necessary
     if remove_non_ss:
@@ -779,6 +779,8 @@ def compute_secondary_structure_graph(
     constituent_residues: Dict[str, List[str]] = ss_list.index.groupby(
         ss_list.values
     )
+    constituent_residues = {k: list(v)
+                            for k, v in constituent_residues.items()}
     residue_counts: Dict[str, int] = ss_list.groupby(ss_list).count().to_dict()
 
     # Add Nodes from secondary structure list
@@ -794,9 +796,8 @@ def compute_secondary_structure_graph(
     # Iterate over edges in source graph and add SS-SS edges to new graph.
     for u, v, d in g.edges(data=True):
         try:
-            h.add_edge(
-                ss_list[u], ss_list[v], kind=d["kind"], source=u + "_" + v
-            )
+            h.add_edge(ss_list[u], ss_list[v],
+                       kind=d["kind"], source=f'{u}_{v}')
         except KeyError as e:
             log.debug(
                 f"Edge {u}-{v} not added to secondary structure graph. \
@@ -806,10 +807,8 @@ def compute_secondary_structure_graph(
     # Remove self-loops if necessary.
     # Checks for equality between nodes in a given edge.
     if remove_self_loops:
-        edges_to_remove: List[Tuple[str]] = []
-        for u, v in h.edges():
-            if u == v:
-                edges_to_remove.append((u, v))
+        edges_to_remove: List[Tuple[str]] = [
+            (u, v) for u, v in h.edges() if u == v]
         h.remove_edges_from(edges_to_remove)
 
     # Create weighted graph from h
