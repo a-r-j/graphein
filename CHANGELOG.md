@@ -2,6 +2,7 @@
 * [Feature] - #141 adds edge construction based on sequence distance.
 * [Feature] - #143 adds equality and isomorphism testing functions between graphs, nodes and edges ([#142](https://github.com/a-r-j/graphein/issues/142))
 
+
 ### 1.2.1 - 16/3/21
 
 * [Feature] - #124 adds support for vector features associated protein protein geometry. #120 #122
