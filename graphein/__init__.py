@@ -6,6 +6,7 @@ from graphein.utils.utils import *
 # Code Repository: https://github.com/a-r-j/graphein
 from .protein import *
 from .rna import *
+from .testing import *
 
 # from ._version import get_versions
 
