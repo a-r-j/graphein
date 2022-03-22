@@ -35,7 +35,12 @@ class ProteinGraphConfigurationError(Exception):
 
 
 @lru_cache()
-def get_obsolete_mapping():
+def get_obsolete_mapping() -> Dict[str, str]:
+    """Returns a dictionary mapping obsolete PDB codes to their replacement.
+
+    :return: Dictionary mapping obsolete PDB codes to their replacement.
+    :rtype: Dictionary[str, str]
+    """
     obs_dict: Dict[str, str] = {}
 
     response = urlopen("ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat")
@@ -51,6 +56,9 @@ def get_obsolete_mapping():
 def download_pdb(config, pdb_code: str) -> Path:
     """
     Download PDB structure from PDB.
+
+    If no structure is found, we perform a lookup against the record of
+    obsolete PDB codes (ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat)
 
     :param pdb_code: 4 character PDB accession code.
     :type pdb_code: str
@@ -81,7 +89,7 @@ def download_pdb(config, pdb_code: str) -> Path:
                 overwrite=True,
                 file_format="pdb",
             )
-        except KeyError as e:
+        except KeyError:
             log.error(
                 f"PDB file {pdb_code} not found and no replacement \
                       structure found in obsolete lookup."
