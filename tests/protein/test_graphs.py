@@ -39,6 +39,7 @@ from graphein.protein.features.sequence.embeddings import (
 )
 from graphein.protein.features.sequence.sequence import molecular_weight
 from graphein.protein.graphs import (
+    compute_chain_graph,
     compute_secondary_structure_graph,
     construct_graph,
     read_pdb_to_dataframe,
@@ -333,3 +334,25 @@ def test_secondary_structure_graphs():
     assert len(g.edges) == len(
         h.edges
     ), "Multigraph should have same number of edges."
+
+
+def test_chain_graph():
+    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    config = ProteinGraphConfig(
+        edge_construction_functions=[
+            add_hydrophobic_interactions,
+            add_aromatic_interactions,
+            add_disulfide_interactions,
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+        ],
+        graph_metadata_functions=[secondary_structure],
+        dssp_config=DSSPConfig(),
+    )
+    g = construct_graph(pdb_path=str(file_path), config=config)
+    h = compute_chain_graph(g)
+    assert len(h.edges) == len(g.edges), "Number of edges do not match"
+
+    h = compute_chain_graph(g, return_weighted_graph=True)
+    node_sum = sum(d["num_residues"] for _, d in h.nodes(data=True))
+    assert node_sum == len(g), "Number of residues do not match"
