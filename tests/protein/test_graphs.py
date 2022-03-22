@@ -6,7 +6,7 @@ from pathlib import Path
 import networkx as nx
 import pytest
 
-from graphein.protein.config import ProteinGraphConfig
+from graphein.protein.config import DSSPConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (
     add_aromatic_interactions,
     add_aromatic_sulphur_interactions,
@@ -38,7 +38,11 @@ from graphein.protein.features.sequence.embeddings import (
     esm_sequence_embedding,
 )
 from graphein.protein.features.sequence.sequence import molecular_weight
-from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
+from graphein.protein.graphs import (
+    compute_secondary_structure_graph,
+    construct_graph,
+    read_pdb_to_dataframe,
+)
 
 DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
 
@@ -152,7 +156,8 @@ def test_distance_edges():
         "edge_construction_functions": [
             partial(add_k_nn_edges, k=5, long_interaction_threshold=10),
             add_hydrophobic_interactions,
-            add_aromatic_interactions,  # Todo removed for now as ring centroids require precomputing
+            # Todo removed for now as ring centroids require precomputing
+            add_aromatic_interactions,
             add_aromatic_sulphur_interactions,
             add_delaunay_triangulation,
             add_cation_pi_interactions,
@@ -288,3 +293,39 @@ def test_edges_do_not_add_nodes_for_chain_subset():
     assert len(g) == 222
     g = construct_graph(config=config, pdb_code="2vvi", chain_selection="D")
     assert len(g) == 219
+
+
+def test_secondary_structure_graphs():
+    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    config = ProteinGraphConfig(
+        edge_construction_functions=[
+            add_hydrophobic_interactions,
+            add_aromatic_interactions,
+            add_disulfide_interactions,
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+        ],
+        graph_metadata_functions=[secondary_structure],
+        dssp_config=DSSPConfig(),
+    )
+    g = construct_graph(pdb_path=str(file_path), config=config)
+
+    h = compute_secondary_structure_graph(g, remove_non_ss=False)
+    # Check number of residues preserved
+    res_counts = sum(d["residue_counts"] for _, d in h.nodes(data=True))
+    assert res_counts == len(
+        g
+    ), "Residue counts in SS graph should match number of residues in original graph"
+    assert nx.is_connected(
+        h
+    ), "SS graph should be connected in this configuration"
+
+    h = compute_secondary_structure_graph(
+        g,
+        remove_non_ss=False,
+        remove_self_loops=False,
+        return_weighted_graph=False,
+    )
+    assert len(g.edges) == len(
+        h.edges
+    ), "Multigraph should have same number of edges."
