@@ -7,10 +7,41 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 import logging as log
+from ast import Call
 from typing import Any, Callable, Dict
 
 import networkx as nx
 import numpy as np
+
+
+def compare_exact(first: Dict[str, Any], second: Dict[str, Any]) -> bool:
+    """Return whether two dicts of arrays are exactly equal.
+
+    :param first: The first dictionary.
+    :type first: Dict[str, Any]
+    :param second: The second dictionary.
+    :type second: Dict[str, Any]
+    :return: ``True`` if the dictionaries are exactly equal, ``False`` otherwise.
+    :rtype: bool
+    """
+    if first.keys() != second.keys():
+        return False
+    return all(np.array_equal(first[key], second[key]) for key in first)
+
+
+def compare_approximate(first, second):
+    """Return whether two dicts of arrays are approximates equal.
+
+    :param first: The first dictionary.
+    :type first: Dict[str, Any]
+    :param second: The second dictionary.
+    :type second: Dict[str, Any]
+    :return: ``True`` if the dictionaries are approx equal, ``False`` otherwise.
+    :rtype: bool
+    """
+    if first.keys() != second.keys():
+        return False
+    return all(np.allclose(first[key], second[key]) for key in first)
 
 
 def graphs_isomorphic(g: nx.Graph, h: nx.Graph) -> bool:
@@ -26,17 +57,7 @@ def graphs_isomorphic(g: nx.Graph, h: nx.Graph) -> bool:
     return nx.is_isomorphic(g, h)
 
 
-def assert_graphs_isomorphic(g: nx.Graph, h: nx.Graph):
-    """Checks for structural isomorphism between two graphs: ``g`` and ``h``.
-
-    :param g: The first graph.
-    :param h: The second graph.
-    :raises AssertionError: If the graphs are not isomorphic.
-    """
-    assert graphs_isomorphic(g, h), "Graphs are not isomorphic."
-
-
-def nodes_equal(g: nx.Graph, h: nx.Graph):
+def nodes_equal(g: nx.Graph, h: nx.Graph) -> bool:
     """Checks whether two graphs have the same nodes.
 
     :param g: The first graph.
@@ -46,13 +67,18 @@ def nodes_equal(g: nx.Graph, h: nx.Graph):
     :raises AssertionError: If the graphs do not contain the same nodes
     """
     for n in g.nodes():
-        assert n in h.nodes(), f"Node {n} (graph g) not in graph h"
+        if n not in h.nodes():
+            log.info(f"Node {n} (graph g) not in graph h")
+            return False
     for n in h.nodes():
-        assert n in g.nodes(), f"Node {n} (graph h) not in graph g"
+        if n not in g.nodes():
+            log.info(f"Node {n} (graph h) not in graph g")
+            return False
+    return True
 
 
-def node_data_equal(g: nx.Graph, h: nx.Graph):
-    """Checks whether two graphs have the same node features.
+def edges_equal(g: nx.Graph, h: nx.Graph) -> bool:
+    """Checks whether two graphs have the same edges.
 
     :param g: The first graph.
     :type g: :class:`networkx.Graph`
@@ -60,61 +86,99 @@ def node_data_equal(g: nx.Graph, h: nx.Graph):
     :type h: :class:`networkx.Graph`
     :raises AssertionError: If the graphs do not contain the same nodes
     """
-    for n in g.nodes():
-        assert dictionaries_equal(g.nodes[n], h.nodes[n]), \
-            f"Node {n} (graph g) features do not match graph h"
-    for n in h.nodes():
-        assert dictionaries_equal(g.nodes[n], h.nodes[n]), \
-            f"Node {n} (graph h) features do not match graph g"
+    for u, v in g.edges():
+        if (u, v) not in h.edges():
+            log.info(f"Edge {u}-{v} (graph g) not in graph h")
+            return False
+    for u, v in h.edges():
+        if (u, v) not in g.edges():
+            log.info(f"Edge {u}-{v} (graph h) not in graph g")
+            return False
+    return True
 
 
-def dictionaries_equal(dic1: Dict[str, Any], dic2: Dict[str, Any]) -> bool:
-    """Checks if two dictionaries are equal.
+def edge_data_equal(
+    g: nx.Graph, h: nx.Graph, comparison_func: Callable = compare_exact
+) -> bool:
+    """Checks whether two graphs have the same edge features.
 
-    :param dic1: _description_
-    :type dic1: Dict[str, Any]
-    :param dic2: _description_
-    :type dic2: Dict[str, Any]
-    :return: _description_
+    :param g: The first graph.
+    :type g: :class:`networkx.Graph`
+    :param h: The second graph.
+    :type h: :class:`networkx.Graph`
+    :param comparison_func: Matching function for edge features.
+        Takes two edge feature dictionaries and returns ``True`` if they are
+        equal. Defaults to :func:`compare_exact`
+    :type node_match_func: Callable
+    :returns: ``True`` if the graphs have the same node features, ``False``
+        otherwise.
     :rtype: bool
     """
-    for key, value in dic1.items():
-        key1 = key
-        value1 = value
-    for key, value in dic2.items():
-        key2 = key
-        value2 = value
-    if np.array_equal(value1, value2) == False or key1 != key2:
-        log.info(
-            f"Graphs differ at key {key1} with value {value1} and {key2} with value {value2}")
+    if not edges_equal(g, h):
+        log.info("Edge lists do not match")
         return False
-    else:
-        return True
+    for (u, v) in g.edges():
+        if not compare_exact(g.edges[u, v], h.edges[u, v]):
+            log.info(f"Edge {u}-{v} (graph g) features do not match graph h")
+            return False
+    for (u, v) in h.edges():
+        if not compare_exact(g.edges[u, v], h.edges[u, v]):
+            log.info(f"Edge {u}-{v} (graph h) features do not match graph g")
+            return False
+    return True
+
+
+def node_data_equal(
+    g: nx.Graph, h: nx.Graph, comparison_func: Callable = compare_exact
+) -> bool:
+    """Checks whether two graphs have the same node features.
+
+    :param g: The first graph.
+    :type g: :class:`networkx.Graph`
+    :param h: The second graph.
+    :type h: :class:`networkx.Graph`
+    :param comparison_func: Matching function for node features.
+        Takes two node dictionaries and returns True if they are equal.
+        Defaults to :func:`compare_exact`
+    :type comparison_func: Callable
+    :returns: ``True`` if the graphs have the same node features, ``False`` otherwise.
+    :rtype: bool
+    """
+    if not nodes_equal(g, h):
+        return False
+    for n in g.nodes():
+        if not compare_exact(g.nodes[n], h.nodes[n]):
+            log.info(f"Node {n} (graph g) features do not match graph h")
+            return False
+    for n in h.nodes():
+        if not compare_exact(g.nodes[n], h.nodes[n]):
+            log.info(f"Node {n} (graph h) features do not match graph g")
+            return False
+    return True
 
 
 def graphs_equal(
     g: nx.Graph,
     h: nx.Graph,
-    node_match_func: Callable = dictionaries_equal,
-    edge_match_func: Callable = dictionaries_equal
+    node_match_func: Callable = compare_exact,
+    edge_match_func: Callable = compare_exact,
 ) -> bool:
-
-    return nx.is_isomorphic(g, h, node_match_func, edge_match_func)
-
-
-def assert_graphs_equal(
-    g: nx.Graph,
-    h: nx.Graph,
-    node_match_func: Callable = dictionaries_equal,
-    edge_match_func: Callable = dictionaries_equal,
-):
-    """Asserts whether two graphs are equal (structural isomorphism and edge and node features match)
+    """Asserts whether two graphs are equal
+    (structural isomorphism and edge and node features match)
 
     :param g: The first graph.
+    :type g: :class:`networkx.Graph`
     :param h: The second graph.
-    :param node_match_func: Matching function for node features. Takes two node dictionaries and returns True if they are equal.
-    :param edge_match_func: Matching function for edge features. A function that takes two edge dictionaries and returns True if they are equal.
-    :raises AssertionError: If the graphs are not equal.
+    :type h: :class:`networkx.Graph`
+    :param node_match_func: Matching function for node features.
+        Takes two node dictionaries and returns True if they are equal.
+        Defaults to :func:`compare_exact`
+    :type node_match_func: Callable
+    :param edge_match_func: Matching function for edge features.
+        A function that takes two edge dictionaries and returns ``True``
+        if they are equal. Defaults to :func:`compare_exact`
+    :type edge_match_func: Callable
+    :return: ``True`` if the graphs are equal, ``False`` otherwise.
+    :rtype: bool
     """
-    assert graphs_equal(g, h, node_match_func,
-                        edge_match_func), "Graphs are not isomorphic."
+    return nx.is_isomorphic(g, h, node_match_func, edge_match_func)
