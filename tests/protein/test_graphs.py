@@ -185,30 +185,34 @@ def test_node_features():
 
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
 
-    node_feature_functions = {
+    config_params = {
         "node_metadata_functions": [
             expasy_protein_scale,  # Todo we need to refactor node data assingment flow
             meiler_embedding,
-            # rsa,
-            # asa,
-            # phi,
-            # psi,
-            # secondary_structure,
+        ],
+        "graph_metadata_functions": [
+            rsa,
+            asa,
+            phi,
+            psi,
+            secondary_structure,
             # partial(aaindex1, accession="FAUJ880111"),
-        ]
+        ],
+        "dssp_config": DSSPConfig(),
     }
-    config = ProteinGraphConfig(**node_feature_functions)
+    config = ProteinGraphConfig(**config_params)
     G = construct_graph(pdb_path=str(file_path), config=config)
 
     # Check for existence of features
-    for n, d in G.nodes(data=True):
-        # assert "meiler_embedding" in d # Todo these functions return pd.Series, rather than adding to the node
-        # assert expasy_protein_scale in d
-        # assert "rsa" in d
-        # assert "asa" in d
-        # assert "phi" in d
-        # assert "psi" in d
-        # assert "secondary_structure" in d
+    for _, d in G.nodes(data=True):
+        # Todo these functions return pd.Series, rather than adding to the node
+        assert "meiler" in d.keys()
+        assert "expasy" in d.keys()
+        assert "rsa" in d.keys()
+        assert "asa" in d.keys()
+        assert "phi" in d.keys()
+        assert "psi" in d.keys()
+        assert "ss" in d.keys()
         continue
 
 
