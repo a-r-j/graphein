@@ -1,4 +1,4 @@
-"""Pytorch Geometric Dataset classes for Protein Graphs"""
+"""Pytorch Geometric Dataset classes for Protein Graphs."""
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
+import networkx as nx
 import torch
 from torch_geometric.data import Data, Dataset, InMemoryDataset
 from tqdm import tqdm
@@ -35,6 +36,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         ),
         graph_transformation_funcs: Optional[List[Callable]] = None,
         transform: Optional[Callable] = None,
+        pdb_transform: Optional[List[Callable]] = None,
         pre_transform: Optional[Callable] = None,
         pre_filter: Optional[Callable] = None,
         num_cores: int = 16,
@@ -58,25 +60,30 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             Defaults to None.
         :type pdb_codes: Optional[List[str]], optional
         :param uniprot_ids: List of Uniprot IDs to download and parse from
-            Alphafold Database. Defaults to None.
+            Alphafold Database. Defaults to ``None``.
         :type uniprot_ids: Optional[List[str]], optional
         :param graph_label_map: Dictionary mapping PDB/Uniprot IDs to
-            graph-level labels. Defaults to None.
+            graph-level labels. Defaults to ``None``.
         :type graph_label_map: Optional[Dict[str, Tensor]], optional
         :param node_label_map: Dictionary mapping PDB/Uniprot IDs to node-level
-            labels. Defaults to None
+            labels. Defaults to ``None``.
         :type node_label_map: Optional[Dict[str, torch.Tensor]], optional
-        :param chain_selection_map: Dictionary mapping, defaults to None
+        :param chain_selection_map: Dictionary mapping, defaults to ``None``.
         :type chain_selection_map: Optional[Dict[str, List[str]]], optional
         :param graphein_config: Protein graph construction config, defaults to
-            ``ProteinGraphConfig()``
+            ``ProteinGraphConfig()``.
         :type graphein_config: ProteinGraphConfig, optional
         :param graph_format_convertor: Conversion handler for graphs, defaults
-            to ``GraphFormatConvertor(src_format="nx", dst_format="pyg" )``
+            to ``GraphFormatConvertor(src_format="nx", dst_format="pyg")``.
         :type graph_format_convertor: GraphFormatConvertor, optional
+        :param pdb_transform: List of functions that consume a list of paths to
+            the downloaded structures. This provides an entry point to apply
+            pre-processing from bioinformatics tools of your choosing. Defaults
+            to ``None``.
+        :type pdb_transform: Optional[List[Callable]], optional
         :param graph_transformation_funcs: List of functions that consume a
             ``nx.Graph`` and return a ``nx.Graph``. Applied to graphs after
-            construction but before conversion to pyg. Defaults to None.
+            construction but before conversion to pyg. Defaults to ``None``.
         :type graph_transformation_funcs: Optional[List[Callable]], optional
         :param transform: A function/transform that takes in a
             ``torch_geometric.data.Data`` object and returns a transformed
@@ -86,18 +93,18 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         :param pre_transform:  A function/transform that takes in an
             ``torch_geometric.data.Data`` object and returns a transformed
             version. The data object will be transformed before being saved to
-            disk. Defaults to ``None``
+            disk. Defaults to ``None``.
         :type pre_transform: Optional[Callable], optional
         :param pre_filter:  A function that takes in a
             ``torch_geometric.data.Data`` object and returns a boolean value,
             indicating whether the data object should be included in the final
-            dataset. Optional, defualts to ``None``.
+            dataset. Optional, defaults to ``None``.
         :type pre_filter: Optional[Callable], optional
         :param num_cores: Number of cores to use for multiprocessing of graph
-            construction, defaults to 16
+            construction, defaults to ``16``.
         :type num_cores: int, optional
         :param af_version: Version of AlphaFoldDB structures to use,
-            defaults to ``2``
+            defaults to ``2``.
         :type af_version: int, optional
         """
         self.name = name
@@ -121,6 +128,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self.config = graphein_config
         self.graph_format_convertor = graph_format_convertor
         self.graph_transformation_funcs = graph_transformation_funcs
+        self.pdb_transform = pdb_transform
         self.num_cores = num_cores
         super().__init__(
             root,
@@ -160,12 +168,26 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
     def __len__(self) -> int:
         return len(self.structures)
 
+    def transform_pdbs(self):
+        """
+        Performs pre-processing of PDB structures before constructing graphs.
+        """
+        structure_files = [
+            f"{self.raw_dir}/{pdb}.pdb" for pdb in self.structures
+        ]
+        for func in self.pdb_transform:
+            func(structure_files)
+
     def process(self):
         """Process structures into PyG format and save to disk."""
         # Read data into huge `Data` list.
         structure_files = [
             f"{self.raw_dir}/{pdb}.pdb" for pdb in self.structures
         ]
+
+        # Apply transformations to raw PDB files.
+        if self.pdb_transform is not None:
+            self.transform_pdbs()
 
         if self.chain_selection_map:
             chain_selections = [
@@ -200,7 +222,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
                 graphs[k].graph_y = v
         if self.node_label_map:
             for k, v in self.node_label_map.items():
-                graphs[k].nodes_y = v
+                graphs[k].node_y = v
 
         data_list = list(graphs.values())
         del graphs
@@ -228,6 +250,8 @@ class ProteinGraphDataset(Dataset):
         graph_format_convertor: GraphFormatConvertor = GraphFormatConvertor(
             src_format="nx", dst_format="pyg"
         ),
+        graph_transformation_funcs: Optional[List[Callable]] = None,
+        pdb_transform: Optional[List[Callable]] = None,
         transform: Optional[Callable] = None,
         pre_transform: Optional[Callable] = None,
         pre_filter: Optional[Callable] = None,
@@ -243,29 +267,34 @@ class ProteinGraphDataset(Dataset):
         :param root: Root directory where the dataset should be saved.
         :type root: str
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
-            Defaults to None.
+            Defaults to ``None``.
         :type pdb_codes: Optional[List[str]], optional
         :param uniprot_ids: List of Uniprot IDs to download and parse from
-            Alphafold Database. Defaults to None.
+            Alphafold Database. Defaults to ``None``.
         :type uniprot_ids: Optional[List[str]], optional
         :param graph_label_map: Dictionary mapping PDB/Uniprot IDs to
-            graph-level labels. Defaults to None.
+            graph-level labels. Defaults to ``None``.
         :type graph_label_map: Optional[Dict[str, Tensor]], optional
         :param node_label_map: Dictionary mapping PDB/Uniprot IDs to node-level
-            labels. Defaults to None
+            labels. Defaults to ``None``.
         :type node_label_map: Optional[Dict[str, torch.Tensor]], optional
-        :param chain_selection_map: Dictionary mapping, defaults to None
+        :param chain_selection_map: Dictionary mapping, defaults to ``None``.
         :type chain_selection_map: Optional[Dict[str, List[str]]], optional
         :param graphein_config: Protein graph construction config, defaults to
-            ``ProteinGraphConfig()``
+            ``ProteinGraphConfig()``.
         :type graphein_config: ProteinGraphConfig, optional
         :param graph_format_convertor: Conversion handler for graphs, defaults
-            to ``GraphFormatConvertor(src_format="nx", dst_format="pyg" )``
+            to ``GraphFormatConvertor(src_format="nx", dst_format="pyg")``.
         :type graph_format_convertor: GraphFormatConvertor, optional
         :param graph_transformation_funcs: List of functions that consume a
             ``nx.Graph`` and return a ``nx.Graph``. Applied to graphs after
-            construction but before conversion to pyg. Defaults to None.
+            construction but before conversion to pyg. Defaults to ``None``.
         :type graph_transformation_funcs: Optional[List[Callable]], optional
+        :param pdb_transform: List of functions that consume a list of paths to
+            the downloaded structures. This provides an entry point to apply
+            pre-processing from bioinformatics tools of your choosing. Defaults
+            to ``None``.
+        :type pdb_transform: Optional[List[Callable]], optional
         :param transform: A function/transform that takes in a
             ``torch_geometric.data.Data`` object and returns a transformed
             version. The data object will be transformed before every access.
@@ -274,18 +303,18 @@ class ProteinGraphDataset(Dataset):
         :param pre_transform:  A function/transform that takes in an
             ``torch_geometric.data.Data`` object and returns a transformed
             version. The data object will be transformed before being saved to
-            disk. Defaults to ``None``
+            disk. Defaults to ``None``.
         :type pre_transform: Optional[Callable], optional
         :param pre_filter:  A function that takes in a
             ``torch_geometric.data.Data`` object and returns a boolean value,
             indicating whether the data object should be included in the final
-            dataset. Optional, defualts to ``None``.
+            dataset. Optional, defaults to ``None``.
         :type pre_filter: Optional[Callable], optional
         :param num_cores: Number of cores to use for multiprocessing of graph
-            construction, defaults to 16
+            construction, defaults to ``16``.
         :type num_cores: int, optional
         :param af_version: Version of AlphaFoldDB structures to use,
-            defaults to ``2``
+            defaults to ``2``.
         :type af_version: int, optional
         """
         self.pdb_codes = pdb_codes
@@ -308,6 +337,8 @@ class ProteinGraphDataset(Dataset):
         self.config = graphein_config
         self.graph_format_convertor = graph_format_convertor
         self.num_cores = num_cores
+        self.pdb_transform = pdb_transform
+        self.graph_transformation_funcs = graph_transformation_funcs
         super().__init__(
             root,
             transform=transform,
@@ -346,8 +377,27 @@ class ProteinGraphDataset(Dataset):
         """Returns length of data set (number of structures)."""
         return len(self.structures)
 
+    def transform_pdbs(self):
+        """
+        Performs pre-processing of PDB structures before constructing graphs.
+        """
+        structure_files = [
+            f"{self.raw_dir}/{pdb}.pdb" for pdb in self.structures
+        ]
+        for func in self.pdb_transform:
+            func(structure_files)
+
+    def transform_graphein_graphs(self, graph: nx.Graph):
+        for func in self.graph_transformation_funcs:
+            graph = func(graph)
+        return graph
+
     def process(self):
         """Processes structures from files into PyTorch Geometric Data."""
+        # Preprocess PDB files
+        if self.pdb_transform:
+            self.transform_pdbs()
+
         idx = 0
         # Chunk dataset for parallel processing
         chunk_size = 128
@@ -378,7 +428,11 @@ class ProteinGraphDataset(Dataset):
                 chain_selections=chain_selections,
                 return_dict=True,
             )
-
+            if self.graph_transformation_funcs is not None:
+                graphs = {
+                    k: self.transform_graphein_graphs(v)
+                    for k, v in graphs.items()
+                }
             # Convert to PyTorch Geometric Data
             graphs = {
                 k: self.graph_format_convertor(v) for k, v in graphs.items()
@@ -391,7 +445,7 @@ class ProteinGraphDataset(Dataset):
                     graphs[k].graph_y = v
             if self.node_label_map:
                 for k, v in self.node_label_map.items():
-                    graphs[k].nodes_y = v
+                    graphs[k].node_y = v
 
             data_list = list(graphs.values())
 
@@ -422,9 +476,9 @@ class ProteinGraphDataset(Dataset):
         """
         Returns PyTorch Geometric Data object for a given index.
 
-        :param idx: Index to retrieve
+        :param idx: Index to retrieve.
         :type idx: int
-        :return: PyTorch Geometric Data object
+        :return: PyTorch Geometric Data object.
         """
         return torch.load(
             os.path.join(self.processed_dir, f"{self.structures[idx]}.pt")
