@@ -643,26 +643,19 @@ def _mp_graph_constructor(
     """
     log.info(f"Constructing graph for: {args[0]}. Chain selection: {args[1]}")
     func = partial(construct_graph, config=config)
-    if use_pdb_code:
-        try:
-            result = func(pdb_code=args[0], chain_selection=args[1])
-            return result
-        except Exception as ex:
-            log.info(
-                f"Graph construction error (PDB={args[0]})! {traceback.format_exc()}"
-            )
-            log.info(ex)
-            return None
-    elif not use_pdb_code:
-        try:
-            result = func(pdb_path=args[0], chain_selection=args[1])
-            return result
-        except Exception as ex:
-            log.info(
-                f"Graph construction error (PDB={args[0]})! {traceback.format_exc()}"
-            )
-            log.info(ex)
-            return None
+    try:
+        return (
+            func(pdb_code=args[0], chain_selection=args[1])
+            if use_pdb_code
+            else func(pdb_path=args[0], chain_selection=args[1])
+        )
+
+    except Exception as ex:
+        log.info(
+            f"Graph construction error (PDB={args[0]})! {traceback.format_exc()}"
+        )
+        log.info(ex)
+        return None
 
 
 def construct_graphs_mp(
