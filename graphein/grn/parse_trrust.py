@@ -1,3 +1,4 @@
+"""Utilities for parsing the TRRUST database."""
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
@@ -72,7 +73,8 @@ def parse_TRRUST(
     :param gene_list: List of gene identifiers to restrict dataframe to.
     :type gene_list: List[str]
     :param root_dir: Root directory path to either find or download TRRUST. Defaults to None (downloads dataset to graphein/datasets/trrust)
-    :return Pandas dataframe with the regulatory interactions between genes in the gene list
+    :type root_dir: pathlib.Path, optional
+    :returns: Pandas dataframe with the regulatory interactions between genes in the gene list
     :rtype: pd.DataFrame
     """
     df = load_TRRUST(root_dir=root_dir)
@@ -86,11 +88,14 @@ def filter_TRRUST(
     df: pd.DataFrame, funcs: Optional[List[Callable]]
 ) -> pd.DataFrame:
     """
-    Filters results of TRRUST call according to user kwargs
+    Filters results of TRRUST call according to user kwargs.
 
     :param df: Source specific Pandas dataframe (TRRUST) with results of the API call
-    :param kwargs: User thresholds used to filter the results. The parameter names are of the form TRRUST_<param>, where <param> is the name of the parameter. All the parameters are numerical values.
+    :type df: pd.DataFrame
+    :param funcs: User functions to filter the results.
+    :type funcs: List[Callable]
     :return: Source specific Pandas dataframe with filtered results
+    :rtype: pd.DataFrame
     """
     if funcs is not None:
         df = filter_dataframe(df, funcs)
@@ -101,11 +106,12 @@ def filter_TRRUST(
 def standardise_TRRUST(df: pd.DataFrame) -> pd.DataFrame:
     """
     Filters results of TRRUST call by providing a list of
-    user-defined functions that accept a dataframe and return a dataframe
+    user-defined functions that accept a dataframe and return a dataframe.
 
     :param df: pd.Dataframe to filter. Must contain columns: ["g1", "g2", "regtype"]
     :type df: pd.DataFrame
     :param funcs: list of functions that carry out dataframe processing
+    :type funcs: List[Callable]
     :return: processed dataframe
     :rtype: pd.DataFrame
     """
@@ -127,11 +133,11 @@ def TRRUST_df(
     gene_list: List[str], filtering_funcs: Optional[List[Callable]] = None
 ) -> pd.DataFrame:
     """
-    Generates standardised dataframe with TRRUST protein-protein interactions, filtered according to user's input
+    Generates standardised dataframe with TRRUST protein-protein interactions, filtered according to user's input.
 
     :param gene_list:
     :type gene_list: List[str]
-    :param filtering_funcs:
+    :param filtering_funcs: Functions with which to filter the dataframe.
     :type filtering_funcs: List[Callable]
     :return: Standardised dataframe with TRRUST interactions
     :rtype: pd.DataFrame

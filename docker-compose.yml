@@ -6,9 +6,6 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-      args:
-        CUDA: cpu
-        TORCH: '1.7.1'
     volumes:
       - ./:/graphein
     command: tail -f /dev/null

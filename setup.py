@@ -136,7 +136,7 @@ class UploadCommand(Command):
 
 setup(
     name="graphein",
-    version="1.1.0",
+    version="1.2.0",
     # versioneer.get_version(),
     # cmdclass=versioneer.get_cmdclass(),
     description="Protein & Interactomic Graph Construction for Machine Learning",
@@ -172,5 +172,10 @@ setup(
     # $ setup.py publish support.
     cmdclass={
         "upload": UploadCommand,
+    },
+    entry_points={
+        "console_scripts": [
+            "graphein = graphein.cli:main",
+        ],
     },
 )

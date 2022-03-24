@@ -2,7 +2,17 @@
 Author: Eric J. Ma, Arian Jamasb
 Purpose: This is a set of utility variables and functions that can be used
 across the Graphein project.
+
+These include various collections of standard & non-standard/modified amino acids and their names, identifiers and properties.
+
+We also include mappings of covalent radii and bond lengths for the amino acids used in assembling atomic protein graphs.
 """
+# Graphein
+# Author: Eric J. Ma, Arian Jamasb <arian@jamasb.io>
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
+# Code Repository: https://github.com/a-r-j/graphein
+
 
 from typing import Dict, List
 
@@ -10,6 +20,32 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 BACKBONE_ATOMS: List[str] = ["N", "CA", "C", "O"]
+"""Atoms present in Amino Acid Backbones."""
+
+
+BASE_AMINO_ACIDS: List[str] = [
+    "A",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "K",
+    "L",
+    "M",
+    "N",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "V",
+    "W",
+    "Y",
+]
+"""Vocabulary of 20 standard amino acids."""
 
 STANDARD_AMINO_ACIDS: List[str] = [
     "A",
@@ -37,8 +73,14 @@ STANDARD_AMINO_ACIDS: List[str] = [
     "Y",
     "Z",
 ]
+"""
+Vocabulary of amino acids with one-letter codes. Includes `fuzzy` standard amino acids:
+``"B"`` denotes ``"ASX"`` which corresponds to ``"ASP"`` (``"D"``) **or** ``"ASN"`` (``"N"``)
+and ``"Z"`` denotes ``"GLX"`` which corresponds to ``"GLU"`` (``"E"``) **or** ``"GLN"`` (``"Q"``).
+"""
 
 NON_STANDARD_AMINO_ACIDS: List[str] = ["O", "U"]
+"""Non-standard amino acids with one-letter codes."""
 
 AMINO_ACIDS: List[str] = [
     "A",
@@ -68,11 +110,20 @@ AMINO_ACIDS: List[str] = [
     "Y",
     "Z",
 ]
+"""Vocabulary of amino acids with one-letter codes. Includes `fuzzy` standard amino acids:
+``"B"`` denotes ``"ASX"`` which corresponds to ``"ASP"`` (``"D"``) **or** ``"ASN"`` (``"N"``) 
+and ``"Z"`` denotes ``"GLX"`` which corresponds to``"GLU"`` (``"E"``) **or** ``"GLN"`` (``"Q"``).
+"""
 
 NON_STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
     "SEC": "U",
     "PYL": "O",
 }
+"""
+Mapping of 3-letter non-standard amino acids codes to their one-letter form.
+
+See: http://ligand-expo.rcsb.org/
+"""
 
 BOND_TYPES: List[str] = [
     "hydrophobic",
@@ -85,6 +136,7 @@ BOND_TYPES: List[str] = [
     "backbone",
     "delaunay",
 ]
+"""List of supported bond types."""
 
 STANDARD_RESI_NAMES: List[str] = [
     "ALA",
@@ -111,6 +163,11 @@ STANDARD_RESI_NAMES: List[str] = [
     "GLX",
     "UNK",
 ]
+"""
+List of standard residue 3-letter names.
+Includes ``"UNK"`` for unknown residues.
+``"ASX"`` denotes ``"ASP"`` **or** ``"ASN"`` and ``"GLX"`` denotes ``"GLU"`` **or** ``"GLN"``.
+"""
 
 NON_STANDARD_RESI_NAMES: List[str] = [
     "CSD",
@@ -173,6 +230,11 @@ NON_STANDARD_RESI_NAMES: List[str] = [
     "TPQ",
     "STY",
 ]
+"""
+List of non-standard residue 3-letter names.
+
+Collected from: https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
+"""
 
 RESI_NAMES: List[str] = [
     "ALA",
@@ -258,6 +320,11 @@ RESI_NAMES: List[str] = [
     "STY",
     "UNK",
 ]
+"""
+3-letter residue names for all amino acids.
+Non-standard/modified amino acids are mapped to their parent amino acid.
+Includes ``"UNK"`` to denote unknown residues.
+"""
 
 # https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound
 RESI_THREE_TO_1: Dict[str, str] = {
@@ -346,10 +413,11 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "STY": "Y",
     "UNK": "X",
 }
-
-
-# Non-standard residue info taken from: https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
-# PYL (pyrolysine) and SEC are added
+"""
+Mapping of 3-letter residue names to 1-letter residue names.
+Non-standard/modified amino acids are mapped to their parent amino acid.
+Includes ``"UNK"`` to denote unknown residues.
+"""
 
 NON_STANDARD_RESIS_NAME: List[str] = [
     "3-SULFINOALANINE",
@@ -410,6 +478,10 @@ NON_STANDARD_RESIS_NAME: List[str] = [
     "TOPO-QUINONE",
     "TYROSINE-O-SULPHONIC_ACID",
 ]
+"""
+Non-standard residue info taken from: https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
+``PYL`` (pyrolysine) and ``SEC`` are added
+"""
 
 NON_STANDARD_RESIS_PARENT: Dict[str, str] = {
     "CSD": "CYS",
@@ -472,6 +544,9 @@ NON_STANDARD_RESIS_PARENT: Dict[str, str] = {
     "TPQ": "PHE",
     "STY": "TYR",
 }
+"""
+Mapping of 3-letter non-standard/modified residues to their 3-letter parent residue names.
+"""
 
 COFACTOR_NAMES: List[str] = [
     "ADP",
@@ -484,6 +559,11 @@ COFACTOR_NAMES: List[str] = [
     "NADP",
     "NADPH",
 ]
+"""
+Names of cofactors commonly found in PDB structures.
+
+See: http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
+"""
 
 COFACTOR_CODES: List[str] = [
     "ADP",
@@ -496,6 +576,11 @@ COFACTOR_CODES: List[str] = [
     "NAP",
     "NDP",
 ]
+"""
+Three letter codes of cofactors commonly found in PDB structures.
+
+See: http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
+"""
 
 COFACTOR_CODE_NAME_MAPPING: Dict[str, str] = {
     "ADP": "ADP",
@@ -508,6 +593,11 @@ COFACTOR_CODE_NAME_MAPPING: Dict[str, str] = {
     "NAP": "NADP",
     "NDP": "NADPH",
 }
+"""
+Mapping between 3-letter PDB ligand codes and cofactor names.
+
+See http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
+"""
 
 CARBOHYDRATE_NAMES: List[str] = [
     "D-GLUCOSE",
@@ -519,6 +609,11 @@ CARBOHYDRATE_NAMES: List[str] = [
     "O-SIALIC_ACID",
     "D-XYLOPYRANOSE",
 ]
+"""
+Names of commonly found carbohydrates in protein structures.
+
+See http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
+"""
 
 CARBOHYDRATE_CODES: List[str] = [
     "BGC",
@@ -533,6 +628,11 @@ CARBOHYDRATE_CODES: List[str] = [
     "SIA",
     "XYS",
 ]
+"""
+Three letter codes of commonly found carbohydrates in protein structures.
+
+See http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
+"""
 
 CARBOHYDRATE_CODE_NAME_MAPPING: Dict[str, str] = {
     "BGC": "D-GLUCOSE",
@@ -547,6 +647,11 @@ CARBOHYDRATE_CODE_NAME_MAPPING: Dict[str, str] = {
     "SIA": "O-SIALIC_ACID",
     "XYS": "D-XYLOPYRANOSE",
 }
+"""
+Mapping of 3-letter PDB ligand accession codes for common carbohydrates to their full names.
+
+See http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
+"""
 
 HYDROPHOBIC_RESIS: List[str] = [
     "ALA",
@@ -559,32 +664,47 @@ HYDROPHOBIC_RESIS: List[str] = [
     "PRO",
     "TYR",
 ]
+"""List of residues that are considered to be hydrophobic."""
 
 DISULFIDE_RESIS: List[str] = ["CYS"]
+"""Residues capable of forming disulfide bonds."""
 
 DISULFIDE_ATOMS: List[str] = ["SG"]
+"""List of atoms capable of forming disulphide bonds."""
 
 IONIC_RESIS: List[str] = ["ARG", "LYS", "HIS", "ASP", "GLU"]
+"""Residues capable of forming ionic interactions."""
 
 POS_AA: List[str] = ["HIS", "LYS", "ARG"]
+"""Positively charged amino acids."""
 
 NEG_AA: List[str] = ["GLU", "ASP"]
+"""Negatively charged amino acids."""
 
-AA_RING_ATOMS: Dict[str, List[str]] = dict()
-AA_RING_ATOMS["PHE"] = ["CG", "CD", "CE", "CZ"]
-AA_RING_ATOMS["TRP"] = ["CD", "CE", "CH", "CZ"]
-AA_RING_ATOMS["HIS"] = ["CG", "CD", "CE", "ND", "NE"]
-AA_RING_ATOMS["TYR"] = ["CG", "CD", "CE", "CZ"]
+AA_RING_ATOMS: Dict[str, List[str]] = {
+    "PHE": ["CG", "CD", "CE", "CZ"],
+    "TRP": ["CD", "CE", "CH", "CZ"],
+    "HIS": ["CG", "CD", "CE", "ND", "NE"],
+    "TYR": ["CG", "CD", "CE", "CZ"],
+}
+"""
+Dictionary mapping amino acid 3-letter codes to lists of atoms that are part of rings.
+"""
 
 AROMATIC_RESIS: List[str] = ["PHE", "TRP", "HIS", "TYR"]
+"""List of aromatic residues."""
 
 CATION_PI_RESIS: List[str] = ["LYS", "ARG", "PHE", "TYR", "TRP"]
+"""List of residues involved in cation-pi interactions."""
 
 CATION_RESIS: List[str] = ["LYS", "ARG"]
+"""List of cationic residues."""
 
 PI_RESIS: List[str] = ["PHE", "TYR", "TRP"]
+"""List of residues involved in pi interactions."""
 
 SULPHUR_RESIS: List[str] = ["MET", "CYS"]
+"""Residues containing sulphur atoms."""
 
 ISOELECTRIC_POINTS: Dict[str, float] = {
     "ALA": 6.11,
@@ -611,13 +731,24 @@ ISOELECTRIC_POINTS: Dict[str, float] = {
     "ASX": 6.87,  # the average of D and N
     "GLX": 4.35,  # the average of E and Q
 }
+"""
+Dictionary of isoelectric points for standard amino acids. For ``"UNK"`` residues, neutral (pH 7.0) is assigned.
+For ``"ASX"`` and ``"GLX"`` the average of their constituents (``"D"`` and ``"N"``, and ``"E"`` and ``"Q"``, respectively) is assigned.
+"""
 
 scaler = StandardScaler()
-scaler.fit(np.array([v for v in ISOELECTRIC_POINTS.values()]).reshape(-1, 1))
 
-ISOELECTRIC_POINTS_STD = dict()
-for k, v in ISOELECTRIC_POINTS.items():
-    ISOELECTRIC_POINTS_STD[k] = scaler.transform(np.array([v]).reshape(-1, 1))
+scaler.fit(np.array(list(ISOELECTRIC_POINTS.values())).reshape(-1, 1))
+
+ISOELECTRIC_POINTS_STD = {
+    k: scaler.transform(np.array([v]).reshape(-1, 1))
+    for k, v in ISOELECTRIC_POINTS.items()
+}
+"""
+Standardized (sklearn.StandardScaler) isoelectric points for standard amino acids.
+
+See :const:`~graphein.protein.resi_atoms.ISOELECTRIC_POINTS` for details.
+"""
 
 MOLECULAR_WEIGHTS: Dict[str, float] = {
     "ALA": 89.0935,
@@ -644,21 +775,22 @@ MOLECULAR_WEIGHTS: Dict[str, float] = {
     "ASX": 132.6108,  # the average of D and N
     "GLX": 146.6375,  # the average of E and Q
 }
+"""Mapping of 3-letter amino acid names to molecular weights. 
+``UNK`` is used for unknown residues and takes the mean of known weights.
+For ``"ASX"`` and ``"GLX"`` the average of their constituents (``"D"`` and ``"N"``, and ``"E"`` and ``"Q"``, respectively) is assigned.
+"""
 
-MOLECULAR_WEIGHTS_STD = dict()
+scaler.fit(np.array(list(MOLECULAR_WEIGHTS.values())).reshape(-1, 1))
+MOLECULAR_WEIGHTS_STD = {
+    k: scaler.transform(np.array([v]).reshape(-1, 1))
+    for k, v in MOLECULAR_WEIGHTS.items()
+}
+"""
+Standardized (sklearn.StandardScaler) molecular weights for standard amino acids. 
 
-scaler.fit(np.array([v for v in MOLECULAR_WEIGHTS.values()]).reshape(-1, 1))
-MOLECULAR_WEIGHTS_STD = dict()
-for k, v in MOLECULAR_WEIGHTS.items():
-    MOLECULAR_WEIGHTS_STD[k] = scaler.transform(np.array([v]).reshape(-1, 1))
+See :const:`~graphein.protein.resi_atoms.MOLECULAR_WEIGHTS` for details.
+"""
 
-# Grantham Chemical Distance Matrix. Taken from ProPy3.
-# Amino Acid Difference Formula to Help Explain Protein Evolution
-# R. Grantham
-# Science
-# Vol 185, Issue 4154
-# 06 September 1974
-# Paper: https://science.sciencemag.org/content/185/4154/862/tab-pdf
 GRANTHAM_CHEMICAL_DISTANCE_MATRIX: Dict[str, float] = {
     "AA": 0.0,
     "AC": 0.112,
@@ -1061,14 +1193,17 @@ GRANTHAM_CHEMICAL_DISTANCE_MATRIX: Dict[str, float] = {
     "YW": 0.244,
     "YY": 0.0,
 }
+"""
+Grantham Chemical Distance Matrix. Taken from ProPy3 https://github.com/MartinThoma/propy3
 
+    Amino Acid Difference Formula to Help Explain Protein Evolution
+    R. Grantham
+    Science
+    Vol 185, Issue 4154
+    06 September 1974
 
-# Scheider-Wrede Physicochemical Distance Matrix taken from ProPy3.
-# Paper: The rational design of amino acid sequences by artificial neural networks and simulated molecular evolution:
-# de novo design of an idealized leader peptidase cleavage site
-# Biophysical Journal
-# Volume 66, Issue 2, Part 1, February 1994, Pages 335-344
-# G.Schneider, P.Wrede
+Paper: https://science.sciencemag.org/content/185/4154/862/tab-pdf
+"""
 
 SCHNEIDER_WREDE_DISTMAT: Dict[str, float] = {
     "GW": 0.923,
@@ -1472,9 +1607,18 @@ SCHNEIDER_WREDE_DISTMAT: Dict[str, float] = {
     "AY": 0.552,
     "VK": 0.889,
 }
+"""
+Scheider-Wrede Physicochemical Distance Matrix taken from ProPy3 https://github.com/MartinThoma/propy3.
 
-# Maximum numer of neighbours an atom can have.
-# Taken from: https://www.daylight.com/meetings/mug01/Sayle/m4xbondage.html
+**Paper**
+
+    The rational design of amino acid sequences by artificial neural networks and simulated molecular evolution: de novo design of an idealized leader peptidase cleavage site
+    Biophysical Journal
+    Volume 66, Issue 2, Part 1, February 1994, Pages 335-344
+    G.Schneider, P.Wrede
+"""
+
+
 MAX_NEIGHBOURS: Dict[str, int] = {
     "C": 4,
     "H": 1,
@@ -1484,14 +1628,11 @@ MAX_NEIGHBOURS: Dict[str, int] = {
     "Br": 1,
     "I": 3,
 }
+"""
+Maximum number of neighbours an atom can have.
 
-# Covalent radii for OpenSCAD output.
-
-# Covalent radii from Heyrovska, Raji : 'Atomic Structures of all the Twenty
-# Essential Amino Acids and a Tripeptide, with Bond Lengths as Sums of Atomic
-# Covalent Radii' <https://arxiv.org/pdf/0804.2488.pdf>
-# Adding Ores between Osb and Odb for Asp and Glu, Nres between Nsb and Ndb
-# for Arg, as PDB does not specify
+Taken from: https://www.daylight.com/meetings/mug01/Sayle/m4xbondage.html
+"""
 
 COVALENT_RADII: Dict[str, float] = {
     "Csb": 0.77,
@@ -1506,8 +1647,17 @@ COVALENT_RADII: Dict[str, float] = {
     "Hsb": 0.37,
     "Ssb": 1.04,
 }
+"""
+Covalent radii for OpenSCAD output.
+Adding ``Ores`` between ``Osb`` and ``Odb`` for ``Asp`` and ``Glu``, ``Nres`` between ``Nsb`` and ``Ndb`` for ``Arg``, as PDB does not specify
 
-# Atom classes based on Heyrovska, Raji covalent radii paper.
+Covalent radii from:
+
+    Heyrovska, Raji : 'Atomic Structures of all the Twenty Essential Amino Acids and a Tripeptide, with Bond Lengths as Sums of Atomic Covalent Radii'
+
+Paper: https://arxiv.org/pdf/0804.2488.pdf
+"""
+
 DEFAULT_BOND_STATE: Dict[str, str] = {
     "N": "Nsb",
     "CA": "Csb",
@@ -1532,6 +1682,14 @@ DEFAULT_BOND_STATE: Dict[str, str] = {
     "HZ2": "Hsb",
     "HZ3": "Hsb",
 }
+"""Assignment of atom classes to atomic radii.
+
+Covalent radii from:
+
+    Heyrovska, Raji : 'Atomic Structures of all the Twenty Essential Amino Acids and a Tripeptide, with Bond Lengths as Sums of Atomic Covalent Radii'
+
+Paper: https://arxiv.org/pdf/0804.2488.pdf
+"""
 
 RESIDUE_ATOM_BOND_STATE: Dict[str, Dict[str, str]] = {
     "XXX": {
@@ -1600,12 +1758,15 @@ RESIDUE_ATOM_BOND_STATE: Dict[str, Dict[str, str]] = {
         "NH2": "Nres",
     },
 }
+"""Assignment of consituent atom classes with each standard residue to atomic radii.
 
-# Contains idealised single, double and triple bond lengths (i_s, i_d, i_t) and watersheds (w_sd, w_dt),
-# below which a bond is probably double/triple (e.g. triple < double < single)
-# Taken from: Automatic Assignment of Chemical Connectivity to Organic Molecules in the Cambridge Structural Database
-# Jon C. Baber and Edward E. Hodgkin*
-# J. Chem. Inf. Comput. Sci. 1992, 32. 401-406
+Covalent radii from:
+
+    Heyrovska, Raji : 'Atomic Structures of all the Twenty Essential Amino Acids and a Tripeptide, with Bond Lengths as Sums of Atomic Covalent Radii'
+
+Paper: https://arxiv.org/pdf/0804.2488.pdf
+"""
+
 BOND_LENGTHS: Dict[str, Dict[str, float]] = {
     "As-N": {"i_s": 1.86, "i_d": 1.835, "w_sd": 1.845},
     "As-O": {"i_s": 1.71, "i_d": 1.66, "w_sd": 1.68},
@@ -1674,6 +1835,15 @@ BOND_LENGTHS: Dict[str, Dict[str, float]] = {
         "w_sd": 2.06,
     },
 }
+"""Dictionary containing idealised single, double and triple bond lengths (``i_s``, ``i_d``, ``i_t``) and watersheds (``w_sd``, ``w_dt``),
+below which a bond is probably double/triple (e.g. ``triple`` < ``double`` < ``single``). All lengths are in Angstroms.
+
+Taken from:
+
+    Automatic Assignment of Chemical Connectivity to Organic Molecules in the Cambridge Structural Database
+    Jon C. Baber and Edward E. Hodgkin*
+    J. Chem. Inf. Comput. Sci. 1992, 32. 401-406
+"""
 
 BOND_ORDERS: Dict = {
     "As-N": [1, 2],
@@ -1693,3 +1863,12 @@ BOND_ORDERS: Dict = {
     "O-S": [1, 2],
     "P-P": [1, 2],
 }
+"""
+Dictionary of allowable bond orders for each covalent bond type.
+
+Taken from:
+
+    Automatic Assignment of Chemical Connectivity to Organic Molecules in the Cambridge Structural Database
+    Jon C. Baber and Edward E. Hodgkin*
+    J. Chem. Inf. Comput. Sci. 1992, 32. 401-406
+"""

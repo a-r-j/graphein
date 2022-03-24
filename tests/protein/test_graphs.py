@@ -272,3 +272,31 @@ def test_sequence_features():
         # assert f"esm_embedding_{chain}" in G.graph
         assert f"biovec_embedding_{chain}" in G.graph
         assert f"molecular_weight_{chain}" in G.graph
+
+
+def test_insertion_handling():
+    configs = {
+        "granularity": "CA",
+        "keep_hets": False,
+        "insertions": False,
+        "verbose": False,
+        "node_metadata_functions": [meiler_embedding, expasy_protein_scale],
+        "edge_construction_functions": [
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+            add_ionic_interactions,
+            add_aromatic_sulphur_interactions,
+            add_hydrophobic_interactions,
+            add_cation_pi_interactions,
+        ],
+    }
+
+    config = ProteinGraphConfig(**configs)
+
+    # This is a nasty PDB with a lot of insertions and altlocs
+    g = construct_graph(config=config, pdb_code="6OGE")
+
+    assert len(g.graph["sequence_A"]) + len(g.graph["sequence_B"]) + len(
+        g.graph["sequence_C"]
+    ) + len(g.graph["sequence_D"]) + len(g.graph["sequence_E"]) == len(g)
+    assert g.graph["coords"].shape[0] == len(g)

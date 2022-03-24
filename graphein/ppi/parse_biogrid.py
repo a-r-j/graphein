@@ -1,4 +1,4 @@
-"""Functions for making and parsing API calls to BIOGRID"""
+"""Functions for making and parsing API calls to BIOGRID."""
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
@@ -19,10 +19,14 @@ def params_BIOGRID(
 ) -> Dict[str, Union[str, int]]:
     """
     Updates default parameters with user parameters for the method "interactions" of the BIOGRID API REST.
+
     See also https://wiki.thebiogrid.org/doku.php/biogridrest
     :param params: Dictionary of default parameters
+    :type params: Dict[str, Union[str, int, List[str], List[int]]]
     :param kwargs: User parameters for the method "network" of the BIOGRID API REST. The key must start with "BIOGRID"
+    :type kwargs: Dict[str, Union[str, int, List[str], List[int]]]
     :return: Dictionary of parameters
+    :rtype: Dict[str, Union[str, int]]
     """
     fields = [
         "searchNames",  # If ‘true’, the interactor OFFICIAL_SYMBOL will be examined for a match
@@ -79,15 +83,21 @@ def parse_BIOGRID(
 ) -> pd.DataFrame:
     """
     Makes BIOGRID API call and returns a source specific Pandas dataframe.
+
     See also [1] BIOGRID: https://wiki.thebiogrid.org/doku.php/biogridrest
     :param protein_list: Proteins to include in the graph
+    :type protein_list: List[str]
     :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism. Default is 9606 (Homo Sapiens)
+    :type ncbi_taxon_id: Union[int, str, List[int], List[str]]
     :param paginate: boolean indicating whether to paginate the calls (for BIOGRID, the maximum number of rows per
-                     call is 10000). Defaults to True
+        call is 10000). Defaults to True
+    :type paginate: bool
     :param kwargs: Parameters of the "interactions" method of the BIOGRID API REST, used to select the results.
-                   The parameter names are of the form BIOGRID_<param>, where <param> is the name of the parameter.
-                   Information about these parameters can be found at [1].
+        The parameter names are of the form BIOGRID_<param>, where <param> is the name of the parameter.
+        Information about these parameters can be found at [1].
+    :type kwargs: Dict[str, Union[str, int, List[str], List[int]]]
     :return: Source specific Pandas dataframe.
+    :rtype: pd.DataFrame
     """
     # Prepare call to BIOGRID API
     biogrid_api_url = "https://webservice.thebiogrid.org"
@@ -117,13 +127,20 @@ def parse_BIOGRID(
         paginate: bool = paginate,
     ) -> pd.DataFrame:
         """
-        Makes call to BIOGRID API
+        Makes call to BIOGRID API.
+
         :param request_url: BIOGRID URL to make request
+        :type request_url: str
         :param params: BIOGRID API parameters to use
+        :type params: Dict[str, Union[str, int]]
         :param start: index in gene list to start from
+        :type start: int
         :param max: number of genes to use in API call. Results are limited to 10k per call
+        :type max: int
         :param paginate: bool indicating whether or not to paginate calls. Above 10k calls this is required
+        :type paginate: bool
         :return: pd.DataFrame containing BIOGRID_df API call output
+        :rtype: pd.DataFrame
         """
         params["start"] = start
         response = requests.post(request_url, data=params)
@@ -144,10 +161,14 @@ def parse_BIOGRID(
 def filter_BIOGRID(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
     """
     Filters results of the BIOGRID API call according to user kwargs.
+
     :param df: Source specific Pandas dataframe (BIOGRID) with results of the API call
+    :type df: pd.DataFrame
     :param kwargs: User thresholds used to filter the results. The parameter names are of the form BIOGRID_<param>,
-                   where <param> is the name of the parameter. All the parameters are numerical values.
+        where <param> is the name of the parameter. All the parameters are numerical values.
+    :type kwargs: Dict[str, Union[str, int, List[str], List[int]]]
     :return: Source specific Pandas dataframe with filtered results
+    :rtype: pd.DataFrame
     """
     # Note: To filter BIOGRID interactions, use parameters from https://wiki.thebiogrid.org/doku.php/biogridrest
     # TODO: Make sure that user can filter results of API call via the parameters.
@@ -159,9 +180,12 @@ def filter_BIOGRID(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
 
 def standardise_BIOGRID(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Standardises BIOGRID dataframe, e.g. puts everything into a common format
+    Standardises BIOGRID dataframe, e.g. puts everything into a common format.
+
     :param df: Source specific Pandas dataframe
+    :type df: pd.DataFrame
     :return: Standardised dataframe
+    :rtpe: pd.DataFrame
     """
     if df.empty:
         return pd.DataFrame({"p1": [], "p2": [], "source": []})
@@ -184,11 +208,16 @@ def BIOGRID_df(
     **kwargs,
 ) -> pd.DataFrame:
     """
-    Generates standardised dataframe with BIOGRID protein-protein interactions, filtered according to user's input
+    Generates standardised dataframe with BIOGRID protein-protein interactions, filtered according to user's input.
+
     :protein_list: List of proteins (official symbol) that will be included in the PPI graph
+    :type protein_list: List[str]
     :ncbi_taxon_id: NCBI taxonomy identifiers for the organism. 9606 corresponds to Homo Sapiens
+    :type ncbi_taxon_id: int
     :param kwargs:  Additional parameters to pass to BIOGRID API calls
+    :type kwargs: Union[int, str, List[int], List[str]]
     :return: Standardised dataframe with BIOGRID interactions
+    :rtype: pd.DataFrame
     """
     df = parse_BIOGRID(
         protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs

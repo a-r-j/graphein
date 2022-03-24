@@ -1,15 +1,21 @@
-"""Functions for working with RNA Secondary Structure Graphs"""
+"""Functions for working with RNA Secondary Structure Graphs."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Emmanuele Rossi, Eric Ma
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+# This submodule is heavily inspired by: https://github.com/emalgorithm/rna-design/blob/aec77a18abe4850958d6736ec185a6f8cbfdf20c/src/util.py#L9
 import logging
 from typing import Callable, Dict, List, Optional
 
 import networkx as nx
 
+from graphein.rna.constants import (
+    RNA_BASE_COLORS,
+    RNA_BASES,
+    SUPPORTED_DOTBRACKET_NOTATION,
+)
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
@@ -19,51 +25,13 @@ from graphein.utils.utils import (
 
 log = logging.getLogger(__name__)
 
-RNA_BASES: List[str] = ["A", "U", "G", "C", "I"]
-
-RNA_BASE_COLORS: Dict[str, str] = {
-    "A": "r",
-    "U": "b",
-    "G": "g",
-    "C": "y",
-    "I": "m",
-}
-
-CANONICAL_BASE_PAIRINGS: Dict[str, str] = {
-    "A": ["U"],
-    "U": ["A"],
-    "G": ["C"],
-    "C": ["G"],
-}
-
-WOBBLE_BASE_PAIRINGS: Dict[str, str] = {
-    "A": ["I"],
-    "U": ["G", "I"],
-    "G": ["U"],
-    "C": ["I"],
-    "I": ["A", "C", "U"],
-}
-
-VALID_BASE_PAIRINGS = {
-    key: CANONICAL_BASE_PAIRINGS.get(key, [])
-    + WOBBLE_BASE_PAIRINGS.get(key, [])
-    for key in set(
-        list(CANONICAL_BASE_PAIRINGS.keys())
-        + list(WOBBLE_BASE_PAIRINGS.keys())
-    )
-}
-
-SIMPLE_DOTBRACKET_NOTATION = ["(", ".", ")"]
-SUPPORTED_PSEUDOKNOT_NOTATION = ["[", "]", "{", "}", "<", ">"]
-SUPPORTED_DOTBRACKET_NOTATION = (
-    SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION
-)
-
 
 def validate_rna_sequence(s: str) -> None:
     """
-    Validate RNA sequence. This ensures that it only containts supported bases. Supported bases are: "A", "U", "G", "C", "I".
-    Supported bases can be accessed in graphein.rna.graphs.RNA_BASES
+    Validate RNA sequence. This ensures that it only containts supported bases.
+
+    Supported bases are: ``"A", "U", "G", "C", "I"``
+    Supported bases can be accessed in :const:`~graphein.rna.constants.RNA_BASES`
 
     :param s: Sequence to validate
     :type s: str
@@ -80,7 +48,7 @@ def validate_rna_sequence(s: str) -> None:
 
 def validate_lengths(db: str, seq: str) -> None:
     """
-    Check lengths of dotbracket and sequence match
+    Check lengths of dotbracket and sequence match.
 
     :param db: Dotbracket string to check
     :type db: str
@@ -94,16 +62,13 @@ def validate_lengths(db: str, seq: str) -> None:
         )
 
 
-def validate_dotbracket(db: str) -> str:
+def validate_dotbracket(db: str):
     """
     Sanitize dotbracket string. This ensures that it only has supported symbols.
-    SIMPLE_DOTBRACKET_NOTATION = ["(", ".", ")"]
-    SUPPORTED_PSEUDOKNOT_NOTATION = ["[", "]", "{", "}", "<", ">"]
-    SUPPORTED_DOTBRACKET_NOTATION = (
-        SIMPLE_DOTBRACKET_NOTATION + SUPPORTED_PSEUDOKNOT_NOTATION
-    )
 
-    :param db: Dotbrack notation string
+    See: :const:`~graphein.rna.constants.SUPPORTED_DOTBRACKET_NOTATION`
+
+    :param db: Dotbracket notation string
     :type db: str
     :raises ValueError: Raises ValueError if dotbracket notation contains unsupported symbols
     """
@@ -125,19 +90,19 @@ def construct_rna_graph(
     graph_annotation_funcs: Optional[List[Callable]] = None,
 ) -> nx.Graph:
     """
-    Constructs an RNA secondary structure graph from dotbracket notation
+    Constructs an RNA secondary structure graph from dotbracket notation.
 
     :param dotbracket: Dotbracket notation representation of secondary structure
     :type dotbracket: str, optional
     :param sequence: Corresponding sequence RNA bases
     :type sequence: str, optional
-    :param edge_construction_funcs: List of edge construction functions. Defaults to None.
+    :param edge_construction_funcs: List of edge construction functions. Defaults to ``None``.
     :type edge_construction_funcs: List[Callable], optional
-    :param edge_annotation_funcs: List of edge metadata annotation functions. Defaults to None.
+    :param edge_annotation_funcs: List of edge metadata annotation functions. Defaults to ``None``.
     :type edge_annotation_funcs: List[Callable], optional
-    :param node_annotation_funcs: List of node metadata annotation functions. Defaults to None.
+    :param node_annotation_funcs: List of node metadata annotation functions. Defaults to ``None``.
     :type node_annotation_funcs: List[Callable], optional
-    :param graph_annotation_funcs: List of graph metadata annotation functions. Defaults to None
+    :param graph_annotation_funcs: List of graph metadata annotation functions. Defaults to ``None``.
     :type graph_annotation_funcs: List[Callable], optional
     :return: nx.Graph of RNA secondary structure
     :rtype: nx.Graph
@@ -213,27 +178,11 @@ if __name__ == "__main__":
     ]
     edge_funcs_2 = [add_all_dotbracket_edges]
 
-    # g = construct_rna_graph(
-    #    "((((....))))..(())",
-    #    "AUGAUGAUGAUGCICIAU",
-    #    edge_construction_funcs=edge_funcs_1,
-    # )
-
     g = construct_rna_graph(
         "......((((((......[[[))))))......]]]....",
         sequence=None,
         edge_construction_funcs=edge_funcs_1,
     )
-
-    """
-    h = construct_rna_graph(
-        "((((....))))..(())",
-        "AUGAUGAUGAUGCICIAU",
-        edge_construction_funcs=edge_funcs_2,
-    )
-    """
-
-    # assert g.edges() == h.edges()
 
     nx.info(g)
 

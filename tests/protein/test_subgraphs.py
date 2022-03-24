@@ -6,17 +6,19 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 from pathlib import Path
+from typing import List
 
 import networkx as nx
 import numpy as np
 import pytest
 from sklearn import neighbors
 
-from graphein.protein.config import ProteinGraphConfig
+from graphein.protein.config import DSSPConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (
     add_ionic_interactions,
     add_peptide_bonds,
 )
+from graphein.protein.features.nodes import rsa, secondary_structure
 from graphein.protein.graphs import construct_graph
 from graphein.protein.subgraphs import (
     extract_k_hop_subgraph,
@@ -28,6 +30,8 @@ from graphein.protein.subgraphs import (
     extract_subgraph_from_node_list,
     extract_subgraph_from_point,
     extract_subgraph_from_residue_types,
+    extract_subgraph_from_secondary_structure,
+    extract_surface_subgraph,
 )
 
 
@@ -309,6 +313,47 @@ def test_extract_k_hop_subgraph():
 
     for n in list(G.neighbors(CENTRAL_NODE)):
         assert n in s_g.nodes()
+
+
+def test_surface_subgraph():
+    """Tests surface subgraph extraction."""
+    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    config = ProteinGraphConfig(
+        graph_metadata_functions=[rsa], dssp_config=DSSPConfig()
+    )
+    G = construct_graph(pdb_path=str(file_path), config=config)
+
+    RSA_THRESHOLD: float = 0.2
+    s_g = extract_surface_subgraph(G, RSA_THRESHOLD, filter_dataframe=True)
+
+    for n, d in s_g.nodes(data=True):
+        assert d["rsa"] >= RSA_THRESHOLD
+
+    for n, d in G.nodes(data=True):
+        if d["rsa"] >= RSA_THRESHOLD:
+            assert n in s_g.nodes(), print(n, d)
+
+
+def test_secondary_structure_subgraph():
+    """Tests secondary subgraph extraction."""
+    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    config = ProteinGraphConfig(
+        graph_metadata_functions=[secondary_structure],
+        dssp_config=DSSPConfig(),
+    )
+    G = construct_graph(pdb_path=str(file_path), config=config)
+
+    SS_ELEMENTS: List[str] = ["H"]
+    s_g = extract_subgraph_from_secondary_structure(
+        G, SS_ELEMENTS, filter_dataframe=True
+    )
+
+    for _, d in s_g.nodes(data=True):
+        assert d["ss"] in SS_ELEMENTS
+
+    for n, d in G.nodes(data=True):
+        if d["ss"] in SS_ELEMENTS:
+            assert n in s_g.nodes()
 
 
 if __name__ == "__main__":

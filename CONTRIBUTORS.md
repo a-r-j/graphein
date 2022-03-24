@@ -1,4 +1,4 @@
-# Contributing to Graphein
+## Contributing to Graphein
 
 Contribution is always welcomed. A good starting place is the roadmap issue, where you can find our current milestones. All contributions must go through pull requests and be reviewed by the committers. See our contribution guide for more details.
 
@@ -21,3 +21,5 @@ Kexin Huang: [@kexinhuang12345](https://github.com/kexinhuang12345)
 Sean Aubin: [@Seanny123](https://github.com/Seanny123)
 
 Ryan Greenhalgh: [@rg314](https://github.com/rg314)
+
+Rico Meinl: [@ricomnl](https://github.com/ricomnl)

@@ -3,8 +3,7 @@
 ![supported python versions](https://img.shields.io/pypi/pyversions/graphein)
 [![Docs](https://assets.readthedocs.org/static/projects/badges/passing-flat.svg)](http://www.graphein.ai)
 [![DOI:10.1101/2020.07.15.204701](https://zenodo.org/badge/DOI/10.1101/2020.07.15.204701.svg)](https://doi.org/10.1101/2020.07.15.204701)
-[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-<a href="https://github.com/badges/shields/pulse" alt="Activity">
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![CodeFactor](https://www.codefactor.io/repository/github/a-r-j/graphein/badge)](https://www.codefactor.io/repository/github/a-r-j/graphein)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=alert_status)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=bugs)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
@@ -13,7 +12,7 @@
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
-[![banner](docs/source/_static/graphein.png)](http://www.graphein.ai)
+[![banner](https://github.com/a-r-j/graphein/blob/master/imgs/graphein.png?raw=true)](http://www.graphein.ai)
 
 <br></br>
 
@@ -25,17 +24,37 @@ This package provides functionality for producing geometric representations of p
 
 ## What's New?
 
-* [Protein Graph Creation from AlphaFold2!](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html)
-* [Protein Graph Visualisation!](http://graphein.ai/notebooks/protein_mesh_tutorial.html)
-* [RNA Graph Construction from Dotbracket notation](http://graphein.ai/modules/graphein.rna.html)
-* [Protein - Protein Interaction Network Support & Structural Interactomics (Using AlphaFold2!)](http://graphein.ai/notebooks/ppi_tutorial.html)
-* [High and Low-level API for massive flexibility - create your own bespoke workflows!](http://graphein.ai/notebooks/residue_graphs.html)
+|   |   |
+|---|---|
+| [Extracting subgraphs from protein graphs](http://graphein.ai/notebooks/subgraphing_tutorial.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/subgraphing_tutorial.ipynb)   |
+| [Protein Graph Analytics](http://graphein.ai/notebooks/protein_graph_analytics.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/protein_graph_analytics.ipynb) |
+| [Graphein CLI](http://graphein.ai/getting_started/usage.html)  |   |
+| [Protein Graph Creation from AlphaFold2!](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) |
+| [Protein Graph Visualisation!](http://graphein.ai/notebooks/interactive_plotly_example.html) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/interactive_plotly_example.ipynb)
+| [RNA Graph Construction from Dotbracket notation](http://graphein.ai/modules/graphein.rna.html) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/rna_graph_tutorial.ipynb) |
+| [Protein - Protein Interaction Network Support & Structural Interactomics (Using AlphaFold2!)](http://graphein.ai/notebooks/ppi_tutorial.html) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/ppi_graph.ipynb) |
+| [High and Low-level API for massive flexibility - create your own bespoke workflows!](http://graphein.ai/notebooks/residue_graphs.html) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) |
 
 ## Example usage
 
+Graphein provides both a programmatic API and a command-line interface for constructing graphs.
+
+### CLI
+
+Graphein configs can be specified as `.yaml` files to batch process graphs from the commandline.
+
+[Docs](http://graphein.ai/getting_started/usage.html)
+
+```bash
+graphein -c config.yaml -p path/to/pdbs -o path/to/output
+```
+
 ### Creating a Protein Graph
 
-[Tutorial (Residue-level)](http://graphein.ai/notebooks/residue_graphs.html) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) | [Tutorial - Atomic](http://graphein.ai/notebooks/atom_graph_tutorial.html) [![Open In Colab(https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/atom_graph_tutorial.ipynb) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
+|   |   |   |
+|---|---|---|
+[Tutorial (Residue-level)](http://graphein.ai/notebooks/residue_graphs.html) | [Tutorial (Atomic)](http://graphein.ai/notebooks/atom_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) | [![Open In Colab(https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/atom_graph_tutorial.ipynb) | |
 
 ```python
 from graphein.protein.config import ProteinGraphConfig
@@ -47,7 +66,10 @@ g = construct_graph(config=config, pdb_code="3eiy")
 
 ### Creating a Protein Graph from the AlphaFold Protein Structure Database
 
- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) [Tutorial](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
+|   |   |
+|---|---|
+| [Tutorial](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs) |
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb)|
 
 ```python
 from graphein.protein.config import ProteinGraphConfig
@@ -61,7 +83,10 @@ g = construct_graph(config=config, pdb_path=fp)
 
 ### Creating a Protein Mesh
 
-[Tutorial](http://graphein.ai/notebooks/protein_mesh_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.meshes)
+|   |   |
+|---|---|
+| [Tutorial](http://graphein.ai/notebooks/protein_mesh_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.meshes) |
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/protein_mesh_tutorial.ipynb) | |
 
 ```python
 from graphein.protein.config import ProteinMeshConfig
@@ -72,7 +97,10 @@ verts, faces, aux = create_mesh(pdb_code="3eiy", config=config)
 
 ### Creating an RNA Graph
 
-Tutorial | [Docs](http://graphein.ai/modules/graphein.rna.html)
+|   |   |
+|---|---|
+|[Tutorial](http://graphein.ai/notebooks/rna_notebooks.html) | [Docs](http://graphein.ai/modules/graphein.rna.html) |
+|[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/rna_graph_tutorial.ipynb) | |
 
 ```python
 from graphein.rna.graphs import construct_rna_graph
@@ -83,7 +111,10 @@ rna = construct_rna_graph(dotbracket='..(((((..(((...)))..)))))...',
 
 ### Creating a Protein-Protein Interaction Graph
 
-[Tutorial](http://graphein.ai/notebooks/ppi_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.ppi.html)
+|   |   |
+|---|---|
+| [Tutorial](http://graphein.ai/notebooks/ppi_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.ppi.html) |
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/ppi_graph.ipynb)|
 
 ```python
 from graphein.ppi.config import PPIGraphConfig
@@ -101,7 +132,10 @@ g = compute_ppi_graph(config=config,
 
 ### Creating a Gene Regulatory Network Graph
 
-[Tutorial](http://graphein.ai/notebooks/grn_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.grn.html)
+|   |   |
+|---|---|
+|[Tutorial](http://graphein.ai/notebooks/grn_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.grn.html) |
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/grn_tutorial.ipynb) |
 
 ```python
 from graphein.grn.config import GRNGraphConfig
@@ -124,7 +158,7 @@ g = compute_grn_graph(
 
 ### Pip
 
-The simplest install is via pip. *N.B this does not install ML/DL libraries which are required for conversion to their data formats and for generating protein structure meshes with PyTorch 3D.* [Further details]
+The simplest install is via pip. *N.B this does not install ML/DL libraries which are required for conversion to their data formats and for generating protein structure meshes with PyTorch 3D.* [Further details](http://graphein.ai//getting_started/installation.html)
 
 ```bash
 pip install graphein # For base install

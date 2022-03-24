@@ -1,4 +1,4 @@
-"""Functions for constructing a PPI PPIGraphConfig from STRINGdb and BIOGRID"""
+"""Functions for constructing a PPI PPIGraphConfig from STRINGdb and BIOGRID."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas
@@ -26,7 +26,7 @@ EDGE_COLOR_MAPPING = {"string": "r", "biogrid": "b"}
 
 def parse_kwargs_from_config(config: PPIGraphConfig) -> PPIGraphConfig:
     """
-    If configs for STRING and BIOGRID are provided in the Global PPIGraphConfig, we update the kwargs
+    If configs for STRING and BIOGRID are provided in the Global :ref:`~graphein.ppi.config.PPIGraphConfig`, we update the kwargs
 
     :param config: PPI graph configuration object.
     :type config: PPIGraphConfig
@@ -35,14 +35,16 @@ def parse_kwargs_from_config(config: PPIGraphConfig) -> PPIGraphConfig:
     """
     if config.string_config is not None:
         string_config_dict = {
-            "STRING_" + k: v for k, v in dict(config.string_config.items())
+            f"STRING_{k}": v for k, v in dict(config.string_config.items())
         }
+
         config.kwargs = config.kwargs.update(string_config_dict)
 
     if config.biogrid_config is not None:
         biogrid_config_dict = {
-            "BIOGRID_" + k: v for k, v in dict(config.biogrid_config.items())
+            f"BIOGRID_{k}": v for k, v in dict(config.biogrid_config.items())
         }
+
         config.kwargs = config.kwargs.update(biogrid_config_dict)
     return config
 
@@ -56,13 +58,13 @@ def compute_ppi_graph(
     config: Optional[PPIGraphConfig] = None,
 ) -> nx.Graph:
     """
-    Computes a PPI Graph from a list of protein IDs. This is the core function for
+    Computes a PPI Graph from a list of protein IDs. This is the core function for PPI graph construction.
 
     :param protein_list: List of protein identifiers
     :type protein_list: List[str]
     :param edge_construction_funcs:  List of functions to construct edges with
     :type edge_construction_funcs: List[Callable], optional
-    :param graph_annotation_funcs: List of functions functools annotate graph metadata
+    :param graph_annotation_funcs: List of functions to annotate graph metadata
     :type graph_annotation_funcs: List[Callable], optional
     :param node_annotation_funcs: List of functions to annotate node metadata
     :type node_annotation_funcs: List[Callable], optional
@@ -70,7 +72,7 @@ def compute_ppi_graph(
     :type edge_annotation_funcs: List[Callable], optional
     :param config: Config object specifying additional parameters for STRING and BIOGRID API calls
     :type config: PPIGraphConfig, optional
-    :return: nx.Graph of PPI network
+    :return: ``nx.Graph`` of PPI network
     :rtype: nx.Graph
     """
 

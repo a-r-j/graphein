@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import importlib.util
 import logging
+import os
+import time
 from typing import List, NamedTuple, Optional, Tuple
 
 from graphein.protein.config import ProteinMeshConfig
@@ -42,13 +44,15 @@ def configure_pymol_session(
     config: Optional[ProteinMeshConfig] = None,
 ):
     """
-    Configures a PyMol session based on config.parse_pymol_commands. Uses default parameters -"cKq".
+    Configures a PyMol session based on ``config.parse_pymol_commands``. Uses default parameters ``"-cKq"``.
+
     See: https://pymolwiki.org/index.php/Command_Line_Options
 
-    :param config: ProteinMeshConfig to use
+    :param config: :class:`~graphein.protein.config.ProteinMeshConfig` to use. Defaults to ``None`` which uses default config.
     :type config: graphein.protein.config.ProteinMeshConfig
     """
     pymol = MolViewer()
+    pymol.delete("all")  # delete all objects from other sessions if necessary.
 
     # If no config is provided, use default
     if config is None:
@@ -65,17 +69,18 @@ def get_obj_file(
     config: Optional[ProteinMeshConfig] = None,
 ) -> str:
     """
-    Runs PyMol to compute surface/mesh for a given protein
+    Runs PyMol to compute surface/mesh for a given protein.
 
-    :param pdb_file:  path to pdb_file to use
+    :param pdb_file:  path to ``pdb_file`` to use. Defaults to ``None``.
     :type pdb_file: str, optional
-    :param pdb_code: 4-letter pdb accession code
+    :param pdb_code: 4-letter pdb accession code. Defaults to ``None``.
     :type pdb_code: str, optional
-    :param out_dir: path to output. Defaults to /tmp/
+    :param out_dir: path to output. Defaults to ``None``.
     :type out_dir: str, optional
-    :param config: ProteinMeshConfig containing pymol commands to run. Default is "show surface"
+    :param config: :class:`~graphein.protein.config.ProteinMeshConfig` containing pymol commands to run. Default is ``None`` (``"show surface"``).
     :type config: graphein.protein.config.ProteinMeshConfig
-    :return: returns path to .obj file (str)
+    :raises: ValueError if both or neither ``pdb_file`` or ``pdb_code`` are provided.
+    :return: returns path to ``.obj`` file (str)
     :rtype: str
     """
     pymol = MolViewer()
@@ -99,7 +104,7 @@ def get_obj_file(
     pymol.load(pdb_file) if pdb_file else pymol.fetch(pdb_code)
     # Create file_name
     file_name = (
-        pdb_file[:-3] + "obj" if pdb_file else out_dir + pdb_code + ".obj"
+        f"{pdb_file[:-3]}obj" if pdb_file else out_dir + pdb_code + ".obj"
     )
 
     if config is None:
@@ -119,7 +124,7 @@ def parse_pymol_commands(config: ProteinMeshConfig) -> List[str]:
     """
     Parses pymol commands from config. At the moment users can only supply a list of string commands.
 
-    :param config: ProteinMeshConfig c
+    :param config: ProteinMeshConfig containing pymol commands to run in ``config.pymol_commands``.
     :type config: ProteinMeshConfig
     :return: list of pymol commands to run
     :rtype: List[str]
@@ -134,9 +139,9 @@ def parse_pymol_commands(config: ProteinMeshConfig) -> List[str]:
 
 def run_pymol_commands(commands: List[str]) -> None:
     """
-    Runs Pymol Commands
+    Runs Pymol Commands.
 
-    :param commands: List of commands to pass to PyMol
+    :param commands: List of commands to pass to PyMol.
     :type commands: List[str]
     """
     pymol = MolViewer()
@@ -153,17 +158,17 @@ def create_mesh(
     config: Optional[ProteinMeshConfig] = None,
 ) -> Tuple[torch.FloatTensor, NamedTuple, NamedTuple]:
     """
-    Creates a PyTorch 3D mesh from a pdb_file or pdb code.
+    Creates a ``PyTorch3D`` mesh from a ``pdb_file`` or ``pdb_code``.
 
-    :param pdb_file: path to pdb pdb_file. Defaults to None
+    :param pdb_file: path to ``pdb_file``. Defaults to ``None``.
     :type pdb_file: str, optional
     :param pdb_code: 4-letter PDB accession code. Defaults to None.
     :type pdb_code: str, optional
-    :param out_dir: output directory to store ".obj" file. Defaults to /tmp/
+    :param out_dir: output directory to store ``.obj`` file. Defaults to ``None``.
     :type out_dir: str, optional
-    :param config:  ProteinMeshConfig config to use. Defaults to default config in graphein.protein.config
+    :param config:  :class:`~graphein.protein.config.ProteinMeshConfig` config to use. Defaults to default config in ``graphein.protein.config``.
     :type config: graphein.protein.config.ProteinMeshConfig
-    :return: verts, faces, aux
+    :return: ``verts``, ``faces``, ``aux``.
     :rtype: Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
     """
     from pytorch3d.io import load_obj
@@ -174,6 +179,10 @@ def create_mesh(
     obj_file = get_obj_file(
         pdb_code=pdb_code, pdb_file=pdb_file, out_dir=out_dir, config=config
     )
+    # Wait for PyMol to finish
+    while os.path.isfile(obj_file) is False:
+        time.sleep(0.1)
+
     verts, faces, aux = load_obj(obj_file)
     return verts, faces, aux
 
@@ -182,13 +191,14 @@ def normalize_and_center_mesh_vertices(
     verts: torch.FloatTensor,
 ) -> torch.FloatTensor:
     """
-    We scale normalize and center the target mesh to fit in a sphere of radius 1 centered at (0,0,0).
-    (scale, center) will be used to bring the predicted mesh to its original center and scale
+    We scale normalize and center the target mesh to fit in a sphere of radius 1 centered at ``(0,0,0)``.
+
+    ``(scale, center)`` will be used to bring the predicted mesh to its original center and scale
     Note that normalizing the target mesh, speeds up the optimization but is not necessary!
 
-    :param verts: mesh vertices
+    :param verts: Mesh vertices.
     :type verts: torch.FloatTensor
-    :return: normalized and centered vertices
+    :return: Normalized and centered vertices.
     :rtype: torch.FloatTensor
     """
     center = verts.mean()
@@ -202,13 +212,13 @@ def convert_verts_and_face_to_mesh(
     verts: torch.FloatTensor, faces: NamedTuple
 ) -> Meshes:
     """
-    Converts vertices and faces into a pytorch3d.structures Meshes object.
+    Converts vertices and faces into a ``pytorch3d.structures`` Meshes object.
 
-    :param verts: vertices
+    :param verts: Vertices.
     :type verts: torch.FloatTensor
-    :param faces: faces
+    :param faces: Faces.
     :type faces: NamedTuple
-    :return: Meshes object
+    :return: Meshes object.
     :rtype: pytorch3d.structures.Meshes
     """
     faces_idx = faces.verts_idx

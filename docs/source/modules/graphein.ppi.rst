@@ -29,6 +29,12 @@ Node Features
 .. automodule:: graphein.ppi.features.node_features
     :members:
 
+
+Visualisation
+--------------
+.. automodule:: graphein.ppi.visualisation
+    :members:
+
 Database Parsers
 ----------------
 

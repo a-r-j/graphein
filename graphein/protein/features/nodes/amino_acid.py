@@ -8,10 +8,13 @@
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+
+from graphein.protein.resi_atoms import BASE_AMINO_ACIDS, RESI_THREE_TO_1
+from graphein.utils.utils import onek_encoding_unk
 
 log = logging.getLogger(__name__)
 
@@ -55,7 +58,11 @@ def load_meiler_embeddings() -> pd.DataFrame:
 
 
 def expasy_protein_scale(
-    n, d, selection: Optional[List[str]] = None, return_array: bool = False
+    n,
+    d,
+    selection: Optional[List[str]] = None,
+    add_separate: bool = False,
+    return_array: bool = False,
 ) -> Union[pd.Series, np.ndarray]:
     """
     Return amino acid features that come from the EXPASY protein scale.
@@ -66,6 +73,7 @@ def expasy_protein_scale(
     :param d: NetworkX node attributes.
     :param selection: List of columns to select. Viewable in graphein.protein.features.nodes.meiler_embeddings
     :type selection: List[str], optional
+    :param add_separate: Whether or not to add the expasy features as indvidual entries or as a series.
     :param return_array: Bool indicating whether or not to return a np.ndarray of the features. Default is pd.Series
     :type return_array: bool
     :returns: pd.Series of amino acid features
@@ -83,7 +91,11 @@ def expasy_protein_scale(
     if return_array:
         features = np.array(features)
 
-    d["expasy"] = features
+    if add_separate:
+        for k, v in features.to_dict().items():
+            d[k] = v
+    else:
+        d["expasy"] = features
 
     return features
 
@@ -114,4 +126,40 @@ def meiler_embedding(
 
     d["meiler"] = features
 
+    return features
+
+
+def amino_acid_one_hot(
+    n,
+    d: Dict[str, Any],
+    return_array: bool = True,
+    allowable_set: Optional[List[str]] = None,
+) -> Union[pd.Series, np.ndarray]:
+    """Adds a one-hot encoding of amino acid types as a node attribute.
+
+    :param n: node name, this is unused and only included for compatibility with the other functions
+    :type n: str
+    :param d: Node data
+    :type d: Dict[str, Any]
+    :param return_array: If True, returns a numpy array of one-hot encoding, otherwise returns a pd.Series. Default is True.
+    :type return_array: bool
+    :param allowable_set: Specifies vocabulary of amino acids. Default is None (which uses `graphein.protein.resi_atoms.STANDARD_AMINO_ACIDS`).
+    :return: One-hot encoding of amino acid types
+    :rtype: Union[pd.Series, np.ndarray]
+    """
+
+    if allowable_set is None:
+        allowable_set = BASE_AMINO_ACIDS
+
+    features = onek_encoding_unk(
+        RESI_THREE_TO_1[d["residue_name"]], allowable_set
+    )
+
+    if return_array:
+        features = np.array(features).astype(int)
+    else:
+        features = pd.Series(features).astype(int)
+        features.index = allowable_set
+
+    d["amino_acid_one_hot"] = features
     return features

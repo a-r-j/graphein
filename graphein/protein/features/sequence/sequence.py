@@ -13,7 +13,6 @@ from functools import partial
 import networkx as nx
 from Bio import SeqUtils
 from multipledispatch import dispatch
-from networkx import Graph
 
 from graphein.protein.features.sequence.utils import (
     aggregate_feature_over_chains,
@@ -34,7 +33,6 @@ def molecular_weight(protein: str, seq_type: str = "protein"):
 def molecular_weight(protein, seq_type: str = "protein"):
     func = partial(SeqUtils.molecular_weight, seq_type=seq_type)
 
-    G = compute_feature_over_chains(
+    return compute_feature_over_chains(
         protein, func, feature_name="molecular_weight"
     )
-    return G
