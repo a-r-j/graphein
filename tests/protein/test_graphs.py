@@ -300,3 +300,26 @@ def test_insertion_handling():
         g.graph["sequence_C"]
     ) + len(g.graph["sequence_D"]) + len(g.graph["sequence_E"]) == len(g)
     assert g.graph["coords"].shape[0] == len(g)
+
+
+def test_edges_do_not_add_nodes_for_chain_subset():
+    new_funcs = {
+        "edge_construction_functions": [
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+            add_disulfide_interactions,
+            add_ionic_interactions,
+            add_aromatic_interactions,
+            add_aromatic_sulphur_interactions,
+            add_cation_pi_interactions,
+        ],
+    }
+    config = ProteinGraphConfig(**new_funcs)
+    g = construct_graph(config=config, pdb_code="2vvi", chain_selection="A")
+    assert len(g) == 217
+    g = construct_graph(config=config, pdb_code="2vvi", chain_selection="B")
+    assert len(g) == 219
+    g = construct_graph(config=config, pdb_code="2vvi", chain_selection="C")
+    assert len(g) == 222
+    g = construct_graph(config=config, pdb_code="2vvi", chain_selection="D")
+    assert len(g) == 219
