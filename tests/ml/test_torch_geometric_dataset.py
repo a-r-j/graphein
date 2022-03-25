@@ -17,9 +17,9 @@ from graphein.ml import (
 try:
     import torch_geometric
 
-    PYG_AVAIL = TRUE
+    PYG_AVAIL = True
 except ImportError:
-    PYG_AVAIL = FALSE
+    PYG_AVAIL = False
 
 
 @pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
