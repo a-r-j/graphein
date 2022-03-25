@@ -15,16 +15,6 @@ import numpy as np
 
 from graphein.utils.utils import import_message
 
-try:
-    import torch
-except ImportError:
-    import_message(
-        submodule="graphein.testing.utils",
-        package="torch",
-        conda_channel="pytorch",
-        pip_install=True,
-    )
-
 __all__ = [
     "compare_exact",
     "compare_approximate",
@@ -33,9 +23,6 @@ __all__ = [
     "edges_equal",
     "edge_data_equal",
 ]
-
-assert_tensors_equal = partial(torch.testing.assert_close, rtol=0, atol=0)
-"""Checks tensors are equal."""
 
 
 def compare_exact(first: Dict[str, Any], second: Dict[str, Any]) -> bool:
