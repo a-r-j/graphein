@@ -2,6 +2,7 @@
 import os
 import shutil
 
+import pytest
 from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 
@@ -13,7 +14,15 @@ from graphein.ml import (
     ProteinGraphListDataset,
 )
 
+try:
+    import torch_geometric
 
+    PYG_AVAIL = TRUE
+except ImportError:
+    PYG_AVAIL = FALSE
+
+
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
 def test_list_dataset():
     # Construct graphs
     graphs = gp.construct_graphs_mp(
@@ -44,6 +53,7 @@ def test_list_dataset():
     shutil.rmtree("./processed/")
 
 
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
 def test_in_memory_dataset():
     pdb_list = ["7VXG", "7DYS", "7WHV", "7EEK"]
     uniprots = ["P10513", "B1VC86", "P13948", "P17998"]
@@ -68,6 +78,7 @@ def test_in_memory_dataset():
     shutil.rmtree("./processed/")
 
 
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
 def test_protein_graph_dataset():
     pdb_list = ["4RTY", "4R01", "5E08", "6F15"]
     uniprots = ["A0A0A1EI90", "A0A0B4JCS5", "A0A0B4JCZ3", "A0A0B4JCZ0"]
