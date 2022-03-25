@@ -25,6 +25,15 @@ except ImportError:
         pip_install=True,
     )
 
+__all__ = [
+    "compare_exact",
+    "compare_approximate",
+    "graphs_isomorphic",
+    "nodes_equal",
+    "edges_equal",
+    "edge_data_equal",
+]
+
 assert_tensors_equal = partial(torch.testing.assert_close, rtol=0, atol=0)
 """Checks tensors are equal."""
 
