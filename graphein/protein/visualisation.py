@@ -30,6 +30,12 @@ except ImportError:
         package="pytorch3d",
         conda_channel="pytorch3d",
     )
+try:
+    from mpl_chord_diagram import chord_diagram
+except ImportError:
+    import_message(
+        submodule="graphein.protein.visualisation", pip_install=True
+    )
 
 log = logging.getLogger()
 
@@ -800,6 +806,120 @@ def asteroid_plot(
         return fig
     else:
         nx.draw_shell(subgraph, nlist=shells, with_labels=show_labels)
+
+
+def plot_chord_diagram(
+    g: nx.Graph,
+    show_names: bool = True,
+    order: Optional[List] = None,
+    width: float = 0.1,
+    pad: float = 2.0,
+    gap: float = 0.03,
+    chordwidth: float = 0.7,
+    ax=None,
+    colors=None,
+    cmap=None,
+    alpha=0.7,
+    use_gradient: bool = False,
+    chord_colors=None,
+    show: bool = False,
+    **kwargs,
+):
+    """
+    Plot a chord diagram.
+
+
+    Based on Tanguy Fardet's implementation:
+    https://github.com/tfardet/mpl_chord_diagram
+
+    :param g: NetworkX graph to plot
+        Flux data, mat[i, j] is the flux from i to j (adjacency matrix)
+    :type g: nx.Graph
+    :param show_names: Whether to show the names of the nodes
+    :type show_names: bool
+    :param order: list, optional (default: order of the matrix entries)
+        Order in which the arcs should be placed around the trigonometric
+        circle.
+    :param width: float, optional (default: 0.1)
+        Width/thickness of the ideogram arc.
+    :type width: float
+    :param pad: float, optional (default: 2)
+        Distance between two neighboring ideogram arcs. Unit: degree.
+    :type pad: float
+    :param gap: float, optional (default: 0)
+        Distance between the arc and the beginning of the cord.
+    :type gap: float
+    :param chordwidth: float, optional (default: 0.7)
+        Position of the control points for the chords, controlling their shape.
+    :param ax: matplotlib axis, optional (default: new axis)
+        Matplotlib axis where the plot should be drawn.
+    :param colors: list, optional (default: from `cmap`)
+        List of user defined colors or floats.
+    :param cmap: str or colormap object (default: viridis)
+        Colormap that will be used to color the arcs and chords by default.
+        See `chord_colors` to use different colors for chords.
+    :param alpha: float in [0, 1], optional (default: 0.7)
+        Opacity of the chord diagram.
+    :param use_gradient: bool, optional (default: False)
+        Whether a gradient should be use so that chord extremities have the
+        same color as the arc they belong to.
+    :type use_gradient: bool
+    :param chord_colors: str, or list of colors, optional (default: None)
+        Specify color(s) to fill the chords differently from the arcs.
+        When the keyword is not used, chord colors default to the colomap given
+        by `colors`.
+        Possible values for `chord_colors` are:
+
+        * a single color (do not use an RGB tuple, use hex format instead),
+          e.g. "red" or "#ff0000"; all chords will have this color
+        * a list of colors, e.g. ``["red", "green", "blue"]``, one per node
+          (in this case, RGB tuples are accepted as entries to the list).
+          Each chord will get its color from its associated source node, or
+          from both nodes if `use_gradient` is True.
+    :param show: bool, optional (default: False)
+        Whether the plot should be displayed immediately via an automatic call
+        to ``plt.show()``.
+    :param kwargs: keyword arguments
+        Available kwargs are:
+
+        ================  ==================  ===============================
+              Name               Type           Purpose and possible values
+        ================  ==================  ===============================
+        fontcolor         str or list         Color of the names
+        fontsize          int                 Size of the font for names
+        rotate_names      (list of) bool(s)   Rotate names by 90°
+        sort              str                 Either "size" or "distance"
+        zero_entry_size   float               Size of zero-weight reciprocal
+        ================  ==================  ===============================
+    :type kwargs: Dict[str, Any]
+    """
+    mat = nx.adjacency_matrix(g)
+    names = list(g.nodes)
+    if show_names:
+        if g.graph["node_type"] == "chain":
+            names = [f"Chain {n}" for n in names]
+        elif g.graph["node_type"] != "secondary_structure":
+            raise ValueError()
+    else:
+        names = None
+
+    a = chord_diagram(
+        mat,
+        names=names,
+        order=order,
+        width=width,
+        pad=pad,
+        gap=gap,
+        chordwidth=chordwidth,
+        ax=ax,
+        colors=colors,
+        cmap=cmap,
+        alpha=alpha,
+        use_gradient=use_gradient,
+        chord_colors=chord_colors,
+        show=show,
+        **kwargs,
+    )
 
 
 if __name__ == "__main__":
