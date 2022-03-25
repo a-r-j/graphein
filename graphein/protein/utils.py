@@ -7,8 +7,10 @@ import logging
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
+from urllib.request import urlopen
 
 import networkx as nx
 import numpy as np
@@ -32,9 +34,31 @@ class ProteinGraphConfigurationError(Exception):
         return self.message
 
 
+@lru_cache()
+def get_obsolete_mapping() -> Dict[str, str]:
+    """Returns a dictionary mapping obsolete PDB codes to their replacement.
+
+    :return: Dictionary mapping obsolete PDB codes to their replacement.
+    :rtype: Dictionary[str, str]
+    """
+    obs_dict: Dict[str, str] = {}
+
+    response = urlopen("ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat")
+    for line in response:
+        entry = line.split()
+        if len(entry) == 4:
+            obs_dict[entry[2].lower().decode("utf-8")] = (
+                entry[3].lower().decode("utf-8")
+            )
+    return obs_dict
+
+
 def download_pdb(config, pdb_code: str) -> Path:
     """
     Download PDB structure from PDB.
+
+    If no structure is found, we perform a lookup against the record of
+    obsolete PDB codes (ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat)
 
     :param pdb_code: 4 character PDB accession code.
     :type pdb_code: str
@@ -49,6 +73,27 @@ def download_pdb(config, pdb_code: str) -> Path:
     pdbl.retrieve_pdb_file(
         pdb_code, pdir=config.pdb_dir, overwrite=True, file_format="pdb"
     )
+    # If file not downloaded, check for obsolescence
+    if not os.path.exists(config.pdb_dir / f"{pdb_code}.pdb"):
+        obs_map = get_obsolete_mapping()
+        try:
+            new_pdb = obs_map[pdb_code.lower()].lower()
+            log.info(
+                f"PDB file {pdb_code} not found. It is likely obsolete. \
+                     Trying its replacement: {new_pdb} instead."
+            )
+            pdb_code = new_pdb
+            pdbl.retrieve_pdb_file(
+                pdb_code,
+                pdir=config.pdb_dir,
+                overwrite=True,
+                file_format="pdb",
+            )
+        except KeyError:
+            log.error(
+                f"PDB file {pdb_code} not found and no replacement \
+                      structure found in obsolete lookup."
+            )
     # Rename file to .pdb from .ent
     os.rename(
         config.pdb_dir / f"pdb{pdb_code}.ent",

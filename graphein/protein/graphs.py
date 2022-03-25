@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Callable, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -22,8 +22,10 @@ from graphein.protein.config import (
     ProteinGraphConfig,
 )
 from graphein.protein.edges.distance import compute_distmat
-from graphein.protein.resi_atoms import BACKBONE_ATOMS
+from graphein.protein.resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
+from graphein.protein.subgraphs import extract_subgraph_from_chains
 from graphein.protein.utils import (
+    ProteinGraphConfigurationError,
     compute_rgroup_dataframe,
     filter_dataframe,
     get_protein_name_from_filename,
@@ -210,7 +212,7 @@ def process_dataframe(
     :param atom_df_processing_funcs: List of functions to process dataframe. These must take in a dataframe and return a
         dataframe. Defaults to None.
     :type atom_df_processing_funcs: List[Callable], optional
-    :param hetatom_df_processing_funcs: List of functions to process the hetatpm dataframe. These must take in a dataframe and return a dataframe
+    :param hetatom_df_processing_funcs: List of functions to process the hetatom dataframe. These must take in a dataframe and return a dataframe
     :type hetatom_df_processing_funcs: List[Callable], optional
     :param granularity: The level of granularity for the graph. This determines the node definition.
         Acceptable values include: ``"centroids"``, ``"atoms"``,
@@ -278,21 +280,6 @@ def process_dataframe(
         protein_df, chain_selection=chain_selection, verbose=verbose
     )
 
-    """
-    # Name nodes
-    protein_df["node_id"] = (
-        protein_df["chain_id"].apply(str)
-        + ":"
-        + protein_df["residue_name"]
-        + ":"
-        + protein_df["residue_number"].apply(str)
-    )
-    if granularity == "atom":
-        protein_df["node_id"] = (
-            protein_df["node_id"] + ":" + protein_df["atom_name"]
-        )
-    """
-
     log.debug(f"Detected {len(protein_df)} total nodes")
 
     return protein_df
@@ -306,8 +293,10 @@ def assign_node_id_to_dataframe(
 
     :param protein_df: Structure Dataframe
     :type protein_df: pd.DataFrame
-    :param granularity: Granularity of graph. Atom-level, residue (e.g. ``CA``) or ``centroids``
-        See: :const:`~graphein.protein.config.GRAPH_ATOMS` and :const:`~graphein.protein.config.GRANULARITY_OPTS`.
+    :param granularity: Granularity of graph. Atom-level,
+        residue (e.g. ``CA``) or ``centroids``.
+        See: :const:`~graphein.protein.config.GRAPH_ATOMS`
+        and :const:`~graphein.protein.config.GRANULARITY_OPTS`.
     :type granularity: str
     :return: Returns dataframe with added ``node_ids``
     :rtype: pd.DataFrame
@@ -331,13 +320,16 @@ def select_chains(
     """
     Extracts relevant chains from ``protein_df``.
 
-    :param protein_df: pandas dataframe of PDB subsetted to relevant atoms (``CA``, ``CB``).
+    :param protein_df: pandas dataframe of PDB subsetted to relevant atoms
+        (``CA``, ``CB``).
     :type protein_df: pd.DataFrame
-    :param chain_selection: Specifies chains that should be extracted from the larger complexed structure.
+    :param chain_selection: Specifies chains that should be extracted from
+        the larger complexed structure.
     :type chain_selection: str
     :param verbose: Print dataframe?
     :type verbose: bool
-    :return: Protein structure dataframe containing only entries in the chain selection.
+    :return: Protein structure dataframe containing only entries in the
+        chain selection.
     :rtype: pd.DataFrame
     """
     if chain_selection != "all":
@@ -477,14 +469,16 @@ def compute_edges(
     get_contacts_config: Optional[GetContactsConfig] = None,
 ) -> nx.Graph:
     """
-    Computes edges for the protein structure graph. Will compute an pairwise distance matrix between nodes which is
+    Computes edges for the protein structure graph. Will compute a pairwise
+    distance matrix between nodes which is
     added to the graph metadata to facilitate some edge computations.
 
     :param G: nx.Graph with nodes to add edges to.
     :type G: nx.Graph
     :param funcs: List of edge construction functions.
     :type funcs: List[Callable]
-    :param get_contacts_config: Config object for ``GetContacts`` if intramolecular edges are being used.
+    :param get_contacts_config: Config object for ``GetContacts`` if
+        intramolecular edges are being used.
     :type get_contacts_config: graphein.protein.config.GetContactsConfig
     :return: Graph with added edges.
     :rtype: nx.Graph
@@ -514,7 +508,10 @@ def construct_graph(
     graph_annotation_funcs: Optional[List[Callable]] = None,
 ) -> nx.Graph:
     """
-    Constructs protein structure graph from a ``pdb_code`` or ``pdb_path``. Users can provide a :class:`~graphein.protein.config.ProteinGraphConfig` object to specify construction parameters.
+    Constructs protein structure graph from a ``pdb_code`` or ``pdb_path``.
+
+    Users can provide a :class:`~graphein.protein.config.ProteinGraphConfig`
+    object to specify construction parameters.
 
     However, config parameters can be overridden by passing arguments directly to the function.
 
@@ -620,89 +617,217 @@ def construct_graph(
     return g
 
 
-if __name__ == "__main__":
-    from functools import partial
+def compute_chain_graph(
+    g: nx.Graph,
+    chain_list: Optional[List[str]] = None,
+    remove_self_loops: bool = False,
+    return_weighted_graph: bool = False,
+) -> Union[nx.Graph, nx.MultiGraph]:
+    """Computes a chain-level graph from a protein structure graph.
 
-    from graphein.protein.edges.distance import add_k_nn_edges
-    from graphein.protein.features.sequence.sequence import molecular_weight
+    This graph features nodes as individual chains in a complex and edges as
+    the interactions between constituent nodes in each chain. You have the
+    option of returning an unweighted graph (multigraph,
+    ``return_weighted_graph=False``) or a weighted graph
+    (``return_weighted_graph=True``). The difference between these is the
+    unweighted graph features and edge for each interaction between chains
+    (ie the number of edges will be equal to the number of edges in the input
+    protein structure graph), while the weighted graph sums these interactions
+    to a single edge between chains with the counts stored as features.
 
-    configs = {
-        "granularity": "CA",
-        "keep_hets": False,
-        "insertions": False,
-        "verbose": False,
-        "get_contacts_config": GetContactsConfig(),
-        "dssp_config": DSSPConfig(),
-        "graph_metadata_functions": [molecular_weight],
+    :param g: A protein structure graph to compute the chain graph of.
+    :type g: nx.Graph
+    :param chain_list: A list of chains to extract from the input graph.
+        If ``None``, all chains will be used. This is provided as input to
+        ``extract_subgraph_from_chains``. Default is ``None``.
+    :type chain_list: Optional[List[str]]
+    :param remove_self_loops: Whether to remove self-loops from the graph.
+        Default is False.
+    :type remove_self_loops: bool
+    :return: A chain-level graph.
+    :rtype: Union[nx.Graph, nx.MultiGraph]
+    """
+    # If we are extracting specific chains, do it here.
+    if chain_list is not None:
+        g = extract_subgraph_from_chains(g, chain_list)
+
+    # Initialise new graph with Metadata
+    h = nx.MultiGraph()
+    h.graph = g.graph
+    h.graph["node_type"] = "chain"
+
+    # Set nodes
+    nodes_per_chain = {chain: 0 for chain in g.graph["chain_ids"]}
+    sequences = {chain: "" for chain in g.graph["chain_ids"]}
+    for n, d in g.nodes(data=True):
+        nodes_per_chain[d["chain_id"]] += 1
+        sequences[d["chain_id"]] += RESI_THREE_TO_1[d["residue_name"]]
+
+    h.add_nodes_from(g.graph["chain_ids"])
+
+    for n, d in h.nodes(data=True):
+        d["num_residues"] = nodes_per_chain[n]
+        d["sequence"] = sequences[n]
+
+    # Add edges
+    for u, v, d in g.edges(data=True):
+        h.add_edge(
+            g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=d["kind"]
+        )
+    # Remove self-loops if necessary. Checks for equality between nodes in a given edge.
+    if remove_self_loops:
+        edges_to_remove: List[Tuple[str]] = [
+            (u, v) for u, v in h.edges() if u == v
+        ]
+        h.remove_edges_from(edges_to_remove)
+
+    # Compute a weighted graph if required.
+    if return_weighted_graph:
+        return compute_weighted_graph_from_multigraph(h)
+
+    return h
+
+
+def compute_weighted_graph_from_multigraph(g: nx.MultiGraph) -> nx.Graph:
+    """Computes a weighted graph from a multigraph.
+
+    This function is used to convert a multigraph to a weighted graph. The
+    weights of the edges are the number of interactions between the nodes.
+
+    :param g: A multigraph.
+    :type g: nx.MultiGraph
+    :return: A weighted graph.
+    :rtype: nx.Graph
+    """
+    H = nx.Graph()
+    H.graph = g.graph
+    H.add_nodes_from(g.nodes(data=True))
+    for u, v, d in g.edges(data=True):
+        if H.has_edge(u, v):
+            H[u][v]["weight"] += len(d["kind"])
+            H[u][v]["kind"].update(d["kind"])
+            for kind in list(d["kind"]):
+                try:
+                    H[u][v][kind] += 1
+                except KeyError:
+                    H[u][v][kind] = 1
+        else:
+            H.add_edge(u, v, weight=len(d["kind"]), kind=d["kind"])
+            for kind in list(d["kind"]):
+                H[u][v][kind] = 1
+    return H
+
+
+def number_groups_of_runs(list_of_values: List[Any]) -> List[str]:
+    """Numbers groups of runs in a list of values.
+
+    E.g. ``["A", "A", "B", "A", "A", "A", "B", "B"] ->
+    ["A1", "A1", "B1", "A2", "A2", "A2", "B2", "B2"]``
+
+    :param list_of_values: List of values to number.
+    :type list_of_values: List[Any]
+    :return: List of numbered values.
+    :rtype: List[str]
+    """
+    df = pd.DataFrame({"val": list_of_values})
+    df["idx"] = df["val"].shift() != df["val"]
+    df["sum"] = df.groupby("val")["idx"].cumsum()
+    return list(df["val"].astype(str) + df["sum"].astype(str))
+
+
+def compute_secondary_structure_graph(
+    g: nx.Graph,
+    allowable_ss_elements: Optional[List[str]] = None,
+    remove_non_ss: bool = True,
+    remove_self_loops: bool = False,
+    return_weighted_graph: bool = False,
+) -> Union[nx.Graph, nx.MultiGraph]:
+    """Computes a secondary structure graph from a protein structure graph.
+
+    :param g: A protein structure graph to compute the secondary structure
+        graph of.
+    :type g: nx.Graph
+    :param remove_non_ss: Whether to remove non-secondary structure nodes from
+        the graph. These are denoted as ``"-"`` by DSSP. Default is True.
+    :type remove_non_ss: bool
+    :param remove_self_loops: Whether to remove self-loops from the graph.
+        Default is ``False``.
+    :type remove_self_loops: bool
+    :param return_weighted_graph: Whether to return a weighted graph.
+        Default is False.
+    :type return_weighted_graph: bool
+    :raises ProteinGraphConfigurationError: If the protein structure graph is
+        not configured correctly with secondary structure assignments on all
+        nodes.
+    :return: A secondary structure graph.
+    :rtype: Union[nx.Graph, nx.MultiGraph]
+    """
+    # Initialise list of secondary structure elements we use to build the graph
+    ss_list: List[str] = []
+
+    # Check nodes have secondary structure assignment & store them in list
+    for _, d in g.nodes(data=True):
+        if "ss" not in d.keys():
+            raise ProteinGraphConfigurationError(
+                "Secondary structure not defined for all nodes."
+            )
+        ss_list.append(d["ss"])
+
+    # Number SS elements
+    ss_list = pd.Series(number_groups_of_runs(ss_list))
+    ss_list.index = list(g.nodes())
+
+    # Remove unstructured elements if necessary
+    if remove_non_ss:
+        ss_list = ss_list[~ss_list.str.contains("-")]
+    # Subset to only allowable SS elements if necessary
+    if allowable_ss_elements:
+        ss_list = ss_list[
+            ss_list.str.contains("|".join(allowable_ss_elements))
+        ]
+
+    constituent_residues: Dict[str, List[str]] = ss_list.index.groupby(
+        ss_list.values
+    )
+    constituent_residues = {
+        k: list(v) for k, v in constituent_residues.items()
     }
-    config = ProteinGraphConfig(**configs)
-    config.edge_construction_functions = [
-        partial(add_k_nn_edges, k=3, long_interaction_threshold=0)
-    ]
-    # Test High-level API
-    g = construct_graph(
-        config=config,
-        pdb_path="../examples/pdbs/3eiy.pdb",
-    )
+    residue_counts: Dict[str, int] = ss_list.groupby(ss_list).count().to_dict()
 
-    """
-    # Test Low-level API
-    raw_df = read_pdb_to_dataframe(
-        pdb_path="../../examples/pdbs/3eiy.pdb",
-        verbose=config.verbose,
-    )
+    # Add Nodes from secondary structure list
+    h = nx.MultiGraph()
+    h.add_nodes_from(ss_list)
+    nx.set_node_attributes(h, residue_counts, "residue_counts")
+    nx.set_node_attributes(h, constituent_residues, "constituent_residues")
+    # Assign ss
+    for n, d in h.nodes(data=True):
+        d["ss"] = n[0]
 
-    processed_pdb_df = process_dataframe(
-        protein_df=raw_df,
-        atom_df_processing_funcs=None,
-        hetatom_df_processing_funcs=None,
-        granularity="centroids",
-        chain_selection="all",
-        insertions=False,
-        deprotonate=True,
-        keep_hets=[],
-        verbose=False,
-    )
+    # Add graph-level metadata
+    h.graph = g.graph
+    h.graph["node_type"] = "secondary_structure"
 
-    g = initialise_graph_with_metadata(
-        protein_df=processed_pdb_df,
-        raw_pdb_df=raw_df.df["ATOM"],
-        pdb_id="3eiy",
-        granularity=config.granularity,
-    )
+    # Iterate over edges in source graph and add SS-SS edges to new graph.
+    for u, v, d in g.edges(data=True):
+        try:
+            h.add_edge(
+                ss_list[u], ss_list[v], kind=d["kind"], source=f"{u}_{v}"
+            )
+        except KeyError as e:
+            log.debug(
+                f"Edge {u}-{v} not added to secondary structure graph. \
+                Reason: {e} not in graph"
+            )
 
-    g = add_nodes_to_graph(g)
+    # Remove self-loops if necessary.
+    # Checks for equality between nodes in a given edge.
+    if remove_self_loops:
+        edges_to_remove: List[Tuple[str]] = [
+            (u, v) for u, v in h.edges() if u == v
+        ]
+        h.remove_edges_from(edges_to_remove)
 
-    g = annotate_node_metadata(g, [expasy_protein_scale, meiler_embedding])
-    g = compute_edges(
-        g,
-        config.get_contacts_config,
-        [
-            add_delaunay_triangulation,
-            peptide_bonds,
-            salt_bridge,
-            add_hydrogen_bond_interactions,
-        ],
-    )
-
-    g = annotate_graph_metadata(
-        g,
-        [
-            esm_sequence_embedding,
-            biovec_sequence_embedding,
-            molecular_weight,
-        ],
-    )
-
-    print(nx.info(g))
-    colors = nx.get_edge_attributes(g, "color").values()
-    """
-    """
-    nx.draw(
-        g,
-        # pos = nx.circular_layout(g),
-        edge_color=colors,
-        with_labels=True,
-    )
-    plt.show()
-    """
+    # Create weighted graph from h
+    if return_weighted_graph:
+        return compute_weighted_graph_from_multigraph(h)
+    return h

@@ -3,8 +3,10 @@ import os
 import networkx as nx
 from pandas.testing import assert_frame_equal
 
+from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 from graphein.protein.utils import (
+    download_pdb,
     save_graph_to_pdb,
     save_pdb_df_to_pdb,
     save_rgroup_df_to_pdb,
@@ -67,6 +69,12 @@ def test_save_rgroup_df_to_pdb():
         a.drop(["line_idx"], axis=1),
         g.graph["rgroup_df"].drop(["line_idx"], axis=1),
     )
+
+
+def test_download_obsolete_structure():
+    config = ProteinGraphConfig()
+    fp = download_pdb(pdb_code="116L", config=config)
+    assert str(fp).endswith("216l.pdb")
 
 
 if __name__ == "__main__":
