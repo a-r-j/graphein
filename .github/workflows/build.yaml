@@ -61,7 +61,7 @@ jobs:
       - name: Install Graphein
         run: pip install -e .
       - name: Install Extras
-        run: pip install -r .requirements/extra.in
+        run: pip install -r .requirements/extras.in
       - name: Install Dev Dependencies
         run: pip install -r .requirements/dev.in
       - name: Run unit tests and generate coverage report
