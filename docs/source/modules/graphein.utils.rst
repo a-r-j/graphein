@@ -5,6 +5,8 @@ Utils
 ------
 .. automodule:: graphein.utils.utils
     :members:
+.. automodule:: graphein.testing.utils
+    :members:
 
 CLI & Config
 _____________
