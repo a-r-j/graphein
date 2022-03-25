@@ -1,6 +1,11 @@
-# 1.2.2 - Unreleased
+### 1.3.0 - UNRELEASED
+
 * [Feature] - #141 adds edge construction based on sequence distance.
 * [Feature] - #143 adds equality and isomorphism testing functions between graphs, nodes and edges ([#142](https://github.com/a-r-j/graphein/issues/142))
+* [Feature] - #144 adds support for chain-level and secondary structure-level graphs with associated visualisation tools and tutorial. Resolves [#128](https://github.com/a-r-j/graphein/issues/128)
+* [Feature] - #144 adds support for chord diagram visualisations.
+* [Feature] - #144 adds support for automagically downloading new PDB files for obsolete structures.
+* [Misc] - #144 makes visualisation functions accessible in the `graphein.protein` namespace. #138
 
 
 ### 1.2.1 - 16/3/21
