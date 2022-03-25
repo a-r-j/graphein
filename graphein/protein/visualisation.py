@@ -34,7 +34,9 @@ try:
     from mpl_chord_diagram import chord_diagram
 except ImportError:
     import_message(
-        submodule="graphein.protein.visualisation", pip_install=True
+        submodule="graphein.protein.visualisation",
+        package="mpl_chord_diagram",
+        pip_install=True
     )
 
 log = logging.getLogger()
