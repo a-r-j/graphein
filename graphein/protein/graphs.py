@@ -620,6 +620,7 @@ def construct_graph(
 def compute_chain_graph(
     g: nx.Graph,
     chain_list: Optional[List[str]] = None,
+    remove_self_loops: bool = False,
     return_weighted_graph: bool = False,
 ) -> Union[nx.Graph, nx.MultiGraph]:
     """Computes a chain-level graph from a protein structure graph.
@@ -640,6 +641,9 @@ def compute_chain_graph(
         If ``None``, all chains will be used. This is provided as input to
         ``extract_subgraph_from_chains``. Default is ``None``.
     :type chain_list: Optional[List[str]]
+    :param remove_self_loops: Whether to remove self-loops from the graph.
+        Default is False.
+    :type remove_self_loops: bool
     :return: A chain-level graph.
     :rtype: Union[nx.Graph, nx.MultiGraph]
     """
@@ -670,6 +674,12 @@ def compute_chain_graph(
         h.add_edge(
             g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=d["kind"]
         )
+    # Remove self-loops if necessary. Checks for equality between nodes in a given edge.
+    if remove_self_loops:
+        edges_to_remove: List[Tuple[str]] = [
+            (u, v) for u, v in h.edges() if u == v
+        ]
+        h.remove_edges_from(edges_to_remove)
 
     # Compute a weighted graph if required.
     if return_weighted_graph:
@@ -738,10 +748,10 @@ def compute_secondary_structure_graph(
         graph of.
     :type g: nx.Graph
     :param remove_non_ss: Whether to remove non-secondary structure nodes from
-        the graph. These are denoted as "-" by DSSP. Default is True.
+        the graph. These are denoted as ``"-"`` by DSSP. Default is True.
     :type remove_non_ss: bool
     :param remove_self_loops: Whether to remove self-loops from the graph.
-        Default is False.
+        Default is ``False``.
     :type remove_self_loops: bool
     :param return_weighted_graph: Whether to return a weighted graph.
         Default is False.
@@ -789,6 +799,9 @@ def compute_secondary_structure_graph(
     h.add_nodes_from(ss_list)
     nx.set_node_attributes(h, residue_counts, "residue_counts")
     nx.set_node_attributes(h, constituent_residues, "constituent_residues")
+    # Assign ss
+    for n, d in h.nodes(data=True):
+        d["ss"] = n[0]
 
     # Add graph-level metadata
     h.graph = g.graph
