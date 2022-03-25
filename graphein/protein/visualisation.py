@@ -36,7 +36,7 @@ except ImportError:
     import_message(
         submodule="graphein.protein.visualisation",
         package="mpl_chord_diagram",
-        pip_install=True
+        pip_install=True,
     )
 
 log = logging.getLogger()
