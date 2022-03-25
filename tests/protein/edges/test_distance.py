@@ -1,4 +1,6 @@
 """Functions for working with Protein Structure Graphs. Based on tests written by Eric Ma in PIN Library"""
+from functools import partial
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma, Charlie Harris
@@ -9,7 +11,9 @@ from pathlib import Path
 
 import pytest
 
+from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
+    add_sequence_distance_edges,
     get_edges_by_bond_type,
     get_ring_atoms,
     get_ring_centroids,
@@ -165,3 +169,27 @@ def test_add_cation_pi_interactions(net):
         condition2 = resi2 in CATION_RESIS and resi1 in PI_RESIS
 
         assert condition1 or condition2
+
+
+def test_add_peptide_bonds():
+    file_path = Path(__file__).parent.parent / "test_data/4hhb.pdb"
+    # Peptide bonds are default
+    G = construct_graph(pdb_path=str(file_path))
+
+    for u, v in G.edges():
+        assert abs(int(u.split(":")[-1]) - int(v.split(":")[-1])) == 1
+
+
+def test_add_sequence_distance_edges():
+    D = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    file_path = Path(__file__).parent.parent / "test_data/4hhb.pdb"
+
+    for d in D:
+        config = ProteinGraphConfig(
+            edge_construction_functions=[
+                partial(add_sequence_distance_edges, d=d)
+            ]
+        )
+        G = construct_graph(pdb_path=str(file_path), config=config)
+        for u, v in G.edges():
+            assert abs(int(u.split(":")[-1]) - int(v.split(":")[-1])) == d
