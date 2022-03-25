@@ -2,6 +2,7 @@
 import os
 import shutil
 
+from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 
 import graphein.protein as gp
@@ -11,7 +12,6 @@ from graphein.ml import (
     ProteinGraphDataset,
     ProteinGraphListDataset,
 )
-from graphein.testing.utils import assert_tensors_equal
 
 
 def test_list_dataset():
@@ -34,14 +34,13 @@ def test_list_dataset():
     assert os.path.exists("./processed/data_list_test.pt")
 
     for i, d in enumerate(ds):
-        assert_tensors_equal(d.edge_index, graphs[i].edge_index)
+        assert_array_equal(d.edge_index, graphs[i].edge_index)
         assert d.node_id == graphs[i].node_id
-        assert_tensors_equal(d.coords[0], graphs[i].coords[0])
+        assert_array_equal(d.coords[0], graphs[i].coords[0])
         assert d.name == graphs[i].name
         assert_frame_equal(d.dist_mat[0], graphs[i].dist_mat[0])
         assert d.num_nodes == graphs[i].num_nodes
     # Clean up
-    shutil.rmtree("./raw/")
     shutil.rmtree("./processed/")
 
 
