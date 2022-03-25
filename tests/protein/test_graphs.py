@@ -39,11 +39,10 @@ from graphein.protein.features.sequence.embeddings import (
 )
 from graphein.protein.features.sequence.sequence import molecular_weight
 from graphein.protein.graphs import (
-    construct_graph,
-    construct_graphs_mp,
     compute_chain_graph,
     compute_secondary_structure_graph,
     construct_graph,
+    construct_graphs_mp,
     read_pdb_to_dataframe,
 )
 

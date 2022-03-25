@@ -712,6 +712,7 @@ def construct_graphs_mp(
 
     return graphs
 
+
 def compute_chain_graph(
     g: nx.Graph,
     chain_list: Optional[List[str]] = None,
