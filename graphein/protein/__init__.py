@@ -14,7 +14,12 @@ from .visualisation import (
 )
 
 try:
+    from .visualisation import plot_chord_diagram
+except ImportError:
+    pass
+
+try:
     from .meshes import *
-    from .visualisation import plot_chord_diagram, plot_pointcloud
+    from .visualisation import plot_pointcloud
 except ImportError:
     pass
