@@ -7,15 +7,16 @@ from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 
 import graphein.protein as gp
-from graphein.ml import (
-    GraphFormatConvertor,
-    InMemoryProteinGraphDataset,
-    ProteinGraphDataset,
-    ProteinGraphListDataset,
-)
+from graphein.ml import GraphFormatConvertor
 
 try:
     import torch_geometric
+
+    from graphein.ml import (
+        InMemoryProteinGraphDataset,
+        ProteinGraphDataset,
+        ProteinGraphListDataset,
+    )
 
     PYG_AVAIL = True
 except ImportError:
