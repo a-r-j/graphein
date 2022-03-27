@@ -4,20 +4,31 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+from __future__ import annotations
 
 import os
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
 import networkx as nx
-import torch
-from torch_geometric.data import Data, Dataset, InMemoryDataset
 from tqdm import tqdm
 
 from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.graphs import construct_graphs_mp
 from graphein.protein.utils import download_alphafold_structure, download_pdb
+from graphein.utils.utils import import_message
+
+try:
+    import torch
+    from torch_geometric.data import Data, Dataset, InMemoryDataset
+except ImportError:
+    import_message(
+        "graphein.ml.datasets.torch_geometric_dataset",
+        "torch_geometric",
+        conda_channel="pyg",
+        pip_install=True,
+    )
 
 
 class InMemoryProteinGraphDataset(InMemoryDataset):
