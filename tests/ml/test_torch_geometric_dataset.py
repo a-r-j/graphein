@@ -12,15 +12,18 @@ from graphein.ml import GraphFormatConvertor
 try:
     import torch_geometric
 
+    PYG_AVAIL = True
+except ImportError:
+    PYG_AVAIL = False
+
+try:
     from graphein.ml import (
         InMemoryProteinGraphDataset,
         ProteinGraphDataset,
         ProteinGraphListDataset,
     )
-
-    PYG_AVAIL = True
-except ImportError:
-    PYG_AVAIL = False
+except NameError or ImportError:
+    pass
 
 
 @pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
