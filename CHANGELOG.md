@@ -6,7 +6,8 @@
 * [Feature] - #144 adds support for chord diagram visualisations.
 * [Feature] - #144 adds support for automagically downloading new PDB files for obsolete structures.
 * [Misc] - #144 makes visualisation functions accessible in the `graphein.protein` namespace. #138
-* [Bugfix] - #147 fixes error in `add_distance_threshold` introduced in v1.2.1 that would prevent the edges being added to the graph. [#146](https://github.com/a-r-j/graphein/issues/146)
+* [Bugfix] - #147 fixes error in `add_distance_threshold` introduced in v1.2.1 that would prevent the edges being added to the graph. [#146](https://github.com/a-r-j/graphein/issues/146) 
+* [Bugfix] - #149 fixes a bug in `add_beta_carbon_vector` that would cause coordinates to be extracted for multiple positions if the residue has an altloc. Resolves [#148](https://github.com/a-r-j/graphein/issues/148)
 
 ### 1.2.1 - 16/3/21
 

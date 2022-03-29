@@ -78,9 +78,12 @@ def add_beta_carbon_vector(
     :param reverse: Reverse vector. Defaults to ``False``.
     :type reverse: bool
     """
+    # Get or compute R-Group DF
+    if "rgroup_df" not in g.graph.keys():
+        g.graph["rgroup_df"] = compute_rgroup_dataframe(g.graph["raw_pdb_df"])
 
     c_beta_coords = filter_dataframe(
-        g.graph["raw_pdb_df"], "atom_name", ["CB"], boolean=True
+        g.graph["rgroup_df"], "atom_name", ["CB"], boolean=True
     )
     c_beta_coords.index = c_beta_coords["node_id"]
 
