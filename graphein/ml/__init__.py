@@ -1,6 +1,10 @@
 from .conversion import GraphFormatConvertor
-from .datasets import (
-    InMemoryProteinGraphDataset,
-    ProteinGraphDataset,
-    ProteinGraphListDataset,
-)
+
+try:
+    from .datasets import (
+        InMemoryProteinGraphDataset,
+        ProteinGraphDataset,
+        ProteinGraphListDataset,
+    )
+except (ImportError, NameError):
+    pass
