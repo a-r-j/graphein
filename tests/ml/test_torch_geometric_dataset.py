@@ -23,7 +23,7 @@ try:
         ProteinGraphDataset,
         ProteinGraphListDataset,
     )
-except NameError or ImportError:
+except (NameError, ImportError):
     pass
 
 ROOT_DIR = Path(__file__).parent
