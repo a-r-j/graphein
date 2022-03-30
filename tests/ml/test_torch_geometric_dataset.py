@@ -1,6 +1,7 @@
 """Tests for PyTorch Geometric Dataset constructors."""
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 from numpy.testing import assert_array_equal
@@ -25,6 +26,8 @@ try:
 except NameError or ImportError:
     pass
 
+ROOT_DIR = Path(__file__).parent
+
 
 @pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
 def test_list_dataset():
@@ -41,10 +44,12 @@ def test_list_dataset():
     graphs = [convertor(g) for g in graphs]
 
     # Create dataset
-    ds = ProteinGraphListDataset(root=".", data_list=graphs, name="list_test")
+    ds = ProteinGraphListDataset(
+        root=ROOT_DIR, data_list=graphs, name="list_test"
+    )
 
     assert len(ds) == len(graphs)
-    assert os.path.exists("./processed/data_list_test.pt")
+    assert os.path.exists(ROOT_DIR / "processed" / "data_list_test.pt")
 
     for i, d in enumerate(ds):
         assert_array_equal(d.edge_index, graphs[i].edge_index)
@@ -54,7 +59,7 @@ def test_list_dataset():
         assert_frame_equal(d.dist_mat[0], graphs[i].dist_mat[0])
         assert d.num_nodes == graphs[i].num_nodes
     # Clean up
-    shutil.rmtree("./processed/")
+    shutil.rmtree(ROOT_DIR / "processed")
 
 
 @pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
@@ -63,7 +68,7 @@ def test_in_memory_dataset():
     uniprots = ["P10513", "B1VC86", "P13948", "P17998"]
 
     ds = InMemoryProteinGraphDataset(
-        root=".",
+        root=ROOT_DIR,
         name="in_memory_test",
         pdb_codes=pdb_list,
         uniprot_ids=uniprots,
@@ -72,14 +77,14 @@ def test_in_memory_dataset():
 
     # Check raw files exist
     for pdb in pdb_list + uniprots:
-        assert f"{pdb}.pdb" in os.listdir("./raw/")
+        assert f"{pdb}.pdb" in os.listdir(ROOT_DIR / "raw")
 
     # Check processed data exists
-    assert os.path.exists("./processed/data_in_memory_test.pt")
+    assert os.path.exists(ROOT_DIR / "processed" / "data_in_memory_test.pt")
 
     # Clean up
-    shutil.rmtree("./raw/")
-    shutil.rmtree("./processed/")
+    shutil.rmtree(ROOT_DIR / "raw")
+    shutil.rmtree(ROOT_DIR / "processed")
 
 
 @pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
@@ -88,7 +93,7 @@ def test_protein_graph_dataset():
     uniprots = ["A0A0A1EI90", "A0A0B4JCS5", "A0A0B4JCZ3", "A0A0B4JCZ0"]
 
     ds = ProteinGraphDataset(
-        root=".",
+        root=ROOT_DIR,
         pdb_codes=pdb_list,
         uniprot_ids=uniprots,
     )
@@ -96,9 +101,9 @@ def test_protein_graph_dataset():
 
     # Check raw files and processed data exist
     for pdb in pdb_list + uniprots:
-        assert f"{pdb}.pdb" in os.listdir("./raw/")
-        assert f"{pdb}.pt" in os.listdir("./processed/")
+        assert f"{pdb}.pdb" in os.listdir(ROOT_DIR / "raw")
+        assert f"{pdb}.pt" in os.listdir(ROOT_DIR / "processed")
 
     # Clean up
-    shutil.rmtree("./raw/")
-    shutil.rmtree("./processed/")
+    shutil.rmtree(ROOT_DIR / "raw")
+    shutil.rmtree(ROOT_DIR / "processed")
