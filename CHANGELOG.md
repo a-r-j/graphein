@@ -5,6 +5,7 @@
 * [Feature] - #144 adds support for chain-level and secondary structure-level graphs with associated visualisation tools and tutorial. Resolves [#128](https://github.com/a-r-j/graphein/issues/128)
 * [Feature] - #144 adds support for chord diagram visualisations.
 * [Feature] - #144 adds support for automagically downloading new PDB files for obsolete structures.
+* [Feature] - #150 adds support for hydrogen bond donor and acceptor counts node features. #145
 * [Misc] - #144 makes visualisation functions accessible in the `graphein.protein` namespace. #138
 
 
