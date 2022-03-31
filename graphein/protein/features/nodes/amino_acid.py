@@ -171,11 +171,11 @@ def amino_acid_one_hot(
 def hydrogen_bond_donor(n, d, return_array: bool = False) -> pd.Series:
     """Adds Hydrogen Bond Donor statues to nodes as a feature."""
     node_id = n.split(":")
+    res = node_id[1]
     if len(node_id) == 4:  # Atomic graph
         atom = node_id[-1]
         features = HYDROGEN_BOND_DONORS[res][atom]
     elif len(node_id) == 3:  # Residue graph
-        res = node_id[1]
         if res not in HYDROGEN_BOND_DONORS.keys():
             features = 0
         else:
@@ -191,11 +191,11 @@ def hydrogen_bond_donor(n, d, return_array: bool = False) -> pd.Series:
 def hydrogen_bond_acceptor(n, d, return_array: bool = False) -> pd.Series:
     """Adds Hydrogen Bond Acceptor statues to nodes as a feature."""
     node_id = n.split(":")
+    res = node_id[1]
     if len(node_id) == 4:  # Atomic graph
         atom = node_id[-1]
         features = HYDROGEN_BOND_ACCEPTORS[res][atom]
     elif len(node_id) == 3:  # Residue graph
-        res = node_id[1]
         if res not in HYDROGEN_BOND_ACCEPTORS.keys():
             features = 0
         else:
