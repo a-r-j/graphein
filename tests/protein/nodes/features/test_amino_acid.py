@@ -7,12 +7,16 @@
 
 from functools import partial
 
+import numpy as np
+import pandas as pd
 from pandas.testing import assert_series_equal
 
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.features.nodes.amino_acid import (
     amino_acid_one_hot,
     expasy_protein_scale,
+    hydrogen_bond_acceptor,
+    hydrogen_bond_donor,
     load_expasy_scales,
 )
 from graphein.protein.graphs import construct_graph
@@ -75,6 +79,141 @@ def test_amino_acid_one_hot_example():
             d["amino_acid_one_hot"].idxmax()
             == RESI_THREE_TO_1[d["residue_name"]]
         )
+
+
+def test_hydrogen_bond_acceptor():
+    config = ProteinGraphConfig(
+        node_metadata_functions=[hydrogen_bond_acceptor]
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+
+    for _, d in g.nodes(data=True):
+        assert "hbond_acceptors" in d.keys()
+        assert isinstance(d["hbond_acceptors"], pd.Series)
+
+    config = ProteinGraphConfig(
+        node_metadata_functions=[
+            partial(hydrogen_bond_acceptor, return_array=True)
+        ]
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+
+    for _, d in g.nodes(data=True):
+        assert "hbond_acceptors" in d.keys()
+        assert isinstance(d["hbond_acceptors"], np.ndarray)
+
+    config = ProteinGraphConfig(
+        node_metadata_functions=[
+            partial(
+                hydrogen_bond_acceptor, return_array=True, sum_features=False
+            )
+        ]
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+    for _, d in g.nodes(data=True):
+        assert "hbond_acceptors" in d.keys()
+        assert isinstance(d["hbond_acceptors"], np.ndarray)
+        assert d["hbond_acceptors"] < 2
+
+    config = ProteinGraphConfig(
+        node_metadata_functions=[hydrogen_bond_acceptor], granularity="atom"
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+
+    for _, d in g.nodes(data=True):
+        assert "hbond_acceptors" in d.keys()
+        assert isinstance(d["hbond_acceptors"], pd.Series)
+
+    config = ProteinGraphConfig(
+        node_metadata_functions=[
+            partial(hydrogen_bond_acceptor, return_array=True)
+        ],
+        granularity="atom",
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+
+    for _, d in g.nodes(data=True):
+        assert "hbond_acceptors" in d.keys()
+        assert isinstance(d["hbond_acceptors"], np.ndarray)
+
+    config = ProteinGraphConfig(
+        node_metadata_functions=[
+            partial(
+                hydrogen_bond_acceptor, return_array=True, sum_features=False
+            )
+        ],
+        granularity="atom",
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+    for _, d in g.nodes(data=True):
+        assert "hbond_acceptors" in d.keys()
+        assert isinstance(d["hbond_acceptors"], np.ndarray)
+        assert d["hbond_acceptors"] < 2
+
+
+def test_hydrogen_bond_donor():
+    config = ProteinGraphConfig(node_metadata_functions=[hydrogen_bond_donor])
+    g = construct_graph(pdb_code="4hhb", config=config)
+
+    for _, d in g.nodes(data=True):
+        assert "hbond_donors" in d.keys()
+        assert isinstance(d["hbond_donors"], pd.Series)
+
+    config = ProteinGraphConfig(
+        node_metadata_functions=[
+            partial(hydrogen_bond_donor, return_array=True)
+        ]
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+
+    for _, d in g.nodes(data=True):
+        assert "hbond_donors" in d.keys()
+        assert isinstance(d["hbond_donors"], np.ndarray)
+
+    config = ProteinGraphConfig(
+        node_metadata_functions=[
+            partial(hydrogen_bond_donor, return_array=True, sum_features=False)
+        ]
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+    for _, d in g.nodes(data=True):
+        assert "hbond_donors" in d.keys()
+        assert isinstance(d["hbond_donors"], np.ndarray)
+        assert d["hbond_donors"] < 2
+
+    # Atom graphs
+    config = ProteinGraphConfig(
+        node_metadata_functions=[hydrogen_bond_donor], granularity="atom"
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+
+    for _, d in g.nodes(data=True):
+        assert "hbond_donors" in d.keys()
+        assert isinstance(d["hbond_donors"], pd.Series)
+
+    config = ProteinGraphConfig(
+        node_metadata_functions=[
+            partial(hydrogen_bond_donor, return_array=True)
+        ],
+        granularity="atom",
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+
+    for _, d in g.nodes(data=True):
+        assert "hbond_donors" in d.keys()
+        assert isinstance(d["hbond_donors"], np.ndarray)
+
+    config = ProteinGraphConfig(
+        node_metadata_functions=[
+            partial(hydrogen_bond_donor, return_array=True, sum_features=False)
+        ],
+        granularity="atom",
+    )
+    g = construct_graph(pdb_code="4hhb", config=config)
+    for _, d in g.nodes(data=True):
+        assert "hbond_donors" in d.keys()
+        assert isinstance(d["hbond_donors"], np.ndarray)
+        assert d["hbond_donors"] < 2
 
 
 # def test_aaindex_1_feat():

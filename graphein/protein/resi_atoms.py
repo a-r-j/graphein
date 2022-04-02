@@ -548,6 +548,48 @@ NON_STANDARD_RESIS_PARENT: Dict[str, str] = {
 Mapping of 3-letter non-standard/modified residues to their 3-letter parent residue names.
 """
 
+HYDROGEN_BOND_DONORS: Dict[str, Dict[str, int]] = {
+    "ARG": {"NE": 1, "NH1": 2, "NH2": 2},
+    "ASN": {"ND2": 2},
+    "GLN": {"NE2": 2},
+    "HIS": {"ND1": 2, "NE2": 2},
+    "LYS": {"NZ": 3},
+    "SER": {"OG": 1},
+    "THR": {"OG1": 1},
+    "TYR": {"OH": 1},
+    "TRP": {"NE1": 1},
+}
+"""
+Number of hydrogen bonds that a donor atom can donate, if more than one.
+
+9 amino acids (alanine, cysteine, glycine, isoleucine, leucine, methionine,
+phenylalanine, proline, valine) have no hydrogen donor or acceptor atoms in
+their side chains.
+
+https://www.imgt.org/IMGTeducation/Aide-memoire/_UK/aminoacids/charge/
+"""
+
+
+HYDROGEN_BOND_ACCEPTORS: Dict[str, Dict[str, int]] = {
+    "ASN": {"OD1": 2},
+    "ASP": {"OD1": 2, "OD2": 2},
+    "GLN": {"OE1": 2},
+    "GLU": {"OE1": 2, "OE2": 2},
+    "HIS": {"ND1": 1, "NE2": 1},
+    "SER": {"OG": 2},
+    "THR": {"OG1": 2},
+    "TYR": {"OH": 1},
+}
+"""
+Number of hydrogen bonds that an acceptor atom can accept, if more than one.
+
+9 amino acids (alanine, cysteine, glycine, isoleucine, leucine, methionine,
+phenylalanine, proline, valine) have no hydrogen donor or acceptor atoms in
+their side chains.
+
+https://www.imgt.org/IMGTeducation/Aide-memoire/_UK/aminoacids/charge/
+"""
+
 COFACTOR_NAMES: List[str] = [
     "ADP",
     "AMP",
