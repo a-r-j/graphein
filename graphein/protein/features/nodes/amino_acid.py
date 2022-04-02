@@ -168,13 +168,33 @@ def amino_acid_one_hot(
     return features
 
 
-def hydrogen_bond_donor(n, d, return_array: bool = False) -> pd.Series:
-    """Adds Hydrogen Bond Donor statues to nodes as a feature."""
+def hydrogen_bond_donor(
+    n: str,
+    d: Dict[str, Any],
+    sum_features: bool = True,
+    return_array: bool = False,
+) -> pd.Series:
+    """Adds Hydrogen Bond Donor status to nodes as a feature.
+
+    :param n: node id
+    :type n: str
+    :param d: Dict of node attributes
+    :type d: Dict[str, Any]
+    :param sum_features: If ``True``, the feature is the number of hydrogen bond donors per node.
+        If ``False``, the feature is a boolean indicating whether or not the node has a hydrogen
+        bond donor. Default is ``True``.
+    :type sum_features: bool
+    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise returns a ``pd.Series``. Default is ``True``.
+    :type return_array: bool
+    """
     node_id = n.split(":")
     res = node_id[1]
     if len(node_id) == 4:  # Atomic graph
         atom = node_id[-1]
-        features = HYDROGEN_BOND_DONORS[res][atom]
+        try:
+            features = HYDROGEN_BOND_DONORS[res][atom]
+        except KeyError:
+            features = 0
     elif len(node_id) == 3:  # Residue graph
         if res not in HYDROGEN_BOND_DONORS.keys():
             features = 0
@@ -185,16 +205,36 @@ def hydrogen_bond_donor(n, d, return_array: bool = False) -> pd.Series:
         features = np.array(features).astype(int)
     else:
         features = pd.Series(features).astype(int)
+    if not sum_features:
+        features = np.array(features > 0).astype(int)
+
     d["hbond_donors"] = features
 
 
-def hydrogen_bond_acceptor(n, d, return_array: bool = False) -> pd.Series:
-    """Adds Hydrogen Bond Acceptor statues to nodes as a feature."""
+def hydrogen_bond_acceptor(
+    n, d, sum_features: bool = True, return_array: bool = False
+) -> pd.Series:
+    """Adds Hydrogen Bond Acceptor status to nodes as a feature."
+
+    :param n: node id
+    :type n: str
+    :param d: Dict of node attributes
+    :type d: Dict[str, Any]
+    :param sum_features: If ``True``, the feature is the number of hydrogen bond acceptors per node.
+        If ``False``, the feature is a boolean indicating whether or not the node has a hydrogen
+        bond acceptor. Default is ``True``.
+    :type sum_features: bool
+    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise returns a ``pd.Series``. Default is ``True``.
+    :type return_array: bool
+    """
     node_id = n.split(":")
     res = node_id[1]
     if len(node_id) == 4:  # Atomic graph
         atom = node_id[-1]
-        features = HYDROGEN_BOND_ACCEPTORS[res][atom]
+        try:
+            features = HYDROGEN_BOND_ACCEPTORS[res][atom]
+        except KeyError:
+            features = 0
     elif len(node_id) == 3:  # Residue graph
         if res not in HYDROGEN_BOND_ACCEPTORS.keys():
             features = 0
@@ -205,4 +245,6 @@ def hydrogen_bond_acceptor(n, d, return_array: bool = False) -> pd.Series:
         features = np.array(features).astype(int)
     else:
         features = pd.Series(features).astype(int)
+    if not sum_features:
+        features = np.array(features > 0).astype(int)
     d["hbond_acceptors"] = features
