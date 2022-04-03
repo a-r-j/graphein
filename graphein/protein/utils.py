@@ -74,7 +74,7 @@ def download_pdb(config, pdb_code: str) -> Path:
         pdb_code, pdir=config.pdb_dir, overwrite=True, file_format="pdb"
     )
     # If file not downloaded, check for obsolescence
-    if not os.path.exists(config.pdb_dir / f"{pdb_code}.pdb"):
+    if not os.path.exists(config.pdb_dir / f"pdb{pdb_code}.ent"):
         obs_map = get_obsolete_mapping()
         try:
             new_pdb = obs_map[pdb_code.lower()].lower()
