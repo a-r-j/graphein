@@ -65,6 +65,7 @@ def download_pdb(config, pdb_code: str) -> Path:
     :return: returns filepath to downloaded structure.
     :rtype: str
     """
+    pdb_code = pdb_code.lower()
     if not config.pdb_dir:
         config.pdb_dir = Path("/tmp/")
 
@@ -192,6 +193,7 @@ def download_alphafold_structure(
     :rtype: Union[str, Tuple[str, str]]
     """
     BASE_URL = "https://alphafold.ebi.ac.uk/files/"
+    uniprot_id = uniprot_id.upper()
 
     if not mmcif and not pdb:
         raise ValueError("Must specify either mmcif or pdb.")

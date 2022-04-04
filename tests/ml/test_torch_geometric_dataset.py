@@ -64,7 +64,7 @@ def test_list_dataset():
 
 @pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
 def test_in_memory_dataset():
-    pdb_list = ["7VXG", "7DYS", "7WHV", "7EEK"]
+    pdb_list = ["7vxg", "7dys", "7whv", "7eek"]
     uniprots = ["P10513", "B1VC86", "P13948", "P17998"]
 
     ds = InMemoryProteinGraphDataset(
@@ -89,7 +89,7 @@ def test_in_memory_dataset():
 
 @pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
 def test_protein_graph_dataset():
-    pdb_list = ["4RTY", "4R01", "5E08", "6F15"]
+    pdb_list = ["4rty", "4r01", "5e08", "6f15"]
     uniprots = ["A0A0A1EI90", "A0A0B4JCS5", "A0A0B4JCZ3", "A0A0B4JCZ0"]
 
     ds = ProteinGraphDataset(

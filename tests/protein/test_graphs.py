@@ -83,7 +83,7 @@ def test_construct_graph():
 
     Uses 4hhb PDB file as an example test case.
     """
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     G = construct_graph(pdb_path=str(file_path))
     assert isinstance(G, nx.Graph)
     assert len(G) == 574
@@ -133,7 +133,7 @@ def test_chain_selection():
 
     Uses 4hhb PDB file as an example test case.
     """
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     G = construct_graph(pdb_path=str(file_path))
 
     # Check default construction contains all chains
@@ -183,7 +183,7 @@ def test_distance_edges():
 
     Uses 4hhb PDB file as an example test case.
     """
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
 
     edge_functions = {
         "edge_construction_functions": [
@@ -216,7 +216,7 @@ def test_node_features():
     # Tests node featurisers for a residue graph:
     # Amino acid features, ESM embedding, DSSP features, aaindex features
 
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
 
     config_params = {
         "node_metadata_functions": [
@@ -253,7 +253,7 @@ def test_node_features():
 def test_sequence_features():
     # Tests sequence featurisers for a residue graph:
     # ESM and BioVec embeddings, propy and sequence descriptors
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
 
     sequence_feature_functions = {
         "graph_metadata_functions": [
@@ -333,7 +333,7 @@ def test_edges_do_not_add_nodes_for_chain_subset():
 
 
 def test_secondary_structure_graphs():
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     config = ProteinGraphConfig(
         edge_construction_functions=[
             add_hydrophobic_interactions,
@@ -369,7 +369,7 @@ def test_secondary_structure_graphs():
 
 
 def test_chain_graph():
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     config = ProteinGraphConfig(
         edge_construction_functions=[
             add_hydrophobic_interactions,

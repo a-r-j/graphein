@@ -119,11 +119,19 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         :type af_version: int, optional
         """
         self.name = name
-        self.pdb_codes = pdb_codes
-        self.uniprot_ids = uniprot_ids
+        self.pdb_codes = (
+            [pdb.lower() for pdb in pdb_codes]
+            if pdb_codes is not None
+            else None
+        )
+        self.uniprot_ids = (
+            [up.upper() for up in uniprot_ids]
+            if uniprot_ids is not None
+            else None
+        )
 
         if self.pdb_codes and self.uniprot_ids:
-            self.structures = pdb_codes + uniprot_ids
+            self.structures = self.pdb_codes + self.uniprot_ids
         elif self.pdb_codes:
             self.structures = pdb_codes
         elif self.uniprot_ids:
@@ -328,11 +336,19 @@ class ProteinGraphDataset(Dataset):
             defaults to ``2``.
         :type af_version: int, optional
         """
-        self.pdb_codes = pdb_codes
-        self.uniprot_ids = uniprot_ids
+        self.pdb_codes = (
+            [pdb.lower() for pdb in pdb_codes]
+            if pdb_codes is not None
+            else None
+        )
+        self.uniprot_ids = (
+            [up.upper() for up in uniprot_ids]
+            if uniprot_ids is not None
+            else None
+        )
 
         if self.pdb_codes and self.uniprot_ids:
-            self.structures = pdb_codes + uniprot_ids
+            self.structures = self.pdb_codes + self.uniprot_ids
         elif self.pdb_codes:
             self.structures = pdb_codes
         elif self.uniprot_ids:
