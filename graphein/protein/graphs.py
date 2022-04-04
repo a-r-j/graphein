@@ -780,6 +780,7 @@ def compute_chain_graph(
     # Compute a weighted graph if required.
     if return_weighted_graph:
         return compute_weighted_graph_from_multigraph(h)
+    return h
 
 
 def compute_weighted_graph_from_multigraph(g: nx.MultiGraph) -> nx.Graph:
