@@ -42,6 +42,7 @@ from graphein.protein.graphs import (
     compute_chain_graph,
     compute_secondary_structure_graph,
     construct_graph,
+    construct_graphs_mp,
     read_pdb_to_dataframe,
 )
 
@@ -82,7 +83,7 @@ def test_construct_graph():
 
     Uses 4hhb PDB file as an example test case.
     """
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     G = construct_graph(pdb_path=str(file_path))
     assert isinstance(G, nx.Graph)
     assert len(G) == 574
@@ -96,12 +97,43 @@ def test_construct_graph():
     assert len(peptide_bond_edges) == 570
 
 
+def test_construct_graphs_mp():
+    graph_list = [
+        "2olg",
+        "1bjq",
+        "1omr",
+        "1a4g",
+        "2je9",
+        "3vm5",
+        "1el1",
+        "3fzo",
+        "1mn1",
+        "1ff5",
+        "1fic",
+        "3a47",
+        "1bir",
+    ] * 5
+
+    g = construct_graphs_mp(
+        pdb_code_it=graph_list, config=ProteinGraphConfig(), return_dict=True
+    )
+    assert isinstance(g, dict)
+    assert len(g.keys()) == len(graph_list) / 5
+    for k, v in g.items():
+        assert isinstance(v, (nx.Graph, None))
+    g = construct_graphs_mp(
+        pdb_code_it=graph_list, config=ProteinGraphConfig(), return_dict=False
+    )
+    assert isinstance(g, list)
+    assert len(g) == len(graph_list)
+
+
 def test_chain_selection():
     """Example-based test that chain selection works correctly.
 
     Uses 4hhb PDB file as an example test case.
     """
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     G = construct_graph(pdb_path=str(file_path))
 
     # Check default construction contains all chains
@@ -151,7 +183,7 @@ def test_distance_edges():
 
     Uses 4hhb PDB file as an example test case.
     """
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
 
     edge_functions = {
         "edge_construction_functions": [
@@ -184,7 +216,7 @@ def test_node_features():
     # Tests node featurisers for a residue graph:
     # Amino acid features, ESM embedding, DSSP features, aaindex features
 
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
 
     config_params = {
         "node_metadata_functions": [
@@ -221,7 +253,7 @@ def test_node_features():
 def test_sequence_features():
     # Tests sequence featurisers for a residue graph:
     # ESM and BioVec embeddings, propy and sequence descriptors
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
 
     sequence_feature_functions = {
         "graph_metadata_functions": [
@@ -301,7 +333,7 @@ def test_edges_do_not_add_nodes_for_chain_subset():
 
 
 def test_secondary_structure_graphs():
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     config = ProteinGraphConfig(
         edge_construction_functions=[
             add_hydrophobic_interactions,
@@ -337,7 +369,7 @@ def test_secondary_structure_graphs():
 
 
 def test_chain_graph():
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     config = ProteinGraphConfig(
         edge_construction_functions=[
             add_hydrophobic_interactions,

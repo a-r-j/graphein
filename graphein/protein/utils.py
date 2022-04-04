@@ -65,6 +65,7 @@ def download_pdb(config, pdb_code: str) -> Path:
     :return: returns filepath to downloaded structure.
     :rtype: str
     """
+    pdb_code = pdb_code.lower()
     if not config.pdb_dir:
         config.pdb_dir = Path("/tmp/")
 
@@ -74,7 +75,7 @@ def download_pdb(config, pdb_code: str) -> Path:
         pdb_code, pdir=config.pdb_dir, overwrite=True, file_format="pdb"
     )
     # If file not downloaded, check for obsolescence
-    if not os.path.exists(config.pdb_dir / f"{pdb_code}.pdb"):
+    if not os.path.exists(config.pdb_dir / f"pdb{pdb_code}.ent"):
         obs_map = get_obsolete_mapping()
         try:
             new_pdb = obs_map[pdb_code.lower()].lower()
@@ -164,43 +165,67 @@ def compute_rgroup_dataframe(pdb_df: pd.DataFrame) -> pd.DataFrame:
 
 def download_alphafold_structure(
     uniprot_id: str,
+    version: int = 2,
     out_dir: str = ".",
+    rename: bool = True,
     pdb: bool = True,
     mmcif: bool = False,
     aligned_score: bool = True,
 ) -> Union[str, Tuple[str, str]]:
-    BASE_URL = "https://alphafold.ebi.ac.uk/files/"
     """
     Downloads a structure from the Alphafold EBI database (https://alphafold.ebi.ac.uk/files/").
 
     :param uniprot_id: UniProt ID of desired protein.
     :type uniprot_id: str
-    :param out_dir: String specifying desired output location. Default is pwd.
+    :param version: Version of the structure to download
+    :type version: int
+    :param out_dir: string specifying desired output location. Default is pwd.
     :type out_dir: str
-    :param mmcif: Bool specifying whether to download ``MMCiF`` or ``PDB``. Default is ``False`` (downloads pdb).
+    :param rename: boolean specifying whether to rename the output file to ``$uniprot_id.pdb``. Default is ``True``.
+    :type rename: bool
+    :param pdb: boolean specifying whether to download the PDB file. Default is ``True``.
+    :type pdb: bool
+    :param mmcif: Bool specifying whether to download MMCiF or PDB. Default is false (downloads pdb)
     :type mmcif: bool
     :param retrieve_aligned_score: Bool specifying whether or not to download score alignment json.
     :type retrieve_aligned_score: bool
     :return: path to output. Tuple if several outputs specified.
     :rtype: Union[str, Tuple[str, str]]
     """
+    BASE_URL = "https://alphafold.ebi.ac.uk/files/"
+    uniprot_id = uniprot_id.upper()
+
     if not mmcif and not pdb:
         raise ValueError("Must specify either mmcif or pdb.")
     if mmcif:
-        query_url = f"{BASE_URL}AF-{uniprot_id}F1-model_v1.cif"
+        query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.cif"
     if pdb:
-        query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v1.pdb"
-
+        query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.pdb"
     structure_filename = wget.download(query_url, out=out_dir)
 
+    if rename:
+        extension = ".pdb" if pdb else ".cif"
+        os.rename(
+            structure_filename, Path(out_dir) / f"{uniprot_id}{extension}"
+        )
+        structure_filename = str(
+            (Path(out_dir) / f"{uniprot_id}{extension}").resolve()
+        )
+
+    log.info(f"Downloaded AlphaFold PDB file for: {uniprot_id}")
     if aligned_score:
         score_query = (
             BASE_URL
             + "AF-"
             + uniprot_id
-            + "-F1-predicted_aligned_error_v1.json"
+            + f"-F1-predicted_aligned_error_v{version}.json"
         )
         score_filename = wget.download(score_query, out=out_dir)
+        if rename:
+            os.rename(score_filename, Path(out_dir) / f"{uniprot_id}.json")
+            score_filename = str(
+                (Path(out_dir) / f"{uniprot_id}.json").resolve()
+            )
         return structure_filename, score_filename
 
     return structure_filename

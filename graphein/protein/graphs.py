@@ -8,6 +8,9 @@
 from __future__ import annotations
 
 import logging
+import multiprocessing
+import traceback
+from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import networkx as nx
@@ -617,6 +620,99 @@ def construct_graph(
     return g
 
 
+def _mp_graph_constructor(
+    args: Tuple[str, str], use_pdb_code: bool, config: ProteinGraphConfig
+) -> nx.Graph:
+    """
+    Protein graph constructor for use in multiprocessing several protein structure graphs.
+
+    :param args: Tuple of pdb code/path and the chain selection for that PDB
+    :type args: Tuple[str, str]
+    :param use_pdb_code: Whether or not we are using pdb codes or paths
+    :type use_pdb_code: bool
+    :param config: Protein structure graph construction config
+    :type config: ProteinGraphConfig
+    :return: Protein structure graph
+    :rtype: nx.Graph
+    """
+    log.info(f"Constructing graph for: {args[0]}. Chain selection: {args[1]}")
+    func = partial(construct_graph, config=config)
+    try:
+        return (
+            func(pdb_code=args[0], chain_selection=args[1])
+            if use_pdb_code
+            else func(pdb_path=args[0], chain_selection=args[1])
+        )
+
+    except Exception as ex:
+        log.info(
+            f"Graph construction error (PDB={args[0]})! {traceback.format_exc()}"
+        )
+        log.info(ex)
+        return None
+
+
+def construct_graphs_mp(
+    pdb_code_it: Optional[List[str]] = None,
+    pdb_path_it: Optional[List[str]] = None,
+    chain_selections: Optional[list[str]] = None,
+    config: ProteinGraphConfig = ProteinGraphConfig(),
+    num_cores: int = 16,
+    return_dict: bool = True,
+) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:
+    """
+    Constructs protein graphs for a list of pdb codes or pdb paths using multiprocessing.
+
+    :param pdb_code_it: List of pdb codes to use for protein graph construction
+    :type pdb_code_it: Optional[List[str]], defaults to None
+    :param pdb_path_it: List of paths to PDB files to use for protein graph construction
+    :type pdb_path_it: Optional[List[str]], defaults to None
+    :param chain_selections: List of chains to select from the protein structures (e.g. ["ABC", "A", "L", "CD"...])
+    :type chain_selections: Optional[List[str]], defaults to None
+    :param config: ProteinGraphConfig to use.
+    :type config: graphein.protein.config.ProteinGraphConfig, defaults to default config params
+    :param num_cores: Number of cores to use for multiprocessing. The more the merrier
+    :type num_cores: int, defaults to 16
+    :param return_dict: Whether or not to return a dictionary (indexed by pdb codes/paths) or a list of graphs.
+    :type return_dict: bool, default to True
+    :return: Iterable of protein graphs. None values indicate there was a problem in constructing the graph for this particular pdb
+    :rtype: Union[List[nx.Graph], Dict[str, nx.Graph]]
+    """
+    assert (
+        pdb_code_it is not None or pdb_path_it is not None
+    ), "Iterable of pdb codes OR pdb paths required."
+
+    if pdb_code_it is not None:
+        pdbs = pdb_code_it
+        use_pdb_code = True
+
+    if pdb_path_it is not None:
+        pdbs = pdb_path_it
+        use_pdb_code = False
+
+    if chain_selections is None:
+        chain_selections = ["all"] * len(pdbs)
+
+    constructor = partial(
+        _mp_graph_constructor, use_pdb_code=use_pdb_code, config=config
+    )
+
+    pool = multiprocessing.Pool(num_cores)
+    graphs = list(
+        pool.map(
+            constructor,
+            [(pdb, chain_selections[i]) for i, pdb in enumerate(pdbs)],
+        )
+    )
+    pool.close()
+    pool.join()
+
+    if return_dict:
+        graphs = {pdb: graphs[i] for i, pdb in enumerate(pdbs)}
+
+    return graphs
+
+
 def compute_chain_graph(
     g: nx.Graph,
     chain_list: Optional[List[str]] = None,
@@ -684,7 +780,6 @@ def compute_chain_graph(
     # Compute a weighted graph if required.
     if return_weighted_graph:
         return compute_weighted_graph_from_multigraph(h)
-
     return h
 
 
