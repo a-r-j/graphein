@@ -208,7 +208,9 @@ def download_alphafold_structure(
         os.rename(
             structure_filename, Path(out_dir) / f"{uniprot_id}{extension}"
         )
-        structure_filename = Path(out_dir) / f"{uniprot_id}{extension}"
+        structure_filename = str(
+            (Path(out_dir) / f"{uniprot_id}{extension}").resolve()
+        )
 
     log.info(f"Downloaded AlphaFold PDB file for: {uniprot_id}")
     if aligned_score:
@@ -216,12 +218,14 @@ def download_alphafold_structure(
             BASE_URL
             + "AF-"
             + uniprot_id
-            + "-F1-predicted_aligned_error_v{version}.json"
+            + f"-F1-predicted_aligned_error_v{version}.json"
         )
         score_filename = wget.download(score_query, out=out_dir)
         if rename:
             os.rename(score_filename, Path(out_dir) / f"{uniprot_id}.json")
-            score_filename = Path(out_dir) / f"{uniprot_id}.json"
+            score_filename = str(
+                (Path(out_dir) / f"{uniprot_id}.json").resolve()
+            )
         return structure_filename, score_filename
 
     return structure_filename
