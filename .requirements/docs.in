@@ -7,6 +7,7 @@ nbstripout
 pandoc
 pydocstyle
 sphinx
+sphinx-inline-tabs
 sphinxext-opengraph
 sphinxcontrib-gtagjs
 ipython
