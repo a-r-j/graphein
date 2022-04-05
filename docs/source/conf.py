@@ -29,7 +29,7 @@ copyright = "2022, Arian Jamasb"
 author = "Arian Jamasb"
 
 # The full version, including alpha/beta/rc tags
-release = "1.2.1"
+release = "1.3.0"
 
 
 # -- General configuration ---------------------------------------------------
