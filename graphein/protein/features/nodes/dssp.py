@@ -14,7 +14,7 @@ import pandas as pd
 from Bio.Data.IUPACData import protein_letters_1to3
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 
-from graphein.protein.utils import download_pdb
+from graphein.protein.utils import download_pdb, is_tool
 
 DSSP_COLS = [
     "chain",
@@ -109,7 +109,8 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     config = G.graph["config"]
     pdb_id = G.graph["pdb_id"]
 
-    # TODO - Check for DSSP installation
+    # Ensure that DSSP is on PATH and is marked as an executable.
+    assert is_tool('dssp'), 'DSSP must be on PATH and marked as an executable'
 
     # Check for existence of pdb file. If not, download it.
     if not os.path.isfile(config.pdb_dir / pdb_id):
@@ -173,7 +174,7 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     config = G.graph["config"]
     dssp_df = G.graph["dssp_df"]
 
-    # Change to not allow for atom granuarlity?
+    # Change to not allow for atom granularity?
     if config.granularity == "atom":
         # TODO confirm below is not needed and remove
         """
