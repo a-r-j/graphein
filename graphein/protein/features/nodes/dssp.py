@@ -109,17 +109,17 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     config = G.graph["config"]
     pdb_id = G.graph["pdb_id"]
 
+    # Extract DSSP executable
+    executable = dssp_config.executable
+
     # Ensure that DSSP is on PATH and is marked as an executable.
-    assert is_tool('dssp'), 'DSSP must be on PATH and marked as an executable'
+    assert is_tool(exectutable), "DSSP must be on PATH and marked as an executable"
 
     # Check for existence of pdb file. If not, download it.
     if not os.path.isfile(config.pdb_dir / pdb_id):
         pdb_file = download_pdb(config, pdb_id)
     else:
         pdb_file = config.pdb_dir + pdb_id + ".pdb"
-
-    # Extract DSSP executable
-    executable = dssp_config.executable
 
     if config.verbose:
         print(f"Using DSSP executable '{executable}'")
