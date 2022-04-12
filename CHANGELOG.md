@@ -1,3 +1,6 @@
+### 1.3.1 - UNRELEASED
+* [Feature] - #154 adds a way of checking that DSSP is executable before trying to use it. #154
+
 ### 1.3.0 - 5/4/22
 
 * [Feature] - #141 adds edge construction based on sequence distance.
