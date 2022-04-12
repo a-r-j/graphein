@@ -18,7 +18,7 @@
     <img src="./imgs/graphein.png" width="100%"/>
   </a>
   <a href="https://www.graphein.ai/#gh-dark-mode-only">
-    <img src=".imgs/graphein_dark.png" width="100%"/>
+    <img src="./imgs/graphein_dark.png" width="100%"/>
   </a>
 </p>
 
