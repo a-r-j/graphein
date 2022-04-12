@@ -13,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
-[![banner](./imgs/graphein.png#gh-light-mode-only)](http://www.graphein.ai)[![banner](./imgs/graphein_dark.png#gh-dark-mode-only)](http://www.graphein.ai)
+[![banner](./imgs/graphein.png#gh-light-mode-only)![banner](./imgs/graphein_dark.png#gh-dark-mode-only)](http://www.graphein.ai)
 
 <br></br>
 
