@@ -67,6 +67,14 @@ def test_add_beta_carbon_vector():
             np.testing.assert_almost_equal(
                 cb_true, d["coords"] + d["c_beta_vector"]
             )
+    # Test altloc handling
+    g = construct_graph(config=config, pdb_code="6rew")
+    for n, d in g.nodes(data=True):
+        assert d["c_beta_vector"].shape == (3,)
+
+    g = construct_graph(config=config, pdb_code="7w9w")
+    for n, d in g.nodes(data=True):
+        assert d["c_beta_vector"].shape == (3,)
 
 
 def test_add_sidechain_vector():

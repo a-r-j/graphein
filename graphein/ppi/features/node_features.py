@@ -1,4 +1,6 @@
 """Functions for adding nodes features to a PPI Graph"""
+import logging
+
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
@@ -11,15 +13,19 @@ import networkx as nx
 
 from graphein.utils.utils import import_message
 
+log = logging.getLogger(__name__)
+
+
 try:
     from bioservices import HGNC, UniProt
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.ppi.features.nodes_features",
         package="bioservices",
         conda_channel="bioconda",
         pip_install=True,
     )
+    log.warning(message)
 
 
 def add_sequence_to_nodes(n: str, d: Dict[str, Any]):

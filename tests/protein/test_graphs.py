@@ -6,7 +6,7 @@ from pathlib import Path
 import networkx as nx
 import pytest
 
-from graphein.protein.config import ProteinGraphConfig
+from graphein.protein.config import DSSPConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (
     add_aromatic_interactions,
     add_aromatic_sulphur_interactions,
@@ -38,7 +38,13 @@ from graphein.protein.features.sequence.embeddings import (
     esm_sequence_embedding,
 )
 from graphein.protein.features.sequence.sequence import molecular_weight
-from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
+from graphein.protein.graphs import (
+    compute_chain_graph,
+    compute_secondary_structure_graph,
+    construct_graph,
+    construct_graphs_mp,
+    read_pdb_to_dataframe,
+)
 
 DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
 
@@ -77,7 +83,7 @@ def test_construct_graph():
 
     Uses 4hhb PDB file as an example test case.
     """
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     G = construct_graph(pdb_path=str(file_path))
     assert isinstance(G, nx.Graph)
     assert len(G) == 574
@@ -91,12 +97,43 @@ def test_construct_graph():
     assert len(peptide_bond_edges) == 570
 
 
+def test_construct_graphs_mp():
+    graph_list = [
+        "2olg",
+        "1bjq",
+        "1omr",
+        "1a4g",
+        "2je9",
+        "3vm5",
+        "1el1",
+        "3fzo",
+        "1mn1",
+        "1ff5",
+        "1fic",
+        "3a47",
+        "1bir",
+    ] * 5
+
+    g = construct_graphs_mp(
+        pdb_code_it=graph_list, config=ProteinGraphConfig(), return_dict=True
+    )
+    assert isinstance(g, dict)
+    assert len(g.keys()) == len(graph_list) / 5
+    for k, v in g.items():
+        assert isinstance(v, (nx.Graph, None))
+    g = construct_graphs_mp(
+        pdb_code_it=graph_list, config=ProteinGraphConfig(), return_dict=False
+    )
+    assert isinstance(g, list)
+    assert len(g) == len(graph_list)
+
+
 def test_chain_selection():
     """Example-based test that chain selection works correctly.
 
     Uses 4hhb PDB file as an example test case.
     """
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     G = construct_graph(pdb_path=str(file_path))
 
     # Check default construction contains all chains
@@ -146,13 +183,14 @@ def test_distance_edges():
 
     Uses 4hhb PDB file as an example test case.
     """
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
 
     edge_functions = {
         "edge_construction_functions": [
             partial(add_k_nn_edges, k=5, long_interaction_threshold=10),
             add_hydrophobic_interactions,
-            add_aromatic_interactions,  # Todo removed for now as ring centroids require precomputing
+            # Todo removed for now as ring centroids require precomputing
+            add_aromatic_interactions,
             add_aromatic_sulphur_interactions,
             add_delaunay_triangulation,
             add_cation_pi_interactions,
@@ -178,32 +216,36 @@ def test_node_features():
     # Tests node featurisers for a residue graph:
     # Amino acid features, ESM embedding, DSSP features, aaindex features
 
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
 
-    node_feature_functions = {
+    config_params = {
         "node_metadata_functions": [
             expasy_protein_scale,  # Todo we need to refactor node data assingment flow
             meiler_embedding,
-            # rsa,
-            # asa,
-            # phi,
-            # psi,
-            # secondary_structure,
+        ],
+        "graph_metadata_functions": [
+            rsa,
+            asa,
+            phi,
+            psi,
+            secondary_structure,
             # partial(aaindex1, accession="FAUJ880111"),
-        ]
+        ],
+        "dssp_config": DSSPConfig(),
     }
-    config = ProteinGraphConfig(**node_feature_functions)
+    config = ProteinGraphConfig(**config_params)
     G = construct_graph(pdb_path=str(file_path), config=config)
 
     # Check for existence of features
-    for n, d in G.nodes(data=True):
-        # assert "meiler_embedding" in d # Todo these functions return pd.Series, rather than adding to the node
-        # assert expasy_protein_scale in d
-        # assert "rsa" in d
-        # assert "asa" in d
-        # assert "phi" in d
-        # assert "psi" in d
-        # assert "secondary_structure" in d
+    for _, d in G.nodes(data=True):
+        # Todo these functions return pd.Series, rather than adding to the node
+        assert "meiler" in d.keys()
+        assert "expasy" in d.keys()
+        assert "rsa" in d.keys()
+        assert "asa" in d.keys()
+        assert "phi" in d.keys()
+        assert "psi" in d.keys()
+        assert "ss" in d.keys()
         continue
 
 
@@ -211,7 +253,7 @@ def test_node_features():
 def test_sequence_features():
     # Tests sequence featurisers for a residue graph:
     # ESM and BioVec embeddings, propy and sequence descriptors
-    file_path = Path(__file__).parent / "test_data/4hhb.pdb"
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
 
     sequence_feature_functions = {
         "graph_metadata_functions": [
@@ -288,3 +330,61 @@ def test_edges_do_not_add_nodes_for_chain_subset():
     assert len(g) == 222
     g = construct_graph(config=config, pdb_code="2vvi", chain_selection="D")
     assert len(g) == 219
+
+
+def test_secondary_structure_graphs():
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
+    config = ProteinGraphConfig(
+        edge_construction_functions=[
+            add_hydrophobic_interactions,
+            add_aromatic_interactions,
+            add_disulfide_interactions,
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+        ],
+        graph_metadata_functions=[secondary_structure],
+        dssp_config=DSSPConfig(),
+    )
+    g = construct_graph(pdb_path=str(file_path), config=config)
+
+    h = compute_secondary_structure_graph(g, remove_non_ss=False)
+    # Check number of residues preserved
+    res_counts = sum(d["residue_counts"] for _, d in h.nodes(data=True))
+    assert res_counts == len(
+        g
+    ), "Residue counts in SS graph should match number of residues in original graph"
+    assert nx.is_connected(
+        h
+    ), "SS graph should be connected in this configuration"
+
+    h = compute_secondary_structure_graph(
+        g,
+        remove_non_ss=False,
+        remove_self_loops=False,
+        return_weighted_graph=False,
+    )
+    assert len(g.edges) == len(
+        h.edges
+    ), "Multigraph should have same number of edges."
+
+
+def test_chain_graph():
+    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
+    config = ProteinGraphConfig(
+        edge_construction_functions=[
+            add_hydrophobic_interactions,
+            add_aromatic_interactions,
+            add_disulfide_interactions,
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+        ],
+        graph_metadata_functions=[secondary_structure],
+        dssp_config=DSSPConfig(),
+    )
+    g = construct_graph(pdb_path=str(file_path), config=config)
+    h = compute_chain_graph(g)
+    assert len(h.edges) == len(g.edges), "Number of edges do not match"
+
+    h = compute_chain_graph(g, return_weighted_graph=True)
+    node_sum = sum(d["num_residues"] for _, d in h.nodes(data=True))
+    assert node_sum == len(g), "Number of residues do not match"

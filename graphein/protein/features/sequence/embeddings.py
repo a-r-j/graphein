@@ -6,6 +6,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import logging
 import os
 from functools import lru_cache, partial
 from pathlib import Path
@@ -18,24 +19,29 @@ from graphein.protein.features.sequence.utils import (
 )
 from graphein.utils.utils import import_message
 
+log = logging.getLogger(__name__)
+
+
 try:
     import torch
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.protein.features.sequence.embeddings",
         package="torch",
         pip_install=True,
         conda_channel="pytorch",
     )
+    log.warning(message)
 
 try:
     import biovec
 except ImportError:
-    import_message(
+    message = import_message(
         submodule="graphein.protein.features.sequence.embeddings",
         package="biovec",
         pip_install=True,
     )
+    log.warning(message)
 
 
 @lru_cache()

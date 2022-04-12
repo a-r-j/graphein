@@ -13,7 +13,12 @@ from typing import Any, Dict, List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from graphein.protein.resi_atoms import BASE_AMINO_ACIDS, RESI_THREE_TO_1
+from graphein.protein.resi_atoms import (
+    BASE_AMINO_ACIDS,
+    HYDROGEN_BOND_ACCEPTORS,
+    HYDROGEN_BOND_DONORS,
+    RESI_THREE_TO_1,
+)
 from graphein.utils.utils import onek_encoding_unk
 
 log = logging.getLogger(__name__)
@@ -34,8 +39,7 @@ def load_expasy_scales() -> pd.DataFrame:
     """
     fpath = Path(__file__).parent / "amino_acid_properties.csv"
     log.debug(f"Reading Expasy protein scales from: {fpath}")
-    df = pd.read_csv(fpath, index_col=0)
-    return df
+    return pd.read_csv(fpath, index_col=0)
 
 
 @lru_cache()
@@ -53,8 +57,7 @@ def load_meiler_embeddings() -> pd.DataFrame:
     """
     fpath = Path(__file__).parent / "meiler_embeddings.csv"
     log.debug(f"Reading meiler embeddings from: {fpath}")
-    df = pd.read_csv(fpath, index_col=0)
-    return df
+    return pd.read_csv(fpath, index_col=0)
 
 
 def expasy_protein_scale(
@@ -163,3 +166,85 @@ def amino_acid_one_hot(
 
     d["amino_acid_one_hot"] = features
     return features
+
+
+def hydrogen_bond_donor(
+    n: str,
+    d: Dict[str, Any],
+    sum_features: bool = True,
+    return_array: bool = False,
+) -> pd.Series:
+    """Adds Hydrogen Bond Donor status to nodes as a feature.
+
+    :param n: node id
+    :type n: str
+    :param d: Dict of node attributes
+    :type d: Dict[str, Any]
+    :param sum_features: If ``True``, the feature is the number of hydrogen bond donors per node.
+        If ``False``, the feature is a boolean indicating whether or not the node has a hydrogen
+        bond donor. Default is ``True``.
+    :type sum_features: bool
+    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise returns a ``pd.Series``. Default is ``True``.
+    :type return_array: bool
+    """
+    node_id = n.split(":")
+    res = node_id[1]
+    if len(node_id) == 4:  # Atomic graph
+        atom = node_id[-1]
+        try:
+            features = HYDROGEN_BOND_DONORS[res][atom]
+        except KeyError:
+            features = 0
+    elif len(node_id) == 3:  # Residue graph
+        if res not in HYDROGEN_BOND_DONORS.keys():
+            features = 0
+        else:
+            features = sum(HYDROGEN_BOND_DONORS[res].values())
+
+    if return_array:
+        features = np.array(features).astype(int)
+    else:
+        features = pd.Series(features).astype(int)
+    if not sum_features:
+        features = np.array(features > 0).astype(int)
+
+    d["hbond_donors"] = features
+
+
+def hydrogen_bond_acceptor(
+    n, d, sum_features: bool = True, return_array: bool = False
+) -> pd.Series:
+    """Adds Hydrogen Bond Acceptor status to nodes as a feature."
+
+    :param n: node id
+    :type n: str
+    :param d: Dict of node attributes
+    :type d: Dict[str, Any]
+    :param sum_features: If ``True``, the feature is the number of hydrogen bond acceptors per node.
+        If ``False``, the feature is a boolean indicating whether or not the node has a hydrogen
+        bond acceptor. Default is ``True``.
+    :type sum_features: bool
+    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise returns a ``pd.Series``. Default is ``True``.
+    :type return_array: bool
+    """
+    node_id = n.split(":")
+    res = node_id[1]
+    if len(node_id) == 4:  # Atomic graph
+        atom = node_id[-1]
+        try:
+            features = HYDROGEN_BOND_ACCEPTORS[res][atom]
+        except KeyError:
+            features = 0
+    elif len(node_id) == 3:  # Residue graph
+        if res not in HYDROGEN_BOND_ACCEPTORS.keys():
+            features = 0
+        else:
+            features = sum(HYDROGEN_BOND_ACCEPTORS[res].values())
+
+    if return_array:
+        features = np.array(features).astype(int)
+    else:
+        features = pd.Series(features).astype(int)
+    if not sum_features:
+        features = np.array(features > 0).astype(int)
+    d["hbond_acceptors"] = features
