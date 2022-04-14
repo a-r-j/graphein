@@ -1,22 +1,25 @@
-"""Functions for computing atomic structure of proteins."""
-import logging
-
+"""Functions for computing atomic structure of molecules."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Any, Dict
+import logging
 
 import networkx as nx
-import numpy as np
-import pandas as pd
-
 
 log = logging.getLogger(__name__)
 
+
 def add_atom_bonds(G: nx.Graph) -> nx.Graph:
+    """Adds atomic bonds to a molecular graph.
+
+    :param G: Molecular graph to add atomic bond edges to.
+    :type G: nx.Graph
+    :return: Molecular graph with atomic bonds added.
+    :rtype: nx.Graph
+    """
     for bond in G.graph["rdmol"].GetBonds():
         n1, n2 = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
         if G.has_edge(n1, n2):
@@ -24,5 +27,3 @@ def add_atom_bonds(G: nx.Graph) -> nx.Graph:
         else:
             G.add_edge(n1, n2, kind={"bond"})
     return G
-    
-
