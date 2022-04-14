@@ -7,38 +7,31 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-import logging
-import multiprocessing
-import traceback
-from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional
 
-import rdkit
-from rdkit import Chem
 import networkx as nx
 import numpy as np
-import pandas as pd
 
 from graphein.molecule.edges.atomic import add_atom_bonds
-
-# from graphein.molecule.config import (
-#     MoleculeGraphConfig,
-# )
-
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
     compute_edges,
+    import_message,
 )
 
-from .config import (
-    MoleculeGraphConfig,
-)
+from .config import MoleculeGraphConfig
+
+try:
+    import rdkit
+    from rdkit import Chem
+except ImportError:
+    import_message("graphein.molecule.graphs", "rdkit", "rdkit", True)
+
 
 def initialise_graph_with_metadata(
-    rdmol: rdkit.Mol,
-    coords: np.array,
+    rdmol: rdkit.Mol, coords: np.ndarray,
 ) -> nx.Graph:
     """
     Initializes the nx Graph object with initial metadata.
@@ -48,37 +41,28 @@ def initialise_graph_with_metadata(
     :return: Returns initial molecule structure graph with metadata.
     :rtype: nx.Graph
     """
-    G = nx.Graph(
-        rdmol=rdmol,
-        coords=coords,
-    )
-
-    return G
+    return nx.Graph(rdmol=rdmol, coords=coords,)
 
 
-def add_nodes_to_graph(
-    G: nx.Graph,
-    verbose: bool = False,
-) -> nx.Graph:
+def add_nodes_to_graph(G: nx.Graph, verbose: bool = False,) -> nx.Graph:
     """Add nodes into molecule graph.
 
     :param G: ``nx.Graph`` with metadata to populate with nodes.
-    :type G: nx.Graphptional
+    :type G: nx.Graph
     :param verbose: Controls verbosity of this step.
     :type verbose: bool
     :returns: nx.Graph with nodes added.
     :rtype: nx.Graph
     """
     for atom in G.graph["rdmol"].GetAtoms():
-        G.add_node(atom.GetIdx(),
-                   atomic_num=atom.GetAtomicNum())
+        G.add_node(atom.GetIdx(), atomic_num=atom.GetAtomicNum())
 
-    # TODO: include charge, line_idx for traceability?
     if verbose:
         print(nx.info(G))
         print(G.nodes())
 
     return G
+
 
 def construct_graph(
     config: Optional[MoleculeGraphConfig] = None,
@@ -149,46 +133,42 @@ def construct_graph(
     coords = None
     if smiles is not None:
         rdmol = Chem.MolFromSmiles(smiles)
-    
+
     if sdf_path is not None:
         rdmol = Chem.SDMolSupplier(sdf_path)[0]
-        coords = []
-        for idx in range(rdmol.GetNumAtoms()):
-            coords.append(list(rdmol.GetConformer(0).GetAtomPosition(idx)))
+        coords = [
+            list(rdmol.GetConformer(0).GetAtomPosition(idx))
+            for idx in range(rdmol.GetNumAtoms())
+        ]
 
     if mol2_path is not None:
         rdmol = Chem.MolFromMol2File(mol2_path)
-        coords = []
-        for idx in range(rdmol.GetNumAtoms()):
-            coords.append(list(rdmol.GetConformer(0).GetAtomPosition(idx)))
+        coords = [
+            list(rdmol.GetConformer(0).GetAtomPosition(idx))
+            for idx in range(rdmol.GetNumAtoms())
+        ]
 
     if pdb_path is not None:
         rdmol = Chem.MolFromPDBFile(pdb_path)
-        coords = []
-        for idx in range(rdmol.GetNumAtoms()):
-            coords.append(list(rdmol.GetConformer(0).GetAtomPosition(idx)))
-    
+        coords = [
+            list(rdmol.GetConformer(0).GetAtomPosition(idx))
+            for idx in range(rdmol.GetNumAtoms())
+        ]
+
     if coords is None:
         # If no coords are provided, add edges by bonds
         config.edge_construction_functions = [add_atom_bonds]
+        g = initialise_graph_with_metadata(rdmol=rdmol, coords=None,)
     else:
         # If config params are provided, overwrite them
         config.edge_construction_functions = (
             edge_construction_funcs
             if config.edge_construction_functions is None
             else config.edge_construction_functions
-            )   
-
-    # Initialise graph with metadata
-    if coords is None:
-        g = initialise_graph_with_metadata(
-            rdmol=rdmol,
-            coords=None,
         )
-    else:
+
         g = initialise_graph_with_metadata(
-            rdmol=rdmol,
-            coords=np.asarray(coords),
+            rdmol=rdmol, coords=np.asarray(coords),
         )
 
     # Add nodes to graph
@@ -202,10 +182,7 @@ def construct_graph(
         g = annotate_node_metadata(g, config.node_metadata_functions)
 
     # Compute graph edges
-    g = compute_edges(
-        g,
-        funcs=config.edge_construction_functions,
-    )
+    g = compute_edges(g, funcs=config.edge_construction_functions,)
 
     # Annotate additional graph metadata
     if config.graph_metadata_functions is not None:
