@@ -9,6 +9,7 @@ import logging
 import os
 from functools import lru_cache
 from pathlib import Path
+from shutil import which
 from typing import Any, Dict, List, Tuple, Union
 from urllib.request import urlopen
 
@@ -299,3 +300,16 @@ def save_rgroup_df_to_pdb(g: nx.Graph, path: str, gz: bool = False):
     ppd.df["ATOM"] = g.graph["rgroup_df"]
     ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
     log.info(f"Successfully saved rgroup data to {path}")
+
+
+def is_tool(name: str) -> bool:
+    """Checks whether ``name`` is on PATH and is marked as an executable.
+    
+    Source: https://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
+
+    :param name: Name of program to check for execution ability.
+    :type name: str
+    :return: Whether ``name`` is on PATH and is marked as an executable.
+    :rtype: bool
+    """
+    return which(name) is not None

@@ -12,7 +12,15 @@
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
-[![banner](https://github.com/a-r-j/graphein/blob/master/imgs/graphein.png?raw=true)](http://www.graphein.ai)
+
+<p align="center">
+  <a href="https://www.graphein.ai/#gh-light-mode-only">
+    <img src="./imgs/graphein.png" width="100%"/>
+  </a>
+  <a href="https://www.graphein.ai/#gh-dark-mode-only">
+    <img src="./imgs/graphein_dark.png" width="100%"/>
+  </a>
+</p>
 
 <br></br>
 
