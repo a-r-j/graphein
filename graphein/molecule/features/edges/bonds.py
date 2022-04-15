@@ -119,7 +119,7 @@ def bond_is_in_ring_size(
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d[f"ring_size_{ring_size}"] = None
         return None
-    bond_is_in_ring = d["bond"].IsInRing()
+    bond_is_in_ring = d["bond"].IsInRingSize(ring_size)
     d[f"ring_size_{ring_size}"] = bond_is_in_ring
     return bond_is_in_ring
 

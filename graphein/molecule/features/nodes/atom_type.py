@@ -38,7 +38,7 @@ def atom_type_one_hot(
     if allowable_set is None:
         allowable_set = BASE_ATOMS
 
-    features = onek_encoding_unk(d["atomic_num"], allowable_set)
+    features = onek_encoding_unk(d["element"], allowable_set)
 
     if return_array:
         features = np.array(features).astype(int)
@@ -107,7 +107,7 @@ def explicit_valence(n: str, d: Dict[str, Any]) -> int:
     :return: Explicit valence of the atom.
     :rtype: int
     """
-    explicit_valence = d["rdmol_atom"].GetMass()
+    explicit_valence = d["rdmol_atom"].GetExplicitValence()
     d["explicit_valence"] = explicit_valence
     return explicit_valence
 
@@ -122,7 +122,7 @@ def implicit_valence(n: str, d: Dict[str, Any]) -> int:
     :return: Implicit valence of the atom.
     :rtype: int
     """
-    implicit_valence = d["rdmol_atom"].GetMass()
+    implicit_valence = d["rdmol_atom"].GetImplicitValence()
     d["implicit_valence"] = implicit_valence
     return implicit_valence
 
@@ -261,7 +261,7 @@ def is_ring_size(n: str, d: Dict[str, Any], ring_size: int) -> bool:
     :return: Indicator of ring membership of size ``ring_size`` of the atom.
     :rtype: bool
     """
-    ring = d["rdmol_atom"].IsInRingSize(size=ring_size)
+    ring = d["rdmol_atom"].IsInRingSize(ring_size)
     d[f"is_ring_{ring_size}"] = ring
     return ring
 
