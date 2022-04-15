@@ -1,5 +1,5 @@
 ### 1.4.0 - UNRELEASED
-
+* [Feature] - #154 adds a way of checking that DSSP is executable before trying to use it. #154
 * [Feature] - #157 adds support for small molecule graphs using RDKit. Resolves #155.
 
 #### Breaking Changes
