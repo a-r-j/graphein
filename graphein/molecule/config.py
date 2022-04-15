@@ -11,15 +11,17 @@ from pathlib import Path
 from typing import Any, Callable, List, Optional, Union
 
 from deepdiff import DeepDiff
-from deepdiff.operator import BaseOperator
 from pydantic import BaseModel
 from typing_extensions import Literal
 
 from graphein.molecule.edges.atomic import add_atom_bonds
-
-from graphein.molecule.edges.distance import add_k_nn_edges, add_distance_threshold, add_fully_connected_edges
-
+from graphein.molecule.edges.distance import (
+    add_distance_threshold,
+    add_fully_connected_edges,
+    add_k_nn_edges,
+)
 from graphein.molecule.features.nodes.atom_type import atom_type_one_hot
+from graphein.utils.config import PartialMatchOperator, PathMatchOperator
 
 GraphAtoms = Literal[
     "C",
@@ -36,37 +38,6 @@ GraphAtoms = Literal[
 ]
 """Allowable atom types for nodes in the graph."""
 
-def partial_functions_equal(func1: partial, func2: partial) -> bool:
-    """
-    Determine whether two partial functions are equal.
-
-    :param func1: Partial function to check
-    :type func1: partial
-    :param func2: Partial function to check
-    :type func2: partial
-    :return: Whether the two functions are equal
-    :rtype: bool
-    """
-    if not (isinstance(func1, partial) and isinstance(func2, partial)):
-        return False
-    return all(
-        getattr(func1, attr) == getattr(func2, attr)
-        for attr in ["func", "args", "keywords"]
-    )
-
-
-class PartialMatchOperator(BaseOperator):
-    """Custom operator for deepdiff comparison. This operator compares whether the two partials are equal."""
-
-    def give_up_diffing(self, level, diff_instance):
-        return partial_functions_equal(level.t1, level.t2)
-
-
-class PathMatchOperator(BaseOperator):
-    """Custom operator for deepdiff comparison. This operator compares whether the two pathlib Paths are equal."""
-
-    def give_up_diffing(self, level, diff_instance):
-        return level.t1 == level.t2
 
 class MoleculeGraphConfig(BaseModel):
     """
@@ -92,7 +63,10 @@ class MoleculeGraphConfig(BaseModel):
     deprotonate: bool = False
     # Graph construction functions
     edge_construction_functions: List[Union[Callable, str]] = [
-        add_fully_connected_edges, add_k_nn_edges, add_distance_threshold, add_atom_bonds
+        add_fully_connected_edges,
+        add_k_nn_edges,
+        add_distance_threshold,
+        add_atom_bonds,
     ]
     node_metadata_functions: Optional[List[Union[Callable, str]]] = [
         atom_type_one_hot
