@@ -45,8 +45,8 @@ class MoleculeGraphConfig(BaseModel):
 
     :param verbose: Specifies verbosity of graph creation process.
     :type verbose: bool
-    :param deprotonate: Specifies whether or not to remove ``H`` atoms from the graph.
-    :type deprotonate: bool
+    :param add_hs: Specifies whether hydrogens should be added to the graph.
+    :type add_hs: bool
     :param edge_construction_functions: List of functions that take an ``nx.Graph`` and return an ``nx.Graph`` with desired
         edges added. Prepared edge constructions can be found in :ref:`graphein.protein.edges`
     :type edge_construction_functions: List[Callable]
@@ -60,7 +60,7 @@ class MoleculeGraphConfig(BaseModel):
     """
 
     verbose: bool = False
-    deprotonate: bool = False
+    add_hs: bool = False
     # Graph construction functions
     edge_construction_functions: List[Union[Callable, str]] = [
         add_fully_connected_edges,

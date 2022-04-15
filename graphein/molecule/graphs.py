@@ -46,9 +46,7 @@ def initialise_graph_with_metadata(
     :rtype: nx.Graph
     """
     return nx.Graph(
-        name=name,
-        rdmol=rdmol,
-        coords=coords,
+        name=name, rdmol=rdmol, coords=coords, smiles=Chem.MolToSmiles(rdmol)
     )
 
 
@@ -175,6 +173,9 @@ def construct_graph(
             for idx in range(rdmol.GetNumAtoms())
         ]
 
+    if config.add_hs:
+        rdmol = Chem.AddHs(rdmol)
+
     if coords is None:
         # If no coords are provided, add edges by bonds
         config.edge_construction_functions = [add_atom_bonds]
@@ -192,6 +193,7 @@ def construct_graph(
         )
 
         g = initialise_graph_with_metadata(
+            name=name,
             rdmol=rdmol,
             coords=np.asarray(coords),
         )
