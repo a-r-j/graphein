@@ -27,23 +27,21 @@ def compute_distmat(coords: np.ndarray) -> np.ndarray:
     Design choice: passed in a DataFrame to enable easier testing on
     dummy data.
 
-    :param coords: pd.Dataframe containing molecule structure. Must contain columns ["x_coord", "y_coord", "z_coord"]
+    :param coords: pd.Dataframe containing molecule structure. Must contain columns ``["x_coord", "y_coord", "z_coord"]``.
     :type coords: pd.DataFrame
-    :return: pd.Dataframe of euclidean distance matrix
-    :rtype: pd.DataFrame
+    :return: np.ndarray of euclidean distance matrix.
+    :rtype: np.ndarray
     """
     return pairwise_distances(coords, metric="euclidean")
 
 
-def get_interacting_atoms(
-    angstroms: float, distmat: pd.DataFrame
-) -> np.ndarray:
+def get_interacting_atoms(angstroms: float, distmat: np.ndarray) -> np.ndarray:
     """Find the atoms that are within a particular radius of one another.
 
-    :param angstroms: radius in angstroms
+    :param angstroms: Radius in angstroms.
     :type angstroms: float
-    :param distmat: distance matrix
-    :type distmat: pd.DataFrame
+    :param distmat: Distance matrix.
+    :type distmat: np.ndarray
     :returns: Array of interacting atoms
     :rtype: np.ndarray
     """
@@ -52,8 +50,7 @@ def get_interacting_atoms(
 
 def add_distance_threshold(G: nx.Graph, threshold: float = 5.0):
     """
-    Adds edges to any nodes within a given distance of each other. Long interaction threshold is used
-    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+    Adds edges to any nodes within a given distance of each other.
 
     :param G: molecule structure graph to add distance edges to
     :type G: nx.Graph
@@ -66,29 +63,24 @@ def add_distance_threshold(G: nx.Graph, threshold: float = 5.0):
     interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
     interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
 
-    log.info(f"Found: {len(interacting_nodes)} distance edges")
-    count = 0
-    for a1, a2 in interacting_nodes:
-        n1 = a1
-        n2 = a2
-        count += 1
+    log.info(
+        f"Found: {len(interacting_nodes)} distance edges for radius {threshold}"
+    )
+    for n1, n2 in interacting_nodes:
         if G.has_edge(n1, n2):
             G.edges[n1, n2]["kind"].add("distance_threshold")
         else:
             G.add_edge(n1, n2, kind={"distance_threshold"})
-    log.info(
-        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count} removed by LIN)"
-    )
 
 
-def add_fully_connected_edges(G: nx.Graph,):
+def add_fully_connected_edges(
+    G: nx.Graph,
+):
     """
     Adds fully connected edges to nodes.
 
     :param G: Molecule structure graph to add distance edges to.
     :type G: nx.Graph
-    :return: Graph with fully connected edges added.
-    :rtype: nx.Graph
     """
     length = len(G.graph["coords"])
 
@@ -146,10 +138,8 @@ def add_k_nn_edges(
     incoming = nn.indices
     interacting_nodes = list(zip(outgoing, incoming))
     log.info(f"Found: {len(interacting_nodes)} KNN edges")
-    for a1, a2 in interacting_nodes:
-        n1 = a1
-        n2 = a2
+    for n1, n2 in interacting_nodes:
         if G.has_edge(n1, n2):
-            G.edges[n1, n2]["kind"].add("k_nn")
+            G.edges[n1, n2]["kind"].add(f"k_nn_{k}")
         else:
-            G.add_edge(n1, n2, kind={"k_nn"})
+            G.add_edge(n1, n2, kind={f"k_nn_{k}"})

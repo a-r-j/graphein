@@ -24,6 +24,7 @@ def add_atom_bonds(G: nx.Graph) -> nx.Graph:
         n1, n2 = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
         if G.has_edge(n1, n2):
             G.edges[n1, n2]["kind"].add("bond")
+            G.edges[n1, n2]["bond"] = bond
         else:
-            G.add_edge(n1, n2, kind={"bond"})
+            G.add_edge(n1, n2, kind={"bond"}, bond=bond)
     return G
