@@ -31,18 +31,22 @@ except ImportError:
 
 
 def initialise_graph_with_metadata(
+    name: str,
     rdmol: rdkit.Mol,
     coords: np.ndarray,
 ) -> nx.Graph:
     """
     Initializes the nx Graph object with initial metadata.
 
+    :param name: Name of the molecule. Either the smiles or filename depending on how the graph was created.
+    :type name: str
     :param rdmol: Processed Dataframe of molecule structure.
     :type rdmol: rdkit.Mol
     :return: Returns initial molecule structure graph with metadata.
     :rtype: nx.Graph
     """
     return nx.Graph(
+        name=name,
         rdmol=rdmol,
         coords=coords,
     )
@@ -144,9 +148,11 @@ def construct_graph(
 
     coords = None
     if smiles is not None:
+        name = smiles
         rdmol = Chem.MolFromSmiles(smiles)
 
     if sdf_path is not None:
+        name = sdf_path.split("/")[-1].split(".")[0]
         rdmol = Chem.SDMolSupplier(sdf_path)[0]
         coords = [
             list(rdmol.GetConformer(0).GetAtomPosition(idx))
@@ -154,6 +160,7 @@ def construct_graph(
         ]
 
     if mol2_path is not None:
+        name = mol2_path.split("/")[-1].split(".")[0]
         rdmol = Chem.MolFromMol2File(mol2_path)
         coords = [
             list(rdmol.GetConformer(0).GetAtomPosition(idx))
@@ -161,6 +168,7 @@ def construct_graph(
         ]
 
     if pdb_path is not None:
+        name = pdb_path.split("/")[-1].split(".")[0]
         rdmol = Chem.MolFromPDBFile(pdb_path)
         coords = [
             list(rdmol.GetConformer(0).GetAtomPosition(idx))
@@ -171,6 +179,7 @@ def construct_graph(
         # If no coords are provided, add edges by bonds
         config.edge_construction_functions = [add_atom_bonds]
         g = initialise_graph_with_metadata(
+            name=name,
             rdmol=rdmol,
             coords=None,
         )
