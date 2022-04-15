@@ -1,4 +1,9 @@
+### 1.4.0 - UNRELEASED
+
+* [Patch] - #158 changes the eigenvector computation method from `nx.eigenvector_centrality` to `nx.eigenvector_centrality_numpy`.
+
 ### 1.3.1 - UNRELEASED
+
 * [Feature] - #154 adds a way of checking that DSSP is executable before trying to use it. #154
 
 ### 1.3.0 - 5/4/22
@@ -10,7 +15,7 @@
 * [Feature] - #144 adds support for automagically downloading new PDB files for obsolete structures.
 * [Feature] - #150 adds support for hydrogen bond donor and acceptor counts node features. #145
 * [Misc] - #144 makes visualisation functions accessible in the `graphein.protein` namespace. #138
-* [Bugfix] - #147 fixes error in `add_distance_threshold` introduced in v1.2.1 that would prevent the edges being added to the graph. [#146](https://github.com/a-r-j/graphein/issues/146) 
+* [Bugfix] - #147 fixes error in `add_distance_threshold` introduced in v1.2.1 that would prevent the edges being added to the graph. [#146](https://github.com/a-r-j/graphein/issues/146)
 * [Bugfix] - #149 fixes a bug in `add_beta_carbon_vector` that would cause coordinates to be extracted for multiple positions if the residue has an altloc. Resolves [#148](https://github.com/a-r-j/graphein/issues/148)
 
 ### 1.2.1 - 16/3/22

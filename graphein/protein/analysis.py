@@ -174,7 +174,7 @@ def graph_summary(
         col_list.append(closeness)
         col_names.append("closeness_centrality")
     if "eigenvector_centrality" in summary_statistics:
-        eigenvector = pd.Series(nx.eigenvector_centrality(G))
+        eigenvector = pd.Series(nx.eigenvector_centrality_numpy(G))
         col_list.append(eigenvector)
         col_names.append("eigenvector_centrality")
     if "communicability_betweenness_centrality" in summary_statistics:
