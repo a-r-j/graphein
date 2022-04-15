@@ -1,3 +1,12 @@
+### 1.4.0 - UNRELEASED
+
+* [Feature] - #157 adds support for small molecule graphs using RDKit. Resolves #155.
+
+#### Breaking Changes
+
+* #157 refactors config matching operators from `graphein.protein.config` to `graphein.utils.config`
+* #157 refactors config parsing operators from `graphein.utils.config` to `graphein.utils.config_parser`
+
 ### 1.3.0 - 5/4/22
 
 * [Feature] - #141 adds edge construction based on sequence distance.
@@ -7,7 +16,7 @@
 * [Feature] - #144 adds support for automagically downloading new PDB files for obsolete structures.
 * [Feature] - #150 adds support for hydrogen bond donor and acceptor counts node features. #145
 * [Misc] - #144 makes visualisation functions accessible in the `graphein.protein` namespace. #138
-* [Bugfix] - #147 fixes error in `add_distance_threshold` introduced in v1.2.1 that would prevent the edges being added to the graph. [#146](https://github.com/a-r-j/graphein/issues/146) 
+* [Bugfix] - #147 fixes error in `add_distance_threshold` introduced in v1.2.1 that would prevent the edges being added to the graph. [#146](https://github.com/a-r-j/graphein/issues/146)
 * [Bugfix] - #149 fixes a bug in `add_beta_carbon_vector` that would cause coordinates to be extracted for multiple positions if the residue has an altloc. Resolves [#148](https://github.com/a-r-j/graphein/issues/148)
 
 ### 1.2.1 - 16/3/22
