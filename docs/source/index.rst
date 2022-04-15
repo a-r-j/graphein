@@ -34,6 +34,7 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
    :caption: Tutorials
 
    protein_notebooks
+   molecule_notebooks
    rna_notebooks
    ppi_notebooks
    grn_notebooks
