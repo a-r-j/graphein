@@ -8,6 +8,7 @@ from deepdiff.operator import BaseOperator
 from pydantic import BaseModel
 
 from graphein.grn.config import GRNGraphConfig, RegNetworkConfig, TRRUSTConfig
+from graphein.molecule.config import MoleculeGraphConfig
 from graphein.ppi.config import BioGridConfig, PPIGraphConfig, STRINGConfig
 from graphein.protein.config import (
     DSSPConfig,
@@ -75,6 +76,7 @@ def get_loader() -> yaml.Loader:
         STRINGConfig.__name__,
         BioGridConfig.__name__,
         PPIGraphConfig.__name__,
+        MoleculeGraphConfig.__name__,
     ]
     for config in configs:
         loader.add_constructor(f"!{config}", config_constructor)
