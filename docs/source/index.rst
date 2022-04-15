@@ -53,6 +53,7 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
    :caption: API Reference
 
    modules/graphein.protein
+   modules/graphein.molecule
    modules/graphein.rna
    modules/graphein.ppi
    modules/graphein.grn
