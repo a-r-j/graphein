@@ -22,6 +22,12 @@ def add_atom_bonds(G: nx.Graph) -> nx.Graph:
     """
     for bond in G.graph["rdmol"].GetBonds():
         n1, n2 = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
+        sym1, sym2 = (
+            G.graph["rdmol"].GetAtoms()[n1].GetSymbol(),
+            G.graph["rdmol"].GetAtoms()[n2].GetSymbol(),
+        )
+        n1 = sym1 + str(n1)
+        n2 = sym2 + str(n2)
         if G.has_edge(n1, n2):
             G.edges[n1, n2]["kind"].add("bond")
             G.edges[n1, n2]["bond"] = bond

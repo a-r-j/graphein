@@ -63,12 +63,16 @@ def add_nodes_to_graph(
     :returns: nx.Graph with nodes added.
     :rtype: nx.Graph
     """
-    for atom in G.graph["rdmol"].GetAtoms():
+    for i, atom in enumerate(G.graph["rdmol"].GetAtoms()):
+        coords = (
+            G.graph["coords"][i] if G.graph["coords"] is not None else None
+        )
         G.add_node(
-            atom.GetIdx(),
+            atom.GetSymbol() + str(atom.GetIdx()),
             atomic_num=atom.GetAtomicNum(),
             element=atom.GetSymbol(),
             rdmol_atom=atom,
+            coords=coords,
         )
 
     if verbose:
