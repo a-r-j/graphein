@@ -37,6 +37,10 @@ Edge
 .. automodule:: graphein.molecule.features.edges.bonds
     :members:
 
+Visualisation
+----------
+.. automodule:: graphein.molecule.visualisation
+    :members:
 
 Constants
 ----------
