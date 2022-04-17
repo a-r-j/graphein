@@ -1,5 +1,5 @@
 ==============
-PPI Networks
+Molecules
 ==============
 .. toctree::
     :maxdepth: 2
