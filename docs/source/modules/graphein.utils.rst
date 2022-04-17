@@ -10,6 +10,8 @@ Utils
 
 CLI & Config
 _____________
+.. automodule:: graphein.utils.config_parser
+    :members:
 .. automodule:: graphein.utils.config
     :members:
 
