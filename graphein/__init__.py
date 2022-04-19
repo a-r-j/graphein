@@ -14,5 +14,5 @@ from .testing import *
 __author__ = "Arian Jamasb <arian@jamasb.io>"
 
 
-__version__ = "1.2.1"  # get_versions()["version"]
+__version__ = "1.4.0"  # get_versions()["version"]
 # del get_versions
