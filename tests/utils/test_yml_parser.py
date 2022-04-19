@@ -15,7 +15,7 @@ from graphein.protein.features.nodes.amino_acid import (
     expasy_protein_scale,
     meiler_embedding,
 )
-from graphein.utils.config import parse_config
+from graphein.utils.config_parser import parse_config
 
 DATA_PATH = Path(__file__).resolve().parent
 

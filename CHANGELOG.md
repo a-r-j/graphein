@@ -1,10 +1,13 @@
 ### 1.4.0 - UNRELEASED
 
 * [Patch] - #158 changes the eigenvector computation method from `nx.eigenvector_centrality` to `nx.eigenvector_centrality_numpy`.
-
-### 1.3.1 - UNRELEASED
-
 * [Feature] - #154 adds a way of checking that DSSP is executable before trying to use it. #154
+* [Feature] - #157 adds support for small molecule graphs using RDKit. Resolves #155.
+
+#### Breaking Changes
+
+* #157 refactors config matching operators from `graphein.protein.config` to `graphein.utils.config`
+* #157 refactors config parsing operators from `graphein.utils.config` to `graphein.utils.config_parser`
 
 ### 1.3.0 - 5/4/22
 

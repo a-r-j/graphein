@@ -6,7 +6,7 @@ import networkx as nx
 
 from graphein import __version__
 from graphein.protein.graphs import construct_graph
-from graphein.utils.config import parse_config
+from graphein.utils.config_parser import parse_config
 
 
 @click.command()
