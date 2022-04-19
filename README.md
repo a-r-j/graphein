@@ -34,6 +34,8 @@ This package provides functionality for producing geometric representations of p
 
 |   |   |
 |---|---|
+| [Constructing molecular graphs](http://graphein.ai/notebooks/molecule_tutorial.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/molecule_tutorial.ipynb)   |
+| [Ready-to-go Dataloaders for PyTorch Geometric](http://graphein.ai/notebooks/dataloader_tutorial.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/dataloader_tutorial.ipynb)   |
 | [Extracting subgraphs from protein graphs](http://graphein.ai/notebooks/subgraphing_tutorial.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/subgraphing_tutorial.ipynb)   |
 | [Protein Graph Analytics](http://graphein.ai/notebooks/protein_graph_analytics.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/protein_graph_analytics.ipynb) |
 | [Graphein CLI](http://graphein.ai/getting_started/usage.html)  |   |
@@ -101,6 +103,23 @@ from graphein.protein.config import ProteinMeshConfig
 from graphein.protein.meshes import create_mesh
 
 verts, faces, aux = create_mesh(pdb_code="3eiy", config=config)
+```
+
+### Creating Molecular Graphs
+
+Graphein can create molecular graphs from smiles strings as well as `.sdf`, `.mol2`, and `.pdb` files
+
+|   |   |
+|---|---|
+| [Tutorial](http://graphein.ai/notebooks/molecule_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.molecule.html) |
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/molecule_tutorial.ipynb) | |
+
+```python
+from graphein.molecule.config import MoleculeGraphConfig
+from graphein.molecule.graphs import construct_graph
+
+g = create_graph(smiles="CC(=O)OC1=CC=CC=C1C(=O)O", config=config)
+
 ```
 
 ### Creating an RNA Graph
