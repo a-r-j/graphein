@@ -41,7 +41,7 @@ def test_generate_graph_sdf():
     for n, d in g.nodes(data=True):
         assert isinstance(
             d["atomic_num"], int
-        ), f"{n} atomic_num is not an int"
+        ), f"{n} atomic_num {d['atomic_num']} is not an int"
         assert isinstance(d["element"], str), f"{n} element is not a string"
         assert isinstance(
             d["rdmol_atom"], rdkit.Chem.rdchem.Atom
