@@ -20,6 +20,12 @@ from graphein.utils.utils import (
     compute_edges,
     import_message,
 )
+from graphein.utils.junction_tree.jt_utils import (
+    get_mol,
+    get_smiles,
+    tree_decomp, 
+    get_clique_mol,
+)
 
 from .config import MoleculeGraphConfig
 
@@ -94,7 +100,7 @@ def construct_graph(
     graph_annotation_funcs: Optional[List[Callable]] = None,
 ) -> nx.Graph:
     """
-    Constructs protein structure graph from a ``sdf_path``, ``mol2_path``  or ``smiles``.
+    Constructs molecule structure graph from a ``sdf_path``, ``mol2_path``  or ``smiles``.
 
     Users can provide a :class:`~graphein.molecule.config.MoleculeGraphConfig`
     object to specify construction parameters.
@@ -225,5 +231,39 @@ def construct_graph(
     # Annotate additional edge metadata
     if config.edge_metadata_functions is not None:
         g = annotate_edge_metadata(g, config.edge_metadata_functions)
+
+    return g
+
+def construct_junction_tree(
+    smiles: Optional[str] = None,
+) -> nx.Graph:
+    """
+    Constructs molecule structure junction tree graph from a ``smiles``.
+
+    :param smiles: smiles string to build graph from. Default is ``None``.
+    :type smiles: str, optional
+    :return: Molecule Structure Junction Tree Graph
+    :type: nx.Graph
+    """
+
+    mol = get_mol(smiles)
+
+    g = nx.Graph(
+        name=smiles, smiles=smiles
+    )
+
+    cliques, edges = tree_decomp(mol)
+        
+    for i, c in enumerate(cliques):
+        cmol = get_clique_mol(mol, c)
+        g.add_node(
+            f"{get_smiles(cmol)}:{str(i)}",
+        )
+
+    for n1, n2 in edges:
+        if g.has_edge(n1, n2):
+            g.edges[n1, n2]["kind"].add("junction_tree")
+        else:
+            g.add_edge(n1, n2, kind={"junction_tree"})
 
     return g
