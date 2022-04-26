@@ -45,7 +45,7 @@ def compute_distmat(coords: np.ndarray) -> np.ndarray:
     Design choice: passed in a DataFrame to enable easier testing on
     dummy data.
 
-    :param coords: pd.Dataframe containing molecule structure. Must contain columns ``["x_coord", "y_coord", "z_coord"]``.
+    :param coords: pd.Dataframe containing structure. Must contain columns ``["x_coord", "y_coord", "z_coord"]``.
     :type coords: pd.DataFrame
     :return: np.ndarray of euclidean distance matrix.
     :rtype: np.ndarray
@@ -68,9 +68,9 @@ def get_interacting_atoms(angstroms: float, distmat: np.ndarray) -> np.ndarray:
 
 def add_distance_threshold_ligand(G: nx.Graph, threshold: float = 5.0):
     """
-    Adds edges to any nodes within a given distance of each other.
+    Adds edges to ligand nodes within a given distance of each other.
 
-    :param G: molecule structure graph to add distance edges to
+    :param G: ligand part of protein-ligand structure graph to add distance edges to
     :type G: nx.Graph
     :param threshold: Distance in angstroms, below which two nodes are connected.
     :type threshold: float
@@ -92,15 +92,17 @@ def add_distance_threshold_ligand(G: nx.Graph, threshold: float = 5.0):
                 G.edges[n1, n2]["kind"].add("ligand_distance_threshold")
             else:
                 G.add_edge(n1, n2, kind={"ligand_distance_threshold"})
+
+    return G
         
 
 def add_fully_connected_edges_ligand(
     G: nx.Graph,
 ):
     """
-    Adds fully connected edges to nodes.
+    Adds fully connected edges to ligand nodes.
 
-    :param G: Molecule structure graph to add distance edges to.
+    :param G: ligand part of protein-ligand structure graph to add distance edges to.
     :type G: nx.Graph
     """
 
@@ -110,6 +112,8 @@ def add_fully_connected_edges_ligand(
                 G.edges[n1, n2]["kind"].add("ligand_fully_connected")
             else:
                 G.add_edge(n1, n2, kind={"ligand_fully_connected"})
+
+    return G
 
 
 def add_k_nn_edges_ligand(
@@ -121,9 +125,9 @@ def add_k_nn_edges_ligand(
     include_self: Union[bool, str] = False,
 ):
     """
-    Adds edges to nodes based on K nearest neighbours.
+    Adds edges to ligand nodes based on K nearest neighbours.
 
-    :param G: Molecule structure graph to add distance edges to.
+    :param G: ligand part of protein-ligand structure graph to add distance edges to.
     :type G: nx.Graph
     :param k: Number of neighbors for each sample.
     :type k: int
@@ -164,13 +168,15 @@ def add_k_nn_edges_ligand(
                 G.edges[n1, n2]["kind"].add(f"ligand_k_nn_{k}")
             else:
                 G.add_edge(n1, n2, kind={f"ligand_k_nn_{k}"})
+    
+    return G
 
 
 def add_distance_threshold_protein_ligand(G: nx.Graph, threshold: float = 5.0):
     """
-    Adds edges to any nodes within a given distance of each other.
+    Adds edges to protein and ligand nodes within a given distance of each other.
 
-    :param G: molecule structure graph to add distance edges to
+    :param G: protein-ligand structure graph to add distance edges to
     :type G: nx.Graph
     :param threshold: Distance in angstroms, below which two nodes are connected.
     :type threshold: float
@@ -192,15 +198,17 @@ def add_distance_threshold_protein_ligand(G: nx.Graph, threshold: float = 5.0):
                 G.edges[n1, n2]["kind"].add("protein_ligand_distance_threshold")
             else:
                 G.add_edge(n1, n2, kind={"protein_ligand_distance_threshold"})
+    
+    return G
 
 
 def add_fully_connected_edges_protein_ligand(
     G: nx.Graph,
 ):
     """
-    Adds fully connected edges to nodes.
+    Adds fully connected edges to protein and ligand nodes.
 
-    :param G: Molecule structure graph to add distance edges to.
+    :param G: protein-ligand structure graph to add distance edges to.
     :type G: nx.Graph
     """
 
@@ -210,9 +218,9 @@ def add_fully_connected_edges_protein_ligand(
                 G.edges[n1, n2]["kind"].add("protein_ligand_fully_connected")
             else:
                 G.add_edge(n1, n2, kind={"protein_ligand_fully_connected"})
+    
+    return G
 
-# TODO: knn select neighbors based on distance between the node with other nodes, rather than pure distance
-# it sounds okay but not fit for protein_ligand knn since we are generating edge cross protein and ligand not only in one side
 def add_k_nn_edges_protein_ligand(
     G: nx.Graph,
     k: int = 1,
@@ -222,9 +230,9 @@ def add_k_nn_edges_protein_ligand(
     include_self: Union[bool, str] = False,
 ):
     """
-    Adds edges to nodes based on K nearest neighbours.
+    Adds edges to protein and ligand nodes based on K nearest neighbours.
 
-    :param G: Molecule structure graph to add distance edges to.
+    :param G: protein-ligand structure graph to add distance edges to.
     :type G: nx.Graph
     :param k: Number of neighbors for each sample.
     :type k: int
@@ -245,8 +253,9 @@ def add_k_nn_edges_protein_ligand(
     :rtype: nx.Graph
     """
 
-    for ligand in G.graph["ligands_coords"]:        
-        dist_mat = cdist(G.graph["protein_coords"], ligand)
+    for idx, ligand in enumerate(G.graph["ligands_coords"]):
+        coords = np.concatenate([G.graph["protein_coords"], ligand])      
+        dist_mat = cdist(coords, coords)
 
         nn = kneighbors_graph(
             X=dist_mat,
@@ -258,16 +267,24 @@ def add_k_nn_edges_protein_ligand(
         )
 
         # Create iterable of node indices
-        outgoing = np.repeat(np.array(range(len(G.graph["protein_coords"]))), k)
-        outgoing = [list(G.nodes())[i] for i in outgoing]
-        incoming = [list(G.nodes())[i] for i in nn.indices]
+        outgoing = np.repeat(np.array(range(len(coords))), k)
+        incoming = nn.indices
         interacting_nodes = list(zip(outgoing, incoming))
         log.info(f"Found: {len(interacting_nodes)} KNN edges")
         for n1, n2 in interacting_nodes:
+            if n1 >= len(G.graph["protein_coords"]):
+                n1 = G.graph["ligands_df"][idx].iloc[n1-len(G.graph["protein_coords"])]["node_id"]
+            else:
+                n1 = G.graph["protein_df"].iloc[n1]["node_id"]
+            if n2 >= len(G.graph["protein_coords"]):
+                n2 = G.graph["ligands_df"][idx].iloc[n2-len(G.graph["protein_coords"])]["node_id"]
+            else:
+                n2 = G.graph["protein_df"].iloc[n2]["node_id"]
             if G.has_edge(n1, n2):
                 G.edges[n1, n2]["kind"].add(f"protein_ligand_k_nn_{k}")
             else:
                 G.add_edge(n1, n2, kind={f"protein_ligand_k_nn_{k}"})
+    return G
 
 def add_sequence_distance_edges(
     G: nx.Graph, d: int, name: str = "sequence_edge"

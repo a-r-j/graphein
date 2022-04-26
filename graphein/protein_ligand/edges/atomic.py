@@ -28,26 +28,23 @@ log = logging.getLogger(__name__)
 # Todo There are other check and balances that can be implemented from here: https://www.daylight.com/meetings/mug01/Sayle/m4xbondage.html
 
 def add_atom_bonds(G: nx.Graph) -> nx.Graph:
-    """Adds atomic bonds to a molecular graph.
+    """Adds atomic bonds to a ligand part of protein-ligand graph.
 
-    :param G: Molecular graph to add atomic bond edges to.
+    :param G: protein-ligand graph to add atomic bond edges to.
     :type G: nx.Graph
-    :return: Molecular graph with atomic bonds added.
+    :return: protein-ligand graph with atomic bonds added.
     :rtype: nx.Graph
     """
-    for bond in G.graph["rdmol"].GetBonds():
-        n1, n2 = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
-        sym1, sym2 = (
-            G.graph["rdmol"].GetAtoms()[n1].GetSymbol(),
-            G.graph["rdmol"].GetAtoms()[n2].GetSymbol(),
-        )
-        n1 = f"{sym1}:{str(n1)}"
-        n2 = f"{sym2}:{str(n2)}"
-        if G.has_edge(n1, n2):
-            G.edges[n1, n2]["kind"].add("bond")
-            G.edges[n1, n2]["bond"] = bond
-        else:
-            G.add_edge(n1, n2, kind={"bond"}, bond=bond)
+    for idx, ligand in enumerate(G.graph["ligands_rdmol"]):
+        for bond in ligand.GetBonds():
+            n1, n2 = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
+            n1 = G.graph["ligands_df"][idx].iloc[n1]["node_id"]
+            n2 = G.graph["ligands_df"][idx].iloc[n2]["node_id"]
+            if G.has_edge(n1, n2):
+                G.edges[n1, n2]["kind"].add("ligand_bond")
+                G.edges[n1, n2]["ligand_bond"] = bond
+            else:
+                G.add_edge(n1, n2, kind={"ligand_bond"}, bond=bond)
     return G
 
 def assign_bond_states_to_dataframe(df: pd.DataFrame) -> pd.DataFrame:
@@ -118,16 +115,16 @@ def add_atomic_edges(G: nx.Graph, tolerance: float = 0.56) -> nx.Graph:
     :return: Atomic graph with edges between bonded atoms added
     :rtype: nx.Graph
     """
-    dist_mat = compute_distmat(G.graph["pdb_df"])
+    dist_mat = compute_distmat(G.graph["protein_df"])
 
     # We assign bond states to the dataframe, and then map these to covalent radii
-    G.graph["pdb_df"] = assign_bond_states_to_dataframe(G.graph["pdb_df"])
-    G.graph["pdb_df"] = assign_covalent_radii_to_dataframe(G.graph["pdb_df"])
+    G.graph["protein_df"] = assign_bond_states_to_dataframe(G.graph["protein_df"])
+    G.graph["protein_df"] = assign_covalent_radii_to_dataframe(G.graph["protein_df"])
 
     # Create a covalent 'distance' matrix by adding the radius arrays with its transpose
     covalent_radius_distance_matrix = np.add(
-        np.array(G.graph["pdb_df"]["covalent_radius"]).reshape(-1, 1),
-        np.array(G.graph["pdb_df"]["covalent_radius"]).reshape(1, -1),
+        np.array(G.graph["protein_df"]["covalent_radius"]).reshape(-1, 1),
+        np.array(G.graph["protein_df"]["covalent_radius"]).reshape(1, -1),
     )
 
     # Add the tolerance
@@ -146,10 +143,10 @@ def add_atomic_edges(G: nx.Graph, tolerance: float = 0.56) -> nx.Graph:
     inds = zip(*np.where(~np.isnan(t_distmat)))
     for i in inds:
         length = t_distmat[i[0]][i[1]]
-        node_1 = G.graph["pdb_df"]["node_id"][i[0]]
-        node_2 = G.graph["pdb_df"]["node_id"][i[1]]
-        chain_1 = G.graph["pdb_df"]["chain_id"][i[0]]
-        chain_2 = G.graph["pdb_df"]["chain_id"][i[1]]
+        node_1 = G.graph["protein_df"]["node_id"][i[0]]
+        node_2 = G.graph["protein_df"]["node_id"][i[1]]
+        chain_1 = G.graph["protein_df"]["chain_id"][i[0]]
+        chain_2 = G.graph["protein_df"]["chain_id"][i[1]]
 
         # Check nodes are in graph
         if not (G.has_node(node_1) and G.has_node(node_2)):
@@ -339,10 +336,10 @@ def assign_bond_orders(G: nx.Graph) -> nx.Graph:
     print(bond_angles)
 
     # Assign Bond angles to dataframe
-    G.graph["pdb_df"]["bond_angles"] = G.graph["pdb_df"]["node_id"].map(
+    G.graph["protein_df"]["bond_angles"] = G.graph["protein_df"]["node_id"].map(
         bond_angles
     )
-    print(G.graph["pdb_df"].to_string())
+    print(G.graph["protein_df"].to_string())
 
     # Assign Hybridisation state from Bond Angles
     hybridisation_state = {
@@ -355,7 +352,7 @@ def assign_bond_orders(G: nx.Graph) -> nx.Graph:
         else "UNK"
         for n, d in bond_angles.items()
     }
-    G.graph["pdb_df"]["bond_angles"] = G.graph["pdb_df"]["node_id"].map(
+    G.graph["protein_df"]["bond_angles"] = G.graph["protein_df"]["node_id"].map(
         hybridisation_state
     )
 

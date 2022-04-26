@@ -17,7 +17,7 @@ from typing_extensions import Literal
 from graphein.protein_ligand.edges.distance import add_peptide_bonds
 from graphein.protein_ligand.features.nodes.amino_acid import meiler_embedding
 
-from graphein.protein_ligand.edges.atomic import add_atom_bonds
+from graphein.protein_ligand.edges.atomic import add_atom_bonds, add_atomic_edges
 from graphein.protein_ligand.edges.distance import (
     add_distance_threshold_ligand,
     add_fully_connected_edges_ligand,
@@ -107,7 +107,7 @@ GranularityOpts = Literal["atom", "centroids"]
 
 class ProteinLigandGraphConfig(BaseModel):
     """
-    Config Object for Protein Structure Graph Construction.
+    Config Object for Protein-ligand Structure Graph Construction.
 
     If you encounter a problematic structure, perusing https://www.umass.edu/microbio/chime/pe_beta/pe/protexpl/badpdbs.htm may provide some additional insight.
     PDBs are notoriously troublesome and this is an excellent overview.
@@ -138,12 +138,24 @@ class ProteinLigandGraphConfig(BaseModel):
         override the default sequencing of processing steps provided by Graphein. We refer users to our low-level API
         tutorial for more details.
     :type protein_df_processing_functions: Optional[List[Callable]]
-    :param edge_construction_functions: List of functions that take an ``nx.Graph`` and return an ``nx.Graph`` with desired
-        edges added. Prepared edge constructions can be found in :ref:`graphein.protein.edges`
+    :param protein_edge_construction_functions: List of functions that take an ``nx.Graph`` and return an ``nx.Graph`` with desired
+        edges added. Prepared edge constructions can be found in :ref:`graphein.protein_ligand.edges`
     :type edge_construction_functions: List[Callable]
-    :param node_metadata_functions: List of functions that take an ``nx.Graph``
+    :param protein_node_metadata_functions: List of functions that take an ``nx.Graph``
     :type node_metadata_functions: List[Callable], optional
-    :param edge_metadata_functions: List of functions that take an
+    :param protein_edge_metadata_functions: List of functions that take an
+    :type edge_metadata_functions: List[Callable], optional
+    :param ligand_edge_construction_functions: List of functions that take an ``nx.Graph`` and return an ``nx.Graph`` with desired
+    edges added. Prepared edge constructions can be found in :ref:`graphein.protein_ligand.edges`
+    :type edge_construction_functions: List[Callable]
+    :param ligand_node_metadata_functions: List of functions that take an ``nx.Graph``
+    :type node_metadata_functions: List[Callable], optional
+    :param ligand_edge_metadata_functions: List of functions that take an
+    :type edge_metadata_functions: List[Callable], optional
+    :param protein_ligand_edge_construction_functions: List of functions that take an ``nx.Graph`` and return an ``nx.Graph`` with desired
+    edges added. Prepared edge constructions can be found in :ref:`graphein.protein_ligand.edges`
+    :type edge_construction_functions: List[Callable]
+    :param protein_ligand_edge_metadata_functions: List of functions that take an
     :type edge_metadata_functions: List[Callable], optional
     :param graph_metadata_functions: List of functions that take an ``nx.Graph`` and return an ``nx.Graph`` with added
         graph-level features and metadata.
@@ -170,7 +182,8 @@ class ProteinLigandGraphConfig(BaseModel):
     # Graph construction functions for protein
     protein_df_processing_functions: Optional[List[Callable]] = None
     protein_edge_construction_functions: List[Union[Callable, str]] = [
-        add_peptide_bonds
+        add_peptide_bonds, 
+        add_atomic_edges, 
     ]
     protein_node_metadata_functions: Optional[List[Union[Callable, str]]] = [
         meiler_embedding
@@ -180,11 +193,10 @@ class ProteinLigandGraphConfig(BaseModel):
 
     # Graph construction functions for ligand
     ligand_edge_construction_functions: List[Union[Callable, str]] = [
+        add_atom_bonds,
         add_fully_connected_edges_ligand,
         add_k_nn_edges_ligand,
         add_distance_threshold_ligand,
-        # TODO: infer bond from pdb? do we have to save to pdb and infer bond or better way?
-        # add_atom_bonds,
     ]
     ligand_node_metadata_functions: Optional[List[Union[Callable, str]]] = [
         atom_type_one_hot

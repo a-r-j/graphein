@@ -1,8 +1,5 @@
 """Tests for graphein.protein_ligand.graphs"""
 
-import sys
-sys.path.append('/data/yuanqi/graphein')
-
 from functools import partial
 from pathlib import Path
 
@@ -11,10 +8,7 @@ import pytest
 
 from graphein.protein_ligand.config import DSSPConfig, ProteinLigandGraphConfig
 from graphein.protein_ligand.graphs import (
-    compute_chain_graph,
-    compute_secondary_structure_graph,
     construct_graph,
-    construct_graphs_mp,
     read_pdb_to_dataframe,
 )
 
