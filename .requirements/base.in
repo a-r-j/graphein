@@ -10,6 +10,7 @@ numpy
 pandas
 plotly
 pydantic
+rich
 seaborn
 pyyaml>=5.1,<6.*
 scikit-learn
