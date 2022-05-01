@@ -116,8 +116,11 @@ and ``"Z"`` denotes ``"GLX"`` which corresponds to``"GLU"`` (``"E"``) **or** ``"
 """
 
 NON_STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
-    "SEC": "U",
+    "HID": "H",
+    "HIE": "H",
+    "HIP": "H",
     "PYL": "O",
+    "SEC": "U",
 }
 """
 Mapping of 3-letter non-standard amino acids codes to their one-letter form.
@@ -202,6 +205,8 @@ NON_STANDARD_RESI_NAMES: List[str] = [
     "DTY",
     "DVA",
     "FOR",
+    "HID",
+    "HIE" "HIP",
     "CGU",
     "IVA",
     "KCX",
@@ -292,6 +297,9 @@ RESI_NAMES: List[str] = [
     "DVA",
     "FOR",
     "CGU",
+    "HID",
+    "HIE",
+    "HIP",
     "IVA",
     "KCX",
     "LLP",
@@ -383,6 +391,9 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "DTR": "W",
     "DTY": "Y",
     "DVA": "V",
+    "HID": "H",  # Different protonation states of HIS
+    "HIE": "H",  # Different protonation states of HIS
+    "HIP": "H",  # Different protonation states of HIS
     "FOR": "X",
     "CGU": "E",
     "IVA": "X",
@@ -1914,3 +1925,13 @@ Taken from:
     Jon C. Baber and Edward E. Hodgkin*
     J. Chem. Inf. Comput. Sci. 1992, 32. 401-406
 """
+
+ATOMIC_MASSES: Dict[str, float] = {
+    "C": 12.0107,
+    "H": 1.00794,
+    "O": 15.9994,
+    "N": 14.0067,
+    "P": 30.9738,
+    "S": 32.065,
+}
+"""Dictionary of atomic masses for standard protein elements."""
