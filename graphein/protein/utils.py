@@ -303,8 +303,8 @@ def save_rgroup_df_to_pdb(g: nx.Graph, path: str, gz: bool = False):
 
 
 def is_tool(name: str) -> bool:
-    """Checks whether ``name`` is on PATH and is marked as an executable.
-    
+    """Checks whether ``name`` is on ``PATH`` and is marked as an executable.
+
     Source: https://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
 
     :param name: Name of program to check for execution ability.
