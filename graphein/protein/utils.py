@@ -14,7 +14,6 @@ from typing import Any, Dict, List, Tuple, Union
 from urllib.request import urlopen
 
 import networkx as nx
-import numpy as np
 import pandas as pd
 import wget
 from Bio.PDB import PDBList
