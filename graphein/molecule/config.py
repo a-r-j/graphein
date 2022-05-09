@@ -47,6 +47,9 @@ class MoleculeGraphConfig(BaseModel):
     :type verbose: bool
     :param add_hs: Specifies whether hydrogens should be added to the graph.
     :type add_hs: bool
+    :param generate_conformer: Specifies whether or not to generate a conformer for inputs that do not provide coordinates (e.g. SMILES).
+        Uses :meth:`graphein.molecule.graphs.generate_3d` to generate conformers.
+        Default: ``False``.
     :param edge_construction_functions: List of functions that take an ``nx.Graph`` and return an ``nx.Graph`` with desired
         edges added. Prepared edge constructions can be found in :ref:`graphein.protein.edges`
     :type edge_construction_functions: List[Callable]
@@ -61,6 +64,7 @@ class MoleculeGraphConfig(BaseModel):
 
     verbose: bool = False
     add_hs: bool = False
+    generate_conformer: bool = False
     # Graph construction functions
     edge_construction_functions: List[Union[Callable, str]] = [
         add_fully_connected_edges,
