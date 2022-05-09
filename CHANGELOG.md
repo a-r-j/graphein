@@ -1,8 +1,20 @@
+### 1.5.0 - UNRELEASED
+
+* [Feature] - #163 Adds support for conformer generation for SMILE inputs to molecule graph construction.
+* [Feature] - #163 Adds support for molecule graph generation from an RDKit.Chem.Mol input.
+* [Feature] - #163 Adds support for multiprocess molecule graph construction.
+* [Patch] - #163 uses tqdm.contrib.process_map insteap of multiprocessing.Pool.map to provide progress bars in multiprocessing.
+
+#### Breaking Changes
+
+* #163 changes separate filetype input paths to `graphein.molecule.graphs.construct_graph`. Interface is simplified to simply `path="some/path.extension"` instead of separate inputs like `mol2_path=...` and `sdf_path=...`.
+
 ### 1.4.0 - UNRELEASED
 
 * [Patch] - #158 changes the eigenvector computation method from `nx.eigenvector_centrality` to `nx.eigenvector_centrality_numpy`.
 * [Feature] - #154 adds a way of checking that DSSP is executable before trying to use it. #154
 * [Feature] - #157 adds support for small molecule graphs using RDKit. Resolves #155.
+* [Feature] - #159 adds support for conversion to Jraph graphs for JAX users.
 
 #### Breaking Changes
 

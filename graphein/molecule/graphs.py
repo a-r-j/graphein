@@ -7,10 +7,14 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import Callable, List, Optional
+import logging
+import traceback
+from functools import partial
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
+from tqdm.contrib.concurrent import process_map, thread_map
 
 from graphein.molecule.edges.atomic import add_atom_bonds
 from graphein.utils.utils import (
@@ -29,9 +33,13 @@ from graphein.utils.junction_tree.jt_utils import (
 
 from .config import MoleculeGraphConfig
 
+log = logging.getLogger(__name__)
+
+
 try:
     import rdkit
     from rdkit import Chem
+    from rdkit.Chem import AllChem
 except ImportError:
     import_message("graphein.molecule.graphs", "rdkit", "rdkit", True)
 
@@ -88,19 +96,53 @@ def add_nodes_to_graph(
     return G
 
 
+def generate_3d(
+    mol: Union[nx.Graph, Chem.Mol], recompute_graph: bool = False
+) -> Union[nx.Graph, rdkit.Chem.rdchem.Mol]:
+    """
+    Generate a 3D structure for a RDKit molecule.
+
+    Steps:
+    1. Adds Hydrogens
+    2. Embeds molecule with ``AllChem.ETKDGv3`` (using ``useSmallRingTorsions=True``)
+    3. Optimizes molecule with ``AllChem.MMFFOptimizeMolecule``
+    4. Removes Hydrogens
+    5. Returns molecule OR (optionally) recomputes the molecular graph (if ``recompute_graph=True``) using the new coordinates.
+
+    :param mol: input molecule
+    :type mol: Union[nx.Graph, Chem.Mol]
+    :param recompute_graph: whether to recompute the graph based on the generated conformer.
+    :type recompute_graph: bool
+    :return: molecule with 3D coordinates or recomputed molecular graph.
+    :rtype: Union[nx.Graph, Chem.Mol]
+    """
+    rdmol = mol.graph["rdmol"] if isinstance(mol, nx.Graph) else mol
+    rdmol = Chem.AddHs(rdmol)
+    params = AllChem.ETKDGv3()
+    params.useSmallRingTorsions = True
+    Chem.AddHs(rdmol)
+    AllChem.EmbedMolecule(rdmol, params=params)
+    AllChem.MMFFOptimizeMolecule(rdmol)
+    rdmol = Chem.RemoveHs(rdmol)
+
+    if recompute_graph:
+        return construct_graph(config=mol.graph["config"], mol=rdmol)
+
+    return rdmol
+
+
 def construct_graph(
     config: Optional[MoleculeGraphConfig] = None,
-    sdf_path: Optional[str] = None,
+    mol: Optional[rdkit.Mol] = None,
+    path: Optional[str] = None,
     smiles: Optional[str] = None,
-    mol2_path: Optional[str] = None,
-    pdb_path: Optional[str] = None,
     edge_construction_funcs: Optional[str] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
     node_annotation_funcs: Optional[List[Callable]] = None,
     graph_annotation_funcs: Optional[List[Callable]] = None,
 ) -> nx.Graph:
     """
-    Constructs molecule structure graph from a ``sdf_path``, ``mol2_path``  or ``smiles``.
+    Constructs protein structure graph from a ``sdf_path``, ``mol2_path``, ``smiles`` or RDKit Mol.
 
     Users can provide a :class:`~graphein.molecule.config.MoleculeGraphConfig`
     object to specify construction parameters.
@@ -109,14 +151,12 @@ def construct_graph(
 
     :param config: :class:`~graphein.molecule.config.MoleculeGraphConfig` object. If None, defaults to config in ``graphein.molecule.config``.
     :type config: graphein.molecule.config.MoleculeGraphConfig, optional
-    :param sdf_path: Path to ``sdf_file`` to build graph from. Default is ``None``.
-    :type sdf_path: str, optional
+    :param mol: rdkit.Mol object to build graph from. Defaults to ``None``.
+    :type mol: rdkit.Mol, optional
+    :param path: Path to either a ``.sdf``, ``.mol2``, ``.smi`` or ``pdb`` file. Defaults to ``None``.
+    :type path: str
     :param smiles: smiles string to build graph from. Default is ``None``.
     :type smiles: str, optional
-    :param mol2_path: Path to ``mol2_file`` to build graph from. Default is ``None``.
-    :type mol2_path: str, optional
-    :param pdb_path: Path to ``pdb_file`` to build graph from. Default is ``None``.
-    :type pdb_path: str, optional
     :param edge_construction_funcs: List of edge construction functions. Default is ``None``.
     :type edge_construction_funcs: List[Callable], optional
     :param edge_annotation_funcs: List of edge annotation functions. Default is ``None``.
@@ -158,26 +198,49 @@ def construct_graph(
     if smiles is not None:
         name = smiles
         rdmol = Chem.MolFromSmiles(smiles)
+        if config.generate_conformer:
+            rdmol = generate_3d(mol=rdmol, recompute_graph=False)
+            coords = [
+                list(rdmol.GetConformer(0).GetAtomPosition(idx))
+                for idx in range(rdmol.GetNumAtoms())
+            ]
 
-    if sdf_path is not None:
-        name = sdf_path.split("/")[-1].split(".")[0]
-        rdmol = Chem.SDMolSupplier(sdf_path)[0]
-        coords = [
-            list(rdmol.GetConformer(0).GetAtomPosition(idx))
-            for idx in range(rdmol.GetNumAtoms())
-        ]
+    if path is not None:
+        name = path.split("/")[-1].split(".")[0]
+        if path.lower().endswith(".sdf"):
+            rdmol = Chem.SDMolSupplier(path)[0]
+            coords = [
+                list(rdmol.GetConformer(0).GetAtomPosition(idx))
+                for idx in range(rdmol.GetNumAtoms())
+            ]
+        elif path.lower().endswith(".mol2"):
+            rdmol = Chem.MolFromMol2File(path)
+            coords = [
+                list(rdmol.GetConformer(0).GetAtomPosition(idx))
+                for idx in range(rdmol.GetNumAtoms())
+            ]
+        elif path.lower().endswith(".pdb"):
+            name = path.split("/")[-1].split(".")[0]
+            rdmol = Chem.MolFromPDBFile(path)
+            coords = [
+                list(rdmol.GetConformer(0).GetAtomPosition(idx))
+                for idx in range(rdmol.GetNumAtoms())
+            ]
+        elif path.lower().endswith(".smi"):
+            with open(path) as f:
+                smiles = f.readlines()[0]
+            name = smiles
+            rdmol = Chem.MolFromSmiles(smiles)
+            if config.generate_conformer:
+                rdmol = generate_3d(mol=rdmol, recompute_graph=False)
+                coords = [
+                    list(rdmol.GetConformer(0).GetAtomPosition(idx))
+                    for idx in range(rdmol.GetNumAtoms())
+                ]
 
-    if mol2_path is not None:
-        name = mol2_path.split("/")[-1].split(".")[0]
-        rdmol = Chem.MolFromMol2File(mol2_path)
-        coords = [
-            list(rdmol.GetConformer(0).GetAtomPosition(idx))
-            for idx in range(rdmol.GetNumAtoms())
-        ]
-
-    if pdb_path is not None:
-        name = pdb_path.split("/")[-1].split(".")[0]
-        rdmol = Chem.MolFromPDBFile(pdb_path)
+    elif mol is not None:
+        name = Chem.MolToSmiles(mol)
+        rdmol = mol
         coords = [
             list(rdmol.GetConformer(0).GetAtomPosition(idx))
             for idx in range(rdmol.GetNumAtoms())
@@ -267,3 +330,102 @@ def construct_junction_tree(
             g.add_edge(n1, n2, kind={"junction_tree"})
 
     return g
+
+def _mp_graph_constructor(
+    input: Union[str, Chem.Mol],
+    config: MoleculeGraphConfig,
+    use_mol: bool = False,
+    use_file: bool = False,
+    use_smiles: bool = False,
+) -> nx.Graph:
+    """
+    Molecule graph constructor for use in multiprocessing several molecular graphs.
+
+    :param args: Tuple of pdb code/path and the chain selection for that PDB
+    :type args: Tuple[str, str]
+    :param use_mol: Whether or not we are using RDKit Mols
+    :type use_mol: bool
+    :param use_file: Whether or not we are using file paths
+    :type use_file: bool
+    :param use_smiles: Whether or not we are using SMILES strings
+    :type use_smiles: bool
+    :param config: Protein structure graph construction config
+    :type config: ProteinGraphConfig
+    :return: Protein structure graph
+    :rtype: nx.Graph
+    """
+    # log.info(f"Constructing graph for: {args[0]}. Chain selection: {args[1]}")
+    func = partial(construct_graph, config=config)
+    try:
+        if use_mol:
+            return func(mol=input)
+        if use_file:
+            return func(path=input)
+        if use_smiles:
+            return func(smiles=input)
+    except Exception as e:
+        log.info(
+            f"Graph construction error for ({input})! {traceback.format_exc()}"
+        )
+        log.info(e)
+        return None
+
+
+def construct_graphs_mp(
+    path_it: Optional[List[str]] = None,
+    smiles_it: Optional[List[str]] = None,
+    mol_it: Optional[List[Chem.Mol]] = None,
+    config: MoleculeGraphConfig = MoleculeGraphConfig(),
+    num_cores: int = 16,
+    return_dict: bool = True,
+) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:
+    """
+    Constructs protein graphs for a list of pdb codes or pdb paths using multiprocessing.
+
+    :param pdb_code_it: List of pdb codes to use for protein graph construction
+    :type pdb_code_it: Optional[List[str]], defaults to None
+    :param pdb_path_it: List of paths to PDB files to use for protein graph construction
+    :type pdb_path_it: Optional[List[str]], defaults to None
+    :param chain_selections: List of chains to select from the protein structures (e.g. ["ABC", "A", "L", "CD"...])
+    :type chain_selections: Optional[List[str]], defaults to None
+    :param config: ProteinGraphConfig to use.
+    :type config: graphein.protein.config.ProteinGraphConfig, defaults to default config params
+    :param num_cores: Number of cores to use for multiprocessing. The more the merrier
+    :type num_cores: int, defaults to 16
+    :param return_dict: Whether or not to return a dictionary (indexed by pdb codes/paths) or a list of graphs.
+    :type return_dict: bool, default to True
+    :return: Iterable of protein graphs. None values indicate there was a problem in constructing the graph for this particular pdb
+    :rtype: Union[List[nx.Graph], Dict[str, nx.Graph]]
+    """
+    assert (
+        path_it is not None or smiles_it is not None or mol_it is not None
+    ), "Iterable of paths, smiles strings OR RDKit mols is required."
+
+    use_file, use_smiles, use_mol = False, False, False
+
+    if path_it is not None:
+        inputs = path_it
+        use_file = True
+
+    if smiles_it is not None:
+        inputs = smiles_it
+        use_smiles = True
+
+    if mol_it is not None:
+        inputs = mol_it
+        use_mol = True
+
+    constructor = partial(
+        _mp_graph_constructor,
+        use_file=use_file,
+        use_mol=use_mol,
+        use_smiles=use_smiles,
+        config=config,
+    )
+
+    graphs = list(thread_map(constructor, list(inputs), max_workers=num_cores))
+
+    if return_dict:
+        graphs = {molecule: graphs[i] for i, molecule in enumerate(inputs)}
+
+    return graphs
