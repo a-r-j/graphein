@@ -8,57 +8,45 @@
 from __future__ import annotations
 
 import logging
-import multiprocessing
 import traceback
 from functools import partial
-import requests
 from io import StringIO
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
-from Bio.PDB.Polypeptide import three_to_one
+import requests
 from biopandas.pdb import PandasPdb
 
-from graphein.protein.graphs import (
-    remove_insertions,
-    process_dataframe,
-)
-
-from graphein.protein_ligand.config import (
-    ProteinLigandGraphConfig,
-)
-from graphein.protein_ligand.utils import (
-    ProteinLigandGraphConfigurationError,
-)
+from graphein.protein.graphs import process_dataframe, remove_insertions
 from graphein.protein.utils import (
     compute_rgroup_dataframe,
-    filter_dataframe,
     get_protein_name_from_filename,
     three_to_one_with_mods,
 )
+from graphein.protein_ligand.config import ProteinLigandGraphConfig
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
+    import_message,
 )
 
+log = logging.getLogger(__name__)
+
 try:
-    import rdkit
     import rdkit.Chem as Chem
     import rdkit.Chem.AllChem as AllChem
 except ImportError:
-    import_message("graphein.protein_ligand.graphs", "rdkit", "rdkit", True)
+    message = import_message("graphein.protein_ligand.graphs", "rdkit", "rdkit", True)
+    log.warning(message)
 
 try:
     from prody import parsePDB, writePDBStream
 except ImportError:
-    import_message("graphein.protein_ligand.graphs", "prody", "prody", True)
-
-
-logging.basicConfig(level="DEBUG")
-log = logging.getLogger(__name__)
+    message = import_message("graphein.protein_ligand.graphs", "prody", "prody", True)
+    log.warning(message)
 
 
 def read_pdb_to_dataframe(
@@ -129,7 +117,7 @@ def initialise_graph_with_metadata(
     granularity: str,
 ) -> nx.Graph:
     """
-    Initializes the nx Graph object with initial metadata.
+    Initializes the ``nx.Graph`` object with initial metadata.
 
     :param protein_df: Processed Dataframe of protein structure.
     :type protein_df: pd.DataFrame
@@ -173,7 +161,7 @@ def initialise_graph_with_metadata(
 def add_nodes_to_graph(
     G: nx.Graph,
     protein_df: Optional[pd.DataFrame] = None,
-    ligands_df: List[pd.DataFrame] = None,
+    ligands_df: Optional[List[pd.DataFrame]] = None,
     verbose: bool = False,
 ) -> nx.Graph:
     """Add nodes into protein graph.
@@ -270,7 +258,7 @@ def compute_edges(
 
     for func in protein_funcs:
         func(G)
-    
+
     for func in ligand_funcs:
         func(G)
 
@@ -297,7 +285,7 @@ def construct_graph(
     graph_annotation_funcs: Optional[List[Callable]] = None,
 ) -> nx.Graph:
     """
-    Constructs protein structure graph from a ``pdb_code`` or ``pdb_path``.
+    Constructs protein-ligand complex graph from a ``pdb_code`` or ``pdb_path``.
 
     Users can provide a :class:`~graphein.protein.config.ProteinLigandGraphConfig`
     object to specify construction parameters.
@@ -407,17 +395,21 @@ def construct_graph(
     # Read ligand from pdb
     df_dict = read_ligand_expo()
     pdb = parsePDB(pdb_code)
-    ligand = pdb.select('not protein and not water')
-    res_name_list = list(set(ligand.getResnames()))
+    if config.exclude_waters:
+        ligand = pdb.select('not protein and not water')
+    else:
+        ligand = pdb.select('not protein')
+    res_name_list = set(list(zip(list(ligand.getResnames()), list(ligand.getChids()))))
     ligands = []
     ligands_df = []
     # TODO: filter out ions, co-factors, etc.
-    for res in res_name_list:
+    for res, chain in res_name_list:
         try:
             new_mol = process_ligand(ligand, res, df_dict)
             ligands.append(new_mol)
-            ligands_df.append(raw_df.df['HETATM'].loc[raw_df.df['HETATM']["residue_name"] == res])
-        except:
+            ligands_df.append(raw_df.df['HETATM'].loc[(raw_df.df['HETATM']["residue_name"] == res) & (raw_df.df['HETATM']["chain_id"] == chain)])
+        except Exception as e:
+            log.warning(e)
             continue
 
     protein_df = process_dataframe(
@@ -432,7 +424,7 @@ def construct_graph(
         pdb_id=pdb_code,
         granularity=config.granularity,
     )
-    
+
     # Add nodes to graph
     g = add_nodes_to_graph(g)
 
@@ -500,7 +492,7 @@ def _mp_graph_constructor(
         log.info(ex)
         return None
 
-def process_ligand(ligand: prody, res_name: str, expo_dict: Dict):
+def process_ligand(ligand, res_name: str, expo_dict: Dict):
     """
     Process ligand in the following steps:
         1. Select the ligand component with name "res_name"
@@ -526,17 +518,16 @@ def process_ligand(ligand: prody, res_name: str, expo_dict: Dict):
     writePDBStream(output, sub_mol)
     pdb_string = output.getvalue()
     rd_mol = AllChem.MolFromPDBBlock(pdb_string)
-    new_mol = AllChem.AssignBondOrdersFromTemplate(template, rd_mol)
-    return new_mol
+    return AllChem.AssignBondOrdersFromTemplate(template, rd_mol)
 
-def read_ligand_expo():
+def read_ligand_expo() -> Dict[str, Dict[str, str]]:
     """
     Read Ligand Expo data, try to find a file called
     Components-smiles-stereo-oe.smi in the current directory.
     If you can't find the file, grab it from the RCSB
 
     :return: Ligand Expo as a dictionary with ligand id as the key
-    :rtype: Dict
+    :rtype: Dict[str, Dict[str, str]]
     """
     file_name = "Components-smiles-stereo-oe.smi"
     try:
