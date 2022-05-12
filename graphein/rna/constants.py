@@ -116,6 +116,23 @@ RNA_ATOMS: List[str] = [
 ]
 """List of valid RNA atoms found in PDB structures."""
 
+PHOSPHORIC_ACID_ATOMS: List[str] = ["P", "OP1", "OP2"]
+
+RIBOSE_ATOMS: List[str] = [
+    "C1'",
+    "O1'",
+    "C2'",
+    "O2'",
+    "C3'",
+    "O3'",
+    "C4'",
+    "O4'",
+    "C5'",
+    "O5'",
+]
+
+RNA_BACKBONE_ATOMS = RIBOSE_ATOMS + PHOSPHORIC_ACID_ATOMS
+
 RNA_ATOMIC_RADII: Dict[str, float] = {
     "Csb": 0.77,
     "Cres": 0.72,
@@ -168,6 +185,45 @@ DEOXYRIBOSE_BOND_STATE: Dict[str, str] = {
     "H": "H",
 }
 
+A_ATOMS: List[str] = [
+    "N1",
+    "C2",
+    "N3",
+    "C4",
+    "C5",
+    "C6",
+    "N6",
+    "N7",
+    "C8",
+    "N9",
+]
+
+C_ATOMS: List[str] = [
+    "N1",
+    "C2",
+    "O2",
+    "N3",
+    "C4",
+    "N4",
+    "C5",
+    "C6",
+]
+
+G_ATOMS: List[str] = [
+    "N1",
+    "C2",
+    "N2",
+    "N3",
+    "C4",
+    "C5",
+    "C6",
+    "O6",
+    "N7",
+    "C8",
+    "N9",
+]
+
+T_ATOMS: List[str] = []
 
 RNA_ATOM_BOND_STATE: Dict[str, Dict[str, str]] = {
     "A": {
