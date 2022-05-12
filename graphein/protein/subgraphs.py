@@ -54,7 +54,7 @@ def extract_subgraph_from_node_list(
 
         log.debug(f"Creating subgraph from nodes: {node_list}.")
         # Create a subgraph from the node list.
-        g = g.subgraph(node_list)
+        g = g.subgraph(node_list).copy()
         # Filter the PDB DF accordingly
         if filter_dataframe:
             g.graph["pdb_df"] = g.graph["pdb_df"].loc[
@@ -68,6 +68,8 @@ def extract_subgraph_from_node_list(
             if not filter_dataframe:
                 log.warning("Recomputing distmat without filtering dataframe.")
             g.graph["distmat"] = compute_distmat(g.graph["pdb_df"])
+        # Reset numbering for edge funcs
+        g.graph["pdb_df"] = g.graph["pdb_df"].reset_index(drop=True)
     if return_node_list:
         return node_list
 
