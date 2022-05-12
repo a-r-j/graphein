@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
+from rich.progress import Progress
 
 from graphein.protein.config import (
     DSSPConfig,
@@ -34,6 +35,7 @@ from graphein.protein.utils import (
     get_protein_name_from_filename,
     three_to_one_with_mods,
 )
+from graphein.rna.constants import RNA_ATOMS
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
@@ -41,8 +43,24 @@ from graphein.utils.utils import (
     compute_edges,
 )
 
-logging.basicConfig(level="DEBUG")
+# logging.basicConfig(level="DEBUG")
 log = logging.getLogger(__name__)
+
+
+def subset_structure_to_rna(
+    df: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Return a subset of atomic dataframe that contains only certain atom names relevant for RNA structures.
+
+    :param df: Protein Structure dataframe to subset
+    :type df: pd.DataFrame
+    :returns: Subsetted protein structure dataframe
+    :rtype: pd.DataFrame
+    """
+    return filter_dataframe(
+        df, by_column="atom_name", list_of_values=RNA_ATOMS, boolean=True
+    )
 
 
 def read_pdb_to_dataframe(
@@ -89,6 +107,14 @@ def read_pdb_to_dataframe(
     if granularity == "atom":
         atomic_df.df["ATOM"]["node_id"] = (
             atomic_df.df["ATOM"]["node_id"]
+            + ":"
+            + atomic_df.df["ATOM"]["atom_name"]
+        )
+    elif granularity in {"rna_atom", "rna_centroid"}:
+        atomic_df.df["ATOM"]["node_id"] = (
+            atomic_df.df["ATOM"]["node_id"]
+            + ":"
+            + atomic_df.df["ATOM"]["atom_number"].apply(str)
             + ":"
             + atomic_df.df["ATOM"]["atom_name"]
         )
@@ -263,8 +289,10 @@ def process_dataframe(
     # Restrict DF to desired granularity
     if granularity == "atom":
         pass
-    elif granularity == "centroids":
+    elif granularity in {"centroids", "rna_centroid"}:
         atoms = convert_structure_to_centroids(atoms)
+    elif granularity == "rna_atom":
+        atoms = subset_structure_to_rna(atoms)
     else:
         atoms = subset_structure_to_atom_type(atoms, granularity)
 
@@ -311,7 +339,7 @@ def assign_node_id_to_dataframe(
         + ":"
         + protein_df["residue_number"].apply(str)
     )
-    if granularity == "atom":
+    if granularity in {"atom", "rna_atom"}:
         protein_df[
             "node_id"
         ] = f'{protein_df["node_id"]}:{protein_df["atom_name"]}'
@@ -382,11 +410,17 @@ def initialise_graph_with_metadata(
 
     # Add Sequences to graph metadata
     for c in G.graph["chain_ids"]:
-        G.graph[f"sequence_{c}"] = (
-            protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
-            .apply(three_to_one_with_mods)
-            .str.cat()
-        )
+        if granularity == "rna_atom":
+            sequence = protein_df.loc[protein_df["chain_id"] == c][
+                "residue_name"
+            ].str.cat()
+        else:
+            sequence = (
+                protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
+                .apply(three_to_one_with_mods)
+                .str.cat()
+            )
+        G.graph[f"sequence_{c}"] = sequence
     return G
 
 
@@ -543,72 +577,80 @@ def construct_graph(
     # If no config is provided, use default
     if config is None:
         config = ProteinGraphConfig()
+    with Progress(transient=True) as progress:
+        task1 = progress.add_task("Reading PDB file...", total=1)
+        # Get name from pdb_file is no pdb_code is provided
+        if pdb_path and (pdb_code is None):
+            pdb_code = get_protein_name_from_filename(pdb_path)
+        progress.advance(task1)
 
-    # Get name from pdb_file is no pdb_code is provided
-    if pdb_path and (pdb_code is None):
-        pdb_code = get_protein_name_from_filename(pdb_path)
+        # If config params are provided, overwrite them
+        config.protein_df_processing_functions = (
+            df_processing_funcs
+            if config.protein_df_processing_functions is None
+            else config.protein_df_processing_functions
+        )
+        config.edge_construction_functions = (
+            edge_construction_funcs
+            if config.edge_construction_functions is None
+            else config.edge_construction_functions
+        )
+        config.node_metadata_functions = (
+            node_annotation_funcs
+            if config.node_metadata_functions is None
+            else config.node_metadata_functions
+        )
+        config.graph_metadata_functions = (
+            graph_annotation_funcs
+            if config.graph_metadata_functions is None
+            else config.graph_metadata_functions
+        )
+        config.edge_metadata_functions = (
+            edge_annotation_funcs
+            if config.edge_metadata_functions is None
+            else config.edge_metadata_functions
+        )
 
-    # If config params are provided, overwrite them
-    config.protein_df_processing_functions = (
-        df_processing_funcs
-        if config.protein_df_processing_functions is None
-        else config.protein_df_processing_functions
-    )
-    config.edge_construction_functions = (
-        edge_construction_funcs
-        if config.edge_construction_functions is None
-        else config.edge_construction_functions
-    )
-    config.node_metadata_functions = (
-        node_annotation_funcs
-        if config.node_metadata_functions is None
-        else config.node_metadata_functions
-    )
-    config.graph_metadata_functions = (
-        graph_annotation_funcs
-        if config.graph_metadata_functions is None
-        else config.graph_metadata_functions
-    )
-    config.edge_metadata_functions = (
-        edge_annotation_funcs
-        if config.edge_metadata_functions is None
-        else config.edge_metadata_functions
-    )
+        raw_df = read_pdb_to_dataframe(
+            pdb_path,
+            pdb_code,
+            verbose=config.verbose,
+            granularity=config.granularity,
+        )
+        task2 = progress.add_task("Processing PDB dataframe...", total=1)
+        protein_df = process_dataframe(
+            raw_df,
+            chain_selection=chain_selection,
+            granularity=config.granularity,
+        )
+        progress.advance(task2)
 
-    raw_df = read_pdb_to_dataframe(
-        pdb_path,
-        pdb_code,
-        verbose=config.verbose,
-        granularity=config.granularity,
-    )
-    protein_df = process_dataframe(
-        raw_df, chain_selection=chain_selection, granularity=config.granularity
-    )
+        task3 = progress.add_task("Initializing graph...", total=1)
+        # Initialise graph with metadata
+        g = initialise_graph_with_metadata(
+            protein_df=protein_df,
+            raw_pdb_df=raw_df.df["ATOM"],
+            pdb_id=pdb_code,
+            granularity=config.granularity,
+        )
+        # Add nodes to graph
+        g = add_nodes_to_graph(g)
 
-    # Initialise graph with metadata
-    g = initialise_graph_with_metadata(
-        protein_df=protein_df,
-        raw_pdb_df=raw_df.df["ATOM"],
-        pdb_id=pdb_code,
-        granularity=config.granularity,
-    )
-    # Add nodes to graph
-    g = add_nodes_to_graph(g)
+        # Add config to graph
+        g.graph["config"] = config
 
-    # Add config to graph
-    g.graph["config"] = config
-
-    # Annotate additional node metadata
-    if config.node_metadata_functions is not None:
-        g = annotate_node_metadata(g, config.node_metadata_functions)
-
-    # Compute graph edges
-    g = compute_edges(
-        g,
-        funcs=config.edge_construction_functions,
-        get_contacts_config=None,
-    )
-
+        # Annotate additional node metadata
+        if config.node_metadata_functions is not None:
+            g = annotate_node_metadata(g, config.node_metadata_functions)
+        progress.advance(task3)
+        task4 = progress.add_task("Constructing edges...", total=1)
+        # Compute graph edges
+        g = compute_edges(
+            g,
+            funcs=config.edge_construction_functions,
+            get_contacts_config=None,
+        )
+        progress.advance(task4)
     # Annotate additional graph metadata
     if config.graph_metadata_functions is not None:
         g = annotate_graph_metadata(g, config.graph_metadata_functions)

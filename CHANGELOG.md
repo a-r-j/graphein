@@ -1,5 +1,7 @@
 ### 1.4.0 - UNRELEASED
 
+* [Feature] XXX adds support for extracting interface subgraphs from complexes.
+* [Feature] XXX adds support for computing the radius of gyration of a structure.
 * [Patch] - #158 changes the eigenvector computation method from `nx.eigenvector_centrality` to `nx.eigenvector_centrality_numpy`.
 * [Feature] - #154 adds a way of checking that DSSP is executable before trying to use it. #154
 * [Feature] - #157 adds support for small molecule graphs using RDKit. Resolves #155.
