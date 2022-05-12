@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import logging
-import multiprocessing
 import traceback
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -19,6 +18,7 @@ import pandas as pd
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
 from rich.progress import Progress
+from tqdm.contrib.concurrent import process_map
 
 from graphein.protein.config import (
     DSSPConfig,
@@ -701,22 +701,25 @@ def construct_graphs_mp(
     config: ProteinGraphConfig = ProteinGraphConfig(),
     num_cores: int = 16,
     return_dict: bool = True,
+    out_path: Optional[str] = None,
 ) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:
     """
     Constructs protein graphs for a list of pdb codes or pdb paths using multiprocessing.
 
     :param pdb_code_it: List of pdb codes to use for protein graph construction
-    :type pdb_code_it: Optional[List[str]], defaults to None
+    :type pdb_code_it: Optional[List[str]], defaults to ``None``
     :param pdb_path_it: List of paths to PDB files to use for protein graph construction
-    :type pdb_path_it: Optional[List[str]], defaults to None
-    :param chain_selections: List of chains to select from the protein structures (e.g. ["ABC", "A", "L", "CD"...])
-    :type chain_selections: Optional[List[str]], defaults to None
+    :type pdb_path_it: Optional[List[str]], defaults to ``None``
+    :param chain_selections: List of chains to select from the protein structures (e.g. ``["ABC", "A", "L", "CD"...]``)
+    :type chain_selections: Optional[List[str]], defaults to ``None``
     :param config: ProteinGraphConfig to use.
     :type config: graphein.protein.config.ProteinGraphConfig, defaults to default config params
     :param num_cores: Number of cores to use for multiprocessing. The more the merrier
-    :type num_cores: int, defaults to 16
+    :type num_cores: int, defaults to ``16``
     :param return_dict: Whether or not to return a dictionary (indexed by pdb codes/paths) or a list of graphs.
-    :type return_dict: bool, default to True
+    :type return_dict: bool, default to ``True``
+    :param out_path: Path to save the graphs to. If None, graphs are not saved.
+    :type out_path: Optional[str], defaults to ``None``
     :return: Iterable of protein graphs. None values indicate there was a problem in constructing the graph for this particular pdb
     :rtype: Union[List[nx.Graph], Dict[str, nx.Graph]]
     """
@@ -739,15 +742,20 @@ def construct_graphs_mp(
         _mp_graph_constructor, use_pdb_code=use_pdb_code, config=config
     )
 
-    pool = multiprocessing.Pool(num_cores)
     graphs = list(
-        pool.map(
+        process_map(
             constructor,
             [(pdb, chain_selections[i]) for i, pdb in enumerate(pdbs)],
+            max_workers=num_cores,
         )
     )
-    pool.close()
-    pool.join()
+    if out_path is not None:
+        [
+            nx.write_gpickle(
+                g, str(f"{out_path}/" + f"{g.graph['name']}.pickle")
+            )
+            for g in graphs
+        ]
 
     if return_dict:
         graphs = {pdb: graphs[i] for i, pdb in enumerate(pdbs)}
