@@ -156,7 +156,7 @@ def plotly_protein_structure_graph(
     figsize: Tuple[int, int] = (620, 650),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
-    node_size_multiplier: float = 20.0,
+    node_size_multiplier: float = 1.0,
     label_node_ids: bool = True,
     node_colour_map=plt.cm.plasma,
     edge_color_map=plt.cm.plasma,
