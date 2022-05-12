@@ -1,8 +1,8 @@
 """Command line interface for graphein."""
 import pathlib
 
-import click
 import networkx as nx
+import rich_click as click
 
 from graphein import __version__
 from graphein.protein.graphs import construct_graph
