@@ -11,8 +11,6 @@ from typing import List
 
 import networkx as nx
 import numpy as np
-import pytest
-from sklearn import neighbors
 
 from graphein.protein.config import DSSPConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (
@@ -380,7 +378,3 @@ def test_successful_pickle():
         loaded_graph = pickle.load(f)
 
     assert nx.is_isomorphic(s_g, loaded_graph)
-
-
-if __name__ == "__main__":
-    test_extract_subgraph_from_sequence_position()

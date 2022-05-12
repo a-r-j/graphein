@@ -11,13 +11,14 @@ from typing import Callable, List, Optional
 
 import networkx as nx
 
-from graphein.protein import (
-    add_nodes_to_graph,
-    get_protein_name_from_filename,
-    initialise_graph_with_metadata,
-    process_dataframe,
-    read_pdb_to_dataframe,
-)
+# from graphein.protein.graphs import (
+#    add_nodes_to_graph,
+#    get_protein_name_from_filename,
+#    initialise_graph_with_metadata,
+#    process_dataframe,
+#    read_pdb_to_dataframe,
+# )
+import graphein.protein.graphs as gp
 from graphein.rna.config import BpRNAConfig, RNAGraphConfig
 from graphein.rna.constants import (
     RNA_BASE_COLORS,
@@ -138,7 +139,7 @@ def construct_rna_graph_3d(
 
     # Get name from pdb_file is no pdb_code is provided
     if pdb_path and (pdb_code is None):
-        pdb_code = get_protein_name_from_filename(pdb_path)
+        pdb_code = gp.get_protein_name_from_filename(pdb_path)
 
     # If config params are provided, overwrite them
     config.rna_df_processing_functions = (
@@ -167,25 +168,25 @@ def construct_rna_graph_3d(
         else config.edge_metadata_functions
     )
 
-    raw_df = read_pdb_to_dataframe(
+    raw_df = gp.read_pdb_to_dataframe(
         pdb_path,
         pdb_code,
         verbose=config.verbose,
         granularity=config.granularity,
     )
-    protein_df = process_dataframe(
+    protein_df = gp.process_dataframe(
         raw_df, chain_selection=chain_selection, granularity=config.granularity
     )
 
     # Initialise graph with metadata
-    g = initialise_graph_with_metadata(
+    g = gp.initialise_graph_with_metadata(
         protein_df=protein_df,
         raw_pdb_df=raw_df.df["ATOM"],
         pdb_id=pdb_code,
         granularity=config.granularity,
     )
     # Add nodes to graph
-    g = add_nodes_to_graph(g)
+    g = gp.add_nodes_to_graph(g)
 
     # Add config to graph
     g.graph["config"] = config
