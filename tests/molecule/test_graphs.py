@@ -31,7 +31,7 @@ LONG_PDB = str(
 
 def test_generate_graph_sdf():
     """Tests graph construction from an SDF file."""
-    g = construct_graph(config=config, sdf_path=LONG_SDF)
+    g = construct_graph(config=config, path=LONG_SDF)
 
     assert isinstance(g, nx.Graph), f"{g} is not a graph"
 
@@ -85,7 +85,7 @@ def test_generate_graph_smiles():
 
 def test_generate_graph_mol2():
     """Tests graph construction from a Mol2 file."""
-    g = construct_graph(config=config, mol2_path=SHORT_MOL2)
+    g = construct_graph(config=config, path=SHORT_MOL2)
     assert g.graph["name"] == "short_test"
 
     # Check nodes
@@ -114,7 +114,7 @@ def test_generate_graph_mol2():
 
 def test_generate_graph_pdb():
     """Tests graph construction from a PDB file."""
-    g = construct_graph(config=config, pdb_path=LONG_PDB)
+    g = construct_graph(config=config, path=LONG_PDB)
     assert g.graph["name"] == "long_test"
 
     # Check nodes

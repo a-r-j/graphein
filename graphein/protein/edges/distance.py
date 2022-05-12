@@ -76,7 +76,6 @@ def add_sequence_distance_edges(
     :return G: networkx protein graph with added peptide bonds.
     :rtype: nx.Graph
     """
-    print(len(G))
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
 
