@@ -119,8 +119,8 @@ def colour_edges(
     G: nx.Graph,
     colour_map: matplotlib.colors.ListedColormap,
     colour_by: str = "kind",
-    set_alpha=None,
-    return_as_rgba=False,
+    set_alpha: float = 1.0,
+    return_as_rgba: bool = False,
 ) -> List[Tuple[float, float, float, float]] or List[str]:
     """
     Computes edge colours based on the kind of bond/interaction.
@@ -132,7 +132,7 @@ def colour_edges(
     :param colour_by: Edge attribute to colour by. Currently only ``"kind"`` is supported.
     :type colour_by: str
     :param set_alpha: Sets a given alpha value between 0.0 and 1.0 for all the edge colours.
-    :type set_alpha: float or None
+    :type set_alpha: float
     :param return_as_rgba: Returns a list of rgba strings instead of tuples.
     :type return_as_rgba: bool
     :return: List of edge colours.
@@ -154,9 +154,9 @@ def colour_edges(
         raise NotImplementedError(
             "Other edge colouring methods not implemented."
         )
-    if set_alpha:
-        assert (0.0 <= set_alpha <= 1.0)
-        colors = [c[:3] + (set_alpha,) for c in colors]
+    
+    assert (0.0 <= set_alpha <= 1.0), f"Alpha value {set_alpha} must be between 0.0 and 1.0"
+    colors = [c[:3] + (set_alpha,) for c in colors]
     if return_as_rgba:
         return [
             f"rgba{tuple(list(co.convert_to_RGB_255(c[:3])) + [c[3]])}" for c in colors
@@ -668,7 +668,7 @@ def asteroid_plot(
     colour_nodes_by: str = "shell",  # residue_name
     colour_edges_by: str = "kind",
     edge_colour_map: plt.cm.Colormap = plt.cm.plasma,
-    edge_alpha: Optional[float] = None,
+    edge_alpha: float = 1.0,
     show_labels: bool = True,
     title: Optional[str] = None,
     width: int = 600,
@@ -694,7 +694,7 @@ def asteroid_plot(
     :param edge_colour_map: Colour map for edges. Defaults to ``plt.cm.plasma``.
     :type edge_colour_map: plt.cm.Colormap
     :param edge_alpha: Sets a given alpha value between 0.0 and 1.0 for all the edge colours.
-    :type edge_alpha: float or None
+    :type edge_alpha: float
     :param title: Title of the plot. Defaults to ``None``.
     :type title: str
     :param width: Width of the plot. Defaults to ``600``.
