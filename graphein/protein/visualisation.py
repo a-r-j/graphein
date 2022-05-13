@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import plotly.express as px
+import plotly.colors as co
 import plotly.graph_objects as go
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
@@ -118,7 +119,9 @@ def colour_edges(
     G: nx.Graph,
     colour_map: matplotlib.colors.ListedColormap,
     colour_by: str = "kind",
-) -> List[Tuple[float, float, float, float]]:
+    set_alpha=None,
+    return_as_rgba=False,
+) -> List[Tuple[float, float, float, float]] or List[str]:
     """
     Computes edge colours based on the kind of bond/interaction.
 
@@ -128,8 +131,12 @@ def colour_edges(
     :type colour_map: matplotlib.colors.ListedColormap
     :param colour_by: Edge attribute to colour by. Currently only ``"kind"`` is supported.
     :type colour_by: str
+    :param set_alpha: Sets a given alpha value between 0.0 and 1.0 for all the edge colours.
+    :type set_alpha: float or None
+    :param return_as_rgba: Returns a list of rgba strings instead of tuples.
+    :type return_as_rgba: bool
     :return: List of edge colours.
-    :rtype: List[Tuple[float, float, float, float]]
+    :rtype: List[Tuple[float, float, float, float]] or List[str]
     """
     if colour_by == "kind":
         edge_types = set(
@@ -147,7 +154,15 @@ def colour_edges(
         raise NotImplementedError(
             "Other edge colouring methods not implemented."
         )
-    return colors
+    if set_alpha:
+        assert (0.0 <= set_alpha <= 1.0)
+        colors = [c[:3] + (set_alpha,) for c in colors]
+    if return_as_rgba:
+        return [
+            f"rgba{tuple(list(co.convert_to_RGB_255(c[:3])) + [c[3]])}" for c in colors
+        ]
+    else:
+        return colors
 
 
 def plotly_protein_structure_graph(
@@ -654,6 +669,7 @@ def asteroid_plot(
     colour_nodes_by: str = "shell",  # residue_name
     colour_edges_by: str = "kind",
     edge_colour_map: plt.cm.Colormap = plt.cm.plasma,
+    edge_alpha: Optional[float] = None,
     show_labels: bool = True,
     title: Optional[str] = None,
     width: int = 600,
@@ -678,6 +694,8 @@ def asteroid_plot(
     :type colour_edges_by: str
     :param edge_colour_map: Colour map for edges. Defaults to ``plt.cm.plasma``.
     :type edge_colour_map: plt.cm.Colormap
+    :param edge_alpha: Sets a given alpha value between 0.0 and 1.0 for all the edge colours.
+    :type edge_alpha: float or None
     :param title: Title of the plot. Defaults to ``None``.
     :type title: str
     :param width: Width of the plot. Defaults to ``600``.
@@ -715,34 +733,22 @@ def asteroid_plot(
 
         if show_edges:
             edge_colors = colour_edges(
-                subgraph, colour_map=edge_colour_map, colour_by=colour_edges_by
+                subgraph, colour_map=edge_colour_map, colour_by=colour_edges_by,
+                set_alpha=edge_alpha, return_as_rgba=True
             )
-
-            edge_x: List[str] = []
-            edge_y: List[str] = []
-            edge_type: List[str] = []
-            for u, v in subgraph.edges():
+            edge_trace = []
+            for i, (u, v) in enumerate(subgraph.edges()):
                 x0, y0 = subgraph.nodes[u]["pos"]
                 x1, y1 = subgraph.nodes[v]["pos"]
-                edge_x.append(x0)
-                edge_x.append(x1)
-                edge_x.append(None)
-                edge_y.append(y0)
-                edge_y.append(y1)
-                edge_y.append(None)
-            edge_trace = go.Scatter(
-                x=edge_x,
-                y=edge_y,
-                line=dict(width=1, color=edge_colors),
-                hoverinfo="text",
-                mode="lines",
-                text=[
-                    " / ".join(list(edge_type))
-                    for edge_type in nx.get_edge_attributes(
-                        subgraph, "kind"
-                    ).values()
-                ],
-            )
+                tr = go.Scatter(
+                    x=(x0, x1),
+                    y=(y0, y1),
+                    mode="lines",
+                    line=dict(width=1, color=edge_colors[i]),
+                    hoverinfo="text",
+                    text=[" / ".join(list(subgraph[u][v]["kind"]))],
+                )
+                edge_trace.append(tr)
 
         node_x: List[str] = []
         node_y: List[str] = []
@@ -789,7 +795,7 @@ def asteroid_plot(
             ),
         )
 
-        data = [edge_trace, node_trace] if show_edges else [node_trace]
+        data = edge_trace + [node_trace] if show_edges else [node_trace]
         fig = go.Figure(
             data=data,
             layout=go.Layout(
