@@ -161,8 +161,7 @@ def colour_edges(
         return [
             f"rgba{tuple(list(co.convert_to_RGB_255(c[:3])) + [c[3]])}" for c in colors
         ]
-    else:
-        return colors
+    return colors
 
 
 def plotly_protein_structure_graph(
