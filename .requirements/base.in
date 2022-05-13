@@ -1,7 +1,6 @@
 biopandas
 biopython
 bioservices
-click
 deepdiff
 matplotlib>=3.4.3
 multipledispatch
@@ -11,6 +10,7 @@ pandas
 plotly
 pydantic
 rich
+rich-click
 seaborn
 pyyaml>=5.1,<6.*
 scikit-learn
