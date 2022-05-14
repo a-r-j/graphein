@@ -76,13 +76,15 @@ def colour_nodes(
     colour_map: matplotlib.colors.ListedColormap = plt.cm.plasma,
 ) -> List[Tuple[float, float, float, float]]:
     """
-    Computes node colours based on ``"degree"``, ``"seq_position"`` or node attributes.
+    Computes node colours based on ``"degree"``, ``"seq_position"``,
+    ``"chain"``, ``"plddt"`` (for AF2 structures) or node attributes.
 
     :param G: Graph to compute node colours for
     :type G: nx.Graph
     :param colour_map:  Colourmap to use.
     :type colour_map: matplotlib.colors.ListedColormap
-    :param colour_by: Manner in which to colour nodes. If not ``"degree"`` or ``"seq_position"``, this must correspond to a node feature.
+    :param colour_by: Manner in which to colour nodes. If not ``"degree"``, ``"seq_position"``,
+        ``"chain"``, ``"plddt"`` this must correspond to a node feature.
     :type colour_by: str
     :return: List of node colours
     :rtype: List[Tuple[float, float, float, float]]
@@ -104,9 +106,6 @@ def colour_nodes(
         )
         colors = [chain_colours[d["chain_id"]] for n, d in G.nodes(data=True)]
     elif colour_by == "plddt":
-
-        levels: List[str] = ["Very High", "Confident", "Low", "Very Low"]
-        mapping = dict(zip(sorted(levels), count()))
         colors = []
         for _, d in G.nodes(data=True):
             if d["b_factor"] > 90:
@@ -117,13 +116,12 @@ def colour_nodes(
                 colors.append((250 / 256, 218 / 256, 77 / 256, 1))
             else:
                 colors.append((239 / 256, 131 / 256, 83 / 256, 1))
-        # colors = [colour_map(mapping[c] / len(levels)) for c in colors]
     else:
         node_types = set(nx.get_node_attributes(G, colour_by).values())
         mapping = dict(zip(sorted(node_types), count()))
         colors = [
             colour_map(mapping[d[colour_by]] / len(node_types))
-            for n, d in G.nodes(data=True)
+            for _, d in G.nodes(data=True)
         ]
 
     return colors
