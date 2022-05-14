@@ -42,6 +42,11 @@ Node
 .. automodule:: graphein.protein.features.nodes.geometry
     :members:
 
+Graph
+^^^^^
+.. automodule:: graphein.protein.features.graph.structure
+    :members:
+
 Sequence
 ^^^^^^^^^
 .. automodule:: graphein.protein.features.sequence.embeddings
