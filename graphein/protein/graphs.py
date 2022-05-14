@@ -100,14 +100,15 @@ def read_pdb_to_dataframe(
         raise NameError(
             "One of pdb_code, pdb_path or uniprot_id must be specified!"
         )
-    if pdb_code is not None:
-        atomic_df = PandasPdb().fetch_pdb(pdb_code)
-    elif pdb_path is not None:
+
+    if pdb_path is not None:
         atomic_df = PandasPdb().read_pdb(pdb_path)
-    else:
+    elif uniprot_id is not None:
         atomic_df = PandasPdb().fetch_pdb(
             uniprot_id=uniprot_id, source="alphafold2-v2"
         )
+    else:
+        atomic_df = PandasPdb().fetch_pdb(pdb_code)
 
     atomic_df = atomic_df.get_model(model_index)
     if len(atomic_df.df["ATOM"]) == 0:
@@ -603,7 +604,7 @@ def construct_graph(
     with Progress(transient=True) as progress:
         task1 = progress.add_task("Reading PDB file...", total=1)
         # Get name from pdb_file is no pdb_code is provided
-        if pdb_path and (pdb_code is None):
+        if pdb_path and (pdb_code is None and uniprot_id is None):
             pdb_code = get_protein_name_from_filename(pdb_path)
         progress.advance(task1)
 
@@ -688,28 +689,39 @@ def construct_graph(
 
 
 def _mp_graph_constructor(
-    args: Tuple[str, str], use_pdb_code: bool, config: ProteinGraphConfig
+    args: Tuple[str, str, int], source: str, config: ProteinGraphConfig
 ) -> nx.Graph:
     """
     Protein graph constructor for use in multiprocessing several protein structure graphs.
 
-    :param args: Tuple of pdb code/path and the chain selection for that PDB
+    :param args: Tuple of pdb code/path and the chain selection for that PDB.
     :type args: Tuple[str, str]
-    :param use_pdb_code: Whether or not we are using pdb codes or paths
+    :param use_pdb_code: Whether we are using ``"pdb_code"``s, ``pdb_path``s or ``"uniprot_id"``s.
     :type use_pdb_code: bool
-    :param config: Protein structure graph construction config
+    :param config: Protein structure graph construction config (see: :class:`graphein.protein.config.ProteinGraphConfig`).
     :type config: ProteinGraphConfig
     :return: Protein structure graph
     :rtype: nx.Graph
     """
-    log.info(f"Constructing graph for: {args[0]}. Chain selection: {args[1]}")
+    log.info(
+        f"Constructing graph for: {args[0]}. Chain selection: {args[1]}. Model index: {args[2]}"
+    )
     func = partial(construct_graph, config=config)
     try:
-        return (
-            func(pdb_code=args[0], chain_selection=args[1])
-            if use_pdb_code
-            else func(pdb_path=args[0], chain_selection=args[1])
-        )
+        if source == "pdb_code":
+            return func(
+                pdb_code=args[0], chain_selection=args[1], model_index=args[2]
+            )
+        elif source == "pdb_path":
+            return func(
+                pdb_path=args[0], chain_selection=args[1], model_index=args[2]
+            )
+        elif source == "uniprot_id":
+            return func(
+                uniprot_id=args[0],
+                chain_selection=args[1],
+                model_index=args[2],
+            )
 
     except Exception as ex:
         log.info(
@@ -722,7 +734,9 @@ def _mp_graph_constructor(
 def construct_graphs_mp(
     pdb_code_it: Optional[List[str]] = None,
     pdb_path_it: Optional[List[str]] = None,
-    chain_selections: Optional[list[str]] = None,
+    uniprot_id_it: Optional[List[str]] = None,
+    chain_selections: Optional[List[str]] = None,
+    model_indices: Optional[List[str]] = None,
     config: ProteinGraphConfig = ProteinGraphConfig(),
     num_cores: int = 16,
     return_dict: bool = True,
@@ -737,6 +751,8 @@ def construct_graphs_mp(
     :type pdb_path_it: Optional[List[str]], defaults to ``None``
     :param chain_selections: List of chains to select from the protein structures (e.g. ``["ABC", "A", "L", "CD"...]``)
     :type chain_selections: Optional[List[str]], defaults to ``None``
+    :param model_indices: List of model indices to use for protein graph construction. Only relevant for structures containing ensembles of models.
+    :type model_indices: Optional[List[str]], defaults to ``None``
     :param config: ProteinGraphConfig to use.
     :type config: graphein.protein.config.ProteinGraphConfig, defaults to default config params
     :param num_cores: Number of cores to use for multiprocessing. The more the merrier
@@ -750,27 +766,35 @@ def construct_graphs_mp(
     """
     assert (
         pdb_code_it is not None or pdb_path_it is not None
-    ), "Iterable of pdb codes OR pdb paths required."
+    ), "Iterable of pdb codes, pdb paths or uniprot IDs required."
 
     if pdb_code_it is not None:
         pdbs = pdb_code_it
-        use_pdb_code = True
+        source = "pdb_code"
 
     if pdb_path_it is not None:
         pdbs = pdb_path_it
-        use_pdb_code = False
+        source = "pdb_path"
+
+    if uniprot_id_it is not None:
+        pdbs = uniprot_id_it
+        source = "uniprot_id"
 
     if chain_selections is None:
         chain_selections = ["all"] * len(pdbs)
 
-    constructor = partial(
-        _mp_graph_constructor, use_pdb_code=use_pdb_code, config=config
-    )
+    if model_indices is None:
+        model_indices = [1] * len(pdbs)
+
+    constructor = partial(_mp_graph_constructor, source=source, config=config)
 
     graphs = list(
         process_map(
             constructor,
-            [(pdb, chain_selections[i]) for i, pdb in enumerate(pdbs)],
+            [
+                (pdb, chain_selections[i], model_indices[i])
+                for i, pdb in enumerate(pdbs)
+            ],
             max_workers=num_cores,
         )
     )
