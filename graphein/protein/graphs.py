@@ -25,7 +25,10 @@ from graphein.protein.config import (
     GetContactsConfig,
     ProteinGraphConfig,
 )
-from graphein.protein.edges.distance import compute_distmat
+from graphein.protein.edges.distance import (
+    add_distance_to_edges,
+    compute_distmat,
+)
 from graphein.protein.resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 from graphein.protein.subgraphs import extract_subgraph_from_chains
 from graphein.protein.utils import (
@@ -66,6 +69,7 @@ def subset_structure_to_rna(
 def read_pdb_to_dataframe(
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
+    uniprot_id: Optional[str] = None,
     verbose: bool = False,
     granularity: str = "CA",
 ) -> pd.DataFrame:
@@ -75,10 +79,12 @@ def read_pdb_to_dataframe(
     Returns ``atomic_df``, which is a dataframe enumerating all atoms and their cartesian coordinates in 3D space. Also
     contains associated metadata from the PDB file.
 
-    :param pdb_path: path to PDB file. Defaults to None.
+    :param pdb_path: path to PDB file. Defaults to ``None``.
     :type pdb_path: str, optional
-    :param pdb_code: 4-character PDB accession. Defaults to None.
+    :param pdb_code: 4-character PDB accession. Defaults to ``None``.
     :type pdb_code: str, optional
+    :param uniprot_id: UniProt ID to build graph from AlphaFoldDB. Defaults to ``None``.
+    :type uniprot_id: str, optional
     :param verbose: print dataframe?
     :type verbose: bool
     :param granularity: Specifies granularity of dataframe. See :class:`~graphein.protein.config.ProteinGraphConfig` for further
@@ -87,14 +93,18 @@ def read_pdb_to_dataframe(
     :returns: ``pd.DataFrame`` containing protein structure
     :rtype: pd.DataFrame
     """
-    if pdb_code is None and pdb_path is None:
-        raise NameError("One of pdb_code or pdb_path must be specified!")
-
-    atomic_df = (
-        PandasPdb().read_pdb(pdb_path)
-        if pdb_path is not None
-        else PandasPdb().fetch_pdb(pdb_code)
-    )
+    if pdb_code is None and pdb_path is None and uniprot_id is None:
+        raise NameError(
+            "One of pdb_code, pdb_path or uniprot_id must be specified!"
+        )
+    if pdb_code is not None:
+        atomic_df = PandasPdb().fetch_pdb(pdb_code)
+    elif pdb_path is not None:
+        atomic_df = PandasPdb().read_pdb(pdb_path)
+    else:
+        atomic_df = PandasPdb().fetch_pdb(
+            uniprot_id=uniprot_id, source="alphafold2-v2"
+        )
 
     # Assign Node IDs to dataframes
     atomic_df.df["ATOM"]["node_id"] = (
@@ -530,12 +540,13 @@ def compute_edges(
     for func in funcs:
         func(G)
 
-    return G
+    return add_distance_to_edges(G)
 
 
 def construct_graph(
     config: Optional[ProteinGraphConfig] = None,
     pdb_path: Optional[str] = None,
+    uniprot_id: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
     df_processing_funcs: Optional[List[Callable]] = None,
@@ -558,6 +569,8 @@ def construct_graph(
     :type pdb_path: str, optional
     :param pdb_code: 4-character PDB accession pdb_code to build graph from. Default is ``None``.
     :type pdb_code: str, optional
+    :param uniprot_id: UniProt accession ID to build graph from AlphaFold2DB. Default is ``None``.
+    :type uniprot_id: str, optional
     :param chain_selection: String of polypeptide chains to include in graph. E.g ``"ABDF"`` or ``"all"``. Default is ``"all"``.
     :type chain_selection: str
     :param df_processing_funcs: List of dataframe processing functions. Default is ``None``.
@@ -614,6 +627,7 @@ def construct_graph(
         raw_df = read_pdb_to_dataframe(
             pdb_path,
             pdb_code,
+            uniprot_id,
             verbose=config.verbose,
             granularity=config.granularity,
         )
@@ -630,7 +644,7 @@ def construct_graph(
         g = initialise_graph_with_metadata(
             protein_df=protein_df,
             raw_pdb_df=raw_df.df["ATOM"],
-            pdb_id=pdb_code,
+            pdb_id=pdb_code if pdb_code is not None else uniprot_id,
             granularity=config.granularity,
         )
         # Add nodes to graph
