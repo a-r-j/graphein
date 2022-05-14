@@ -93,7 +93,7 @@ def colour_nodes(
     # Define color range proportional to number of edges adjacent to a single node
     if colour_by == "degree":
         # Get max number of edges connected to a single node
-        edge_max = max([G.degree[i] for i in G.nodes()])
+        edge_max = max(G.degree[i] for i in G.nodes())
         colors = [colour_map(G.degree[i] / edge_max) for i in G.nodes()]
     elif colour_by == "seq_position":
         colors = [colour_map(i / n) for i in range(n)]
@@ -103,6 +103,21 @@ def colour_nodes(
             zip(chains, list(colour_map(1 / len(chains), 1, len(chains))))
         )
         colors = [chain_colours[d["chain_id"]] for n, d in G.nodes(data=True)]
+    elif colour_by == "plddt":
+
+        levels: List[str] = ["Very High", "Confident", "Low", "Very Low"]
+        mapping = dict(zip(sorted(levels), count()))
+        colors = []
+        for _, d in G.nodes(data=True):
+            if d["b_factor"] > 90:
+                colors.append((27 / 256, 86 / 256, 206 / 256, 1))
+            elif d["b_factor"] > 70:
+                colors.append((126 / 256, 202 / 256, 239 / 256, 1))
+            elif d["b_factor"] > 50:
+                colors.append((250 / 256, 218 / 256, 77 / 256, 1))
+            else:
+                colors.append((239 / 256, 131 / 256, 83 / 256, 1))
+        # colors = [colour_map(mapping[c] / len(levels)) for c in colors]
     else:
         node_types = set(nx.get_node_attributes(G, colour_by).values())
         mapping = dict(zip(sorted(node_types), count()))
@@ -695,8 +710,7 @@ def asteroid_plot(
     """
     assert node_id in g.nodes(), f"Node {node_id} not in graph"
 
-    nodes: Dict[int, List[str]] = {}
-    nodes[0] = [node_id]
+    nodes: Dict[int, List[str]] = {0: [node_id]}
     node_list: List[str] = [node_id]
     # Iterate over the number of hops and extract nodes in each shell
     for i in range(1, k):
@@ -724,12 +738,8 @@ def asteroid_plot(
             for u, v in subgraph.edges():
                 x0, y0 = subgraph.nodes[u]["pos"]
                 x1, y1 = subgraph.nodes[v]["pos"]
-                edge_x.append(x0)
-                edge_x.append(x1)
-                edge_x.append(None)
-                edge_y.append(y0)
-                edge_y.append(y1)
-                edge_y.append(None)
+                edge_x.extend((x0, x1, None))
+                edge_y.extend((y0, y1, None))
             edge_trace = go.Scatter(
                 x=edge_x,
                 y=edge_y,
@@ -790,10 +800,10 @@ def asteroid_plot(
         )
 
         data = [edge_trace, node_trace] if show_edges else [node_trace]
-        fig = go.Figure(
+        return go.Figure(
             data=data,
             layout=go.Layout(
-                title=title if title else f'Asteroid Plot - {g.graph["name"]}',
+                title=title or f'Asteroid Plot - {g.graph["name"]}',
                 width=width,
                 height=height,
                 titlefont_size=16,
@@ -808,7 +818,7 @@ def asteroid_plot(
                 ),
             ),
         )
-        return fig
+
     else:
         nx.draw_shell(subgraph, nlist=shells, with_labels=show_labels)
 
@@ -925,55 +935,3 @@ def plot_chord_diagram(
         show=show,
         **kwargs,
     )
-
-
-if __name__ == "__main__":
-    # TODO: Move the block here into tests.
-    from graphein.protein.config import ProteinGraphConfig
-    from graphein.protein.edges.atomic import (
-        add_atomic_edges,
-        add_bond_order,
-        add_ring_status,
-    )
-    from graphein.protein.features.nodes.amino_acid import (
-        expasy_protein_scale,
-        meiler_embedding,
-    )
-    from graphein.protein.graphs import construct_graph
-
-    # Test Point cloud plotting
-    # v, f, a = create_mesh(pdb_code="3eiy")
-    # m = convert_verts_and_face_to_mesh(v, f)
-    # plot_pointcloud(m, "Test")
-    # TEST PROTEIN STRUCTURE GRAPH PLOTTING
-    configs = {
-        "granularity": "atom",
-        "keep_hets": False,
-        "deprotonate": True,
-        "insertions": False,
-        "verbose": False,
-    }
-
-    config = ProteinGraphConfig(**configs)
-    config.edge_construction_functions = [
-        add_atomic_edges,
-        add_ring_status,
-        add_bond_order,
-    ]
-
-    config.node_metadata_functions = [meiler_embedding, expasy_protein_scale]
-
-    g = construct_graph(
-        config=config, pdb_path="../examples/pdbs/3eiy.pdb", pdb_code="3eiy"
-    )
-
-    p = plotly_protein_structure_graph(
-        g,
-        30,
-        (1000, 2000),
-        colour_nodes_by="element_symbol",
-        colour_edges_by="kind",
-        label_node_ids=False,
-    )
-
-    p.show()

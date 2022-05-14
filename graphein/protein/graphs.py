@@ -70,6 +70,7 @@ def read_pdb_to_dataframe(
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
     uniprot_id: Optional[str] = None,
+    model_index: int = 1,
     verbose: bool = False,
     granularity: str = "CA",
 ) -> pd.DataFrame:
@@ -85,6 +86,8 @@ def read_pdb_to_dataframe(
     :type pdb_code: str, optional
     :param uniprot_id: UniProt ID to build graph from AlphaFoldDB. Defaults to ``None``.
     :type uniprot_id: str, optional
+    :param model_index: Index of model to read. Only relevant for structures containing ensembles. Defaults to ``1``.
+    :type model_index: int, optional
     :param verbose: print dataframe?
     :type verbose: bool
     :param granularity: Specifies granularity of dataframe. See :class:`~graphein.protein.config.ProteinGraphConfig` for further
@@ -105,6 +108,10 @@ def read_pdb_to_dataframe(
         atomic_df = PandasPdb().fetch_pdb(
             uniprot_id=uniprot_id, source="alphafold2-v2"
         )
+
+    atomic_df = atomic_df.get_model(model_index)
+    if len(atomic_df.df["ATOM"]) == 0:
+        raise ValueError(f"No model found for index: {model_index}")
 
     # Assign Node IDs to dataframes
     atomic_df.df["ATOM"]["node_id"] = (
@@ -549,6 +556,7 @@ def construct_graph(
     uniprot_id: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
+    model_index: int = 1,
     df_processing_funcs: Optional[List[Callable]] = None,
     edge_construction_funcs: Optional[List[Callable]] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
@@ -573,6 +581,8 @@ def construct_graph(
     :type uniprot_id: str, optional
     :param chain_selection: String of polypeptide chains to include in graph. E.g ``"ABDF"`` or ``"all"``. Default is ``"all"``.
     :type chain_selection: str
+    :param model_index: Index of model to use in the case of structural ensembles. Default is ``1``.
+    :type model_index: int
     :param df_processing_funcs: List of dataframe processing functions. Default is ``None``.
     :type df_processing_funcs: List[Callable], optional
     :param edge_construction_funcs: List of edge construction functions. Default is ``None``.
@@ -628,6 +638,7 @@ def construct_graph(
             pdb_path,
             pdb_code,
             uniprot_id,
+            model_index=model_index,
             verbose=config.verbose,
             granularity=config.granularity,
         )
