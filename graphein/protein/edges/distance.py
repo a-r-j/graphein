@@ -14,8 +14,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from scipy.spatial import Delaunay
-from scipy.spatial.distance import euclidean, pdist, rogerstanimoto, squareform
-from sklearn.metrics import pairwise_distances
+from scipy.spatial.distance import pdist, squareform
 from sklearn.neighbors import kneighbors_graph
 
 from graphein.protein.resi_atoms import (
@@ -40,16 +39,25 @@ log = logging.getLogger(__name__)
 
 def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Compute pairwise euclidean distances between every atom.
+    Compute pairwise Euclidean distances between every atom.
 
-    Design choice: passed in a DataFrame to enable easier testing on
+    Design choice: passed in a ``pd.DataFrame`` to enable easier testing on
     dummy data.
 
-    :param pdb_df: pd.Dataframe containing protein structure. Must contain columns ["x_coord", "y_coord", "z_coord"]
+    :param pdb_df: Dataframe containing protein structure. Must contain columns ``["x_coord", "y_coord", "z_coord"]``.
     :type pdb_df: pd.DataFrame
-    :return: pd.Dataframe of euclidean distance matrix
+    :raises: ValueError if ``pdb_df`` does not contain the required columns.
+    :return: pd.Dataframe of Euclidean distance matrix.
     :rtype: pd.DataFrame
     """
+    if (
+        not pd.Series(["x_coord", "y_coord", "z_coord"])
+        .isin(pdb_df.columns)
+        .all()
+    ):
+        raise ValueError(
+            "Dataframe must contain columns ['x_coord', 'y_coord', 'z_coord']"
+        )
     eucl_dists = pdist(
         pdb_df[["x_coord", "y_coord", "z_coord"]], metric="euclidean"
     )
@@ -60,6 +68,26 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     return eucl_dists
 
 
+def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
+    """Adds Euclidean distance between nodes in an edge as an edge attribute.
+
+    :param G: Graph to add distances to.
+    :type G: nx.Graph
+    :return: Graph with added distances.
+    :rtype: nx.Graph
+    """
+    if "dist_mat" not in G.graph.keys():
+        dist_mat = G.graph["atomic_dist_mat"]
+    else:
+        dist_mat = G.graph["dist_mat"]
+
+    mat = np.where(nx.to_numpy_matrix(G), dist_mat, 0)
+    node_map = {n: i for i, n in enumerate(G.nodes)}
+    for u, v, d in G.edges(data=True):
+        d["distance"] = mat[node_map[u], node_map[v]]
+    return G
+
+
 def add_sequence_distance_edges(
     G: nx.Graph, d: int, name: str = "sequence_edge"
 ) -> nx.Graph:
@@ -68,12 +96,12 @@ def add_sequence_distance_edges(
 
     Eg. if ``d=6`` then we join: nodes ``(1,7), (2,8), (3,9)..`` based on their sequence number.
 
-    :param G: networkx protein graph.
+    :param G: Networkx protein graph.
     :type G: nx.Graph
     :param d: Sequence separation to add edges on.
     :param name: Name of the edge type. Defaults to ``"sequence_edge"``.
     :type name: str
-    :return G: networkx protein graph with added peptide bonds.
+    :return G: Networkx protein graph with added peptide bonds.
     :rtype: nx.Graph
     """
     # Iterate over every chain
@@ -124,9 +152,9 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
     """
     Adds peptide backbone as edges to residues in each chain.
 
-    :param G: networkx protein graph.
+    :param G: Networkx protein graph.
     :type G: nx.Graph
-    :return G: networkx protein graph with added peptide bonds.
+    :return G: Networkx protein graph with added peptide bonds.
     :rtype: nx.Graph
     """
     return add_sequence_distance_edges(G, d=1, name="peptide_bond")
