@@ -2,6 +2,7 @@ biopandas>=0.4.1
 biopython
 bioservices
 deepdiff
+loguru
 matplotlib>=3.4.3
 multipledispatch
 networkx
