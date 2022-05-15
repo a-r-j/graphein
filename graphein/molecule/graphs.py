@@ -188,7 +188,7 @@ def construct_graph(
     )
     config.edge_construction_functions = (
         edge_construction_funcs
-        if edge_construction_functions is not None
+        if edge_construction_funcs is not None
         else config.edge_construction_functions
     )
 
