@@ -1,5 +1,6 @@
 ### 1.5.0 - UNRELEASED
 
+* [Feature] - [#170](https://github.com/a-r-j/graphein/pull/170) Adds support for viewing edges in `graphein.protein.visualisation.asteroid_plot`. Contribution by @avivko.
 * [Feature] - #163 Adds support for conformer generation for SMILE inputs to molecule graph construction.
 * [Feature] - #163 Adds support for molecule graph generation from an RDKit.Chem.Mol input.
 * [Feature] - #163 Adds support for multiprocess molecule graph construction.
