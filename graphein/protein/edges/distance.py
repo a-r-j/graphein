@@ -14,7 +14,6 @@ from typing import Dict, List, Optional, Tuple, Union
 import networkx as nx
 import numpy as np
 import pandas as pd
-from matplotlib.pyplot import get
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import pdist, squareform
 from sklearn.neighbors import kneighbors_graph
