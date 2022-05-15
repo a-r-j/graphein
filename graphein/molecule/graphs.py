@@ -16,7 +16,6 @@ import networkx as nx
 import numpy as np
 from tqdm.contrib.concurrent import process_map, thread_map
 
-from graphein.molecule.edges.atomic import add_atom_bonds
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
@@ -26,6 +25,8 @@ from graphein.utils.utils import (
 )
 
 from .config import MoleculeGraphConfig
+from .edges.atomic import add_atom_bonds
+from .utils import compute_fragments
 
 log = logging.getLogger(__name__)
 
@@ -130,6 +131,7 @@ def construct_graph(
     mol: Optional[rdkit.Mol] = None,
     path: Optional[str] = None,
     smiles: Optional[str] = None,
+    generate_conformer: Optional[bool] = False,
     edge_construction_funcs: Optional[str] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
     node_annotation_funcs: Optional[List[Callable]] = None,
@@ -151,6 +153,8 @@ def construct_graph(
     :type path: str
     :param smiles: smiles string to build graph from. Default is ``None``.
     :type smiles: str, optional
+    :param generate_conformer: Whether to generate a conformer for the molecule. Defaults to ``False``.
+    :type generate_conformer: bool, optional
     :param edge_construction_funcs: List of edge construction functions. Default is ``None``.
     :type edge_construction_funcs: List[Callable], optional
     :param edge_annotation_funcs: List of edge annotation functions. Default is ``None``.
@@ -184,7 +188,7 @@ def construct_graph(
     )
     config.edge_construction_functions = (
         edge_construction_funcs
-        if config.edge_construction_functions is None
+        if edge_construction_functions is not None
         else config.edge_construction_functions
     )
 
@@ -192,7 +196,7 @@ def construct_graph(
     if smiles is not None:
         name = smiles
         rdmol = Chem.MolFromSmiles(smiles)
-        if config.generate_conformer:
+        if config.generate_conformer or generate_conformer:
             rdmol = generate_3d(mol=rdmol, recompute_graph=False)
             coords = [
                 list(rdmol.GetConformer(0).GetAtomPosition(idx))
@@ -225,7 +229,7 @@ def construct_graph(
                 smiles = f.readlines()[0]
             name = smiles
             rdmol = Chem.MolFromSmiles(smiles)
-            if config.generate_conformer:
+            if config.generate_conformer or generate_conformer:
                 rdmol = generate_3d(mol=rdmol, recompute_graph=False)
                 coords = [
                     list(rdmol.GetConformer(0).GetAtomPosition(idx))
@@ -290,6 +294,28 @@ def construct_graph(
         g = annotate_edge_metadata(g, config.edge_metadata_functions)
 
     return g
+
+
+def compute_fragment_graphs(
+    g: Union[nx.Graph, Chem.Mol], config: Optional[MoleculeGraphConfig] = None
+) -> List[nx.Graph]:
+    """Computes graphs for each fragment in a molecule.
+
+    :param g: Input graph or molecule to fragment.
+    :type g: Union[nx.Graph, Chem.Mol]
+    :param config: Molecular graph construction config.
+        See: :class:`graphein.molecule.config`. Defaults to ``None``.
+    :type config: Optional[MoleculeGraphConfig], optional
+    :return: List of fragment graphs.
+    :rtype: List[nx.Graph]
+    """
+    if config is None:
+        try:
+            config = g.graph["config"]
+        except KeyError:
+            config = MoleculeGraphConfig()
+    fragments = compute_fragments(g)
+    return [construct_graph(mol=m, config=config) for m in fragments]
 
 
 def _mp_graph_constructor(
