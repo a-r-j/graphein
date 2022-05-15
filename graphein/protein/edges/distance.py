@@ -6,6 +6,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import itertools
 import logging
 from itertools import combinations
 from typing import Dict, List, Optional, Tuple, Union
@@ -13,6 +14,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import networkx as nx
 import numpy as np
 import pandas as pd
+from matplotlib.pyplot import get
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import pdist, squareform
 from sklearn.neighbors import kneighbors_graph
@@ -420,8 +422,16 @@ def add_cation_pi_interactions(
                 G.add_edge(resi1, resi2, kind={"cation_pi"})
 
 
-def get_interacting_atoms(angstroms: float, distmat: pd.DataFrame):
-    """Find the atoms that are within a particular radius of one another."""
+def get_interacting_atoms(
+    angstroms: float, distmat: pd.DataFrame
+) -> np.ndarray:
+    """Find the atoms that are within a particular radius of one another.
+
+    :param angstroms: The radius in angstroms.
+    :type angstroms: float
+    :param distmat: The distance matrix.
+    :type distmat: pd.DataFrame
+    """
     return np.where(distmat <= angstroms)
 
 
@@ -533,6 +543,76 @@ def add_distance_threshold(
     log.info(
         f"Added {count} distance edges. ({len(list(interacting_nodes)) - count} removed by LIN)"
     )
+
+
+def add_distance_window(
+    G: nx.Graph, min: float, max: float, long_interaction_threshold: int = -1
+):
+    """
+    Adds edges to any nodes within a given window of distances of each other. Long interaction threshold is used
+    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+
+    :param G: Protein Structure graph to add distance edges to
+    :type G: nx.Graph
+    :param min: Minimum distance in angstroms required for an edge.
+    :type min: float
+    :param max: Maximum distance in angstroms allowed for an edge.
+    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :type long_interaction_threshold: int
+    :return: Graph with distance-based edges added
+    """
+    pdb_df = filter_dataframe(
+        G.graph["pdb_df"], "node_id", list(G.nodes()), True
+    )
+    dist_mat = compute_distmat(pdb_df)
+    # Nodes less than the minimum distance
+    less_than_min = get_interacting_atoms(min, distmat=dist_mat)
+    less_than_min = list(zip(less_than_min[0], less_than_min[1]))
+
+    interacting_nodes = get_interacting_atoms(max, distmat=dist_mat)
+    interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
+    interacting_nodes = [
+        i for i in interacting_nodes if i not in less_than_min
+    ]
+
+    log.info(f"Found: {len(interacting_nodes)} distance edges")
+    count = 0
+    for a1, a2 in interacting_nodes:
+        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
+        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
+        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
+        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
+        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
+        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
+
+        condition_1 = n1_chain == n2_chain
+        condition_2 = (
+            abs(n1_position - n2_position) < long_interaction_threshold
+        )
+
+        if not (condition_1 and condition_2):
+            count += 1
+            if G.has_edge(n1, n2):
+                G.edges[n1, n2]["kind"].add(f"distance_window_{min}_{max}")
+            else:
+                G.add_edge(n1, n2, kind={f"distance_window_{min}_{max}"})
+    log.info(
+        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count} removed by LIN)"
+    )
+
+
+def add_fully_connected_edges(G: nx.Graph):
+    """
+    Adds fully connected edges to nodes.
+
+    :param G: Protein structure graph to add fully connected edges to.
+    :type G: nx.Graph
+    """
+    for n1, n2 in itertools.product(G.nodes(), G.nodes()):
+        if G.has_edge(n1, n2):
+            G.edges[n1, n2]["kind"].add("fully_connected")
+        else:
+            G.add_edge(n1, n2, kind={"fully_connected"})
 
 
 def add_k_nn_edges(
