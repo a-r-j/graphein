@@ -292,7 +292,10 @@ class GraphFormatConvertor:
         # Try converting everything to tensor
         for k, v in data.items():
             try:
-                data[k] = torch.tensor(v)
+                val = torch.tensor(v)
+                if len(val.shape) > 1:
+                    val = val.squeeze(0)
+                data[k] = val
             except Exception:
                 data[k] = v
 
