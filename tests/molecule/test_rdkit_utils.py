@@ -1,5 +1,7 @@
 """Tests for graphein.molecule.rdkit_utils"""
 
+from pathlib import Path
+
 import numpy as np
 import rdkit
 
@@ -10,7 +12,9 @@ TEST_GRAPH = gm.construct_graph(
     smiles="CC1=C(C2=C(CCC(O2)(C)COC3=CC=C(C=C3)CC4C(=O)NC(=O)S4)C(=C1O)C)C",
     generate_conformer=True,
 )
-TEST_MOL_GRAPH = gm.construct_graph(path="../test_data/short_test.mol2")
+TEST_MOL_GRAPH = gm.construct_graph(
+    path=str(Path(__file__).parent / "test_data/short_test.mol2")
+)
 
 
 def test_get_center():
