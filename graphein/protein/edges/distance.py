@@ -77,10 +77,13 @@ def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
     :return: Graph with added distances.
     :rtype: nx.Graph
     """
-    if "dist_mat" not in G.graph.keys():
+    if "atomic_dist_mat" in G.graph.keys():
         dist_mat = G.graph["atomic_dist_mat"]
-    else:
+    elif "dist_mat" in G.graph.keys():
         dist_mat = G.graph["dist_mat"]
+    else:
+        dist_mat = compute_distmat(G.graph["pdb_df"])
+        G.graph["dist_mat"] = dist_mat
 
     mat = np.where(nx.to_numpy_matrix(G), dist_mat, 0)
     node_map = {n: i for i, n in enumerate(G.nodes)}
