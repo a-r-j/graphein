@@ -10,21 +10,22 @@ TEST_GRAPH = gm.construct_graph(
     smiles="CC1=C(C2=C(CCC(O2)(C)COC3=CC=C(C=C3)CC4C(=O)NC(=O)S4)C(=C1O)C)C",
     generate_conformer=True,
 )
+TEST_MOL_GRAPH = gm.construct_graph(path="../test_data/short_test.mol2")
 
 
 def test_get_center():
-    center = u.get_center(TEST_GRAPH)
+    center = u.get_center(TEST_MOL_GRAPH)
     assert isinstance(
         center, np.ndarray
     ), f"Center is not a numpy array ({type(center)}"
     assert center.shape == (3,), f"Center has wrong shape ({center.shape})"
     np.testing.assert_allclose(
-        np.array([-0.69532484, 0.09425642, 0.12058584]), center
+        np.array([-0.21303333, 0.06743333, 0.0818]), center
     )
 
 
 def test_get_shape_moments():
-    moments = u.get_shape_moments(TEST_GRAPH)
+    moments = u.get_shape_moments(TEST_MOL_GRAPH)
     assert isinstance(
         moments, tuple
     ), f"Moment is not a tuple ({type(moments)})"
@@ -35,8 +36,8 @@ def test_get_shape_moments():
         moments[1], float
     ), f"Moment is not a float ({type(moments[1])})"
     assert moments == (
-        0.11697174259640879,
-        0.9956246683655998,
+        0.12940962096031391,
+        0.8705903790396854,
     ), f"Moments are not correct ({moments})"
 
 
