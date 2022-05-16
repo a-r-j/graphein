@@ -19,7 +19,7 @@ def test_get_center():
     ), f"Center is not a numpy array ({type(center)}"
     assert center.shape == (3,), f"Center has wrong shape ({center.shape})"
     np.testing.assert_allclose(
-        np.array([0.81818226, -0.18531154, 0.00672991]), center
+        np.array([-0.69532484, 0.09425642, 0.12058584]), center
     )
 
 
@@ -35,8 +35,8 @@ def test_get_shape_moments():
         moments[1], float
     ), f"Moment is not a float ({type(moments[1])})"
     assert moments == (
-        0.08647441393084927,
-        0.9827489149050429,
+        0.11697174259640879,
+        0.9956246683655998,
     ), f"Moments are not correct ({moments})"
 
 
@@ -60,7 +60,7 @@ def test_get_morgan_fp():
 
 
 def test_get_morgan_fp_np():
-    fp = u.get_morgan_fp(TEST_GRAPH)
+    fp = u.get_morgan_fp_np(TEST_GRAPH)
     assert isinstance(fp, np.ndarray), f"fp is not a numpy array ({type(fp)})"
 
 
