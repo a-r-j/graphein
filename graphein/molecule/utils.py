@@ -38,7 +38,12 @@ try:
     from rdkit.Chem.Descriptors3D import NPR1, NPR2
     from rdkit.Chem.rdMolTransforms import ComputeCentroid
 except ImportError:
-    import_message("graphein.molecule.graphs", "rdkit", "rdkit", True)
+    import_message("graphein.molecule.utils", "rdkit", "rdkit", True)
+
+try:
+    import selfies as sf
+except ImportError:
+    import_message("graphein.molecule.utils", "selfies", None, True)
 
 
 MST_MAX_WEIGHT: int = 100
@@ -331,6 +336,49 @@ def get_qed_score(
     except Exception as e:
         # log.warning(e)
         return None
+
+
+def simplify_smile(smile: str) -> str:
+    """
+    Simplifies a SMILE string by removing hydrogen atoms (``H``),
+    chiral specifications (``'@'``), charges (``+`` / ``-``), ``'#'``-characters,
+    and square brackets (``'['``, ``']'``).
+
+    :param smile_str: A smile string, e.g., ``C[C@H](CCC(=O)NCCS(=O)(=O)[O-])``
+    :type smile_str: str
+    :returns: Returns a simplified SMILE string, e.g., ``CC(CCC(=O)NCCS(=O)(=O)O)``.
+    :rtype: str
+    """
+    remove_chars = ["@", "-", "+", "H", "[", "]", "#"]
+    stripped_smile = []
+    for sym in smile:
+        if sym.isalpha():
+            sym = sym.upper()
+        if sym not in remove_chars:
+            stripped_smile.append(sym)
+    return "".join(stripped_smile)
+
+
+def smile_to_selfies(smile: str) -> str:
+    """Encodes a SMILES string into a Selfies string.
+
+    :param smile: A valid SMILES string. E.g. ``"C1=CC=CC=C1"``.
+    :type smile: str
+    :return: Selfies string. E.g. ``"[C][=C][C][=C][C][=C][Ring1][=Branch1]"``.
+    :rtype: str
+    """
+    return sf.encoder(smile)
+
+
+def selfies_to_smile(selfie: str) -> str:
+    """Decodes a selfies string into a SMILES string.
+
+    :param selfie: The selfies string to decode. E.g. ``"[C][=C][C][=C][C][=C][Ring1][=Branch1]"``.
+    :type selfie: str
+    :return: The decoded SMILES string. E.g. ``"C1=CC=CC=C1"``.
+    :rtype: str
+    """
+    return sf.decoder(selfie)
 
 
 def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:

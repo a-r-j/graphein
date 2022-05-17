@@ -1,4 +1,5 @@
 from .conversion import GraphFormatConvertor
+from .utils import add_labels_to_graph
 
 try:
     from .datasets import (
