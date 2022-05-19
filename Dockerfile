@@ -8,6 +8,10 @@ RUN apt-get update \
 RUN apt-get update && apt-get install -y iputils-ping && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install BLAST
+RUN apt-get update && apt-get install -y ncbi-blast+ && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV CONDA_ALWAYS_YES=true
 
 
@@ -38,9 +42,6 @@ RUN conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 RUN conda install -c pytorch3d pytorch3d
 RUN conda install -c dglteam dgl
 RUN conda install -c salilab dssp
-
-# Install BLAST
-RUN apt install ncbi-blast+
 
 RUN conda install -c conda-forge ipywidgets
 RUN jupyter nbextension enable --py widgetsnbextension
