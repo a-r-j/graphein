@@ -1,5 +1,0 @@
-recursive-include graphein/ *include versioneer.py
-include graphein/_version.py
-include versioneer.py
-include README.md
-include .requirements/*
