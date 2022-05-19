@@ -582,7 +582,7 @@ def construct_graph(
         granularity=config.granularity,
     )
     protein_df = process_dataframe(
-        raw_df, chain_selection=chain_selection, granularity=config.granularity
+        raw_df, chain_selection=chain_selection, granularity=config.granularity, insertions=config.insertions
     )
 
     # Initialise graph with metadata
