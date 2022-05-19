@@ -1,303 +1,258 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" />
 
-<!DOCTYPE html>
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>graphein.protein.features.sequence.propy &#8212; Graphein 1.2.0 documentation</title>
-    
-  <link href="../../../../../_static/css/theme.css" rel="stylesheet">
-  <link href="../../../../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
-
-    
-  <link rel="stylesheet"
-    href="../../../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
-
-    
-      
-
-    
-    <link rel="stylesheet" href="../../../../../_static/sphinx-book-theme.css?digest=84ace793992934648b4de8eed757e5a2" type="text/css" />
-    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>graphein.protein.features.sequence.propy - Graphein 1.4.0</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
     
-  <link rel="preload" as="script" href="../../../../../_static/js/index.be7d3bbb2ef33a8344ce.js">
-
-    <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/doctools.js"></script>
-    <script src="../../../../../_static/language_data.js"></script>
-    <script src="../../../../../_static/clipboard.min.js"></script>
-    <script src="../../../../../_static/copybutton.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
-    <script crossorigin="anonymous" integrity="sha512-VCK7oF67GXNc+J7zsu5o57jtxhLA75nSMHGaq8Q8TCOxDj4nMDw5dhQZvm9Cd9RN+3zgcodqbKcRc9gyPP8a2w==" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../../../../../_static/sphinx-book-theme.9d8b4a8b9bb19db25eeaddc40d639ba2.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
-    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
-    <link rel="index" title="Index" href="../../../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../../../search.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
     
 
-    <!-- Google Analytics -->
-    
-  </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
-    
-    <div class="container-fluid" id="banner"></div>
 
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
     
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
 
-    <div class="container-xl">
-      <div class="row">
-          
-<!-- Checkboxes to toggle the left sidebar -->
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
-<label class="overlay" for="__navigation">
-    <div class="visually-hidden">Toggle navigation sidebar</div>
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
 </label>
-<div class="col-12 col-md-3 bd-sidebar site-navigation " id="site-navigation">
-    
-        <div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../../../../../index.html">
-      
-        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
-        
-      
-      
-      <img src="../../../../../_static/graphein.png" class="logo" alt="logo">
-      
-      
-      <h1 class="site-logo" id="site-title">Graphein 1.2.0 documentation</h1>
-      
-    </a>
-</div><form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
-    <div class="bd-toc-item active">
-        <p class="caption">
- <span class="caption-text">
-  Getting Started
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../../../getting_started/installation.html">
-   Installation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../../../getting_started/introduction.html">
-   Graphein
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../../../license.html">
-   License
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Tutorials
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../../../../notebooks_index.html">
-   Notebooks
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../notebooks/residue_graphs.html">
-     Graphein - Residue Graph Tutorial
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../notebooks/atom_graph_tutorial.html">
-     Graphein - Atom Graph Tutorial
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../notebooks/alphafold_protein_graph_tutorial.html">
-     Constructing Graphs from AlphaFold Protein Structure Database
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../notebooks/subgraphing_tutorial.html">
-     Constructing Subgraphs in Graphein
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../notebooks/protein_mesh_tutorial.html">
-     Creating Protein Meshes in Graphein &amp; 3D Visualisation
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../notebooks/interactive_plotly_example.html">
-     Distance Matrix
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../notebooks/ppi_tutorial.html">
-     PPI Networks and Structural Interactomics
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../notebooks/grn_tutorial.html">
-     Gene Regulatory Network Tutorial
-    </a>
-   </li>
-  </ul>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Datasets
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../../../../datasets.html">
-   Datasets
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../datasets/pscdb.html">
-     PSCDB - Protein Structural Change Database
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../notebooks/pscdb_baselines.html">
-     PSCDB - Baselines
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../../../datasets/ppisp.html">
-     PPISP - Protein Protein Interaction Structure Prediction
-    </a>
-   </li>
-  </ul>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  API Reference
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../../../modules/graphein.protein.html">
-   graphein.protein
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../../../modules/graphein.rna.html">
-   graphein.rna
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../../../modules/graphein.ppi.html">
-   graphein.ppi
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../../../modules/graphein.grn.html">
-   graphein.grn
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../../../modules/graphein.ml.html">
-   graphein.ml
-  </a>
- </li>
-</ul>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-<div class="navbar_extra_footer">
-  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
-</div>
-
-</div>
-
-
-          
-
-
-          
-<!-- This is an invisible pixel that we watch to see if we've scrolled. -->
-<div class="sbt-scroll-pixel-helper"></div>
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
-            <div class="topbar-left">
-                
-                <label class="nav-toggle-button" for="__navigation">
-                    <div class="visually-hidden">Toggle navigation</div>
-                    <i class="fas fa-bars"></i>
-                </label>
-                
-            </div>
-            
-            <!-- Source interaction buttons -->
-
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
-        </div>
-
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
-            
-        </div>
+    <div class="header-center">
+      <a href="../../../../../index.html"><div class="brand">Graphein 1.4.0</div></a>
     </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../../../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../../../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.4.0</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../../molecule_notebooks.html">Molecules</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/molecule_tutorial.html">Creating Molecular Graphs in Graphein</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../modules/graphein.molecule.html">graphein.molecule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../modules/graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../modules/graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../contributing/contributors.html">Contributors</a></li>
+</ul>
+
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-            <!-- Table of contents that is only displayed when printing the page -->
-            <div id="jb-print-docs-body" class="onlyprint">
-                <h1></h1>
-                <!-- Table of contents -->
-                <div id="print-main-content">
-                    <div id="jb-print-toc">
-                        
-                    </div>
-                </div>
-            </div>
-            
-              <div>
-                
-  <h1>Source code for graphein.protein.features.sequence.propy</h1><div class="highlight"><pre>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <h1>Source code for graphein.protein.features.sequence.propy</h1><div class="highlight"><pre>
 <span></span><span class="c1"># %%</span>
 <span class="c1"># Graphein</span>
 <span class="c1"># Author: Arian Jamasb &lt;arian@jamasb.io&gt;, Eric Ma</span>
@@ -305,7 +260,7 @@
 <span class="c1"># Project Website: https://github.com/a-r-j/graphein</span>
 <span class="c1"># Code Repository: https://github.com/a-r-j/graphein</span>
 
-<span class="c1"># TODO: This the docstrings inside this module&#39;s set of functions</span>
+<span class="c1"># TODO: This the docstrings inside this module's set of functions</span>
 <span class="c1"># can do without the `type`s.</span>
 <span class="c1"># This is because the types are already annotated on the function.</span>
 
@@ -333,7 +288,7 @@
     <span class="n">feature_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Computes Propy Descriptors over chains in a Protein Graph</span>
 
 <span class="sd">    :param G: Protein Graph</span>
@@ -343,44 +298,44 @@
 <span class="sd">    :param feature_name: Name of feature to index it in the nx.Graph object</span>
 <span class="sd">    :type feature_name: str</span>
 <span class="sd">    :param aggregation_type: Type of aggregation to use when aggregating a feature over multiple chains. One of:</span>
-<span class="sd">        [&quot;mean&quot;, &quot;man&quot;, &quot;sum&quot;]. Defaults to None.</span>
+<span class="sd">        ["mean", "man", "sum"]. Defaults to None.</span>
 <span class="sd">    :type aggregation_type: List[str], optional</span>
 <span class="sd">    :return G: Returns protein Graph with features added. Features are accessible with G.graph[{feature_name}_{chain | aggegation_type}]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">compute_feature_over_chains</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="n">feature_name</span><span class="p">)</span>
 
     <span class="c1"># Convert to Series</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">convert_graph_dict_feat_to_series</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="n">feature_name</span><span class="p">)</span>
 
     <span class="c1"># Aggregate features</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">&quot;chain_ids&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"chain_ids"</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">aggregation_type</span><span class="p">:</span>
             <span class="n">G</span> <span class="o">=</span> <span class="n">aggregate_graph_feature_over_chains</span><span class="p">(</span>
                 <span class="n">G</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="n">feature_name</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="o">=</span><span class="n">aggregation_type</span>
             <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Aggregation not carried out on single-chain graph&quot;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Aggregation not carried out on single-chain graph"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">G</span></div>
 
 
 <div class="viewcode-block" id="amino_acid_composition"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.amino_acid_composition">[docs]</a><span class="k">def</span> <span class="nf">amino_acid_composition</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the composition of Amino acids for a given protein sequence.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
 <span class="sd">    :type G: nx.Graph</span>
 <span class="sd">    :param aggregation_type: Aggregation types to use</span>
 <span class="sd">    :type aggregation_type: Optional[List[str]]</span>
-<span class="sd">    :return: Protein Graph with amino_acid_composition feature added. G.graph[&quot;amino_acid_composition_{chain | aggregation_type}&quot;]</span>
+<span class="sd">    :return: Protein Graph with amino_acid_composition feature added. G.graph["amino_acid_composition_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.AAComposition</span> <span class="kn">import</span> <span class="n">CalculateAAComposition</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateAAComposition</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;amino_acid_composition&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"amino_acid_composition"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -393,20 +348,20 @@
 <div class="viewcode-block" id="dipeptide_composition"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.dipeptide_composition">[docs]</a><span class="k">def</span> <span class="nf">dipeptide_composition</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the composition of dipeptidefor a given protein sequence. Contains composition of 400 dipeptides</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
 <span class="sd">    :type G: nx.Graph</span>
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
-<span class="sd">    :return: Protein Graph with dipeptide_composition feature added. G.graph[&quot;dipeptide_composition_{chain | aggregation_type}&quot;]</span>
+<span class="sd">    :return: Protein Graph with dipeptide_composition feature added. G.graph["dipeptide_composition_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.AAComposition</span> <span class="kn">import</span> <span class="n">CalculateDipeptideComposition</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateDipeptideComposition</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;dipeptide_composition&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"dipeptide_composition"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -419,7 +374,7 @@
 <div class="viewcode-block" id="aa_dipeptide_composition"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.aa_dipeptide_composition">[docs]</a><span class="k">def</span> <span class="nf">aa_dipeptide_composition</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the composition of AADs, dipeptide and 3-mers for a given protein sequence. Contains all composition</span>
 <span class="sd">        values of AADs, dipeptide and 3-mers (8420).</span>
 
@@ -428,13 +383,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with aa_dipeptide_composition feature added.</span>
-<span class="sd">        G.graph[&quot;aa_dipeptide_composition_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["aa_dipeptide_composition_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.AAComposition</span> <span class="kn">import</span> <span class="n">CalculateAADipeptideComposition</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateAADipeptideComposition</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;aa_dipeptide_composition&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"aa_dipeptide_composition"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -447,20 +402,20 @@
 <div class="viewcode-block" id="aa_spectrum"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.aa_spectrum">[docs]</a><span class="k">def</span> <span class="nf">aa_spectrum</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the spectrum descriptors of 3-mers for a given protein. Contains the composition values of 8000 3-mers</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
 <span class="sd">    :type G: nx.Graph</span>
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
-<span class="sd">    :return: Protein Graph with aa_spectrum feature added. G.graph[&quot;aa_spectrum_{chain | aggregation_type}&quot;]</span>
+<span class="sd">    :return: Protein Graph with aa_spectrum feature added. G.graph["aa_spectrum_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.AAComposition</span> <span class="kn">import</span> <span class="n">GetSpectrumDict</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">GetSpectrumDict</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;aa_spectrum&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"aa_spectrum"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -476,7 +431,7 @@
 <div class="viewcode-block" id="all_composition_descriptors"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.all_composition_descriptors">[docs]</a><span class="k">def</span> <span class="nf">all_composition_descriptors</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate all composition descriptors based on seven different properties of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -484,13 +439,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with composition_descriptors feature added.</span>
-<span class="sd">        G.graph[&quot;composition_descriptors_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["composition_descriptors_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateC</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateC</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;composition_descriptors&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"composition_descriptors"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -503,7 +458,7 @@
 <div class="viewcode-block" id="all_ctd_descriptors"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.all_ctd_descriptors">[docs]</a><span class="k">def</span> <span class="nf">all_ctd_descriptors</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate all CTD descriptors based seven different properties of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -511,13 +466,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with ctd_descriptors feature added.</span>
-<span class="sd">        G.graph[&quot;ctd_descriptors_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["ctd_descriptors_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateCTD</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateCTD</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;ctd_descriptors&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"ctd_descriptors"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -533,7 +488,7 @@
     <span class="n">AAPName</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Compute composition descriptors.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -545,15 +500,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with composition_{AAPName} feature added.</span>
-<span class="sd">        G.graph[&quot;composition_{AAPName}_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["composition_{AAPName}_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateComposition</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
         <span class="n">CalculateComposition</span><span class="p">,</span> <span class="n">AAProperty</span><span class="o">=</span><span class="n">AAProperty</span><span class="p">,</span> <span class="n">AAPName</span><span class="o">=</span><span class="n">AAPName</span>
     <span class="p">)</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;composition_</span><span class="si">{</span><span class="n">AAPName</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"composition_</span><span class="si">{</span><span class="n">AAPName</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -566,7 +521,7 @@
 <div class="viewcode-block" id="composition_charge"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.composition_charge">[docs]</a><span class="k">def</span> <span class="nf">composition_charge</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate composition descriptors based on Charge of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -574,15 +529,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with composition_charge feature added.</span>
-<span class="sd">        G.graph[&quot;composition_charge_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["composition_charge_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateCompositionCharge</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateCompositionCharge</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;composition_charge&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"composition_charge"</span>
 
-    <span class="n">G</span> <span class="o">=</span> <span class="n">compute_feature_over_chains</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">&quot;composition_charge&quot;</span><span class="p">)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">compute_feature_over_chains</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">"composition_charge"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -595,7 +550,7 @@
 <div class="viewcode-block" id="composition_hydrophobicity"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.composition_hydrophobicity">[docs]</a><span class="k">def</span> <span class="nf">composition_hydrophobicity</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate composition descriptors based on Hydrophobicity of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -603,13 +558,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with composition_hydrophobicity feature added.</span>
-<span class="sd">        G.graph[&quot;composition_hydrophobicity_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["composition_hydrophobicity_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateCompositionHydrophobicity</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateCompositionHydrophobicity</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;composition_hydrophobicity&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"composition_hydrophobicity"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -622,7 +577,7 @@
 <div class="viewcode-block" id="composition_normalized_vdwv"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.composition_normalized_vdwv">[docs]</a><span class="k">def</span> <span class="nf">composition_normalized_vdwv</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate composition descriptors based on NormalizedVDWV of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -630,13 +585,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with composition_normalized_vdwv feature added.</span>
-<span class="sd">        G.graph[&quot;composition_normalized_vdwv_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["composition_normalized_vdwv_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateCompositionNormalizedVDWV</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateCompositionNormalizedVDWV</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;composition_normalised_vdwv&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"composition_normalised_vdwv"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -649,7 +604,7 @@
 <div class="viewcode-block" id="composition_polarity"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.composition_polarity">[docs]</a><span class="k">def</span> <span class="nf">composition_polarity</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate composition descriptors based on Polarity of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -657,13 +612,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with composition_polarity feature added.</span>
-<span class="sd">        G.graph[&quot;composition_polarity_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["composition_polarity_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateCompositionPolarity</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateCompositionPolarity</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;composition_polarity&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"composition_polarity"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -676,7 +631,7 @@
 <div class="viewcode-block" id="composition_polarizability"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.composition_polarizability">[docs]</a><span class="k">def</span> <span class="nf">composition_polarizability</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate composition descriptors based on Polarizability of AADs.</span>
 
 <span class="sd">    :param G: Protein graph to featurise</span>
@@ -684,13 +639,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with composition_polarizability feature added.</span>
-<span class="sd">        G.graph[&quot;composition_polarizability_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["composition_polarizability_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateCompositionPolarizability</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateCompositionPolarizability</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;composition_polarizability&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"composition_polarizability"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -703,7 +658,7 @@
 <div class="viewcode-block" id="composition_secondary_str"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.composition_secondary_str">[docs]</a><span class="k">def</span> <span class="nf">composition_secondary_str</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate composition descriptors based on SecondaryStr of AADs.</span>
 
 <span class="sd">    :param G: Protein graph to featurise</span>
@@ -711,13 +666,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with composition_secondary_str feature added.</span>
-<span class="sd">        G.graph[&quot;composition_secondary_str_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["composition_secondary_str_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateCompositionSecondaryStr</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateCompositionSecondaryStr</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;composition_secondary_str&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"composition_secondary_str"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -730,7 +685,7 @@
 <div class="viewcode-block" id="composition_solvent_accessibility"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.composition_solvent_accessibility">[docs]</a><span class="k">def</span> <span class="nf">composition_solvent_accessibility</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate composition descriptors based on SolventAccessibility of AADs.</span>
 
 <span class="sd">    :param G: Protein graph to featurise</span>
@@ -738,13 +693,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with composition_solvent_accessibility feature added.</span>
-<span class="sd">        G.graph[&quot;composition_solvent_accessibility_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["composition_solvent_accessibility_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateCompositionSolventAccessibility</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateCompositionSolventAccessibility</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;composition_solvent_accessibility&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"composition_solvent_accessibility"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -757,7 +712,7 @@
 <div class="viewcode-block" id="all_distribution_descriptors"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.all_distribution_descriptors">[docs]</a><span class="k">def</span> <span class="nf">all_distribution_descriptors</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate all distribution descriptors based on seven different properties of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -765,13 +720,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with distribution_descriptors feature added.</span>
-<span class="sd">        G.graph[&quot;distribution_descriptors_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["distribution_descriptors_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateC</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateC</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;distribution_descriptors&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"distribution_descriptors"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -787,7 +742,7 @@
     <span class="n">AAPName</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Compute distribution descriptors.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -799,15 +754,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with distribution_{AAPName} feature added.</span>
-<span class="sd">        G.graph[&quot;distribution_{AAPName}_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["distribution_{AAPName}_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateDistribution</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
         <span class="n">CalculateDistribution</span><span class="p">,</span> <span class="n">AAProperty</span><span class="o">=</span><span class="n">AAProperty</span><span class="p">,</span> <span class="n">AAPName</span><span class="o">=</span><span class="n">AAPName</span>
     <span class="p">)</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;distribution_</span><span class="si">{</span><span class="n">AAPName</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"distribution_</span><span class="si">{</span><span class="n">AAPName</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -820,7 +775,7 @@
 <div class="viewcode-block" id="distribution_charge"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.distribution_charge">[docs]</a><span class="k">def</span> <span class="nf">distribution_charge</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate distribution descriptors based on Charge of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -828,16 +783,16 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with distribution_charge feature added.</span>
-<span class="sd">        G.graph[&quot;distribution_charge_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["distribution_charge_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateDistributionCharge</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateDistributionCharge</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;distribution_charge&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"distribution_charge"</span>
 
     <span class="n">G</span> <span class="o">=</span> <span class="n">compute_feature_over_chains</span><span class="p">(</span>
-        <span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">&quot;distribution_charge&quot;</span>
+        <span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">"distribution_charge"</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
@@ -851,7 +806,7 @@
 <div class="viewcode-block" id="distribution_hydrophobicity"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.distribution_hydrophobicity">[docs]</a><span class="k">def</span> <span class="nf">distribution_hydrophobicity</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate distribution descriptors based on Hydrophobicity of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -859,13 +814,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with distribution_hydrophobicity feature added.</span>
-<span class="sd">        G.graph[&quot;distribution_hydrophobicity_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["distribution_hydrophobicity_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateDistributionHydrophobicity</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateDistributionHydrophobicity</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;distribution_hydrophobicity&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"distribution_hydrophobicity"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -878,7 +833,7 @@
 <div class="viewcode-block" id="distribution_normalized_vdwv"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.distribution_normalized_vdwv">[docs]</a><span class="k">def</span> <span class="nf">distribution_normalized_vdwv</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate distribution descriptors based on NormalizedVDWV of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -886,13 +841,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with distribution_normalized_vdwv feature added.</span>
-<span class="sd">        G.graph[&quot;distribution_normalized_vdwv_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["distribution_normalized_vdwv_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateDistributionNormalizedVDWV</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateDistributionNormalizedVDWV</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;distribution_normalised_vdwv&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"distribution_normalised_vdwv"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -905,7 +860,7 @@
 <div class="viewcode-block" id="distribution_polarity"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.distribution_polarity">[docs]</a><span class="k">def</span> <span class="nf">distribution_polarity</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate distribution descriptors based on Polarity of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -913,13 +868,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with distribution_polarity feature added.</span>
-<span class="sd">        G.graph[&quot;distribution_polarity_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["distribution_polarity_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateDistributionPolarity</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateDistributionPolarity</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;distribution_polarity&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"distribution_polarity"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -932,7 +887,7 @@
 <div class="viewcode-block" id="distribution_polarizability"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.distribution_polarizability">[docs]</a><span class="k">def</span> <span class="nf">distribution_polarizability</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate distribution descriptors based on Polarizability of AADs.</span>
 
 <span class="sd">    :param G: Protein graph to featurise</span>
@@ -940,13 +895,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with distribution_polarizability feature added.</span>
-<span class="sd">        G.graph[&quot;distribution_polarizability_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["distribution_polarizability_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateDistributionPolarizability</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateDistributionPolarizability</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;distribution_polarizability&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"distribution_polarizability"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -959,7 +914,7 @@
 <div class="viewcode-block" id="distribution_secondary_str"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.distribution_secondary_str">[docs]</a><span class="k">def</span> <span class="nf">distribution_secondary_str</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate distribution descriptors based on SecondaryStr of AADs.</span>
 
 <span class="sd">    :param G: Protein graph to featurise</span>
@@ -967,13 +922,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with distribution_secondary_str feature added.</span>
-<span class="sd">        G.graph[&quot;distribution_secondary_str_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["distribution_secondary_str_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateDistributionSecondaryStr</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateDistributionSecondaryStr</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;distribution_secondary_str&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"distribution_secondary_str"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -986,7 +941,7 @@
 <div class="viewcode-block" id="distribution_solvent_accessibility"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.distribution_solvent_accessibility">[docs]</a><span class="k">def</span> <span class="nf">distribution_solvent_accessibility</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate distribution descriptors based on SolventAccessibility of AADs.</span>
 
 <span class="sd">    :param G: Protein graph to featurise</span>
@@ -994,13 +949,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with distribution_solvent_accessibility feature added.</span>
-<span class="sd">        G.graph[&quot;distribution_solvent_accessibility_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["distribution_solvent_accessibility_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateDistributionSolventAccessibility</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateDistributionSolventAccessibility</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;distribution_solvent_accessibility&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"distribution_solvent_accessibility"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1013,7 +968,7 @@
 <div class="viewcode-block" id="all_transition_descriptors"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.all_transition_descriptors">[docs]</a><span class="k">def</span> <span class="nf">all_transition_descriptors</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate all transition descriptors based on seven different properties of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -1021,13 +976,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with transition_descriptors feature added.</span>
-<span class="sd">        G.graph[&quot;transition_descriptors_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["transition_descriptors_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateC</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateC</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;transition_descriptors&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"transition_descriptors"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1043,7 +998,7 @@
     <span class="n">AAPName</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Compute transition descriptors.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -1055,13 +1010,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with transition_{AAPName} feature added.</span>
-<span class="sd">        G.graph[&quot;transition_{AAPName}_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["transition_{AAPName}_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateTransition</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">CalculateTransition</span><span class="p">,</span> <span class="n">AAProperty</span><span class="o">=</span><span class="n">AAProperty</span><span class="p">,</span> <span class="n">AAPName</span><span class="o">=</span><span class="n">AAPName</span><span class="p">)</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;transition_</span><span class="si">{</span><span class="n">AAPName</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"transition_</span><span class="si">{</span><span class="n">AAPName</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1074,7 +1029,7 @@
 <div class="viewcode-block" id="transition_charge"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.transition_charge">[docs]</a><span class="k">def</span> <span class="nf">transition_charge</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate transition descriptors based on Charge of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -1082,15 +1037,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with transition_charge feature added.</span>
-<span class="sd">        G.graph[&quot;transition_charge_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["transition_charge_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateTransitionCharge</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateTransitionCharge</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;transition_charge&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"transition_charge"</span>
 
-    <span class="n">G</span> <span class="o">=</span> <span class="n">compute_feature_over_chains</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">&quot;transition_charge&quot;</span><span class="p">)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">compute_feature_over_chains</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">"transition_charge"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1103,7 +1058,7 @@
 <div class="viewcode-block" id="transition_hydrophobicity"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.transition_hydrophobicity">[docs]</a><span class="k">def</span> <span class="nf">transition_hydrophobicity</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate transition descriptors based on Hydrophobicity of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -1111,13 +1066,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with transition_hydrophobicity feature added.</span>
-<span class="sd">        G.graph[&quot;transition_hydrophobicity_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["transition_hydrophobicity_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateTransitionHydrophobicity</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateTransitionHydrophobicity</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;transition_hydrophobicity&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"transition_hydrophobicity"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1130,7 +1085,7 @@
 <div class="viewcode-block" id="transition_normalized_vdwv"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.transition_normalized_vdwv">[docs]</a><span class="k">def</span> <span class="nf">transition_normalized_vdwv</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate transition descriptors based on NormalizedVDWV of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -1138,13 +1093,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with transition_normalized_vdwv feature added.</span>
-<span class="sd">        G.graph[&quot;transition_normalized_vdwv_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["transition_normalized_vdwv_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateTransitionNormalizedVDWV</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateTransitionNormalizedVDWV</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;transition_normalised_vdwv&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"transition_normalised_vdwv"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1157,7 +1112,7 @@
 <div class="viewcode-block" id="transition_polarity"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.transition_polarity">[docs]</a><span class="k">def</span> <span class="nf">transition_polarity</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate transition descriptors based on Polarity of AADs.</span>
 
 <span class="sd">    :param G: Protein Graph to featurise</span>
@@ -1165,13 +1120,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with transition_polarity feature added.</span>
-<span class="sd">        G.graph[&quot;transition_polarity_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["transition_polarity_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateTransitionPolarity</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateTransitionPolarity</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;transition_polarity&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"transition_polarity"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1184,7 +1139,7 @@
 <div class="viewcode-block" id="transition_polarizability"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.transition_polarizability">[docs]</a><span class="k">def</span> <span class="nf">transition_polarizability</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate transition descriptors based on Polarizability of AADs.</span>
 
 <span class="sd">    :param G: Protein graph to featurise</span>
@@ -1192,13 +1147,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with transition_polarizability feature added.</span>
-<span class="sd">        G.graph[&quot;transition_polarizability_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["transition_polarizability_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateTransitionPolarizability</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateTransitionPolarizability</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;transition_polarizability&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"transition_polarizability"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1211,7 +1166,7 @@
 <div class="viewcode-block" id="transition_secondary_str"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.transition_secondary_str">[docs]</a><span class="k">def</span> <span class="nf">transition_secondary_str</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate transition descriptors based on SecondaryStr of AADs.</span>
 
 <span class="sd">    :param G: Protein graph to featurise</span>
@@ -1219,13 +1174,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with transition_secondary_str feature added.</span>
-<span class="sd">        G.graph[&quot;transition_secondary_str_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["transition_secondary_str_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateTransitionSecondaryStr</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateTransitionSecondaryStr</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;transition_secondary_str&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"transition_secondary_str"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1238,7 +1193,7 @@
 <div class="viewcode-block" id="transition_solvent_accessibility"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.transition_solvent_accessibility">[docs]</a><span class="k">def</span> <span class="nf">transition_solvent_accessibility</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate transition descriptors based on SolventAccessibility of AADs.</span>
 
 <span class="sd">    :param G: Protein graph to featurise</span>
@@ -1246,13 +1201,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with transition_solvent_accessibility feature added.</span>
-<span class="sd">        G.graph[&quot;transition_solvent_accessibility_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["transition_solvent_accessibility_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.CTD</span> <span class="kn">import</span> <span class="n">CalculateTransitionSolventAccessibility</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateTransitionSolventAccessibility</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;transition_solvent_accessibility&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"transition_solvent_accessibility"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1268,7 +1223,7 @@
 <div class="viewcode-block" id="autocorrelation_total"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_total">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_total</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Compute all autocorrelation descriptors based on 8 properties of AADs. result contains 30*8*3=720 normalized Moreau</span>
 <span class="sd">        Broto, Moran, and Geary</span>
 
@@ -1277,13 +1232,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_total feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_total_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_total_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateAutoTotal</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateAutoTotal</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_total&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_total"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1296,7 +1251,7 @@
 <div class="viewcode-block" id="autocorrelation_geary_all"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_geary_all">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_geary_all</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Compute Geary autocorrelation descriptors based on 8 properties of AADs. Result contains 30*8=240 Geary</span>
 <span class="sd">        autocorrelation descriptors based on the given properties(i.e., _AAPropert).</span>
 
@@ -1305,13 +1260,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_geary_all feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_geary_all_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_geary_all_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateGearyAutoTotal</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateGearyAutoTotal</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_geary_all&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_geary_all"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1324,7 +1279,7 @@
 <div class="viewcode-block" id="autocorrelation_geary_av_flexibility"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_geary_av_flexibility">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_geary_av_flexibility</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Geary Autocorrelation descriptors based on AvFlexibility. contains 30 Geary Autocorrelation</span>
 <span class="sd">        descriptors based on AvFlexibility.</span>
 
@@ -1333,13 +1288,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_geary_av_flexibility feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_geary_av_flexibility_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_geary_av_flexibility_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateGearyAutoAvFlexibility</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateGearyAutoAvFlexibility</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_geary_av_flexibility&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_geary_av_flexibility"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1352,7 +1307,7 @@
 <div class="viewcode-block" id="autocorrelation_geary_free_energy"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_geary_free_energy">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_geary_free_energy</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Geary Autocorrelation descriptors based on FreeEnergy. result contains 30 Geary Autocorrelation</span>
 <span class="sd">        descriptors based on FreeEnergy.</span>
 
@@ -1361,13 +1316,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_geary_free_energy feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_geary_av_free_energy_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_geary_av_free_energy_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateGearyAutoFreeEnergy</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateGearyAutoFreeEnergy</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_geary_free_energy&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_geary_free_energy"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1380,7 +1335,7 @@
 <div class="viewcode-block" id="autocorrelation_geary_hydrophobicity"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_geary_hydrophobicity">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_geary_hydrophobicity</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Geary Autocorrelation descriptors based on hydrophobicity. result contains 30 Geary Autocorrelation</span>
 <span class="sd">        descriptors based on hydrophobicity.</span>
 
@@ -1389,13 +1344,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_geary_hydrophobicity feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_geary_hydrophobicity_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_geary_hydrophobicity_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateGearyAutoHydrophobicity</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateGearyAutoHydrophobicity</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_geary_hydrophobicity&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_geary_hydrophobicity"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1408,7 +1363,7 @@
 <div class="viewcode-block" id="autocorrelation_geary_mutability"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_geary_mutability">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_geary_mutability</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Geary Autocorrelation descriptors based on Mutability. result contains 30 Geary Autocorrelation</span>
 <span class="sd">        descriptors based on mutability.</span>
 
@@ -1417,13 +1372,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_geary_mutability feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_geary_mutability_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_geary_mutability_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateGearyAutoMutability</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateGearyAutoMutability</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_geary_mutability&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_geary_mutability"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1436,7 +1391,7 @@
 <div class="viewcode-block" id="autocorrelation_geary_polarizability"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_geary_polarizability">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_geary_polarizability</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Geary Autocorrelation descriptors based on polarizability. result contains 30 Geary Autocorrelation</span>
 <span class="sd">        descriptors based on polarizability.</span>
 
@@ -1445,13 +1400,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_geary_polarizability feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_geary_polarizability_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_geary_polarizability_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateGearyAutoPolarizability</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateGearyAutoPolarizability</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_geary_polarizability&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_geary_polarizability"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1464,7 +1419,7 @@
 <div class="viewcode-block" id="autocorrelation_geary_residue_asa"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_geary_residue_asa">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_geary_residue_asa</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Geary Autocorrelation descriptors based on ResidueASA. result contains 30 Geary Autocorrelation</span>
 <span class="sd">        descriptors based on ResidueASA.</span>
 
@@ -1473,13 +1428,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_geary_residue_asa feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_geary_residue_asa_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_geary_residue_asa_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateGearyAutoResidueASA</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateGearyAutoResidueASA</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_geary_residue_asa&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_geary_residue_asa"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1492,7 +1447,7 @@
 <div class="viewcode-block" id="autocorrelation_geary_residue_vol"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_geary_residue_vol">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_geary_residue_vol</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Geary Autocorrelation descriptors based on ResidueVol. result contains 30 Geary Autocorrelation</span>
 <span class="sd">        descriptors based on ResidueVol.</span>
 
@@ -1501,13 +1456,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_geary_residue_vol feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_geary_residue_vol_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_geary_residue_vol_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateGearyAutoResidueVol</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateGearyAutoResidueVol</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_geary_residue_vol&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_geary_residue_vol"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1520,7 +1475,7 @@
 <div class="viewcode-block" id="autocorrelation_geary_steric"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_geary_steric">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_geary_steric</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Geary Autocorrelation descriptors based on Steric. result contains 30 Geary Autocorrelation</span>
 <span class="sd">        descriptors based on Steric</span>
 
@@ -1529,13 +1484,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_geary_steric feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_geary_steric_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_geary_steric_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateGearyAutoSteric</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateGearyAutoSteric</span><span class="p">()</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_geary_steric&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_geary_steric"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1548,7 +1503,7 @@
 <div class="viewcode-block" id="autocorrelation_moran_all"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_moran_all">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_moran_all</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Compute Moran autocorrelation descriptors based on 8 properties of AADs. Result contains 30*8=240 Moran</span>
 <span class="sd">        autocorrelation descriptors based on the given properties(i.e., _AAPropert).</span>
 
@@ -1557,13 +1512,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_moran_all feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_moran_all_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_moran_all_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateMoranAutoTotal</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateMoranAutoTotal</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_moran_all&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_moran_all"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1576,7 +1531,7 @@
 <div class="viewcode-block" id="autocorrelation_moran_av_flexibility"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_moran_av_flexibility">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_moran_av_flexibility</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Moran Autocorrelation descriptors based on AvFlexibility. contains 30 Moran Autocorrelation</span>
 <span class="sd">        descriptors based on AvFlexibility.</span>
 
@@ -1585,13 +1540,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_moran_av_flexibility feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_moran_av_flexibility_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_moran_av_flexibility_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateMoranAutoAvFlexibility</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateMoranAutoAvFlexibility</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_moran_av_flexibility&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_moran_av_flexibility"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1604,7 +1559,7 @@
 <div class="viewcode-block" id="autocorrelation_moran_free_energy"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_moran_free_energy">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_moran_free_energy</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Moran Autocorrelation descriptors based on FreeEnergy. result contains 30 Moran Autocorrelation</span>
 <span class="sd">        descriptors based on FreeEnergy.</span>
 
@@ -1613,13 +1568,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_moran_free_energy feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_moran_av_free_energy_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_moran_av_free_energy_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateMoranAutoFreeEnergy</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateMoranAutoFreeEnergy</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_moran_free_energy&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_moran_free_energy"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1632,7 +1587,7 @@
 <div class="viewcode-block" id="autocorrelation_moran_hydrophobicity"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_moran_hydrophobicity">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_moran_hydrophobicity</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Moran Autocorrelation descriptors based on hydrophobicity. result contains 30 Moran Autocorrelation</span>
 <span class="sd">        descriptors based on hydrophobicity.</span>
 
@@ -1641,13 +1596,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_moran_hydrophobicity feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_moran_hydrophobicity_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_moran_hydrophobicity_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateMoranAutoHydrophobicity</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateMoranAutoHydrophobicity</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_moran_hydrophobicity&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_moran_hydrophobicity"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1660,7 +1615,7 @@
 <div class="viewcode-block" id="autocorrelation_moran_mutability"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_moran_mutability">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_moran_mutability</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Moran Autocorrelation descriptors based on Mutability. result contains 30 Moran Autocorrelation</span>
 <span class="sd">        descriptors based on mutability.</span>
 
@@ -1669,13 +1624,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_moran_mutability feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_moran_mutability_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_moran_mutability_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateMoranAutoMutability</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateMoranAutoMutability</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_moran_mutability&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_moran_mutability"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1688,7 +1643,7 @@
 <div class="viewcode-block" id="autocorrelation_moran_polarizability"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_moran_polarizability">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_moran_polarizability</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Moran Autocorrelation descriptors based on polarizability. result contains 30 Moran Autocorrelation</span>
 <span class="sd">        descriptors based on polarizability.</span>
 
@@ -1697,13 +1652,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_moran_polarizability feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_moran_polarizability_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_moran_polarizability_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateMoranAutoPolarizability</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateMoranAutoPolarizability</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_moran_polarizability&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_moran_polarizability"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1716,7 +1671,7 @@
 <div class="viewcode-block" id="autocorrelation_moran_residue_asa"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_moran_residue_asa">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_moran_residue_asa</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Moran Autocorrelation descriptors based on ResidueASA. result contains 30 Moran Autocorrelation</span>
 <span class="sd">        descriptors based on ResidueASA.</span>
 
@@ -1725,13 +1680,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_moran_residue_asa feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_moran_residue_asa_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_moran_residue_asa_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateMoranAutoResidueASA</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateMoranAutoResidueASA</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_moran_residue_asa&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_moran_residue_asa"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1744,7 +1699,7 @@
 <div class="viewcode-block" id="autocorrelation_moran_residue_vol"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_moran_residue_vol">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_moran_residue_vol</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Moran Autocorrelation descriptors based on ResidueVol. result contains 30 Moran Autocorrelation</span>
 <span class="sd">        descriptors based on ResidueVol.</span>
 
@@ -1753,13 +1708,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_moran_residue_vol feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_moran_residue_vol_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_moran_residue_vol_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateMoranAutoResidueVol</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateMoranAutoResidueVol</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_moran_residue_vol&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_moran_residue_vol"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1772,7 +1727,7 @@
 <div class="viewcode-block" id="autocorrelation_moran_steric"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_moran_steric">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_moran_steric</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the Moran Autocorrelation descriptors based on Steric. result contains 30 Moran Autocorrelation</span>
 <span class="sd">        descriptors based on Steric</span>
 
@@ -1781,13 +1736,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_moran_steric feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_moran_steric_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_moran_steric_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateMoranAutoSteric</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateMoranAutoSteric</span><span class="p">()</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_moran_steric&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_moran_steric"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1800,7 +1755,7 @@
 <div class="viewcode-block" id="autocorrelation_normalized_moreau_broto_all"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_normalized_moreau_broto_all">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_normalized_moreau_broto_all</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Compute NormalizedMoreauBroto autocorrelation descriptors based on 8 properties of AADs. Result contains 30*8=240</span>
 <span class="sd">        NormalizedMoreauBroto autocorrelation descriptors based on the given properties(i.e., _AAPropert).</span>
 
@@ -1809,13 +1764,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_normalized_moreau_broto_all feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_normalized_moreau_broto_all_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_normalized_moreau_broto_all_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateNormalizedMoreauBrotoAutoTotal</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateNormalizedMoreauBrotoAutoTotal</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_normalized_moreau_broto_all&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_normalized_moreau_broto_all"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1828,7 +1783,7 @@
 <div class="viewcode-block" id="autocorrelation_normalized_moreau_broto_av_flexibility"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_normalized_moreau_broto_av_flexibility">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_normalized_moreau_broto_av_flexibility</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on AvFlexibility. contains 30</span>
 <span class="sd">        NormalizedMoreauBroto Autocorrelation descriptors based on AvFlexibility.</span>
 
@@ -1837,15 +1792,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_normalized_moreau_broto_av_flexibility feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_normalized_moreau_broto_av_flexibility_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_normalized_moreau_broto_av_flexibility_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">CalculateNormalizedMoreauBrotoAutoAvFlexibility</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateNormalizedMoreauBrotoAutoAvFlexibility</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_normalized_moreau_broto_av_flexibility&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_normalized_moreau_broto_av_flexibility"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1858,7 +1813,7 @@
 <div class="viewcode-block" id="autocorrelation_normalized_moreau_broto_free_energy"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_normalized_moreau_broto_free_energy">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_normalized_moreau_broto_free_energy</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on FreeEnergy. result contains 30</span>
 <span class="sd">        NormalizedMoreauBroto Autocorrelation descriptors based on FreeEnergy.</span>
 
@@ -1867,15 +1822,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_normalized_moreau_broto_free_energy feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_normalized_moreau_broto_av_free_energy_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_normalized_moreau_broto_av_free_energy_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">CalculateNormalizedMoreauBrotoAutoFreeEnergy</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateNormalizedMoreauBrotoAutoFreeEnergy</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_normalized_moreau_broto_free_energy&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_normalized_moreau_broto_free_energy"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1888,7 +1843,7 @@
 <div class="viewcode-block" id="autocorrelation_normalized_moreau_broto_hydrophobicity"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_normalized_moreau_broto_hydrophobicity">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_normalized_moreau_broto_hydrophobicity</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on hydrophobicity. result contains 30</span>
 <span class="sd">        NormalizedMoreauBroto Autocorrelation descriptors based on hydrophobicity.</span>
 
@@ -1897,15 +1852,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_normalized_moreau_broto_hydrophobicity feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_normalized_moreau_broto_hydrophobicity_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_normalized_moreau_broto_hydrophobicity_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">CalculateNormalizedMoreauBrotoAutoHydrophobicity</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateNormalizedMoreauBrotoAutoHydrophobicity</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_normalized_moreau_broto_hydrophobicity&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_normalized_moreau_broto_hydrophobicity"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1918,7 +1873,7 @@
 <div class="viewcode-block" id="autocorrelation_normalized_moreau_broto_mutability"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_normalized_moreau_broto_mutability">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_normalized_moreau_broto_mutability</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on Mutability. result contains 30</span>
 <span class="sd">        NormalizedMoreauBroto Autocorrelation descriptors based on mutability.</span>
 
@@ -1927,15 +1882,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_normalized_moreau_broto_mutability feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_normalized_moreau_broto_mutability_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_normalized_moreau_broto_mutability_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">CalculateNormalizedMoreauBrotoAutoMutability</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateNormalizedMoreauBrotoAutoMutability</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_normalized_moreau_broto_mutability&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_normalized_moreau_broto_mutability"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1948,7 +1903,7 @@
 <div class="viewcode-block" id="autocorrelation_normalized_moreau_broto_polarizability"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_normalized_moreau_broto_polarizability">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_normalized_moreau_broto_polarizability</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on polarizability. result contains 30</span>
 <span class="sd">        NormalizedMoreauBroto Autocorrelation descriptors based on polarizability.</span>
 
@@ -1957,15 +1912,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_normalized_moreau_broto_polarizability feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_normalized_moreau_broto_polarizability_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_normalized_moreau_broto_polarizability_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">CalculateNormalizedMoreauBrotoAutoPolarizability</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateNormalizedMoreauBrotoAutoPolarizability</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_normalized_moreau_broto_polarizability&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_normalized_moreau_broto_polarizability"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -1978,7 +1933,7 @@
 <div class="viewcode-block" id="autocorrelation_normalized_moreau_broto_residue_asa"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_normalized_moreau_broto_residue_asa">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_normalized_moreau_broto_residue_asa</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on ResidueASA. result contains 30</span>
 <span class="sd">        NormalizedMoreauBroto Autocorrelation descriptors based on ResidueASA.</span>
 
@@ -1987,15 +1942,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_normalized_moreau_broto_residue_asa feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_normalized_moreau_broto_residue_asa_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_normalized_moreau_broto_residue_asa_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">CalculateNormalizedMoreauBrotoAutoResidueASA</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateNormalizedMoreauBrotoAutoResidueASA</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_normalized_moreau_broto_residue_asa&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_normalized_moreau_broto_residue_asa"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -2008,7 +1963,7 @@
 <div class="viewcode-block" id="autocorrelation_normalized_moreau_broto_residue_vol"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_normalized_moreau_broto_residue_vol">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_normalized_moreau_broto_residue_vol</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on ResidueVol. result contains 30</span>
 <span class="sd">        NormalizedMoreauBroto Autocorrelation descriptors based on ResidueVol.</span>
 
@@ -2017,15 +1972,15 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_normalized_moreau_broto_residue_vol feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_normalized_moreau_broto_residue_vol_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_normalized_moreau_broto_residue_vol_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">CalculateNormalizedMoreauBrotoAutoResidueVol</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateNormalizedMoreauBrotoAutoResidueVol</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_normalized_moreau_broto_residue_vol&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_normalized_moreau_broto_residue_vol"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -2038,7 +1993,7 @@
 <div class="viewcode-block" id="autocorrelation_normalized_moreau_broto_steric"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.autocorrelation_normalized_moreau_broto_steric">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation_normalized_moreau_broto_steric</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">aggregation_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on Steric. result contains 30</span>
 <span class="sd">        NormalizedMoreauBroto Autocorrelation descriptors based on Steric</span>
 
@@ -2047,13 +2002,13 @@
 <span class="sd">    :param aggregation_type: Aggregation types to use over chains</span>
 <span class="sd">    :type aggregation_type: List[Optional[str]]</span>
 <span class="sd">    :return: Protein Graph with autocorrelation_normalized_moreau_broto_steric feature added.</span>
-<span class="sd">        G.graph[&quot;autocorrelation_normalized_moreau_broto_steric_{chain | aggregation_type}&quot;]</span>
+<span class="sd">        G.graph["autocorrelation_normalized_moreau_broto_steric_{chain | aggregation_type}"]</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.Autocorrelation</span> <span class="kn">import</span> <span class="n">CalculateNormalizedMoreauBrotoAutoSteric</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">CalculateNormalizedMoreauBrotoAutoSteric</span><span class="p">()</span>
-    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">&quot;autocorrelation_normalized_moreau_broto_steric&quot;</span>
+    <span class="n">feature_name</span> <span class="o">=</span> <span class="s2">"autocorrelation_normalized_moreau_broto_steric"</span>
 
     <span class="k">return</span> <span class="n">compute_propy_feature</span><span class="p">(</span>
         <span class="n">G</span><span class="p">,</span>
@@ -2071,7 +2026,7 @@
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">GetAAComposition</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">compute_feature_over_chains</span><span class="p">(</span>
-        <span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">&quot;quasi_seq_order_aa_composition&quot;</span>
+        <span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">"quasi_seq_order_aa_composition"</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">G</span>
@@ -2080,7 +2035,7 @@
 <div class="viewcode-block" id="quasi_sequence_order"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.quasi_sequence_order">[docs]</a><span class="k">def</span> <span class="nf">quasi_sequence_order</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">maxlag</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Compute quasi-sequence-order descriptors for a given protein.</span>
 
 <span class="sd">    Kuo-Chen Chou. Prediction of Protein Subcellar Locations by Incorporating Quasi-Sequence-Order Effect.</span>
@@ -2093,12 +2048,12 @@
 <span class="sd">    :type weight: float</span>
 <span class="sd">    :returns:</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.QuasiSequenceOrder</span> <span class="kn">import</span> <span class="n">GetQuasiSequenceOrder</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">GetQuasiSequenceOrder</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="n">maxlag</span><span class="o">=</span><span class="n">maxlag</span><span class="p">)</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">compute_feature_over_chains</span><span class="p">(</span>
-        <span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">&quot;quasi_sequence_order&quot;</span>
+        <span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">"quasi_sequence_order"</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">G</span></div>
 
@@ -2106,7 +2061,7 @@
 <div class="viewcode-block" id="sequence_order_coupling_number_total"><a class="viewcode-back" href="../../../../../modules/graphein.protein.html#graphein.protein.features.sequence.propy.sequence_order_coupling_number_total">[docs]</a><span class="k">def</span> <span class="nf">sequence_order_coupling_number_total</span><span class="p">(</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">maxlag</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Compute the sequence order coupling numbers from 1 to maxlag for a given protein sequence.</span>
 
 <span class="sd">    :param G: Protein Graph</span>
@@ -2115,12 +2070,12 @@
 <span class="sd">    :type maxlag: int</span>
 <span class="sd">    :returns:</span>
 <span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">propy.QuasiSequenceOrder</span> <span class="kn">import</span> <span class="n">GetSequenceOrderCouplingNumberTotal</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">GetSequenceOrderCouplingNumberTotal</span><span class="p">,</span> <span class="n">maxlag</span><span class="o">=</span><span class="n">maxlag</span><span class="p">)</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">compute_feature_over_chains</span><span class="p">(</span>
-        <span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">&quot;sequence_order_coupling_number_total&quot;</span>
+        <span class="n">G</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">"sequence_order_coupling_number_total"</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">G</span></div>
@@ -2128,34 +2083,51 @@
 
 <span class="c1"># Todo feature aggregation</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
     <span class="k">pass</span>
 </pre></div>
-
-              </div>
-              
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'>
-</div>
-            
-        </div>
-    </div>
-    <footer class="footer">
-  <p>
-    
-      By Arian Jamasb<br/>
-    
-        &copy; Copyright 2022, Arian Jamasb.<br/>
-  </p>
-</footer>
-</main>
-
-
+        </article>
       </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
     </div>
-  
-  <script src="../../../../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
-
-  </body>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/scripts/furo.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script src="../../../../../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
 </html>

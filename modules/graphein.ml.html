@@ -19,7 +19,7 @@
   
 <meta property="og:url" content="https://graphein.ai/modules/graphein.ml.html" />
   
-<meta property="og:description" content="Conversion: Utilities for converting Graphein Networks to Geometric Deep Learning formats. Diffusion Matrices: Generate diffusion matrices based on NetworkX graph objects. Author: Arian Jamasb & Er..." />
+<meta property="og:description" content="Conversion: Diffusion Matrices:" />
   
 <meta property="og:image" content="https://graphein.ai/_static/graphein.png" />
   
@@ -27,7 +27,7 @@
   <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="graphein.utils" href="graphein.utils.html" /><link rel="prev" title="graphein.grn" href="graphein.grn.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
-        <title>graphein.ml - Graphein 1.2.1</title>
+        <title>graphein.ml - Graphein 1.4.0</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
@@ -142,7 +142,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">Graphein 1.2.1</div></a>
+      <a href="../index.html"><div class="brand">Graphein 1.4.0</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -168,7 +168,7 @@
     <img class="sidebar-logo" src="../_static/graphein.png" alt="Logo"/>
   </div>
   
-  <span class="sidebar-brand-text">Graphein 1.2.1</span>
+  <span class="sidebar-brand-text">Graphein 1.4.0</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
@@ -189,28 +189,34 @@
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../molecule_notebooks.html">Molecules</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/molecule_tutorial.html">Creating Molecular Graphs in Graphein</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
 </ul>
 </li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
@@ -220,6 +226,7 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.molecule.html">graphein.molecule</a></li>
 <li class="toctree-l1"><a class="reference internal" href="graphein.rna.html">graphein.rna</a></li>
 <li class="toctree-l1"><a class="reference internal" href="graphein.ppi.html">graphein.ppi</a></li>
 <li class="toctree-l1"><a class="reference internal" href="graphein.grn.html">graphein.grn</a></li>
@@ -259,197 +266,11 @@
         <article role="main">
           <div class="section" id="graphein-ml">
 <h1>graphein.ml<a class="headerlink" href="#graphein-ml" title="Permalink to this headline">#</a></h1>
-<div class="section" id="module-graphein.ml.conversion">
-<span id="conversion"></span><h2>Conversion<a class="headerlink" href="#module-graphein.ml.conversion" title="Permalink to this headline">#</a></h2>
-<p>Utilities for converting Graphein Networks to Geometric Deep Learning formats.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="graphein.ml.conversion.GraphFormatConvertor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">graphein.ml.conversion.</span></span><span class="sig-name descname"><span class="pre">GraphFormatConvertor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SUPPORTED_VERBOSITY</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gnn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/ml/conversion.html#GraphFormatConvertor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.ml.conversion.GraphFormatConvertor" title="Permalink to this definition">#</a></dt>
-<dd><p>Provides conversion utilities between NetworkX Graphs and geometric deep learning library destination formats.
-Currently, we provide support for converstion from <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code> to <code class="docutils literal notranslate"><span class="pre">dgl.DGLGraph</span></code> and <code class="docutils literal notranslate"><span class="pre">pytorch_geometric.Data</span></code>. Supported conversion
-formats can be retrieved from <a class="reference internal" href="#graphein.ml.conversion.SUPPORTED_FORMATS" title="graphein.ml.conversion.SUPPORTED_FORMATS"><code class="xref py py-const docutils literal notranslate"><span class="pre">SUPPORTED_FORMATS</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>src_format</strong> (<em>Literal</em><em>[</em><em>"nx"</em><em>, </em><em>"pyg"</em><em>, </em><em>"dgl"</em><em>]</em>) – The type of graph you’d like to convert from. Supported formats are available in <a class="reference internal" href="#graphein.ml.conversion.SUPPORTED_FORMATS" title="graphein.ml.conversion.SUPPORTED_FORMATS"><code class="xref py py-const docutils literal notranslate"><span class="pre">SUPPORTED_FORMATS</span></code></a></p></li>
-<li><p><strong>dst_format</strong> (<em>Literal</em><em>[</em><em>"nx"</em><em>, </em><em>"pyg"</em><em>, </em><em>"dgl"</em><em>]</em>) – The type of graph format you’d like to convert to. Supported formats are available in:
-<code class="docutils literal notranslate"><span class="pre">graphein.ml.conversion.SUPPORTED_FORMATS</span></code></p></li>
-<li><p><strong>verbose</strong> (<em>graphein.ml.conversion.SUPPORTED_VERBOSITY</em>) – Select from <code class="docutils literal notranslate"><span class="pre">"gnn"</span></code>, <code class="docutils literal notranslate"><span class="pre">"default"</span></code>, <code class="docutils literal notranslate"><span class="pre">"all_info"</span></code> to determine how much information is preserved (features)
-as some are unsupported by various downstream frameworks</p></li>
-<li><p><strong>columns</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – List of columns in the node features to retain</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="graphein.ml.conversion.GraphFormatConvertor.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SUPPORTED_VERBOSITY</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gnn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/ml/conversion.html#GraphFormatConvertor.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.ml.conversion.GraphFormatConvertor.__init__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="graphein.ml.conversion.GraphFormatConvertor.convert_dgl_to_nx">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_dgl_to_nx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dgl.DGLGraph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">nx.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/ml/conversion.html#GraphFormatConvertor.convert_dgl_to_nx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.ml.conversion.GraphFormatConvertor.convert_dgl_to_nx" title="Permalink to this definition">#</a></dt>
-<dd><p>Converts a DGL Graph (<code class="docutils literal notranslate"><span class="pre">dgl.DGLGraph</span></code>) to a NetworkX (<code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code>) object. Preserves node and edge attributes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>G</strong> (<em>dgl.DGLGraph</em>) – <code class="docutils literal notranslate"><span class="pre">dgl.DGLGraph</span></code> to convert to <code class="docutils literal notranslate"><span class="pre">NetworkX</span></code> graph.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>NetworkX graph object.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>nx.Graph</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="graphein.ml.conversion.GraphFormatConvertor.convert_nx_to_dgl">
-<span class="sig-name descname"><span class="pre">convert_nx_to_dgl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">nx.Graph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">dgl.DGLGraph</span></span></span><a class="reference internal" href="../_modules/graphein/ml/conversion.html#GraphFormatConvertor.convert_nx_to_dgl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.ml.conversion.GraphFormatConvertor.convert_nx_to_dgl" title="Permalink to this definition">#</a></dt>
-<dd><p>Converts <code class="docutils literal notranslate"><span class="pre">NetworkX</span></code> graph to <code class="docutils literal notranslate"><span class="pre">DGL</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>G</strong> (<em>nx.Graph</em>) – <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code> to convert to <code class="docutils literal notranslate"><span class="pre">DGLGraph</span></code></p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">DGLGraph</span></code> object version of input <code class="docutils literal notranslate"><span class="pre">NetworkX</span></code> graph</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dgl.DGLGraph</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="graphein.ml.conversion.GraphFormatConvertor.convert_nx_to_nx">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_nx_to_nx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.graph.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/ml/conversion.html#GraphFormatConvertor.convert_nx_to_nx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.ml.conversion.GraphFormatConvertor.convert_nx_to_nx" title="Permalink to this definition">#</a></dt>
-<dd><p>Converts NetworkX graph (<code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code>) to NetworkX graph (<code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code>) object. Redundant - returns itself.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>G</strong> (<em>nx.Graph</em>) – NetworkX Graph</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>NetworkX Graph</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>nx.Graph</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="graphein.ml.conversion.GraphFormatConvertor.convert_nx_to_pyg">
-<span class="sig-name descname"><span class="pre">convert_nx_to_pyg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">torch_geometric.data.data.Data</span></span></span><a class="reference internal" href="../_modules/graphein/ml/conversion.html#GraphFormatConvertor.convert_nx_to_pyg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.ml.conversion.GraphFormatConvertor.convert_nx_to_pyg" title="Permalink to this definition">#</a></dt>
-<dd><p>Converts <code class="docutils literal notranslate"><span class="pre">NetworkX</span></code> graph to <code class="docutils literal notranslate"><span class="pre">pytorch_geometric.data.Data</span></code> object. Requires <code class="docutils literal notranslate"><span class="pre">PyTorch</span> <span class="pre">Geometric</span></code> (<a class="reference external" href="https://pytorch-geometric.readthedocs.io/en/latest/">https://pytorch-geometric.readthedocs.io/en/latest/</a>) to be installed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>G</strong> (<em>nx.Graph</em>) – <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code> to convert to PyTorch Geometric <code class="docutils literal notranslate"><span class="pre">Data</span></code> object</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Data</span></code> object containing networkx graph data</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pytorch_geometric.data.Data</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="graphein.ml.conversion.GraphFormatConvertor.convert_pyg_to_nx">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_pyg_to_nx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch_geometric.data.data.Data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.graph.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/ml/conversion.html#GraphFormatConvertor.convert_pyg_to_nx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.ml.conversion.GraphFormatConvertor.convert_pyg_to_nx" title="Permalink to this definition">#</a></dt>
-<dd><p>Converts PyTorch Geometric <code class="docutils literal notranslate"><span class="pre">Data</span></code> object to NetworkX graph (<code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code>).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>G</strong> (<em>torch_geometric.data.Data</em>) – Pytorch Geometric Data.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>NetworkX graph.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>nx.Graph</p>
-</dd>
-</dl>
-</dd></dl>
-</dd></dl>
-<dl class="py data">
-<dt class="sig sig-object py" id="graphein.ml.conversion.SUPPORTED_FORMATS">
-<span class="sig-prename descclassname"><span class="pre">graphein.ml.conversion.</span></span><span class="sig-name descname"><span class="pre">SUPPORTED_FORMATS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['nx',</span> <span class="pre">'pyg',</span> <span class="pre">'dgl']</span></em><a class="headerlink" href="#graphein.ml.conversion.SUPPORTED_FORMATS" title="Permalink to this definition">#</a></dt>
-<dd><p>Supported conversion formats.</p>
-<p><code class="docutils literal notranslate"><span class="pre">"nx"</span></code>: NetworkX graph</p>
-<p><code class="docutils literal notranslate"><span class="pre">"pyg"</span></code>: PyTorch Geometric Data object</p>
-<p><code class="docutils literal notranslate"><span class="pre">"dgl"</span></code>: DGL graph</p>
-</dd></dl>
-<dl class="py data">
-<dt class="sig sig-object py" id="graphein.ml.conversion.SUPPORTED_VERBOSITY">
-<span class="sig-prename descclassname"><span class="pre">graphein.ml.conversion.</span></span><span class="sig-name descname"><span class="pre">SUPPORTED_VERBOSITY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['gnn',</span> <span class="pre">'default',</span> <span class="pre">'all_info']</span></em><a class="headerlink" href="#graphein.ml.conversion.SUPPORTED_VERBOSITY" title="Permalink to this definition">#</a></dt>
-<dd><p>Supported verbosity levels for preserving graph features in conversion.</p>
-</dd></dl>
+<div class="section" id="conversion">
+<h2>Conversion<a class="headerlink" href="#conversion" title="Permalink to this headline">#</a></h2>
 </div>
-<div class="section" id="module-graphein.ml.diffusion">
-<span id="diffusion-matrices"></span><h2>Diffusion Matrices<a class="headerlink" href="#module-graphein.ml.diffusion" title="Permalink to this headline">#</a></h2>
-<p>Generate diffusion matrices based on NetworkX graph objects.</p>
-<p>Author: Arian Jamasb &amp; Eric Ma</p>
-<p>Each of the functions here accepts a NetworkX graph object
-and returns a 2D xarray.
-These arrays can then be stacked to generate a diffusion tensor.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="graphein.ml.diffusion.adjacency_matrix_power">
-<span class="sig-prename descclassname"><span class="pre">graphein.ml.diffusion.</span></span><span class="sig-name descname"><span class="pre">adjacency_matrix_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amat_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_identity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="../_modules/graphein/ml/diffusion.html#adjacency_matrix_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.ml.diffusion.adjacency_matrix_power" title="Permalink to this definition">#</a></dt>
-<dd><p>Return the matrix power of the adjacency matrix.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>amat_kwargs</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Keyword arguments to configure NetworkX’s <code class="docutils literal notranslate"><span class="pre">adjacency_matrix</span></code> function. Defaults to <code class="docutils literal notranslate"><span class="pre">{}</span></code></p></li>
-<li><p><strong>with_identity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether or not to add in the identity matrix to the adjacency matrix. Effectively adding “self loops”. Defaults to True.</p></li>
-<li><p><strong>power</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Matrix power to raise the adjacency matrix, defaults to 1.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the matrix power of the adjacency matrix</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>xr.DataArray</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py function">
-<dt class="sig sig-object py" id="graphein.ml.diffusion.identity_matrix">
-<span class="sig-prename descclassname"><span class="pre">graphein.ml.diffusion.</span></span><span class="sig-name descname"><span class="pre">identity_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="../_modules/graphein/ml/diffusion.html#identity_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.ml.diffusion.identity_matrix" title="Permalink to this definition">#</a></dt>
-<dd><p>Return the identity diffusion matrix.</p>
-<p>This is nothing more than the identity matrix
-with diagonals of <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>G</strong> (<em>nx.Graph</em>) – Graph to retrieve identity diffusion matrix from</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Identity diffusion matrix</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>xr.DataArray</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py function">
-<dt class="sig sig-object py" id="graphein.ml.diffusion.inverse_distance_matrix">
-<span class="sig-prename descclassname"><span class="pre">graphein.ml.diffusion.</span></span><span class="sig-name descname"><span class="pre">inverse_distance_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="../_modules/graphein/ml/diffusion.html#inverse_distance_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.ml.diffusion.inverse_distance_matrix" title="Permalink to this definition">#</a></dt>
-<dd><p>Return the inverse distance matrix.</p>
-<p>Using the coordinates present on the graph object,
-calculate the inverse power distance matrix.</p>
-<p>The resultant array will be symmetric,
-with entries [i, j] corresponding to 1 / (distance**power),
-where distance == euclidean distance between the (x, y, z) coordinates
-of the two graphs.
-Diagonals (entries [i, i]) are set to 0.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>G</strong> (<em>nx.Graph</em>) – NetworkX Graph object. Assumes that each node has <code class="docutils literal notranslate"><span class="pre">x_coord</span></code>, <code class="docutils literal notranslate"><span class="pre">y_coord</span></code>, and <code class="docutils literal notranslate"><span class="pre">z_coord</span></code> as node attributes.</p></li>
-<li><p><strong>power</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – The power for the distance calculation.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the inverse distance matrix.</p>
-</dd>
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>xr.DataArray</p>
-</dd>
-</dl>
-</dd></dl>
+<div class="section" id="diffusion-matrices">
+<h2>Diffusion Matrices<a class="headerlink" href="#diffusion-matrices" title="Permalink to this headline">#</a></h2>
 </div>
 </div>
 
@@ -511,8 +332,8 @@ Diagonals (entries [i, i]) are set to 0.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">graphein.ml</a><ul>
-<li><a class="reference internal" href="#module-graphein.ml.conversion">Conversion</a></li>
-<li><a class="reference internal" href="#module-graphein.ml.diffusion">Diffusion Matrices</a></li>
+<li><a class="reference internal" href="#conversion">Conversion</a></li>
+<li><a class="reference internal" href="#diffusion-matrices">Diffusion Matrices</a></li>
 </ul>
 </li>
 </ul>

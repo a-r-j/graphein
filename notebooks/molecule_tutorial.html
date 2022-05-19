@@ -1,0 +1,1040 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    
+<meta property="og:title" content="Creating Molecular Graphs in Graphein" />
+  
+<meta property="og:type" content="website" />
+  
+<meta property="og:url" content="https://graphein.ai/notebooks/molecule_tutorial.html" />
+  
+<meta property="og:description" content="Graphein provides a set of tools for working with molecular graphs. Under the hood, we wrap RDKit functions for the graph construction. While the main format used is an nx.Graph, each graph, node &..." />
+  
+<meta property="og:image" content="https://graphein.ai/_static/graphein.png" />
+  
+<meta property="og:image:alt" content="Creating Molecular Graphs in Graphein" />
+  <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="RNA Graphs" href="../rna_notebooks.html" /><link rel="prev" title="Molecules" href="../molecule_notebooks.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>Creating Molecular Graphs in Graphein - Graphein 1.4.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Graphein 1.4.0</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.4.0</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../molecule_notebooks.html">Molecules</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Creating Molecular Graphs in Graphein</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.molecule.html">graphein.molecule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Creating-Molecular-Graphs-in-Graphein">
+<h1>Creating Molecular Graphs in Graphein<a class="headerlink" href="#Creating-Molecular-Graphs-in-Graphein" title="Permalink to this headline">#</a></h1>
+<p>Graphein provides a set of tools for working with molecular graphs. Under the hood, we wrap RDKit functions for the graph construction. While the main format used is an nx.Graph, each graph, node &amp; edge has its underlying <a class="reference external" href="https://www.rdkit.org/docs/source/rdkit.Chem.rdchem.html">RDKit object</a> stored as metadata so RDKit methods can still be used.</p>
+<p><a class="reference external" href="https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/molecule_tutorial.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg"/></a></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install Graphein if necessary</span>
+<span class="c1"># !pip install graphein[extras]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"matplotlib"</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">graphein.molecule</span> <span class="k">as</span> <span class="nn">gm</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:rdkit:Enabling RDKit 2022.03.1 jupyter extensions
+</pre></div></div>
+</div>
+<div class="section" id="Config">
+<h2>Config<a class="headerlink" href="#Config" title="Permalink to this headline">#</a></h2>
+<p>Similar to <a class="reference external" href="https://graphein.ai/notebooks/residue_graphs.html">Protein Graph Construction</a>, configuration of small molecule graphs is controlled by a <code class="docutils literal notranslate"><span class="pre">`MoleculeGraphConfig</span></code> &lt;&gt;`__ object.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">MoleculeGraphConfig</span><span class="p">()</span>
+<span class="n">config</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+MoleculeGraphConfig(verbose=False, add_hs=False, edge_construction_functions=[&lt;function add_fully_connected_edges at 0x7fd2d31e5ca0&gt;, &lt;function add_k_nn_edges at 0x7fd2d31e5d30&gt;, &lt;function add_distance_threshold at 0x7fd2d31e5c10&gt;, &lt;function add_atom_bonds at 0x7fd2d31e5790&gt;], node_metadata_functions=[&lt;function atom_type_one_hot at 0x7fd270aa30d0&gt;], edge_metadata_functions=None, graph_metadata_functions=None)
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Creating-Graphs">
+<h2>Creating Graphs<a class="headerlink" href="#Creating-Graphs" title="Permalink to this headline">#</a></h2>
+<div class="section" id="Creating-a-Molecular-Graph-from-SMILES">
+<h3>Creating a Molecular Graph from SMILES<a class="headerlink" href="#Creating-a-Molecular-Graph-from-SMILES" title="Permalink to this headline">#</a></h3>
+<p>Let’s take a look at a simple molecule, acetylsalicylic acid (or aspirin as it’s more commonly known).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">graph</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">construct_graph</span><span class="p">(</span><span class="n">smiles</span><span class="o">=</span><span class="s2">"CC(=O)OC1=CC=CC=C1C(=O)O"</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"rdmol"</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CC(=O)OC1=CC=CC=C1C(=O)O
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_molecule_tutorial_6_1.png" src="../_images/notebooks_molecule_tutorial_6_1.png"/>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_molecule_tutorial_6_2.png" src="../_images/notebooks_molecule_tutorial_6_2.png"/>
+</div>
+</div>
+<p>Molecule features are stored as dictionaries on the graph, nodes and edges.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Node metadata</span>
+<span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270a5a9a0&gt;, 'coords': None, 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab1400&gt;, 'coords': None, 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 8, 'element': 'O', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab1100&gt;, 'coords': None, 'atom_type_one_hot': array([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 8, 'element': 'O', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab10a0&gt;, 'coords': None, 'atom_type_one_hot': array([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab1160&gt;, 'coords': None, 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab11c0&gt;, 'coords': None, 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab1220&gt;, 'coords': None, 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab1280&gt;, 'coords': None, 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab12e0&gt;, 'coords': None, 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab1340&gt;, 'coords': None, 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab13a0&gt;, 'coords': None, 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 8, 'element': 'O', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab1460&gt;, 'coords': None, 'atom_type_one_hot': array([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0])}
+{'atomic_num': 8, 'element': 'O', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd270ab14c0&gt;, 'coords': None, 'atom_type_one_hot': array([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0])}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Edge metadata</span>
+<span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+C:0 C:1 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1ac0&gt;}
+C:1 O:2 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1b20&gt;}
+C:1 O:3 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1b80&gt;}
+O:3 C:4 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1be0&gt;}
+C:4 C:5 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1c40&gt;}
+C:4 C:9 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1f40&gt;}
+C:5 C:6 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1ca0&gt;}
+C:6 C:7 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1d00&gt;}
+C:7 C:8 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1d60&gt;}
+C:8 C:9 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1dc0&gt;}
+C:9 C:10 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1e20&gt;}
+C:10 O:11 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1e80&gt;}
+C:10 O:12 {'kind': {'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270ab1ee0&gt;}
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Creating-a-Molecular-Graph-from-an-SDF-File">
+<h3>Creating a Molecular Graph from an SDF File<a class="headerlink" href="#Creating-a-Molecular-Graph-from-an-SDF-File" title="Permalink to this headline">#</a></h3>
+<p>As SDFs &amp; Mol2 files provide coordinates, we can draw the graph in 3D.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pkg_resources</span>
+
+<span class="n">SDF_PATH</span> <span class="o">=</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_filename</span><span class="p">(</span><span class="s2">"graphein"</span><span class="p">,</span> <span class="s2">"../tests/molecule/test_data/long_test.sdf"</span><span class="p">)</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">construct_graph</span><span class="p">(</span><span class="n">sdf_path</span><span class="o">=</span><span class="n">SDF_PATH</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"rdmol"</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+long_test
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_molecule_tutorial_11_1.png" src="../_images/notebooks_molecule_tutorial_11_1.png"/>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gm</span><span class="o">.</span><span class="n">plotly_molecular_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div> <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script><script type="text/javascript">if (window.MathJax) {MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}</script> <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+<script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script> <div class="plotly-graph-div" id="6ae4841d-5e38-45f6-96ff-34c180dbdc45" style="height:650px; width:620px;"></div> <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("6ae4841d-5e38-45f6-96ff-34c180dbdc45")) {                    Plotly.newPlot(                        "6ae4841d-5e38-45f6-96ff-34c180dbdc45",                        [{"hoverinfo":"text+x+y+z","marker":{"color":[[0.610667,0.090204,0.619951,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.928329,0.472975,0.326067,1.0],[0.050383,0.029803,0.527975,1.0],[0.610667,0.090204,0.619951,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.928329,0.472975,0.326067,1.0]],"opacity":0.7,"size":[21.0,22.0,23.0,23.0,22.0,22.0,22.0,22.0,22.0,22.0,23.0,23.0,22.0,22.0,22.0,22.0,22.0,22.0,22.0,21.0],"symbol":"circle"},"mode":"markers","text":["N:0","C:1","C:2","C:3","C:4","C:5","C:6","C:7","C:8","O:9","C:10","N:11","C:12","C:13","C:14","C:15","C:16","C:17","C:18","O:19"],"x":[0.0827,-0.2337,-0.5725,-1.9878,-3.0104,-4.3161,-4.6176,-3.6151,-2.3087,0.3185,1.5766,1.4085,2.0266,1.6039,0.6968,0.5918,2.5496,3.2834,4.2003,4.3897],"y":[-2.9412,-2.1602,-1.178,-0.6494,-1.0888,-0.6181,0.2938,0.738,0.2699,-0.048,-0.3002,-0.2613,-1.1143,-0.7925,0.2869,0.5945,0.7131,1.6016,2.5282,2.502],"z":[2.6643,1.8642,0.8083,0.9699,0.1126,0.2646,1.2738,2.1328,1.9837,0.8373,0.205,-1.2546,-2.1377,-3.409,-3.2936,-1.9555,0.742,0.0514,0.7561,1.9648],"type":"scatter3d"},{"hoverinfo":"text","line":{"color":[[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0]],"width":10},"mode":"lines","text":["bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond","bond"],"x":[0.0827,-0.2337,null,-0.2337,-0.5725,null,-0.5725,-1.9878,null,-0.5725,0.3185,null,-1.9878,-3.0104,null,-1.9878,-2.3087,null,-3.0104,-4.3161,null,-4.3161,-4.6176,null,-4.6176,-3.6151,null,-3.6151,-2.3087,null,0.3185,1.5766,null,1.5766,1.4085,null,1.5766,2.5496,null,1.4085,2.0266,null,1.4085,0.5918,null,2.0266,1.6039,null,1.6039,0.6968,null,0.6968,0.5918,null,2.5496,3.2834,null,3.2834,4.2003,null,4.2003,4.3897,null],"y":[-2.9412,-2.1602,null,-2.1602,-1.178,null,-1.178,-0.6494,null,-1.178,-0.048,null,-0.6494,-1.0888,null,-0.6494,0.2699,null,-1.0888,-0.6181,null,-0.6181,0.2938,null,0.2938,0.738,null,0.738,0.2699,null,-0.048,-0.3002,null,-0.3002,-0.2613,null,-0.3002,0.7131,null,-0.2613,-1.1143,null,-0.2613,0.5945,null,-1.1143,-0.7925,null,-0.7925,0.2869,null,0.2869,0.5945,null,0.7131,1.6016,null,1.6016,2.5282,null,2.5282,2.502,null],"z":[2.6643,1.8642,null,1.8642,0.8083,null,0.8083,0.9699,null,0.8083,0.8373,null,0.9699,0.1126,null,0.9699,1.9837,null,0.1126,0.2646,null,0.2646,1.2738,null,1.2738,2.1328,null,2.1328,1.9837,null,0.8373,0.205,null,0.205,-1.2546,null,0.205,0.742,null,-1.2546,-2.1377,null,-1.2546,-1.9555,null,-2.1377,-3.409,null,-3.409,-3.2936,null,-3.2936,-1.9555,null,0.742,0.0514,null,0.0514,0.7561,null,0.7561,1.9648,null],"type":"scatter3d"}],                        {"height":650,"margin":{"t":100},"scene":{"xaxis":{"showbackground":false,"showgrid":false,"showline":false,"showticklabels":false,"title":{"text":""},"zeroline":false},"yaxis":{"showbackground":false,"showgrid":false,"showline":false,"showticklabels":false,"title":{"text":""},"zeroline":false},"zaxis":{"showbackground":false,"showgrid":false,"showline":false,"showticklabels":false,"title":{"text":""},"zeroline":false}},"showlegend":false,"width":620,"template":{"data":{"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}}},                        {"responsive": true}                    )                };                            </script> </div></div>
+</div>
+</div>
+<div class="section" id="Creating-a-Molecular-Graph-from-a-Mol2-File">
+<h3>Creating a Molecular Graph from a Mol2 File<a class="headerlink" href="#Creating-a-Molecular-Graph-from-a-Mol2-File" title="Permalink to this headline">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">MOL2_PATH</span> <span class="o">=</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_filename</span><span class="p">(</span><span class="s2">"graphein"</span><span class="p">,</span> <span class="s2">"../tests/molecule/test_data/short_test.mol2"</span><span class="p">)</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">construct_graph</span><span class="p">(</span><span class="n">mol2_path</span><span class="o">=</span><span class="n">MOL2_PATH</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"rdmol"</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+short_test
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_molecule_tutorial_14_1.png" src="../_images/notebooks_molecule_tutorial_14_1.png"/>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gm</span><span class="o">.</span><span class="n">plotly_molecular_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div> <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script><script type="text/javascript">if (window.MathJax) {MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}</script> <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+<script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script> <div class="plotly-graph-div" id="b1ef95d8-cbc5-45b6-9727-bb0ef78e0a3e" style="height:650px; width:620px;"></div> <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("b1ef95d8-cbc5-45b6-9727-bb0ef78e0a3e")) {                    Plotly.newPlot(                        "b1ef95d8-cbc5-45b6-9727-bb0ef78e0a3e",                        [{"hoverinfo":"text+x+y+z","marker":{"color":[[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.798216,0.280197,0.469538,1.0]],"opacity":0.7,"size":[21.0,22.0,21.0],"symbol":"circle"},"mode":"markers","text":["C:0","C:1","N:2"],"x":[0.9862,-0.2052,-1.4201],"y":[-0.257,0.2236,0.2357],"z":[-0.1905,0.6206,-0.1847],"type":"scatter3d"},{"hoverinfo":"text","line":{"color":[[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0],[0.050383,0.029803,0.527975,1.0]],"width":10},"mode":"lines","text":["bond","bond","bond","bond","bond","bond"],"x":[0.9862,-0.2052,null,-0.2052,-1.4201,null],"y":[-0.257,0.2236,null,0.2236,0.2357,null],"z":[-0.1905,0.6206,null,0.6206,-0.1847,null],"type":"scatter3d"}],                        {"height":650,"margin":{"t":100},"scene":{"xaxis":{"showbackground":false,"showgrid":false,"showline":false,"showticklabels":false,"title":{"text":""},"zeroline":false},"yaxis":{"showbackground":false,"showgrid":false,"showline":false,"showticklabels":false,"title":{"text":""},"zeroline":false},"zaxis":{"showbackground":false,"showgrid":false,"showline":false,"showticklabels":false,"title":{"text":""},"zeroline":false}},"showlegend":false,"width":620,"template":{"data":{"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}}},                        {"responsive": true}                    )                };                            </script> </div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Adding-Features">
+<h2>Adding Features<a class="headerlink" href="#Adding-Features" title="Permalink to this headline">#</a></h2>
+<p>Graphein can add lots of features to graph nodes and edges from RDKit</p>
+<div class="section" id="Node-Features">
+<h3>Node Features<a class="headerlink" href="#Node-Features" title="Permalink to this headline">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">MoleculeGraphConfig</span><span class="p">(</span>
+    <span class="n">node_metadata_functions</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">atom_type_one_hot</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">atomic_mass</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">degree</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">total_degree</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">total_valence</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">explicit_valence</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">implicit_valence</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">num_explicit_h</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">num_implicit_h</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">total_num_h</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">num_radical_electrons</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">formal_charge</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">hybridization</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">is_aromatic</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">is_isotope</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">is_ring</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">chiral_tag</span><span class="p">,</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">is_ring_size</span><span class="p">,</span> <span class="n">ring_size</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">is_ring_size</span><span class="p">,</span> <span class="n">ring_size</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">construct_graph</span><span class="p">(</span><span class="n">mol2_path</span><span class="o">=</span><span class="n">MOL2_PATH</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:graphein.molecule.edges.distance:Found: 3 KNN edges
+INFO:graphein.molecule.edges.distance:Found: 9 distance edges for radius 5.0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd29027ca00&gt;, 'coords': array([ 0.9862, -0.257 , -0.1905]), 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), 'mass': 12.011, 'degree': 1, 'total_degree': 4, 'total_valence': 4, 'explicit_valence': 4, 'implicit_valence': 0, 'num_explicit_h': 3, 'num_implicit_h': 0, 'total_num_h': 3, 'num_radical_electrons': 0, 'formal_charge': 0, 'hybridization': rdkit.Chem.rdchem.HybridizationType.SP3, 'is_aromatic': False, 'is_isotope': 0, 'is_ring': False, 'chiral_tag': rdkit.Chem.rdchem.ChiralType.CHI_UNSPECIFIED, 'is_ring_5': False, 'is_ring_7': False}
+{'atomic_num': 6, 'element': 'C', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd29027c9a0&gt;, 'coords': array([-0.2052,  0.2236,  0.6206]), 'atom_type_one_hot': array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), 'mass': 12.011, 'degree': 2, 'total_degree': 4, 'total_valence': 4, 'explicit_valence': 4, 'implicit_valence': 0, 'num_explicit_h': 2, 'num_implicit_h': 0, 'total_num_h': 2, 'num_radical_electrons': 0, 'formal_charge': 0, 'hybridization': rdkit.Chem.rdchem.HybridizationType.SP3, 'is_aromatic': False, 'is_isotope': 0, 'is_ring': False, 'chiral_tag': rdkit.Chem.rdchem.ChiralType.CHI_UNSPECIFIED, 'is_ring_5': False, 'is_ring_7': False}
+{'atomic_num': 7, 'element': 'N', 'rdmol_atom': &lt;rdkit.Chem.rdchem.Atom object at 0x7fd29027c8e0&gt;, 'coords': array([-1.4201,  0.2357, -0.1847]), 'atom_type_one_hot': array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]), 'mass': 14.007, 'degree': 1, 'total_degree': 3, 'total_valence': 3, 'explicit_valence': 3, 'implicit_valence': 0, 'num_explicit_h': 2, 'num_implicit_h': 0, 'total_num_h': 2, 'num_radical_electrons': 0, 'formal_charge': 0, 'hybridization': rdkit.Chem.rdchem.HybridizationType.SP3, 'is_aromatic': False, 'is_isotope': 0, 'is_ring': False, 'chiral_tag': rdkit.Chem.rdchem.ChiralType.CHI_UNSPECIFIED, 'is_ring_5': False, 'is_ring_7': False}
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Edge-Features">
+<h3>Edge Features<a class="headerlink" href="#Edge-Features" title="Permalink to this headline">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">MoleculeGraphConfig</span><span class="p">(</span>
+    <span class="n">edge_metadata_functions</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">add_bond_type</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">bond_is_aromatic</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">bond_is_conjugated</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">bond_is_in_ring</span><span class="p">,</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">bond_stereo</span><span class="p">,</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">bond_is_in_ring_size</span><span class="p">,</span> <span class="n">ring_size</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">bond_is_in_ring_size</span><span class="p">,</span> <span class="n">ring_size</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">construct_graph</span><span class="p">(</span><span class="n">mol2_path</span><span class="o">=</span><span class="n">MOL2_PATH</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:graphein.molecule.edges.distance:Found: 3 KNN edges
+INFO:graphein.molecule.edges.distance:Found: 9 distance edges for radius 5.0
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-C:0
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:1-C:1
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge N:2-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-C:0
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:1-C:1
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge N:2-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-C:0
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:1-C:1
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge N:2-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-C:0
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:1-C:1
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge N:2-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-C:0
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:1-C:1
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge N:2-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-C:0
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:1-C:1
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge N:2-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-C:0
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:0-N:2
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge C:1-C:1
+DEBUG:graphein.molecule.features.edges.bonds:No RDKit bond found on edge N:2-N:2
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{'kind': {'distance_threshold', 'fully_connected'}, 'bond_type': None, 'aromatic': None, 'conjugated': None, 'ring': None, 'bond_stereo': None, 'ring_size_5': None, 'ring_size_7': None}
+{'kind': {'distance_threshold', 'k_nn_1', 'fully_connected', 'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270e09e20&gt;, 'bond_type': rdkit.Chem.rdchem.BondType.SINGLE, '_aromatic': False, 'conjugated': False, 'ring': False, 'bond_stereo': rdkit.Chem.rdchem.BondStereo.STEREONONE, 'ring_size_5': False, 'ring_size_7': False}
+{'kind': {'distance_threshold', 'fully_connected'}, 'bond_type': None, 'aromatic': None, 'conjugated': None, 'ring': None, 'bond_stereo': None, 'ring_size_5': None, 'ring_size_7': None}
+{'kind': {'distance_threshold', 'fully_connected'}, 'bond_type': None, 'aromatic': None, 'conjugated': None, 'ring': None, 'bond_stereo': None, 'ring_size_5': None, 'ring_size_7': None}
+{'kind': {'distance_threshold', 'k_nn_1', 'fully_connected', 'bond'}, 'bond': &lt;rdkit.Chem.rdchem.Bond object at 0x7fd270e090a0&gt;, 'bond_type': rdkit.Chem.rdchem.BondType.SINGLE, '_aromatic': False, 'conjugated': False, 'ring': False, 'bond_stereo': rdkit.Chem.rdchem.BondStereo.STEREONONE, 'ring_size_5': False, 'ring_size_7': False}
+{'kind': {'distance_threshold', 'fully_connected'}, 'bond_type': None, 'aromatic': None, 'conjugated': None, 'ring': None, 'bond_stereo': None, 'ring_size_5': None, 'ring_size_7': None}
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Graph-Features">
+<h3>Graph Features<a class="headerlink" href="#Graph-Features" title="Permalink to this headline">#</a></h3>
+<p>Global descriptors of the molecule computed by RDKit can be added to the graph too!</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">MoleculeGraphConfig</span><span class="p">(</span>
+    <span class="n">graph_metadata_functions</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">gm</span><span class="o">.</span><span class="n">mol_descriptors</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">construct_graph</span><span class="p">(</span><span class="n">mol2_path</span><span class="o">=</span><span class="n">MOL2_PATH</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:graphein.molecule.edges.distance:Found: 3 KNN edges
+INFO:graphein.molecule.edges.distance:Found: 9 distance edges for radius 5.0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{'name': 'short_test', 'rdmol': &lt;rdkit.Chem.rdchem.Mol object at 0x7fd280c73dc0&gt;, 'coords': array([[ 0.9862, -0.257 , -0.1905],
+       [-0.2052,  0.2236,  0.6206],
+       [-1.4201,  0.2357, -0.1847]]), 'smiles': 'CCN', 'config': MoleculeGraphConfig(verbose=False, add_hs=False, edge_construction_functions=[&lt;function add_fully_connected_edges at 0x7fd2d31e5ca0&gt;, &lt;function add_k_nn_edges at 0x7fd2d31e5d30&gt;, &lt;function add_distance_threshold at 0x7fd2d31e5c10&gt;, &lt;function add_atom_bonds at 0x7fd2d31e5790&gt;], node_metadata_functions=[&lt;function atom_type_one_hot at 0x7fd270aa30d0&gt;], edge_metadata_functions=None, graph_metadata_functions=[&lt;function mol_descriptors at 0x7fd2d31f3280&gt;]), 'MaxEStateIndex': 4.847222222222222, 'MinEStateIndex': 0.75, 'MaxAbsEStateIndex': 4.847222222222222, 'MinAbsEStateIndex': 0.75, 'qed': 0.40623709538988323, 'MolWt': 45.084999999999994, 'HeavyAtomMolWt': 38.028999999999996, 'ExactMolWt': 45.057849223999995, 'NumValenceElectrons': 20, 'NumRadicalElectrons': 0, 'MaxPartialCharge': -0.010576265829206462, 'MinPartialCharge': -0.3307484184390755, 'MaxAbsPartialCharge': 0.3307484184390755, 'MinAbsPartialCharge': 0.010576265829206462, 'FpDensityMorgan1': 2.0, 'FpDensityMorgan2': 2.0, 'FpDensityMorgan3': 2.0, 'BCUT2D_MWHI': 14.489350501685236, 'BCUT2D_MWLOW': 10.840990590774261, 'BCUT2D_CHGHI': 1.3223586846717188, 'BCUT2D_CHGLO': -1.5255036511694584, 'BCUT2D_LOGPHI': 1.1976547781828029, 'BCUT2D_LOGPLOW': -1.871495321468652, 'BCUT2D_MRHI': 3.9983956644101193, 'BCUT2D_MRLOW': 1.1354269715888405, 'BalabanJ': 1.6329931618554523, 'BertzCT': 2.7548875021634682, 'Chi0': 2.7071067811865475, 'Chi0n': 2.284457050376173, 'Chi0v': 2.284457050376173, 'Chi1': 1.4142135623730951, 'Chi1n': 1.1153550716504106, 'Chi1v': 1.1153550716504106, 'Chi2n': 0.408248290463863, 'Chi2v': 0.408248290463863, 'Chi3n': 0.0, 'Chi3v': 0.0, 'Chi4n': 0.0, 'Chi4v': 0.0, 'HallKierAlpha': -0.04, 'Ipc': 2.7548875021634682, 'Kappa1': 2.9600000000000004, 'Kappa2': 1.96, 'Kappa3': 1.9600000000000033, 'LabuteASA': 20.444083839238875, 'PEOE_VSA1': 5.733667477162185, 'PEOE_VSA10': 0.0, 'PEOE_VSA11': 0.0, 'PEOE_VSA12': 0.0, 'PEOE_VSA13': 0.0, 'PEOE_VSA14': 0.0, 'PEOE_VSA2': 0.0, 'PEOE_VSA3': 0.0, 'PEOE_VSA4': 0.0, 'PEOE_VSA5': 0.0, 'PEOE_VSA6': 6.923737199690624, 'PEOE_VSA7': 6.544756405912575, 'PEOE_VSA8': 0.0, 'PEOE_VSA9': 0.0, 'SMR_VSA1': 0.0, 'SMR_VSA10': 0.0, 'SMR_VSA2': 0.0, 'SMR_VSA3': 0.0, 'SMR_VSA4': 5.733667477162185, 'SMR_VSA5': 6.923737199690624, 'SMR_VSA6': 6.544756405912575, 'SMR_VSA7': 0.0, 'SMR_VSA8': 0.0, 'SMR_VSA9': 0.0, 'SlogP_VSA1': 5.733667477162185, 'SlogP_VSA10': 0.0, 'SlogP_VSA11': 0.0, 'SlogP_VSA12': 0.0, 'SlogP_VSA2': 6.544756405912575, 'SlogP_VSA3': 0.0, 'SlogP_VSA4': 0.0, 'SlogP_VSA5': 6.923737199690624, 'SlogP_VSA6': 0.0, 'SlogP_VSA7': 0.0, 'SlogP_VSA8': 0.0, 'SlogP_VSA9': 0.0, 'TPSA': 26.02, 'EState_VSA1': 0.0, 'EState_VSA10': 0.0, 'EState_VSA11': 0.0, 'EState_VSA2': 0.0, 'EState_VSA3': 0.0, 'EState_VSA4': 6.544756405912575, 'EState_VSA5': 0.0, 'EState_VSA6': 0.0, 'EState_VSA7': 6.923737199690624, 'EState_VSA8': 0.0, 'EState_VSA9': 5.733667477162185, 'VSA_EState1': 0.0, 'VSA_EState10': 0.0, 'VSA_EState2': 0.0, 'VSA_EState3': 0.0, 'VSA_EState4': 4.847222222222222, 'VSA_EState5': 0.0, 'VSA_EState6': 0.0, 'VSA_EState7': 0.0, 'VSA_EState8': 2.6527777777777777, 'VSA_EState9': 0.0, 'FractionCSP3': 1.0, 'HeavyAtomCount': 3, 'NHOHCount': 2, 'NOCount': 1, 'NumAliphaticCarbocycles': 0, 'NumAliphaticHeterocycles': 0, 'NumAliphaticRings': 0, 'NumAromaticCarbocycles': 0, 'NumAromaticHeterocycles': 0, 'NumAromaticRings': 0, 'NumHAcceptors': 1, 'NumHDonors': 1, 'NumHeteroatoms': 1, 'NumRotatableBonds': 0, 'NumSaturatedCarbocycles': 0, 'NumSaturatedHeterocycles': 0, 'NumSaturatedRings': 0, 'RingCount': 0, 'MolLogP': -0.03499999999999981, 'MolMR': 14.728400000000002, 'fr_Al_COO': 0, 'fr_Al_OH': 0, 'fr_Al_OH_noTert': 0, 'fr_ArN': 0, 'fr_Ar_COO': 0, 'fr_Ar_N': 0, 'fr_Ar_NH': 0, 'fr_Ar_OH': 0, 'fr_COO': 0, 'fr_COO2': 0, 'fr_C_O': 0, 'fr_C_O_noCOO': 0, 'fr_C_S': 0, 'fr_HOCCN': 0, 'fr_Imine': 0, 'fr_NH0': 0, 'fr_NH1': 0, 'fr_NH2': 1, 'fr_N_O': 0, 'fr_Ndealkylation1': 0, 'fr_Ndealkylation2': 0, 'fr_Nhpyrrole': 0, 'fr_SH': 0, 'fr_aldehyde': 0, 'fr_alkyl_carbamate': 0, 'fr_alkyl_halide': 0, 'fr_allylic_oxid': 0, 'fr_amide': 0, 'fr_amidine': 0, 'fr_aniline': 0, 'fr_aryl_methyl': 0, 'fr_azide': 0, 'fr_azo': 0, 'fr_barbitur': 0, 'fr_benzene': 0, 'fr_benzodiazepine': 0, 'fr_bicyclic': 0, 'fr_diazo': 0, 'fr_dihydropyridine': 0, 'fr_epoxide': 0, 'fr_ester': 0, 'fr_ether': 0, 'fr_furan': 0, 'fr_guanido': 0, 'fr_halogen': 0, 'fr_hdrzine': 0, 'fr_hdrzone': 0, 'fr_imidazole': 0, 'fr_imide': 0, 'fr_isocyan': 0, 'fr_isothiocyan': 0, 'fr_ketone': 0, 'fr_ketone_Topliss': 0, 'fr_lactam': 0, 'fr_lactone': 0, 'fr_methoxy': 0, 'fr_morpholine': 0, 'fr_nitrile': 0, 'fr_nitro': 0, 'fr_nitro_arom': 0, 'fr_nitro_arom_nonortho': 0, 'fr_nitroso': 0, 'fr_oxazole': 0, 'fr_oxime': 0, 'fr_para_hydroxylation': 0, 'fr_phenol': 0, 'fr_phenol_noOrthoHbond': 0, 'fr_phos_acid': 0, 'fr_phos_ester': 0, 'fr_piperdine': 0, 'fr_piperzine': 0, 'fr_priamide': 0, 'fr_prisulfonamd': 0, 'fr_pyridine': 0, 'fr_quatN': 0, 'fr_sulfide': 0, 'fr_sulfonamd': 0, 'fr_sulfone': 0, 'fr_term_acetylene': 0, 'fr_tetrazole': 0, 'fr_thiazole': 0, 'fr_thiocyan': 0, 'fr_thiophene': 0, 'fr_unbrch_alkane': 0, 'fr_urea': 0}
+</pre></div></div>
+</div>
+</div>
+</div>
+</div>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../rna_notebooks.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">RNA Graphs</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../molecule_notebooks.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Molecules</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Creating Molecular Graphs in Graphein</a><ul>
+<li><a class="reference internal" href="#Config">Config</a></li>
+<li><a class="reference internal" href="#Creating-Graphs">Creating Graphs</a><ul>
+<li><a class="reference internal" href="#Creating-a-Molecular-Graph-from-SMILES">Creating a Molecular Graph from SMILES</a></li>
+<li><a class="reference internal" href="#Creating-a-Molecular-Graph-from-an-SDF-File">Creating a Molecular Graph from an SDF File</a></li>
+<li><a class="reference internal" href="#Creating-a-Molecular-Graph-from-a-Mol2-File">Creating a Molecular Graph from a Mol2 File</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Adding-Features">Adding Features</a><ul>
+<li><a class="reference internal" href="#Node-Features">Node Features</a></li>
+<li><a class="reference internal" href="#Edge-Features">Edge Features</a></li>
+<li><a class="reference internal" href="#Graph-Features">Graph Features</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </body>
+</html>

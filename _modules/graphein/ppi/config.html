@@ -1,303 +1,258 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-<!DOCTYPE html>
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>graphein.ppi.config &#8212; Graphein 1.2.0 documentation</title>
-    
-  <link href="../../../_static/css/theme.css" rel="stylesheet">
-  <link href="../../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
-
-    
-  <link rel="stylesheet"
-    href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
-
-    
-      
-
-    
-    <link rel="stylesheet" href="../../../_static/sphinx-book-theme.css?digest=84ace793992934648b4de8eed757e5a2" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>graphein.ppi.config - Graphein 1.4.0</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
     
-  <link rel="preload" as="script" href="../../../_static/js/index.be7d3bbb2ef33a8344ce.js">
-
-    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/language_data.js"></script>
-    <script src="../../../_static/clipboard.min.js"></script>
-    <script src="../../../_static/copybutton.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
-    <script crossorigin="anonymous" integrity="sha512-VCK7oF67GXNc+J7zsu5o57jtxhLA75nSMHGaq8Q8TCOxDj4nMDw5dhQZvm9Cd9RN+3zgcodqbKcRc9gyPP8a2w==" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../../../_static/sphinx-book-theme.9d8b4a8b9bb19db25eeaddc40d639ba2.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
-    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
-    <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
     
 
-    <!-- Google Analytics -->
-    
-  </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
-    
-    <div class="container-fluid" id="banner"></div>
 
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
     
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
 
-    <div class="container-xl">
-      <div class="row">
-          
-<!-- Checkboxes to toggle the left sidebar -->
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
-<label class="overlay" for="__navigation">
-    <div class="visually-hidden">Toggle navigation sidebar</div>
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
 </label>
-<div class="col-12 col-md-3 bd-sidebar site-navigation " id="site-navigation">
-    
-        <div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../../../index.html">
-      
-        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
-        
-      
-      
-      <img src="../../../_static/graphein.png" class="logo" alt="logo">
-      
-      
-      <h1 class="site-logo" id="site-title">Graphein 1.2.0 documentation</h1>
-      
-    </a>
-</div><form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
-    <div class="bd-toc-item active">
-        <p class="caption">
- <span class="caption-text">
-  Getting Started
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../getting_started/installation.html">
-   Installation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../getting_started/introduction.html">
-   Graphein
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../license.html">
-   License
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Tutorials
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../../notebooks_index.html">
-   Notebooks
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../notebooks/residue_graphs.html">
-     Graphein - Residue Graph Tutorial
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../notebooks/atom_graph_tutorial.html">
-     Graphein - Atom Graph Tutorial
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../notebooks/alphafold_protein_graph_tutorial.html">
-     Constructing Graphs from AlphaFold Protein Structure Database
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../notebooks/subgraphing_tutorial.html">
-     Constructing Subgraphs in Graphein
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../notebooks/protein_mesh_tutorial.html">
-     Creating Protein Meshes in Graphein &amp; 3D Visualisation
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../notebooks/interactive_plotly_example.html">
-     Distance Matrix
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../notebooks/ppi_tutorial.html">
-     PPI Networks and Structural Interactomics
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../notebooks/grn_tutorial.html">
-     Gene Regulatory Network Tutorial
-    </a>
-   </li>
-  </ul>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Datasets
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../../datasets.html">
-   Datasets
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../datasets/pscdb.html">
-     PSCDB - Protein Structural Change Database
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../notebooks/pscdb_baselines.html">
-     PSCDB - Baselines
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../datasets/ppisp.html">
-     PPISP - Protein Protein Interaction Structure Prediction
-    </a>
-   </li>
-  </ul>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  API Reference
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../modules/graphein.protein.html">
-   graphein.protein
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../modules/graphein.rna.html">
-   graphein.rna
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../modules/graphein.ppi.html">
-   graphein.ppi
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../modules/graphein.grn.html">
-   graphein.grn
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../modules/graphein.ml.html">
-   graphein.ml
-  </a>
- </li>
-</ul>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-<div class="navbar_extra_footer">
-  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
-</div>
-
-</div>
-
-
-          
-
-
-          
-<!-- This is an invisible pixel that we watch to see if we've scrolled. -->
-<div class="sbt-scroll-pixel-helper"></div>
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
-            <div class="topbar-left">
-                
-                <label class="nav-toggle-button" for="__navigation">
-                    <div class="visually-hidden">Toggle navigation</div>
-                    <i class="fas fa-bars"></i>
-                </label>
-                
-            </div>
-            
-            <!-- Source interaction buttons -->
-
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
-        </div>
-
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
-            
-        </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">Graphein 1.4.0</div></a>
     </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.4.0</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../molecule_notebooks.html">Molecules</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/molecule_tutorial.html">Creating Molecular Graphs in Graphein</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.molecule.html">graphein.molecule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/contributors.html">Contributors</a></li>
+</ul>
+
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-            <!-- Table of contents that is only displayed when printing the page -->
-            <div id="jb-print-docs-body" class="onlyprint">
-                <h1></h1>
-                <!-- Table of contents -->
-                <div id="print-main-content">
-                    <div id="jb-print-toc">
-                        
-                    </div>
-                </div>
-            </div>
-            
-              <div>
-                
-  <h1>Source code for graphein.ppi.config</h1><div class="highlight"><pre>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <h1>Source code for graphein.ppi.config</h1><div class="highlight"><pre>
 <span></span><span class="c1"># %%</span>
 <span class="c1"># Graphein</span>
 <span class="c1"># Author: Arian Jamasb &lt;arian@jamasb.io&gt;, Ramon Vinas</span>
@@ -310,20 +265,20 @@
 
 
 <div class="viewcode-block" id="STRINGConfig"><a class="viewcode-back" href="../../../modules/graphein.ppi.html#graphein.ppi.config.STRINGConfig">[docs]</a><span class="k">class</span> <span class="nc">STRINGConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Config for specifying parameters for API calls to STRINGdb. Full documentation can be found: https://string-db.org/help/api/</span>
 
 <span class="sd">    :param species: NCBI taxon identifiers, defaults to 9606 (human)</span>
 <span class="sd">    :type species: int, optional</span>
 <span class="sd">    :param required_score: Threshold of significance to include a interaction, a number between 0 and 1000 (default depends on the network)</span>
 <span class="sd">    :type required_score: int, optional</span>
-<span class="sd">    :param network_type: Network type: &quot;functional&quot; (default), &quot;physical&quot;</span>
+<span class="sd">    :param network_type: Network type: "functional" (default), "physical"</span>
 <span class="sd">    :type network_type: str, optional</span>
 <span class="sd">    :param add_nodes: Adds a number of proteins to the network based on their confidence score, e.g., extends the interaction neighborhood of selected proteins to desired value, defaults to 50</span>
 <span class="sd">    :type add_nodes: int, optional</span>
 <span class="sd">    :param show_query_node_labels: When available use submitted names in the preferredName column when (0 or 1) (default:0)</span>
 <span class="sd">    :type show_query_node_labels: bool, optional</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">species</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">9606</span>  <span class="c1"># NCBI taxon identifiers</span>
     <span class="n">required_score</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
@@ -331,7 +286,7 @@
     <span class="p">]</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># threshold of significance to include a interaction, a number between 0 and 1000 (default depends on the network)</span>
     <span class="n">network_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">str</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;functional&quot;</span>  <span class="c1"># network type: functional (default), physical</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s2">"functional"</span>  <span class="c1"># network type: functional (default), physical</span>
     <span class="n">add_nodes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">int</span>
     <span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># adds a number of proteins to the network based on their confidence score, e.g., extends the interaction neighborhood of selected proteins to desired value</span>
@@ -341,7 +296,7 @@
 
 
 <div class="viewcode-block" id="BioGridConfig"><a class="viewcode-back" href="../../../modules/graphein.ppi.html#graphein.ppi.config.BioGridConfig">[docs]</a><span class="k">class</span> <span class="nc">BioGridConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Config for specifying parameters for API calls to BIOGRID. A full description of the parameters can be found at : https://wiki.thebiogrid.org/doku.php/biogridrest</span>
 
 <span class="sd">    :param searchNames: If ‘true’, the interactor OFFICIAL_SYMBOL will be examined for a match with the geneList.</span>
@@ -352,7 +307,7 @@
 <span class="sd">    :type interSpeciesExcluded: bool, optional</span>
 <span class="sd">    :param selfInteractionsExcluded:  If ‘true’, interactions with one interactor will be excluded, defaults to False</span>
 <span class="sd">    :type selfInteractionsExcluded: bool, optional.</span>
-<span class="sd">    :param evidenceList: Any interaction evidence with its Experimental System in the list will be excluded from the results unless includeEvidence is set to true., defaults to &quot;&quot; (empty string)</span>
+<span class="sd">    :param evidenceList: Any interaction evidence with its Experimental System in the list will be excluded from the results unless includeEvidence is set to true., defaults to "" (empty string)</span>
 <span class="sd">    :type evidenceList: str, optional</span>
 <span class="sd">    :param includeEvidence: If set to true, any interaction evidence with its Experimental System in the evidenceList will be included in the result, defaults to False</span>
 <span class="sd">    :type includeEvidence: bool, optional</span>
@@ -362,9 +317,9 @@
 <span class="sd">    :type searchNames: bool, optional</span>
 <span class="sd">    :param searchSynonyms:  If ‘true’, the interactor SYNONYMS will be examined for a match with the geneList. Defaults to True.</span>
 <span class="sd">    :type searchSynonyms: bool, optional</span>
-<span class="sd">    :param searchBiogridIds:  If ‘true’, the entries in &#39;GENELIST&#39; will be compared to BIOGRID internal IDS which are provided in all Tab2 formatted files. Defaults to True</span>
+<span class="sd">    :param searchBiogridIds:  If ‘true’, the entries in 'GENELIST' will be compared to BIOGRID internal IDS which are provided in all Tab2 formatted files. Defaults to True</span>
 <span class="sd">    :type seachBiogridIds: bool, optional</span>
-<span class="sd">    :param additionalIdentifierTypes: Identifier types on this list are examined for a match with the geneList. Defaults to &quot;&quot;</span>
+<span class="sd">    :param additionalIdentifierTypes: Identifier types on this list are examined for a match with the geneList. Defaults to ""</span>
 <span class="sd">    :type additionalIdentifierTypes: str, optional</span>
 <span class="sd">    :param excludeGenes: If ‘true’, interactions containing genes in the geneList will be excluded from the results. Defaults to False</span>
 <span class="sd">    :type excludeGenes: bool, optional</span>
@@ -372,15 +327,15 @@
 <span class="sd">    :type includeInteractors: bool, optional</span>
 <span class="sd">    :param includeInteractorInteractions: # If ‘true’ interactions between the geneList’s first order interactors will be included. Defaults to False</span>
 <span class="sd">    :type includeInteractorInteractions: bool, optional</span>
-<span class="sd">    :param pubmedList: Interactions will be fetched whose Pubmed Id is/ is not in this list, depending on the value of excludePubmeds. Defaults to &quot;&quot;</span>
+<span class="sd">    :param pubmedList: Interactions will be fetched whose Pubmed Id is/ is not in this list, depending on the value of excludePubmeds. Defaults to ""</span>
 <span class="sd">    :type pubmedList: str, optional</span>
 <span class="sd">    :param excludePubmeds: If ‘false’, interactions with Pubmed ID in pubmedList will be included in the results; if ‘true’ they will be excluded. Defaults to False</span>
 <span class="sd">    :type excludePubmeds: bool, optional</span>
 <span class="sd">    :param htpThreshold: Interactions whose Pubmed ID has more than this number of interactions will be excluded from the results. Ignored if excludePubmeds is ‘false’. Defaults to 20.</span>
 <span class="sd">    :type htpThreshold: int, optional</span>
-<span class="sd">    :param throughputTag: If set to &#39;low or &#39;high&#39;, only interactions with &#39;Low throughput&#39; or &#39;High throughput&#39; in the &#39;throughput&#39; field will be returned. Defaults to &quot;any&quot;</span>
+<span class="sd">    :param throughputTag: If set to 'low or 'high', only interactions with 'Low throughput' or 'High throughput' in the 'throughput' field will be returned. Defaults to "any"</span>
 <span class="sd">    :type throughputTag: str, optional</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">searchNames</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">bool</span>
@@ -394,7 +349,7 @@
     <span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># If ‘true’, interactions with one interactor will be excluded.</span>
     <span class="n">evidenceList</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">str</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Any interaction evidence with its Experimental System in the list will be excluded from the results unless includeEvidence is set to true.</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s2">""</span>  <span class="c1"># Any interaction evidence with its Experimental System in the list will be excluded from the results unless includeEvidence is set to true.</span>
     <span class="n">includeEvidence</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">bool</span>
     <span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># If set to true, any interaction evidence with its Experimental System in the evidenceList will be included in the result</span>
@@ -409,10 +364,10 @@
     <span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># If ‘true’, the interactor SYNONYMS will be examined for a match with the geneList.</span>
     <span class="n">searchBiogridIds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">bool</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># If ‘true’, the entries in &#39;GENELIST&#39; will be compared to BIOGRID internal IDS which are provided in all Tab2 formatted files.</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># If ‘true’, the entries in 'GENELIST' will be compared to BIOGRID internal IDS which are provided in all Tab2 formatted files.</span>
     <span class="n">additionalIdentifierTypes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">str</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Identifier types on this list are examined for a match with the geneList.</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s2">""</span>  <span class="c1"># Identifier types on this list are examined for a match with the geneList.</span>
     <span class="n">excludeGenes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">bool</span>
     <span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># If ‘true’, interactions containing genes in the geneList will be excluded from the results.</span>
@@ -424,7 +379,7 @@
     <span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># If ‘true’ interactions between the geneList’s first order interactors will be included.</span>
     <span class="n">pubmedList</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">str</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Interactions will be fetched whose Pubmed Id is/ is not in this list, depending on the value of excludePubmeds.</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s2">""</span>  <span class="c1"># Interactions will be fetched whose Pubmed Id is/ is not in this list, depending on the value of excludePubmeds.</span>
     <span class="n">excludePubmeds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">bool</span>
     <span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># If ‘false’, interactions with Pubmed ID in pubmedList will be included in the results; if ‘true’ they will be excluded.</span>
@@ -433,11 +388,11 @@
     <span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># Interactions whose Pubmed ID has more than this number of interactions will be excluded from the results. Ignored if excludePubmeds is ‘false’.</span>
     <span class="n">throughputTag</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="nb">str</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;any&quot;</span>  <span class="c1"># If set to &#39;low or &#39;high&#39;, only interactions with &#39;Low throughput&#39; or &#39;High throughput&#39; in the &#39;throughput&#39; field will be returned.</span></div>
+    <span class="p">]</span> <span class="o">=</span> <span class="s2">"any"</span>  <span class="c1"># If set to 'low or 'high', only interactions with 'Low throughput' or 'High throughput' in the 'throughput' field will be returned.</span></div>
 
 
 <div class="viewcode-block" id="PPIGraphConfig"><a class="viewcode-back" href="../../../modules/graphein.ppi.html#graphein.ppi.config.PPIGraphConfig">[docs]</a><span class="k">class</span> <span class="nc">PPIGraphConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Config for specifying parameters for PPI Graph Construction</span>
 
 <span class="sd">    :param paginate: Controls whether or not to paginate API calls. Useful for large queries. Defaults to True</span>
@@ -450,13 +405,13 @@
 <span class="sd">    :type string_config: graphein.ppi.config.STRINGConfig</span>
 <span class="sd">    :param biogrid_config: Config Object holding parameters for BioGrid API calls. Defaults to None</span>
 <span class="sd">    :type biogrid_config: graphein.ppi.config.BioGridConfig, optional</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">ncbi_taxon_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9606</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;STRING_escore&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>  <span class="c1"># Keeps STRING interactions with an experimental score &gt;= 0.2</span>
-        <span class="s2">&quot;BIOGRID_throughputTag&quot;</span><span class="p">:</span> <span class="s2">&quot;high&quot;</span><span class="p">,</span>  <span class="c1"># Keeps high throughput BIOGRID interactions</span>
+        <span class="s2">"STRING_escore"</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>  <span class="c1"># Keeps STRING interactions with an experimental score &gt;= 0.2</span>
+        <span class="s2">"BIOGRID_throughputTag"</span><span class="p">:</span> <span class="s2">"high"</span><span class="p">,</span>  <span class="c1"># Keeps high throughput BIOGRID interactions</span>
     <span class="p">}</span>
     <span class="n">string_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">STRINGConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">biogrid_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BioGridConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -464,31 +419,48 @@
     <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
         <span class="n">arbitrary_types_allowed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></div>
 </pre></div>
-
-              </div>
-              
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'>
-</div>
-            
-        </div>
-    </div>
-    <footer class="footer">
-  <p>
-    
-      By Arian Jamasb<br/>
-    
-        &copy; Copyright 2022, Arian Jamasb.<br/>
-  </p>
-</footer>
-</main>
-
-
+        </article>
       </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
     </div>
-  
-  <script src="../../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
-
-  </body>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/scripts/furo.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
 </html>

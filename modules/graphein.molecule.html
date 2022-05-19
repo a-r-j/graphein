@@ -1,0 +1,1235 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    
+<meta property="og:title" content="graphein.molecule" />
+  
+<meta property="og:type" content="website" />
+  
+<meta property="og:url" content="https://graphein.ai/modules/graphein.molecule.html" />
+  
+<meta property="og:description" content="Config: Base Config object for use with Molecule Graph Construction. Graphs: Functions for working with Small Molecule Graphs. Edges: Distance: Functions for computing biochemical edges of graphs. ..." />
+  
+<meta property="og:image" content="https://graphein.ai/_static/graphein.png" />
+  
+<meta property="og:image:alt" content="graphein.molecule" />
+  <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="graphein.rna" href="graphein.rna.html" /><link rel="prev" title="graphein.protein" href="graphein.protein.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>graphein.molecule - Graphein 1.4.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Graphein 1.4.0</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.4.0</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../molecule_notebooks.html">Molecules</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/molecule_tutorial.html">Creating Molecular Graphs in Graphein</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">graphein.molecule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <div class="section" id="graphein-molecule">
+<h1>graphein.molecule<a class="headerlink" href="#graphein-molecule" title="Permalink to this headline">#</a></h1>
+<div class="section" id="module-graphein.molecule.config">
+<span id="config"></span><h2>Config<a class="headerlink" href="#module-graphein.molecule.config" title="Permalink to this headline">#</a></h2>
+<p>Base Config object for use with Molecule Graph Construction.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.config.GraphAtoms">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.config.</span></span><span class="sig-name descname"><span class="pre">GraphAtoms</span></span><a class="headerlink" href="#graphein.molecule.config.GraphAtoms" title="Permalink to this definition">#</a></dt>
+<dd><p>Allowable atom types for nodes in the graph.</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘C’, ‘H’, ‘O’, ‘N’, ‘F’, ‘P’, ‘S’, ‘Cl’, ‘Br’, ‘I’, ‘B’]</p>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="graphein.molecule.config.MoleculeGraphConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">graphein.molecule.config.</span></span><span class="sig-name descname"><span class="pre">MoleculeGraphConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">*,</span> <span class="pre">verbose:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">add_hs:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">edge_construction_functions:</span> <span class="pre">typing.List[typing.Union[typing.Callable,</span> <span class="pre">str]]</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">add_fully_connected_edges&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">add_k_nn_edges&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">add_distance_threshold&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">add_atom_bonds&gt;],</span> <span class="pre">node_metadata_functions:</span> <span class="pre">typing.List[typing.Union[typing.Callable,</span> <span class="pre">str]]</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">atom_type_one_hot&gt;],</span> <span class="pre">edge_metadata_functions:</span> <span class="pre">typing.List[typing.Union[typing.Callable,</span> <span class="pre">str]]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">graph_metadata_functions:</span> <span class="pre">typing.List[typing.Callable]</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/molecule/config.html#MoleculeGraphConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.config.MoleculeGraphConfig" title="Permalink to this definition">#</a></dt>
+<dd><p>Config Object for Molecule Structure Graph Construction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Specifies verbosity of graph creation process.</p></li>
+<li><p><strong>add_hs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Specifies whether hydrogens should be added to the graph.</p></li>
+<li><p><strong>edge_construction_functions</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – List of functions that take an <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code> and return an <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code> with desired
+edges added. Prepared edge constructions can be found in <span class="xref std std-ref">graphein.protein.edges</span></p></li>
+<li><p><strong>node_metadata_functions</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em><em>, </em><em>optional</em>) – List of functions that take an <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code></p></li>
+<li><p><strong>edge_metadata_functions</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em><em>, </em><em>optional</em>) – List of functions that take an</p></li>
+<li><p><strong>graph_metadata_functions</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em><em>, </em><em>optional</em>) – List of functions that take an <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code> and return an <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code> with added
+graph-level features and metadata.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+</div>
+<div class="section" id="module-graphein.molecule.graphs">
+<span id="graphs"></span><h2>Graphs<a class="headerlink" href="#module-graphein.molecule.graphs" title="Permalink to this headline">#</a></h2>
+<p>Functions for working with Small Molecule Graphs.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.graphs.add_nodes_to_graph">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.graphs.</span></span><span class="sig-name descname"><span class="pre">add_nodes_to_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.graph.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/molecule/graphs.html#add_nodes_to_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.graphs.add_nodes_to_graph" title="Permalink to this definition">#</a></dt>
+<dd><p>Add nodes into molecule graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code> with metadata to populate with nodes.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Controls verbosity of this step.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>nx.Graph with nodes added.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.graphs.construct_graph">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.graphs.</span></span><span class="sig-name descname"><span class="pre">construct_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#graphein.molecule.config.MoleculeGraphConfig" title="graphein.molecule.config.MoleculeGraphConfig"><span class="pre">graphein.molecule.config.MoleculeGraphConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mol2_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdb_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_construction_funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_annotation_funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_annotation_funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_annotation_funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.graph.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/molecule/graphs.html#construct_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.graphs.construct_graph" title="Permalink to this definition">#</a></dt>
+<dd><p>Constructs protein structure graph from a <code class="docutils literal notranslate"><span class="pre">sdf_path</span></code>, <code class="docutils literal notranslate"><span class="pre">mol2_path</span></code>  or <code class="docutils literal notranslate"><span class="pre">smiles</span></code>.</p>
+<p>Users can provide a <a class="reference internal" href="#graphein.molecule.config.MoleculeGraphConfig" title="graphein.molecule.config.MoleculeGraphConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoleculeGraphConfig</span></code></a>
+object to specify construction parameters.</p>
+<p>However, config parameters can be overridden by passing arguments directly to the function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference internal" href="#graphein.molecule.config.MoleculeGraphConfig" title="graphein.molecule.config.MoleculeGraphConfig"><em>graphein.molecule.config.MoleculeGraphConfig</em></a><em>, </em><em>optional</em>) – <a class="reference internal" href="#graphein.molecule.config.MoleculeGraphConfig" title="graphein.molecule.config.MoleculeGraphConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoleculeGraphConfig</span></code></a> object. If None, defaults to config in <code class="docutils literal notranslate"><span class="pre">graphein.molecule.config</span></code>.</p></li>
+<li><p><strong>sdf_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Path to <code class="docutils literal notranslate"><span class="pre">sdf_file</span></code> to build graph from. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>smiles</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – smiles string to build graph from. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>mol2_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Path to <code class="docutils literal notranslate"><span class="pre">mol2_file</span></code> to build graph from. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>pdb_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Path to <code class="docutils literal notranslate"><span class="pre">pdb_file</span></code> to build graph from. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>edge_construction_funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em><em>, </em><em>optional</em>) – List of edge construction functions. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>edge_annotation_funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em><em>, </em><em>optional</em>) – List of edge annotation functions. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>node_annotation_funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em><em>, </em><em>optional</em>) – List of node annotation functions. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>graph_annotation_funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – List of graph annotation function. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Molecule Structure Graph</p>
+</dd>
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.graphs.initialise_graph_with_metadata">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.graphs.</span></span><span class="sig-name descname"><span class="pre">initialise_graph_with_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdmol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">rdkit.Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">np.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">nx.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/molecule/graphs.html#initialise_graph_with_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.graphs.initialise_graph_with_metadata" title="Permalink to this definition">#</a></dt>
+<dd><p>Initializes the nx Graph object with initial metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of the molecule. Either the smiles or filename depending on how the graph was created.</p></li>
+<li><p><strong>rdmol</strong> (<em>rdkit.Mol</em>) – Processed Dataframe of molecule structure.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns initial molecule structure graph with metadata.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+<div class="section" id="edges">
+<h2>Edges<a class="headerlink" href="#edges" title="Permalink to this headline">#</a></h2>
+<div class="section" id="module-graphein.molecule.edges.distance">
+<span id="distance"></span><h3>Distance<a class="headerlink" href="#module-graphein.molecule.edges.distance" title="Permalink to this headline">#</a></h3>
+<p>Functions for computing biochemical edges of graphs.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.edges.distance.add_distance_threshold">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.edges.distance.</span></span><span class="sig-name descname"><span class="pre">add_distance_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/molecule/edges/distance.html#add_distance_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.edges.distance.add_distance_threshold" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds edges to any nodes within a given distance of each other.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – molecule structure graph to add distance edges to</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Distance in angstroms, below which two nodes are connected.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Graph with distance-based edges added</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.edges.distance.add_fully_connected_edges">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.edges.distance.</span></span><span class="sig-name descname"><span class="pre">add_fully_connected_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/molecule/edges/distance.html#add_fully_connected_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.edges.distance.add_fully_connected_edges" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds fully connected edges to nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>G</strong> (<em>nx.Graph</em>) – Molecule structure graph to add distance edges to.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.edges.distance.add_k_nn_edges">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.edges.distance.</span></span><span class="sig-name descname"><span class="pre">add_k_nn_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'connectivity'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'minkowski'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/molecule/edges/distance.html#add_k_nn_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.edges.distance.add_k_nn_edges" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds edges to nodes based on K nearest neighbours.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – Molecule structure graph to add distance edges to.</p></li>
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of neighbors for each sample.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of returned matrix: <code class="docutils literal notranslate"><span class="pre">"connectivity"</span></code> will return the connectivity matrix with ones and zeros,
+and <code class="docutils literal notranslate"><span class="pre">"distance"</span></code> will return the distances between neighbors according to the given metric.</p></li>
+<li><p><strong>metric</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The distance metric used to calculate the k-Neighbors for each sample point.
+The DistanceMetric class gives a list of available metrics.
+The default distance is <code class="docutils literal notranslate"><span class="pre">"euclidean"</span></code> (<code class="docutils literal notranslate"><span class="pre">"minkowski"</span></code> metric with the <code class="docutils literal notranslate"><span class="pre">p</span></code> param equal to <code class="docutils literal notranslate"><span class="pre">2</span></code>).</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Power parameter for the Minkowski metric. When <code class="docutils literal notranslate"><span class="pre">p</span> <span class="pre">=</span> <span class="pre">1</span></code>, this is equivalent to using <code class="docutils literal notranslate"><span class="pre">manhattan_distance</span></code> (l1),
+and <code class="docutils literal notranslate"><span class="pre">euclidean_distance</span></code> (l2) for <code class="docutils literal notranslate"><span class="pre">p</span> <span class="pre">=</span> <span class="pre">2</span></code>. For arbitrary <code class="docutils literal notranslate"><span class="pre">p</span></code>, <code class="docutils literal notranslate"><span class="pre">minkowski_distance</span></code> (l_p) is used. Default is <code class="docutils literal notranslate"><span class="pre">2</span></code> (euclidean).</p></li>
+<li><p><strong>include_self</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – Whether or not to mark each sample as the first nearest neighbor to itself.
+If <code class="docutils literal notranslate"><span class="pre">"auto"</span></code>, then <code class="docutils literal notranslate"><span class="pre">True</span></code> is used for <code class="docutils literal notranslate"><span class="pre">mode="connectivity"</span></code> and <code class="docutils literal notranslate"><span class="pre">False</span></code> for <code class="docutils literal notranslate"><span class="pre">mode="distance"</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Graph with knn-based edges added.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.edges.distance.compute_distmat">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.edges.distance.</span></span><span class="sig-name descname"><span class="pre">compute_distmat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><span class="pre">numpy.ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><span class="pre">numpy.ndarray</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/edges/distance.html#compute_distmat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.edges.distance.compute_distmat" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute pairwise euclidean distances between every atom.</p>
+<p>Design choice: passed in a DataFrame to enable easier testing on
+dummy data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>coords</strong> (<em>pd.DataFrame</em>) – pd.Dataframe containing molecule structure. Must contain columns <code class="docutils literal notranslate"><span class="pre">["x_coord",</span> <span class="pre">"y_coord",</span> <span class="pre">"z_coord"]</span></code>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>np.ndarray of euclidean distance matrix.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.edges.distance.get_interacting_atoms">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.edges.distance.</span></span><span class="sig-name descname"><span class="pre">get_interacting_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angstroms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">distmat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><span class="pre">numpy.ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><span class="pre">numpy.ndarray</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/edges/distance.html#get_interacting_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.edges.distance.get_interacting_atoms" title="Permalink to this definition">#</a></dt>
+<dd><p>Find the atoms that are within a particular radius of one another.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angstroms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Radius in angstroms.</p></li>
+<li><p><strong>distmat</strong> (<em>np.ndarray</em>) – Distance matrix.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array of interacting atoms</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+<div class="section" id="module-graphein.molecule.edges.atomic">
+<span id="atomic"></span><h3>Atomic<a class="headerlink" href="#module-graphein.molecule.edges.atomic" title="Permalink to this headline">#</a></h3>
+<p>Functions for computing atomic structure of molecules.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.edges.atomic.add_atom_bonds">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.edges.atomic.</span></span><span class="sig-name descname"><span class="pre">add_atom_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.graph.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/molecule/edges/atomic.html#add_atom_bonds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.edges.atomic.add_atom_bonds" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds atomic bonds to a molecular graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>G</strong> (<em>nx.Graph</em>) – Molecular graph to add atomic bond edges to.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Molecular graph with atomic bonds added.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">#</a></h2>
+<div class="section" id="module-graphein.molecule.features.nodes.atom_type">
+<span id="node"></span><h3>Node<a class="headerlink" href="#module-graphein.molecule.features.nodes.atom_type" title="Permalink to this headline">#</a></h3>
+<p>Functions for featurising Small Molecule Graphs.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.atom_type_one_hot">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">atom_type_one_hot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowable_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><span class="pre">numpy.ndarray</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#atom_type_one_hot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.atom_type_one_hot" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds a one-hot encoding of atom types as a node attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data.</p></li>
+<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, returns a numpy <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> of one-hot encoding, otherwise returns a <code class="docutils literal notranslate"><span class="pre">pd.Series</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>allowable_set</strong> – Specifies vocabulary of amino acids. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code> (which uses <cite>graphein.molecule.atoms.BASE_ATOMS</cite>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>One-hot encoding of amino acid types.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Union[pd.Series, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.atomic_mass">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">atomic_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#atomic_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.atomic_mass" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds mass of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Mass of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.chiral_tag">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">chiral_tag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">rdkit.Chem.rdchem.ChiralType</span></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#chiral_tag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.chiral_tag" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds indicator of atom chirality to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Indicator of atom chirality.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>rdkit.Chem.rdchem.ChiralType</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.degree">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">degree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#degree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.degree" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds the degree of the node to the node data.</p>
+<p>N.B. this is the degree as defined by RDKit rather than the ‘true’ degree of the node in the graph. For the latter, use nx.degree()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Degree of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.explicit_valence">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">explicit_valence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#explicit_valence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.explicit_valence" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds explicit valence of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Explicit valence of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.formal_charge">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">formal_charge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#formal_charge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.formal_charge" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds the formal charge of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Formal charge of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.hybridization">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">hybridization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">rdkit.Chem.rdchem.HybridizationType</span></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#hybridization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.hybridization" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds the hybridization of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Hybridization of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>rdkit.Chem.rdchem.HybridizationType</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.implicit_valence">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">implicit_valence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#implicit_valence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.implicit_valence" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds implicit valence of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Implicit valence of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.is_aromatic">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">is_aromatic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#is_aromatic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.is_aromatic" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds indicator of aromaticity of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Indicator of aromaticity of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.is_isotope">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">is_isotope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#is_isotope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.is_isotope" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds indicator of whether or not the atom is an isotope to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Indicator of whether or not the atom is an isotope.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.is_ring">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">is_ring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#is_ring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.is_ring" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds indicator of ring membership of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Indicator of ring membership of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.is_ring_size">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">is_ring_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ring_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#is_ring_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.is_ring_size" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds indicator of ring membership of size <code class="docutils literal notranslate"><span class="pre">ring_size</span></code> of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data.</p></li>
+<li><p><strong>ring_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – The size of the ring to look for.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Indicator of ring membership of size <code class="docutils literal notranslate"><span class="pre">ring_size</span></code> of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.num_explicit_h">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">num_explicit_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#num_explicit_h"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.num_explicit_h" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds the number of explicit Hydrogens of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Number of explicit Hydrogens of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.num_implicit_h">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">num_implicit_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#num_implicit_h"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.num_implicit_h" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds the number of implicit Hydrogens of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Number of implicit Hydrogens of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.num_radical_electrons">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">num_radical_electrons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#num_radical_electrons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.num_radical_electrons" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds the number of radical electrons of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Number of radical electrons of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.total_degree">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">total_degree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#total_degree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.total_degree" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds the total degree of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Total degree of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.total_num_h">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">total_num_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#total_num_h"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.total_num_h" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds the total number of Hydrogens of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Total number of Hydrogens of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.nodes.atom_type.total_valence">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.nodes.atom_type.</span></span><span class="sig-name descname"><span class="pre">total_valence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/nodes/atom_type.html#total_valence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.nodes.atom_type.total_valence" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds the total valence of the atom to the node data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Node name, this is unused and only included for compatibility with the other functions.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Node data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Total valence of the atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+<div class="section" id="module-graphein.molecule.features.edges.bonds">
+<span id="edge"></span><h3>Edge<a class="headerlink" href="#module-graphein.molecule.features.edges.bonds" title="Permalink to this headline">#</a></h3>
+<p>Functions for computing atomic features for molecules.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.edges.bonds.add_bond_type">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.edges.bonds.</span></span><span class="sig-name descname"><span class="pre">add_bond_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">rdkit.Chem.rdchem.BondType</span></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/edges/bonds.html#add_bond_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.edges.bonds.add_bond_type" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds bond type as an edge feature to the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – First node in the edge.</p></li>
+<li><p><strong>v</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Second node in the edge.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary of edge metadata.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the bond type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>rdkit.Chem.rdchem.BondType</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.edges.bonds.bond_is_aromatic">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.edges.bonds.</span></span><span class="sig-name descname"><span class="pre">bond_is_aromatic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/edges/bonds.html#bond_is_aromatic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.edges.bonds.bond_is_aromatic" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds indicator of aromaticity of a bond to the graph as an edge feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – First node in the edge.</p></li>
+<li><p><strong>v</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Second node in the edge.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary of edge metadata.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns indicator of aromaticity of bond.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.edges.bonds.bond_is_conjugated">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.edges.bonds.</span></span><span class="sig-name descname"><span class="pre">bond_is_conjugated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/edges/bonds.html#bond_is_conjugated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.edges.bonds.bond_is_conjugated" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds indicator of conjugated bond to the graph as an edge feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – First node in the edge.</p></li>
+<li><p><strong>v</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Second node in the edge.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary of edge metadata.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns indicator of conjugated bond.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.edges.bonds.bond_is_in_ring">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.edges.bonds.</span></span><span class="sig-name descname"><span class="pre">bond_is_in_ring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/edges/bonds.html#bond_is_in_ring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.edges.bonds.bond_is_in_ring" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds indicator of ring membership to the graph as an edge feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – First node in the edge.</p></li>
+<li><p><strong>v</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Second node in the edge.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary of edge metadata.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns indicator of ring membership of bond.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.edges.bonds.bond_is_in_ring_size">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.edges.bonds.</span></span><span class="sig-name descname"><span class="pre">bond_is_in_ring_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ring_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/edges/bonds.html#bond_is_in_ring_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.edges.bonds.bond_is_in_ring_size" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds indicator of ring membership of size <code class="docutils literal notranslate"><span class="pre">ring_size</span></code> to the graph as an edge feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – First node in the edge.</p></li>
+<li><p><strong>v</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Second node in the edge.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary of edge metadata.</p></li>
+<li><p><strong>ring_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Size of the ring to look for</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns ring size of bond.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.edges.bonds.bond_stereo">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.edges.bonds.</span></span><span class="sig-name descname"><span class="pre">bond_stereo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">rdkit.Chem.rdchem.BondStereo</span></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/edges/bonds.html#bond_stereo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.edges.bonds.bond_stereo" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds bond stereo configuration as an edge feature to the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – First node in the edge.</p></li>
+<li><p><strong>v</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Second node in the edge.</p></li>
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary of edge metadata.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the bond stereo.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>rdkit.Chem.rdchem.BondStereo</p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+<div class="section" id="module-graphein.molecule.features.graph.molecule">
+<span id="graph"></span><h3>Graph<a class="headerlink" href="#module-graphein.molecule.features.graph.molecule" title="Permalink to this headline">#</a></h3>
+<p>Functions for featurising Small Molecule Graphs.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.features.graph.molecule.mol_descriptors">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.features.graph.molecule.</span></span><span class="sig-name descname"><span class="pre">mol_descriptors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descriptor_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v1.4.2)"><span class="pre">pandas.core.series.Series</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/graphein/molecule/features/graph/molecule.html#mol_descriptors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.features.graph.molecule.mol_descriptors" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds global molecular descriptors to the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>g</strong> (<em>nx.Graph</em>) – The graph to add the descriptors to.</p></li>
+<li><p><strong>descriptor_list</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>]</em>) – The list of descriptors to add. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, all descriptors are added.</p></li>
+<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the descriptors are returned as a <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code>.</p></li>
+<li><p><strong>return_series</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the descriptors are returned as a <code class="docutils literal notranslate"><span class="pre">pd.Series</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The descriptors as a dictionary (default) <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> or <code class="docutils literal notranslate"><span class="pre">pd.Series</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Union[np.ndarray, pd.Series,  Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>, Union[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a>]]]</p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="visualisation">
+<h2>Visualisation<a class="headerlink" href="#visualisation" title="Permalink to this headline">#</a></h2>
+<span class="target" id="module-graphein.molecule.visualisation"></span><p>Functions for featurising Small Molecule Graphs.</p>
+<p>Plotting functions for molecules wrap the methods defined on protein graphs and provide sane defaults.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.visualisation.plot_molecular_graph">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.visualisation.</span></span><span class="sig-name descname"><span class="pre">plot_molecular_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G:</span> <span class="pre">nx.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_title:</span> <span class="pre">Optional[str]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize:</span> <span class="pre">Tuple[int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int]</span> <span class="pre">=</span> <span class="pre">(10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">7)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_alpha:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_size_min:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">20.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_size_multiplier:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_node_ids:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_colour_map:</span> <span class="pre">plt.cm</span> <span class="pre">=</span> <span class="pre">&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_color_map:</span> <span class="pre">plt.cm</span> <span class="pre">=</span> <span class="pre">&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colour_nodes_by:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'element'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colour_edges_by:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'kind'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_alpha:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_style:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'ggplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path:</span> <span class="pre">Optional[str]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_format:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'.png'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">Axes3D</span></span></span><a class="reference internal" href="../_modules/graphein/molecule/visualisation.html#plot_molecular_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.visualisation.plot_molecular_graph" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots molecular graph in <code class="docutils literal notranslate"><span class="pre">Axes3D</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – nx.Graph Protein Structure graph to plot.</p></li>
+<li><p><strong>angle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – View angle. Defaults to <code class="docutils literal notranslate"><span class="pre">30</span></code>.</p></li>
+<li><p><strong>plot_title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Title of plot. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>figsize</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – Size of figure, defaults to <code class="docutils literal notranslate"><span class="pre">(10,</span> <span class="pre">7)</span></code>.</p></li>
+<li><p><strong>node_alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Controls node transparency, defaults to <code class="docutils literal notranslate"><span class="pre">0.7</span></code>.</p></li>
+<li><p><strong>node_size_min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Specifies node minimum size, defaults to <code class="docutils literal notranslate"><span class="pre">20</span></code>.</p></li>
+<li><p><strong>node_size_multiplier</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Scales node size by a constant. Node sizes reflect degree. Defaults to <code class="docutils literal notranslate"><span class="pre">20</span></code>.</p></li>
+<li><p><strong>label_node_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – bool indicating whether or not to plot <code class="docutils literal notranslate"><span class="pre">node_id</span></code> labels. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>node_colour_map</strong> (<em>plt.cm</em>) – colour map to use for nodes. Defaults to <code class="docutils literal notranslate"><span class="pre">plt.cm.plasma</span></code>.</p></li>
+<li><p><strong>edge_color_map</strong> (<em>plt.cm</em>) – colour map to use for edges. Defaults to <code class="docutils literal notranslate"><span class="pre">plt.cm.plasma</span></code>.</p></li>
+<li><p><strong>colour_nodes_by</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Specifies how to colour nodes. <code class="docutils literal notranslate"><span class="pre">"degree"</span></code>, <code class="docutils literal notranslate"><span class="pre">"seq_position"</span></code> or a node feature.</p></li>
+<li><p><strong>colour_edges_by</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Specifies how to colour edges. Currently only <code class="docutils literal notranslate"><span class="pre">"kind"</span></code> is supported.</p></li>
+<li><p><strong>edge_alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Controls edge transparency. Defaults to <code class="docutils literal notranslate"><span class="pre">0.5</span></code>.</p></li>
+<li><p><strong>plot_style</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – matplotlib style sheet to use. Defaults to <code class="docutils literal notranslate"><span class="pre">"ggplot"</span></code>.</p></li>
+<li><p><strong>out_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – If not none, writes plot to this location. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> (does not save).</p></li>
+<li><p><strong>out_format</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Fileformat to use for plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>matplotlib Axes3D object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Axes3D</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.molecule.visualisation.plotly_molecular_graph">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.visualisation.</span></span><span class="sig-name descname"><span class="pre">plotly_molecular_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g:</span> <span class="pre">nx.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_title:</span> <span class="pre">Optional[str]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize:</span> <span class="pre">Tuple[int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int]</span> <span class="pre">=</span> <span class="pre">(620</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">650)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_alpha:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_size_min:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_size_multiplier:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_node_ids:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_color_map:</span> <span class="pre">plt.cm</span> <span class="pre">=</span> <span class="pre">&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_color_map:</span> <span class="pre">plt.cm</span> <span class="pre">=</span> <span class="pre">&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colour_nodes_by:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'element'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colour_edges_by:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'kind'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">go.Figure</span></span></span><a class="reference internal" href="../_modules/graphein/molecule/visualisation.html#plotly_molecular_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.molecule.visualisation.plotly_molecular_graph" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots molecular graph using plotly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – nx.Graph Molecular graph to plot</p></li>
+<li><p><strong>plot_title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Title of plot, defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>figsize</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – Size of figure, defaults to <code class="docutils literal notranslate"><span class="pre">(620,</span> <span class="pre">650)</span></code>.</p></li>
+<li><p><strong>node_alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Controls node transparency, defaults to <code class="docutils literal notranslate"><span class="pre">0.7</span></code>.</p></li>
+<li><p><strong>node_size_min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Specifies node minimum size. Defaults to <code class="docutils literal notranslate"><span class="pre">20.0</span></code>.</p></li>
+<li><p><strong>node_size_multiplier</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Scales node size by a constant. Node sizes reflect degree. Defaults to <code class="docutils literal notranslate"><span class="pre">1.0</span></code>.</p></li>
+<li><p><strong>label_node_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – bool indicating whether or not to plot <code class="docutils literal notranslate"><span class="pre">node_id</span></code> labels. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>node_colour_map</strong> (<em>plt.cm</em>) – colour map to use for nodes. Defaults to <code class="docutils literal notranslate"><span class="pre">plt.cm.plasma</span></code>.</p></li>
+<li><p><strong>edge_color_map</strong> (<em>plt.cm</em>) – colour map to use for edges. Defaults to <code class="docutils literal notranslate"><span class="pre">plt.cm.plasma</span></code>.</p></li>
+<li><p><strong>colour_nodes_by</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Specifies how to colour nodes. <code class="docutils literal notranslate"><span class="pre">"degree"</span></code>, or a node feature. Defaults to <code class="docutils literal notranslate"><span class="pre">"element"</span></code>.</p></li>
+<li><p><strong>colour_edges_by</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Specifies how to colour edges. Currently only <code class="docutils literal notranslate"><span class="pre">"kind"</span></code> is supported.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Plotly Graph Objects plot</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>go.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+<div class="section" id="module-graphein.molecule.atoms">
+<span id="constants"></span><h2>Constants<a class="headerlink" href="#module-graphein.molecule.atoms" title="Permalink to this headline">#</a></h2>
+<p>Author: Eric J. Ma, Arian Jamasb
+Purpose: This is a set of utility variables and functions related to small molecules that can be used
+across the Graphein project.</p>
+<p>These include various collections of standard atom types used molecule-focussed ML</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.ALLOWED_BOND_TYPES">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">ALLOWED_BOND_TYPES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">rdkit.Chem.rdchem.BondType</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[rdkit.Chem.rdchem.BondType.SINGLE,</span> <span class="pre">rdkit.Chem.rdchem.BondType.DOUBLE,</span> <span class="pre">rdkit.Chem.rdchem.BondType.TRIPLE,</span> <span class="pre">rdkit.Chem.rdchem.BondType.AROMATIC]</span></em><a class="headerlink" href="#graphein.molecule.atoms.ALLOWED_BOND_TYPES" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of allowed bondtypes.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.ALLOWED_BOND_TYPE_TO_CHANNEL">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">ALLOWED_BOND_TYPE_TO_CHANNEL</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">rdkit.Chem.rdchem.BondType</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{rdkit.Chem.rdchem.BondType.SINGLE:</span> <span class="pre">0,</span> <span class="pre">rdkit.Chem.rdchem.BondType.DOUBLE:</span> <span class="pre">1,</span> <span class="pre">rdkit.Chem.rdchem.BondType.TRIPLE:</span> <span class="pre">2,</span> <span class="pre">rdkit.Chem.rdchem.BondType.AROMATIC:</span> <span class="pre">3}</span></em><a class="headerlink" href="#graphein.molecule.atoms.ALLOWED_BOND_TYPE_TO_CHANNEL" title="Permalink to this definition">#</a></dt>
+<dd><p>Mapping of bondtypes to integer values.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.ALLOWED_DEGREES">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">ALLOWED_DEGREES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7,</span> <span class="pre">8,</span> <span class="pre">9,</span> <span class="pre">10]</span></em><a class="headerlink" href="#graphein.molecule.atoms.ALLOWED_DEGREES" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of allowed atom degrees.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.ALLOWED_HYBRIDIZATIONS">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">ALLOWED_HYBRIDIZATIONS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">rdkit.Chem.rdchem.HybridizationType</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[rdkit.Chem.rdchem.HybridizationType.SP,</span> <span class="pre">rdkit.Chem.rdchem.HybridizationType.SP2,</span> <span class="pre">rdkit.Chem.rdchem.HybridizationType.SP3,</span> <span class="pre">rdkit.Chem.rdchem.HybridizationType.SP3D,</span> <span class="pre">rdkit.Chem.rdchem.HybridizationType.SP3D2]</span></em><a class="headerlink" href="#graphein.molecule.atoms.ALLOWED_HYBRIDIZATIONS" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of allowed hybridizations.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.ALLOWED_NUM_H">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">ALLOWED_NUM_H</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4]</span></em><a class="headerlink" href="#graphein.molecule.atoms.ALLOWED_NUM_H" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of allowed number of Hydrogens.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.ALLOWED_VALENCES">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">ALLOWED_VALENCES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6]</span></em><a class="headerlink" href="#graphein.molecule.atoms.ALLOWED_VALENCES" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of allowed atom valences.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.ALL_BOND_TYPES">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">ALL_BOND_TYPES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">rdkit.Chem.rdchem.BondType</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[rdkit.Chem.rdchem.BondType.AROMATIC,</span> <span class="pre">rdkit.Chem.rdchem.BondType.DATIVE,</span> <span class="pre">rdkit.Chem.rdchem.BondType.DATIVEL,</span> <span class="pre">rdkit.Chem.rdchem.BondType.DATIVER,</span> <span class="pre">rdkit.Chem.rdchem.BondType.DOUBLE,</span> <span class="pre">rdkit.Chem.rdchem.BondType.FIVEANDAHALF,</span> <span class="pre">rdkit.Chem.rdchem.BondType.FOURANDAHALF,</span> <span class="pre">rdkit.Chem.rdchem.BondType.HEXTUPLE,</span> <span class="pre">rdkit.Chem.rdchem.BondType.HYDROGEN,</span> <span class="pre">rdkit.Chem.rdchem.BondType.IONIC,</span> <span class="pre">rdkit.Chem.rdchem.BondType.ONEANDAHALF,</span> <span class="pre">rdkit.Chem.rdchem.BondType.OTHER,</span> <span class="pre">rdkit.Chem.rdchem.BondType.QUADRUPLE,</span> <span class="pre">rdkit.Chem.rdchem.BondType.QUINTUPLE,</span> <span class="pre">rdkit.Chem.rdchem.BondType.SINGLE,</span> <span class="pre">rdkit.Chem.rdchem.BondType.THREEANDAHALF,</span> <span class="pre">rdkit.Chem.rdchem.BondType.THREECENTER,</span> <span class="pre">rdkit.Chem.rdchem.BondType.TRIPLE,</span> <span class="pre">rdkit.Chem.rdchem.BondType.TWOANDAHALF,</span> <span class="pre">rdkit.Chem.rdchem.BondType.UNSPECIFIED,</span> <span class="pre">rdkit.Chem.rdchem.BondType.ZERO]</span></em><a class="headerlink" href="#graphein.molecule.atoms.ALL_BOND_TYPES" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of all RDkit BondTypes.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.ALL_BOND_TYPES_TO_CHANNEL">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">ALL_BOND_TYPES_TO_CHANNEL</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">rdkit.Chem.rdchem.BondType</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{rdkit.Chem.rdchem.BondType.UNSPECIFIED:</span> <span class="pre">19,</span> <span class="pre">rdkit.Chem.rdchem.BondType.SINGLE:</span> <span class="pre">14,</span> <span class="pre">rdkit.Chem.rdchem.BondType.DOUBLE:</span> <span class="pre">4,</span> <span class="pre">rdkit.Chem.rdchem.BondType.TRIPLE:</span> <span class="pre">17,</span> <span class="pre">rdkit.Chem.rdchem.BondType.QUADRUPLE:</span> <span class="pre">12,</span> <span class="pre">rdkit.Chem.rdchem.BondType.QUINTUPLE:</span> <span class="pre">13,</span> <span class="pre">rdkit.Chem.rdchem.BondType.HEXTUPLE:</span> <span class="pre">7,</span> <span class="pre">rdkit.Chem.rdchem.BondType.ONEANDAHALF:</span> <span class="pre">10,</span> <span class="pre">rdkit.Chem.rdchem.BondType.TWOANDAHALF:</span> <span class="pre">18,</span> <span class="pre">rdkit.Chem.rdchem.BondType.THREEANDAHALF:</span> <span class="pre">15,</span> <span class="pre">rdkit.Chem.rdchem.BondType.FOURANDAHALF:</span> <span class="pre">6,</span> <span class="pre">rdkit.Chem.rdchem.BondType.FIVEANDAHALF:</span> <span class="pre">5,</span> <span class="pre">rdkit.Chem.rdchem.BondType.AROMATIC:</span> <span class="pre">0,</span> <span class="pre">rdkit.Chem.rdchem.BondType.IONIC:</span> <span class="pre">9,</span> <span class="pre">rdkit.Chem.rdchem.BondType.HYDROGEN:</span> <span class="pre">8,</span> <span class="pre">rdkit.Chem.rdchem.BondType.THREECENTER:</span> <span class="pre">16,</span> <span class="pre">rdkit.Chem.rdchem.BondType.DATIVE:</span> <span class="pre">1,</span> <span class="pre">rdkit.Chem.rdchem.BondType.DATIVEL:</span> <span class="pre">2,</span> <span class="pre">rdkit.Chem.rdchem.BondType.DATIVER:</span> <span class="pre">3,</span> <span class="pre">rdkit.Chem.rdchem.BondType.OTHER:</span> <span class="pre">11,</span> <span class="pre">rdkit.Chem.rdchem.BondType.ZERO:</span> <span class="pre">20}</span></em><a class="headerlink" href="#graphein.molecule.atoms.ALL_BOND_TYPES_TO_CHANNEL" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of all RDkit BondTypes mapped to integer values.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.ALL_STEREO_TO_CHANNEL">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">ALL_STEREO_TO_CHANNEL</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">rdkit.Chem.rdchem.BondStereo</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{rdkit.Chem.rdchem.BondStereo.STEREONONE:</span> <span class="pre">3,</span> <span class="pre">rdkit.Chem.rdchem.BondStereo.STEREOANY:</span> <span class="pre">0,</span> <span class="pre">rdkit.Chem.rdchem.BondStereo.STEREOZ:</span> <span class="pre">5,</span> <span class="pre">rdkit.Chem.rdchem.BondStereo.STEREOE:</span> <span class="pre">2,</span> <span class="pre">rdkit.Chem.rdchem.BondStereo.STEREOCIS:</span> <span class="pre">1,</span> <span class="pre">rdkit.Chem.rdchem.BondStereo.STEREOTRANS:</span> <span class="pre">4}</span></em><a class="headerlink" href="#graphein.molecule.atoms.ALL_STEREO_TO_CHANNEL" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of all RDKit bond stereo types mapped to integer values.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.ALL_STEREO_TYPES">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">ALL_STEREO_TYPES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">rdkit.Chem.rdchem.BondStereo</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[rdkit.Chem.rdchem.BondStereo.STEREOANY,</span> <span class="pre">rdkit.Chem.rdchem.BondStereo.STEREOCIS,</span> <span class="pre">rdkit.Chem.rdchem.BondStereo.STEREOE,</span> <span class="pre">rdkit.Chem.rdchem.BondStereo.STEREONONE,</span> <span class="pre">rdkit.Chem.rdchem.BondStereo.STEREOTRANS,</span> <span class="pre">rdkit.Chem.rdchem.BondStereo.STEREOZ]</span></em><a class="headerlink" href="#graphein.molecule.atoms.ALL_STEREO_TYPES" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of all RDKit bond stereo types.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.BASE_ATOMS">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">BASE_ATOMS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['C',</span> <span class="pre">'H',</span> <span class="pre">'O',</span> <span class="pre">'N',</span> <span class="pre">'F',</span> <span class="pre">'P',</span> <span class="pre">'S',</span> <span class="pre">'Cl',</span> <span class="pre">'Br',</span> <span class="pre">'I',</span> <span class="pre">'B']</span></em><a class="headerlink" href="#graphein.molecule.atoms.BASE_ATOMS" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of 11 standard atom types.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.CHIRAL_TYPE">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">CHIRAL_TYPE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">rdkit.Chem.rdchem.ChiralType</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[rdkit.Chem.rdchem.ChiralType.CHI_OTHER,</span> <span class="pre">rdkit.Chem.rdchem.ChiralType.CHI_TETRAHEDRAL_CCW,</span> <span class="pre">rdkit.Chem.rdchem.ChiralType.CHI_TETRAHEDRAL_CW,</span> <span class="pre">rdkit.Chem.rdchem.ChiralType.CHI_UNSPECIFIED]</span></em><a class="headerlink" href="#graphein.molecule.atoms.CHIRAL_TYPE" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of all RDKit chiral types.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.CHIRAL_TYPE_TO_CHANNEL">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">CHIRAL_TYPE_TO_CHANNEL</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">rdkit.Chem.rdchem.ChiralType</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{rdkit.Chem.rdchem.ChiralType.CHI_UNSPECIFIED:</span> <span class="pre">3,</span> <span class="pre">rdkit.Chem.rdchem.ChiralType.CHI_TETRAHEDRAL_CW:</span> <span class="pre">2,</span> <span class="pre">rdkit.Chem.rdchem.ChiralType.CHI_TETRAHEDRAL_CCW:</span> <span class="pre">1,</span> <span class="pre">rdkit.Chem.rdchem.ChiralType.CHI_OTHER:</span> <span class="pre">0}</span></em><a class="headerlink" href="#graphein.molecule.atoms.CHIRAL_TYPE_TO_CHANNEL" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of all RDKit chiral types mapped to integer values.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.EXTENDED_ATOMS">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">EXTENDED_ATOMS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['C',</span> <span class="pre">'N',</span> <span class="pre">'O',</span> <span class="pre">'S',</span> <span class="pre">'F',</span> <span class="pre">'Si',</span> <span class="pre">'P',</span> <span class="pre">'Cl',</span> <span class="pre">'Br',</span> <span class="pre">'Mg',</span> <span class="pre">'Na',</span> <span class="pre">'Ca',</span> <span class="pre">'Fe',</span> <span class="pre">'As',</span> <span class="pre">'Al',</span> <span class="pre">'I',</span> <span class="pre">'B',</span> <span class="pre">'V',</span> <span class="pre">'K',</span> <span class="pre">'Tl',</span> <span class="pre">'Yb',</span> <span class="pre">'Sb',</span> <span class="pre">'Sn',</span> <span class="pre">'Ag',</span> <span class="pre">'Pd',</span> <span class="pre">'Co',</span> <span class="pre">'Se',</span> <span class="pre">'Ti',</span> <span class="pre">'Zn',</span> <span class="pre">'H',</span> <span class="pre">'Li',</span> <span class="pre">'Ge',</span> <span class="pre">'Cu',</span> <span class="pre">'Au',</span> <span class="pre">'Ni',</span> <span class="pre">'Cd',</span> <span class="pre">'In',</span> <span class="pre">'Mn',</span> <span class="pre">'Zr',</span> <span class="pre">'Cr',</span> <span class="pre">'Pt',</span> <span class="pre">'Hg',</span> <span class="pre">'Pb',</span> <span class="pre">'Unknown']</span></em><a class="headerlink" href="#graphein.molecule.atoms.EXTENDED_ATOMS" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of additional atom types.</p>
+</dd></dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="graphein.molecule.atoms.RDKIT_MOL_DESCRIPTORS">
+<span class="sig-prename descclassname"><span class="pre">graphein.molecule.atoms.</span></span><span class="sig-name descname"><span class="pre">RDKIT_MOL_DESCRIPTORS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['MaxEStateIndex',</span> <span class="pre">'MinEStateIndex',</span> <span class="pre">'MaxAbsEStateIndex',</span> <span class="pre">'MinAbsEStateIndex',</span> <span class="pre">'qed',</span> <span class="pre">'MolWt',</span> <span class="pre">'HeavyAtomMolWt',</span> <span class="pre">'ExactMolWt',</span> <span class="pre">'NumValenceElectrons',</span> <span class="pre">'NumRadicalElectrons',</span> <span class="pre">'MaxPartialCharge',</span> <span class="pre">'MinPartialCharge',</span> <span class="pre">'MaxAbsPartialCharge',</span> <span class="pre">'MinAbsPartialCharge',</span> <span class="pre">'FpDensityMorgan1',</span> <span class="pre">'FpDensityMorgan2',</span> <span class="pre">'FpDensityMorgan3',</span> <span class="pre">'BCUT2D_MWHI',</span> <span class="pre">'BCUT2D_MWLOW',</span> <span class="pre">'BCUT2D_CHGHI',</span> <span class="pre">'BCUT2D_CHGLO',</span> <span class="pre">'BCUT2D_LOGPHI',</span> <span class="pre">'BCUT2D_LOGPLOW',</span> <span class="pre">'BCUT2D_MRHI',</span> <span class="pre">'BCUT2D_MRLOW',</span> <span class="pre">'BalabanJ',</span> <span class="pre">'BertzCT',</span> <span class="pre">'Chi0',</span> <span class="pre">'Chi0n',</span> <span class="pre">'Chi0v',</span> <span class="pre">'Chi1',</span> <span class="pre">'Chi1n',</span> <span class="pre">'Chi1v',</span> <span class="pre">'Chi2n',</span> <span class="pre">'Chi2v',</span> <span class="pre">'Chi3n',</span> <span class="pre">'Chi3v',</span> <span class="pre">'Chi4n',</span> <span class="pre">'Chi4v',</span> <span class="pre">'HallKierAlpha',</span> <span class="pre">'Ipc',</span> <span class="pre">'Kappa1',</span> <span class="pre">'Kappa2',</span> <span class="pre">'Kappa3',</span> <span class="pre">'LabuteASA',</span> <span class="pre">'PEOE_VSA1',</span> <span class="pre">'PEOE_VSA10',</span> <span class="pre">'PEOE_VSA11',</span> <span class="pre">'PEOE_VSA12',</span> <span class="pre">'PEOE_VSA13',</span> <span class="pre">'PEOE_VSA14',</span> <span class="pre">'PEOE_VSA2',</span> <span class="pre">'PEOE_VSA3',</span> <span class="pre">'PEOE_VSA4',</span> <span class="pre">'PEOE_VSA5',</span> <span class="pre">'PEOE_VSA6',</span> <span class="pre">'PEOE_VSA7',</span> <span class="pre">'PEOE_VSA8',</span> <span class="pre">'PEOE_VSA9',</span> <span class="pre">'SMR_VSA1',</span> <span class="pre">'SMR_VSA10',</span> <span class="pre">'SMR_VSA2',</span> <span class="pre">'SMR_VSA3',</span> <span class="pre">'SMR_VSA4',</span> <span class="pre">'SMR_VSA5',</span> <span class="pre">'SMR_VSA6',</span> <span class="pre">'SMR_VSA7',</span> <span class="pre">'SMR_VSA8',</span> <span class="pre">'SMR_VSA9',</span> <span class="pre">'SlogP_VSA1',</span> <span class="pre">'SlogP_VSA10',</span> <span class="pre">'SlogP_VSA11',</span> <span class="pre">'SlogP_VSA12',</span> <span class="pre">'SlogP_VSA2',</span> <span class="pre">'SlogP_VSA3',</span> <span class="pre">'SlogP_VSA4',</span> <span class="pre">'SlogP_VSA5',</span> <span class="pre">'SlogP_VSA6',</span> <span class="pre">'SlogP_VSA7',</span> <span class="pre">'SlogP_VSA8',</span> <span class="pre">'SlogP_VSA9',</span> <span class="pre">'TPSA',</span> <span class="pre">'EState_VSA1',</span> <span class="pre">'EState_VSA10',</span> <span class="pre">'EState_VSA11',</span> <span class="pre">'EState_VSA2',</span> <span class="pre">'EState_VSA3',</span> <span class="pre">'EState_VSA4',</span> <span class="pre">'EState_VSA5',</span> <span class="pre">'EState_VSA6',</span> <span class="pre">'EState_VSA7',</span> <span class="pre">'EState_VSA8',</span> <span class="pre">'EState_VSA9',</span> <span class="pre">'VSA_EState1',</span> <span class="pre">'VSA_EState10',</span> <span class="pre">'VSA_EState2',</span> <span class="pre">'VSA_EState3',</span> <span class="pre">'VSA_EState4',</span> <span class="pre">'VSA_EState5',</span> <span class="pre">'VSA_EState6',</span> <span class="pre">'VSA_EState7',</span> <span class="pre">'VSA_EState8',</span> <span class="pre">'VSA_EState9',</span> <span class="pre">'FractionCSP3',</span> <span class="pre">'HeavyAtomCount',</span> <span class="pre">'NHOHCount',</span> <span class="pre">'NOCount',</span> <span class="pre">'NumAliphaticCarbocycles',</span> <span class="pre">'NumAliphaticHeterocycles',</span> <span class="pre">'NumAliphaticRings',</span> <span class="pre">'NumAromaticCarbocycles',</span> <span class="pre">'NumAromaticHeterocycles',</span> <span class="pre">'NumAromaticRings',</span> <span class="pre">'NumHAcceptors',</span> <span class="pre">'NumHDonors',</span> <span class="pre">'NumHeteroatoms',</span> <span class="pre">'NumRotatableBonds',</span> <span class="pre">'NumSaturatedCarbocycles',</span> <span class="pre">'NumSaturatedHeterocycles',</span> <span class="pre">'NumSaturatedRings',</span> <span class="pre">'RingCount',</span> <span class="pre">'MolLogP',</span> <span class="pre">'MolMR',</span> <span class="pre">'fr_Al_COO',</span> <span class="pre">'fr_Al_OH',</span> <span class="pre">'fr_Al_OH_noTert',</span> <span class="pre">'fr_ArN',</span> <span class="pre">'fr_Ar_COO',</span> <span class="pre">'fr_Ar_N',</span> <span class="pre">'fr_Ar_NH',</span> <span class="pre">'fr_Ar_OH',</span> <span class="pre">'fr_COO',</span> <span class="pre">'fr_COO2',</span> <span class="pre">'fr_C_O',</span> <span class="pre">'fr_C_O_noCOO',</span> <span class="pre">'fr_C_S',</span> <span class="pre">'fr_HOCCN',</span> <span class="pre">'fr_Imine',</span> <span class="pre">'fr_NH0',</span> <span class="pre">'fr_NH1',</span> <span class="pre">'fr_NH2',</span> <span class="pre">'fr_N_O',</span> <span class="pre">'fr_Ndealkylation1',</span> <span class="pre">'fr_Ndealkylation2',</span> <span class="pre">'fr_Nhpyrrole',</span> <span class="pre">'fr_SH',</span> <span class="pre">'fr_aldehyde',</span> <span class="pre">'fr_alkyl_carbamate',</span> <span class="pre">'fr_alkyl_halide',</span> <span class="pre">'fr_allylic_oxid',</span> <span class="pre">'fr_amide',</span> <span class="pre">'fr_amidine',</span> <span class="pre">'fr_aniline',</span> <span class="pre">'fr_aryl_methyl',</span> <span class="pre">'fr_azide',</span> <span class="pre">'fr_azo',</span> <span class="pre">'fr_barbitur',</span> <span class="pre">'fr_benzene',</span> <span class="pre">'fr_benzodiazepine',</span> <span class="pre">'fr_bicyclic',</span> <span class="pre">'fr_diazo',</span> <span class="pre">'fr_dihydropyridine',</span> <span class="pre">'fr_epoxide',</span> <span class="pre">'fr_ester',</span> <span class="pre">'fr_ether',</span> <span class="pre">'fr_furan',</span> <span class="pre">'fr_guanido',</span> <span class="pre">'fr_halogen',</span> <span class="pre">'fr_hdrzine',</span> <span class="pre">'fr_hdrzone',</span> <span class="pre">'fr_imidazole',</span> <span class="pre">'fr_imide',</span> <span class="pre">'fr_isocyan',</span> <span class="pre">'fr_isothiocyan',</span> <span class="pre">'fr_ketone',</span> <span class="pre">'fr_ketone_Topliss',</span> <span class="pre">'fr_lactam',</span> <span class="pre">'fr_lactone',</span> <span class="pre">'fr_methoxy',</span> <span class="pre">'fr_morpholine',</span> <span class="pre">'fr_nitrile',</span> <span class="pre">'fr_nitro',</span> <span class="pre">'fr_nitro_arom',</span> <span class="pre">'fr_nitro_arom_nonortho',</span> <span class="pre">'fr_nitroso',</span> <span class="pre">'fr_oxazole',</span> <span class="pre">'fr_oxime',</span> <span class="pre">'fr_para_hydroxylation',</span> <span class="pre">'fr_phenol',</span> <span class="pre">'fr_phenol_noOrthoHbond',</span> <span class="pre">'fr_phos_acid',</span> <span class="pre">'fr_phos_ester',</span> <span class="pre">'fr_piperdine',</span> <span class="pre">'fr_piperzine',</span> <span class="pre">'fr_priamide',</span> <span class="pre">'fr_prisulfonamd',</span> <span class="pre">'fr_pyridine',</span> <span class="pre">'fr_quatN',</span> <span class="pre">'fr_sulfide',</span> <span class="pre">'fr_sulfonamd',</span> <span class="pre">'fr_sulfone',</span> <span class="pre">'fr_term_acetylene',</span> <span class="pre">'fr_tetrazole',</span> <span class="pre">'fr_thiazole',</span> <span class="pre">'fr_thiocyan',</span> <span class="pre">'fr_thiophene',</span> <span class="pre">'fr_unbrch_alkane',</span> <span class="pre">'fr_urea']</span></em><a class="headerlink" href="#graphein.molecule.atoms.RDKIT_MOL_DESCRIPTORS" title="Permalink to this definition">#</a></dt>
+<dd><p>Vocabulary of easy-to-compute RDKit molecule descriptors</p>
+</dd></dl>
+</div>
+</div>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="graphein.rna.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">graphein.rna</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="graphein.protein.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">graphein.protein</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">graphein.molecule</a><ul>
+<li><a class="reference internal" href="#module-graphein.molecule.config">Config</a></li>
+<li><a class="reference internal" href="#module-graphein.molecule.graphs">Graphs</a></li>
+<li><a class="reference internal" href="#edges">Edges</a><ul>
+<li><a class="reference internal" href="#module-graphein.molecule.edges.distance">Distance</a></li>
+<li><a class="reference internal" href="#module-graphein.molecule.edges.atomic">Atomic</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#features">Features</a><ul>
+<li><a class="reference internal" href="#module-graphein.molecule.features.nodes.atom_type">Node</a></li>
+<li><a class="reference internal" href="#module-graphein.molecule.features.edges.bonds">Edge</a></li>
+<li><a class="reference internal" href="#module-graphein.molecule.features.graph.molecule">Graph</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#visualisation">Visualisation</a></li>
+<li><a class="reference internal" href="#module-graphein.molecule.atoms">Constants</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>
