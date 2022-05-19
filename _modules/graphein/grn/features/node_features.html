@@ -177,7 +177,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
@@ -200,7 +199,6 @@
 <p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
@@ -248,22 +246,17 @@
         </div>
         <article role="main">
           <h1>Source code for graphein.grn.features.node_features</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">logging</span>
-
-<span class="kn">from</span> <span class="nn">graphein.utils.utils</span> <span class="kn">import</span> <span class="n">import_message</span>
-
-<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span></span><span class="kn">from</span> <span class="nn">graphein.utils.utils</span> <span class="kn">import</span> <span class="n">import_message</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">bioservices</span> <span class="kn">import</span> <span class="n">HGNC</span><span class="p">,</span> <span class="n">UniProt</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="n">import_message</span><span class="p">(</span>
+    <span class="n">import_message</span><span class="p">(</span>
         <span class="n">submodule</span><span class="o">=</span><span class="s2">"graphein.grn.features.node_features"</span><span class="p">,</span>
         <span class="n">package</span><span class="o">=</span><span class="s2">"bioservices"</span><span class="p">,</span>
         <span class="n">conda_channel</span><span class="o">=</span><span class="s2">"bioconda"</span><span class="p">,</span>
         <span class="n">pip_install</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="add_sequence_to_nodes"><a class="viewcode-back" href="../../../../modules/graphein.grn.html#graphein.grn.features.node_features.add_sequence_to_nodes">[docs]</a><span class="k">def</span> <span class="nf">add_sequence_to_nodes</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>

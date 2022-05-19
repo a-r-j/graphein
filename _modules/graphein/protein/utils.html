@@ -177,7 +177,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
@@ -200,7 +199,6 @@
 <p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
@@ -257,10 +255,8 @@
 <span class="c1"># Project Website: https://github.com/a-r-j/graphein</span>
 <span class="c1"># Code Repository: https://github.com/a-r-j/graphein</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
 
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -284,38 +280,15 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span></div>
 
 
-<div class="viewcode-block" id="get_obsolete_mapping"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.utils.get_obsolete_mapping">[docs]</a><span class="nd">@lru_cache</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">get_obsolete_mapping</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-    <span class="sd">"""Returns a dictionary mapping obsolete PDB codes to their replacement.</span>
-
-<span class="sd">    :return: Dictionary mapping obsolete PDB codes to their replacement.</span>
-<span class="sd">    :rtype: Dictionary[str, str]</span>
-<span class="sd">    """</span>
-    <span class="n">obs_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="s2">"ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat"</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
-        <span class="n">entry</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="n">obs_dict</span><span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">entry</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
-            <span class="p">)</span>
-    <span class="k">return</span> <span class="n">obs_dict</span></div>
-
-
 <div class="viewcode-block" id="download_pdb"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.utils.download_pdb">[docs]</a><span class="k">def</span> <span class="nf">download_pdb</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">pdb_code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
     <span class="sd">"""</span>
 <span class="sd">    Download PDB structure from PDB.</span>
-
-<span class="sd">    If no structure is found, we perform a lookup against the record of</span>
-<span class="sd">    obsolete PDB codes (ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat)</span>
 
 <span class="sd">    :param pdb_code: 4 character PDB accession code.</span>
 <span class="sd">    :type pdb_code: str</span>
 <span class="sd">    :return: returns filepath to downloaded structure.</span>
 <span class="sd">    :rtype: str</span>
 <span class="sd">    """</span>
-    <span class="n">pdb_code</span> <span class="o">=</span> <span class="n">pdb_code</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span><span class="p">:</span>
         <span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"/tmp/"</span><span class="p">)</span>
 
@@ -324,27 +297,6 @@
     <span class="n">pdbl</span><span class="o">.</span><span class="n">retrieve_pdb_file</span><span class="p">(</span>
         <span class="n">pdb_code</span><span class="p">,</span> <span class="n">pdir</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s2">"pdb"</span>
     <span class="p">)</span>
-    <span class="c1"># If file not downloaded, check for obsolescence</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"pdb</span><span class="si">{</span><span class="n">pdb_code</span><span class="si">}</span><span class="s2">.ent"</span><span class="p">):</span>
-        <span class="n">obs_map</span> <span class="o">=</span> <span class="n">get_obsolete_mapping</span><span class="p">()</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">new_pdb</span> <span class="o">=</span> <span class="n">obs_map</span><span class="p">[</span><span class="n">pdb_code</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"PDB file </span><span class="si">{</span><span class="n">pdb_code</span><span class="si">}</span><span class="s2"> not found. It is likely obsolete. </span><span class="se">\</span>
-<span class="s2">                     Trying its replacement: </span><span class="si">{</span><span class="n">new_pdb</span><span class="si">}</span><span class="s2"> instead."</span>
-            <span class="p">)</span>
-            <span class="n">pdb_code</span> <span class="o">=</span> <span class="n">new_pdb</span>
-            <span class="n">pdbl</span><span class="o">.</span><span class="n">retrieve_pdb_file</span><span class="p">(</span>
-                <span class="n">pdb_code</span><span class="p">,</span>
-                <span class="n">pdir</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span><span class="p">,</span>
-                <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">file_format</span><span class="o">=</span><span class="s2">"pdb"</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"PDB file </span><span class="si">{</span><span class="n">pdb_code</span><span class="si">}</span><span class="s2"> not found and no replacement </span><span class="se">\</span>
-<span class="s2">                      structure found in obsolete lookup."</span>
-            <span class="p">)</span>
     <span class="c1"># Rename file to .pdb from .ent</span>
     <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
         <span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"pdb</span><span class="si">{</span><span class="n">pdb_code</span><span class="si">}</span><span class="s2">.ent"</span><span class="p">,</span>
@@ -413,72 +365,48 @@
     <span class="k">return</span> <span class="n">filter_dataframe</span><span class="p">(</span><span class="n">pdb_df</span><span class="p">,</span> <span class="s2">"atom_name"</span><span class="p">,</span> <span class="n">BACKBONE_ATOMS</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="download_alphafold_structure"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.utils.download_alphafold_structure">[docs]</a><span class="k">def</span> <span class="nf">download_alphafold_structure</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">download_alphafold_structure</span><span class="p">(</span>
     <span class="n">uniprot_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">out_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"."</span><span class="p">,</span>
-    <span class="n">rename</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">pdb</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">mmcif</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">aligned_score</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+    <span class="n">BASE_URL</span> <span class="o">=</span> <span class="s2">"https://alphafold.ebi.ac.uk/files/"</span>
     <span class="sd">"""</span>
 <span class="sd">    Downloads a structure from the Alphafold EBI database (https://alphafold.ebi.ac.uk/files/").</span>
 
 <span class="sd">    :param uniprot_id: UniProt ID of desired protein.</span>
 <span class="sd">    :type uniprot_id: str</span>
-<span class="sd">    :param version: Version of the structure to download</span>
-<span class="sd">    :type version: int</span>
-<span class="sd">    :param out_dir: string specifying desired output location. Default is pwd.</span>
+<span class="sd">    :param out_dir: String specifying desired output location. Default is pwd.</span>
 <span class="sd">    :type out_dir: str</span>
-<span class="sd">    :param rename: boolean specifying whether to rename the output file to ``$uniprot_id.pdb``. Default is ``True``.</span>
-<span class="sd">    :type rename: bool</span>
-<span class="sd">    :param pdb: boolean specifying whether to download the PDB file. Default is ``True``.</span>
-<span class="sd">    :type pdb: bool</span>
-<span class="sd">    :param mmcif: Bool specifying whether to download MMCiF or PDB. Default is false (downloads pdb)</span>
+<span class="sd">    :param mmcif: Bool specifying whether to download ``MMCiF`` or ``PDB``. Default is ``False`` (downloads pdb).</span>
 <span class="sd">    :type mmcif: bool</span>
 <span class="sd">    :param retrieve_aligned_score: Bool specifying whether or not to download score alignment json.</span>
 <span class="sd">    :type retrieve_aligned_score: bool</span>
 <span class="sd">    :return: path to output. Tuple if several outputs specified.</span>
 <span class="sd">    :rtype: Union[str, Tuple[str, str]]</span>
 <span class="sd">    """</span>
-    <span class="n">BASE_URL</span> <span class="o">=</span> <span class="s2">"https://alphafold.ebi.ac.uk/files/"</span>
-    <span class="n">uniprot_id</span> <span class="o">=</span> <span class="n">uniprot_id</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-
     <span class="k">if</span> <span class="ow">not</span> <span class="n">mmcif</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pdb</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Must specify either mmcif or pdb."</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mmcif</span><span class="p">:</span>
-        <span class="n">query_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">AF-</span><span class="si">{</span><span class="n">uniprot_id</span><span class="si">}</span><span class="s2">-F1-model_v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">.cif"</span>
+        <span class="n">query_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">AF-</span><span class="si">{</span><span class="n">uniprot_id</span><span class="si">}</span><span class="s2">F1-model_v1.cif"</span>
     <span class="k">if</span> <span class="n">pdb</span><span class="p">:</span>
-        <span class="n">query_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">AF-</span><span class="si">{</span><span class="n">uniprot_id</span><span class="si">}</span><span class="s2">-F1-model_v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">.pdb"</span>
+        <span class="n">query_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">AF-</span><span class="si">{</span><span class="n">uniprot_id</span><span class="si">}</span><span class="s2">-F1-model_v1.pdb"</span>
+
     <span class="n">structure_filename</span> <span class="o">=</span> <span class="n">wget</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">query_url</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out_dir</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">rename</span><span class="p">:</span>
-        <span class="n">extension</span> <span class="o">=</span> <span class="s2">".pdb"</span> <span class="k">if</span> <span class="n">pdb</span> <span class="k">else</span> <span class="s2">".cif"</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-            <span class="n">structure_filename</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">out_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">uniprot_id</span><span class="si">}{</span><span class="n">extension</span><span class="si">}</span><span class="s2">"</span>
-        <span class="p">)</span>
-        <span class="n">structure_filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">out_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">uniprot_id</span><span class="si">}{</span><span class="n">extension</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-        <span class="p">)</span>
-
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downloaded AlphaFold PDB file for: </span><span class="si">{</span><span class="n">uniprot_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">aligned_score</span><span class="p">:</span>
         <span class="n">score_query</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">BASE_URL</span>
             <span class="o">+</span> <span class="s2">"AF-"</span>
             <span class="o">+</span> <span class="n">uniprot_id</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s2">"-F1-predicted_aligned_error_v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">.json"</span>
+            <span class="o">+</span> <span class="s2">"-F1-predicted_aligned_error_v1.json"</span>
         <span class="p">)</span>
         <span class="n">score_filename</span> <span class="o">=</span> <span class="n">wget</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">score_query</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out_dir</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">rename</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">score_filename</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">out_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">uniprot_id</span><span class="si">}</span><span class="s2">.json"</span><span class="p">)</span>
-            <span class="n">score_filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">out_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">uniprot_id</span><span class="si">}</span><span class="s2">.json"</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-            <span class="p">)</span>
         <span class="k">return</span> <span class="n">structure_filename</span><span class="p">,</span> <span class="n">score_filename</span>
 
-    <span class="k">return</span> <span class="n">structure_filename</span></div>
+    <span class="k">return</span> <span class="n">structure_filename</span>
 
 
 <div class="viewcode-block" id="three_to_one_with_mods"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.utils.three_to_one_with_mods">[docs]</a><span class="k">def</span> <span class="nf">three_to_one_with_mods</span><span class="p">(</span><span class="n">res</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>

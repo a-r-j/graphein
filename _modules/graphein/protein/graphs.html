@@ -177,7 +177,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
@@ -200,7 +199,6 @@
 <p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
@@ -258,10 +256,7 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">multiprocessing</span>
-<span class="kn">import</span> <span class="nn">traceback</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -275,10 +270,8 @@
     <span class="n">ProteinGraphConfig</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">graphein.protein.edges.distance</span> <span class="kn">import</span> <span class="n">compute_distmat</span>
-<span class="kn">from</span> <span class="nn">graphein.protein.resi_atoms</span> <span class="kn">import</span> <span class="n">BACKBONE_ATOMS</span><span class="p">,</span> <span class="n">RESI_THREE_TO_1</span>
-<span class="kn">from</span> <span class="nn">graphein.protein.subgraphs</span> <span class="kn">import</span> <span class="n">extract_subgraph_from_chains</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.resi_atoms</span> <span class="kn">import</span> <span class="n">BACKBONE_ATOMS</span>
 <span class="kn">from</span> <span class="nn">graphein.protein.utils</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ProteinGraphConfigurationError</span><span class="p">,</span>
     <span class="n">compute_rgroup_dataframe</span><span class="p">,</span>
     <span class="n">filter_dataframe</span><span class="p">,</span>
     <span class="n">get_protein_name_from_filename</span><span class="p">,</span>
@@ -465,7 +458,7 @@
 <span class="sd">    :param atom_df_processing_funcs: List of functions to process dataframe. These must take in a dataframe and return a</span>
 <span class="sd">        dataframe. Defaults to None.</span>
 <span class="sd">    :type atom_df_processing_funcs: List[Callable], optional</span>
-<span class="sd">    :param hetatom_df_processing_funcs: List of functions to process the hetatom dataframe. These must take in a dataframe and return a dataframe</span>
+<span class="sd">    :param hetatom_df_processing_funcs: List of functions to process the hetatpm dataframe. These must take in a dataframe and return a dataframe</span>
 <span class="sd">    :type hetatom_df_processing_funcs: List[Callable], optional</span>
 <span class="sd">    :param granularity: The level of granularity for the graph. This determines the node definition.</span>
 <span class="sd">        Acceptable values include: ``"centroids"``, ``"atoms"``,</span>
@@ -533,6 +526,21 @@
         <span class="n">protein_df</span><span class="p">,</span> <span class="n">chain_selection</span><span class="o">=</span><span class="n">chain_selection</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
     <span class="p">)</span>
 
+    <span class="sd">"""</span>
+<span class="sd">    # Name nodes</span>
+<span class="sd">    protein_df["node_id"] = (</span>
+<span class="sd">        protein_df["chain_id"].apply(str)</span>
+<span class="sd">        + ":"</span>
+<span class="sd">        + protein_df["residue_name"]</span>
+<span class="sd">        + ":"</span>
+<span class="sd">        + protein_df["residue_number"].apply(str)</span>
+<span class="sd">    )</span>
+<span class="sd">    if granularity == "atom":</span>
+<span class="sd">        protein_df["node_id"] = (</span>
+<span class="sd">            protein_df["node_id"] + ":" + protein_df["atom_name"]</span>
+<span class="sd">        )</span>
+<span class="sd">    """</span>
+
     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">protein_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> total nodes"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">protein_df</span></div>
@@ -546,10 +554,8 @@
 
 <span class="sd">    :param protein_df: Structure Dataframe</span>
 <span class="sd">    :type protein_df: pd.DataFrame</span>
-<span class="sd">    :param granularity: Granularity of graph. Atom-level,</span>
-<span class="sd">        residue (e.g. ``CA``) or ``centroids``.</span>
-<span class="sd">        See: :const:`~graphein.protein.config.GRAPH_ATOMS`</span>
-<span class="sd">        and :const:`~graphein.protein.config.GRANULARITY_OPTS`.</span>
+<span class="sd">    :param granularity: Granularity of graph. Atom-level, residue (e.g. ``CA``) or ``centroids``</span>
+<span class="sd">        See: :const:`~graphein.protein.config.GRAPH_ATOMS` and :const:`~graphein.protein.config.GRANULARITY_OPTS`.</span>
 <span class="sd">    :type granularity: str</span>
 <span class="sd">    :return: Returns dataframe with added ``node_ids``</span>
 <span class="sd">    :rtype: pd.DataFrame</span>
@@ -573,16 +579,13 @@
     <span class="sd">"""</span>
 <span class="sd">    Extracts relevant chains from ``protein_df``.</span>
 
-<span class="sd">    :param protein_df: pandas dataframe of PDB subsetted to relevant atoms</span>
-<span class="sd">        (``CA``, ``CB``).</span>
+<span class="sd">    :param protein_df: pandas dataframe of PDB subsetted to relevant atoms (``CA``, ``CB``).</span>
 <span class="sd">    :type protein_df: pd.DataFrame</span>
-<span class="sd">    :param chain_selection: Specifies chains that should be extracted from</span>
-<span class="sd">        the larger complexed structure.</span>
+<span class="sd">    :param chain_selection: Specifies chains that should be extracted from the larger complexed structure.</span>
 <span class="sd">    :type chain_selection: str</span>
 <span class="sd">    :param verbose: Print dataframe?</span>
 <span class="sd">    :type verbose: bool</span>
-<span class="sd">    :return: Protein structure dataframe containing only entries in the</span>
-<span class="sd">        chain selection.</span>
+<span class="sd">    :return: Protein structure dataframe containing only entries in the chain selection.</span>
 <span class="sd">    :rtype: pd.DataFrame</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">chain_selection</span> <span class="o">!=</span> <span class="s2">"all"</span><span class="p">:</span>
@@ -722,16 +725,14 @@
     <span class="n">get_contacts_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GetContactsConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
     <span class="sd">"""</span>
-<span class="sd">    Computes edges for the protein structure graph. Will compute a pairwise</span>
-<span class="sd">    distance matrix between nodes which is</span>
+<span class="sd">    Computes edges for the protein structure graph. Will compute an pairwise distance matrix between nodes which is</span>
 <span class="sd">    added to the graph metadata to facilitate some edge computations.</span>
 
 <span class="sd">    :param G: nx.Graph with nodes to add edges to.</span>
 <span class="sd">    :type G: nx.Graph</span>
 <span class="sd">    :param funcs: List of edge construction functions.</span>
 <span class="sd">    :type funcs: List[Callable]</span>
-<span class="sd">    :param get_contacts_config: Config object for ``GetContacts`` if</span>
-<span class="sd">        intramolecular edges are being used.</span>
+<span class="sd">    :param get_contacts_config: Config object for ``GetContacts`` if intramolecular edges are being used.</span>
 <span class="sd">    :type get_contacts_config: graphein.protein.config.GetContactsConfig</span>
 <span class="sd">    :return: Graph with added edges.</span>
 <span class="sd">    :rtype: nx.Graph</span>
@@ -761,10 +762,7 @@
     <span class="n">graph_annotation_funcs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
     <span class="sd">"""</span>
-<span class="sd">    Constructs protein structure graph from a ``pdb_code`` or ``pdb_path``.</span>
-
-<span class="sd">    Users can provide a :class:`~graphein.protein.config.ProteinGraphConfig`</span>
-<span class="sd">    object to specify construction parameters.</span>
+<span class="sd">    Constructs protein structure graph from a ``pdb_code`` or ``pdb_path``. Users can provide a :class:`~graphein.protein.config.ProteinGraphConfig` object to specify construction parameters.</span>
 
 <span class="sd">    However, config parameters can be overridden by passing arguments directly to the function.</span>
 
@@ -870,312 +868,92 @@
     <span class="k">return</span> <span class="n">g</span></div>
 
 
-<span class="k">def</span> <span class="nf">_mp_graph_constructor</span><span class="p">(</span>
-    <span class="n">args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">use_pdb_code</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">ProteinGraphConfig</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Protein graph constructor for use in multiprocessing several protein structure graphs.</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 
-<span class="sd">    :param args: Tuple of pdb code/path and the chain selection for that PDB</span>
-<span class="sd">    :type args: Tuple[str, str]</span>
-<span class="sd">    :param use_pdb_code: Whether or not we are using pdb codes or paths</span>
-<span class="sd">    :type use_pdb_code: bool</span>
-<span class="sd">    :param config: Protein structure graph construction config</span>
-<span class="sd">    :type config: ProteinGraphConfig</span>
-<span class="sd">    :return: Protein structure graph</span>
-<span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    """</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Constructing graph for: </span><span class="si">{</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">. Chain selection: </span><span class="si">{</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">construct_graph</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">func</span><span class="p">(</span><span class="n">pdb_code</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">chain_selection</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">use_pdb_code</span>
-            <span class="k">else</span> <span class="n">func</span><span class="p">(</span><span class="n">pdb_path</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">chain_selection</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">graphein.protein.edges.distance</span> <span class="kn">import</span> <span class="n">add_k_nn_edges</span>
+    <span class="kn">from</span> <span class="nn">graphein.protein.features.sequence.sequence</span> <span class="kn">import</span> <span class="n">molecular_weight</span>
 
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Graph construction error (PDB=</span><span class="si">{</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)! </span><span class="si">{</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
-        <span class="p">)</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span>
-
-
-<div class="viewcode-block" id="construct_graphs_mp"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.graphs.construct_graphs_mp">[docs]</a><span class="k">def</span> <span class="nf">construct_graphs_mp</span><span class="p">(</span>
-    <span class="n">pdb_code_it</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">pdb_path_it</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">chain_selections</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">config</span><span class="p">:</span> <span class="n">ProteinGraphConfig</span> <span class="o">=</span> <span class="n">ProteinGraphConfig</span><span class="p">(),</span>
-    <span class="n">num_cores</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
-    <span class="n">return_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">]]:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Constructs protein graphs for a list of pdb codes or pdb paths using multiprocessing.</span>
-
-<span class="sd">    :param pdb_code_it: List of pdb codes to use for protein graph construction</span>
-<span class="sd">    :type pdb_code_it: Optional[List[str]], defaults to None</span>
-<span class="sd">    :param pdb_path_it: List of paths to PDB files to use for protein graph construction</span>
-<span class="sd">    :type pdb_path_it: Optional[List[str]], defaults to None</span>
-<span class="sd">    :param chain_selections: List of chains to select from the protein structures (e.g. ["ABC", "A", "L", "CD"...])</span>
-<span class="sd">    :type chain_selections: Optional[List[str]], defaults to None</span>
-<span class="sd">    :param config: ProteinGraphConfig to use.</span>
-<span class="sd">    :type config: graphein.protein.config.ProteinGraphConfig, defaults to default config params</span>
-<span class="sd">    :param num_cores: Number of cores to use for multiprocessing. The more the merrier</span>
-<span class="sd">    :type num_cores: int, defaults to 16</span>
-<span class="sd">    :param return_dict: Whether or not to return a dictionary (indexed by pdb codes/paths) or a list of graphs.</span>
-<span class="sd">    :type return_dict: bool, default to True</span>
-<span class="sd">    :return: Iterable of protein graphs. None values indicate there was a problem in constructing the graph for this particular pdb</span>
-<span class="sd">    :rtype: Union[List[nx.Graph], Dict[str, nx.Graph]]</span>
-<span class="sd">    """</span>
-    <span class="k">assert</span> <span class="p">(</span>
-        <span class="n">pdb_code_it</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">pdb_path_it</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="p">),</span> <span class="s2">"Iterable of pdb codes OR pdb paths required."</span>
-
-    <span class="k">if</span> <span class="n">pdb_code_it</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">pdbs</span> <span class="o">=</span> <span class="n">pdb_code_it</span>
-        <span class="n">use_pdb_code</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="k">if</span> <span class="n">pdb_path_it</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">pdbs</span> <span class="o">=</span> <span class="n">pdb_path_it</span>
-        <span class="n">use_pdb_code</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="k">if</span> <span class="n">chain_selections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">chain_selections</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"all"</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">pdbs</span><span class="p">)</span>
-
-    <span class="n">constructor</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
-        <span class="n">_mp_graph_constructor</span><span class="p">,</span> <span class="n">use_pdb_code</span><span class="o">=</span><span class="n">use_pdb_code</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span>
-    <span class="p">)</span>
-
-    <span class="n">pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">num_cores</span><span class="p">)</span>
-    <span class="n">graphs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
-        <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
-            <span class="n">constructor</span><span class="p">,</span>
-            <span class="p">[(</span><span class="n">pdb</span><span class="p">,</span> <span class="n">chain_selections</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pdb</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pdbs</span><span class="p">)],</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-    <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">return_dict</span><span class="p">:</span>
-        <span class="n">graphs</span> <span class="o">=</span> <span class="p">{</span><span class="n">pdb</span><span class="p">:</span> <span class="n">graphs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pdb</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pdbs</span><span class="p">)}</span>
-
-    <span class="k">return</span> <span class="n">graphs</span></div>
-
-
-<div class="viewcode-block" id="compute_chain_graph"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.graphs.compute_chain_graph">[docs]</a><span class="k">def</span> <span class="nf">compute_chain_graph</span><span class="p">(</span>
-    <span class="n">g</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
-    <span class="n">chain_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">remove_self_loops</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">return_weighted_graph</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">]:</span>
-    <span class="sd">"""Computes a chain-level graph from a protein structure graph.</span>
-
-<span class="sd">    This graph features nodes as individual chains in a complex and edges as</span>
-<span class="sd">    the interactions between constituent nodes in each chain. You have the</span>
-<span class="sd">    option of returning an unweighted graph (multigraph,</span>
-<span class="sd">    ``return_weighted_graph=False``) or a weighted graph</span>
-<span class="sd">    (``return_weighted_graph=True``). The difference between these is the</span>
-<span class="sd">    unweighted graph features and edge for each interaction between chains</span>
-<span class="sd">    (ie the number of edges will be equal to the number of edges in the input</span>
-<span class="sd">    protein structure graph), while the weighted graph sums these interactions</span>
-<span class="sd">    to a single edge between chains with the counts stored as features.</span>
-
-<span class="sd">    :param g: A protein structure graph to compute the chain graph of.</span>
-<span class="sd">    :type g: nx.Graph</span>
-<span class="sd">    :param chain_list: A list of chains to extract from the input graph.</span>
-<span class="sd">        If ``None``, all chains will be used. This is provided as input to</span>
-<span class="sd">        ``extract_subgraph_from_chains``. Default is ``None``.</span>
-<span class="sd">    :type chain_list: Optional[List[str]]</span>
-<span class="sd">    :param remove_self_loops: Whether to remove self-loops from the graph.</span>
-<span class="sd">        Default is False.</span>
-<span class="sd">    :type remove_self_loops: bool</span>
-<span class="sd">    :return: A chain-level graph.</span>
-<span class="sd">    :rtype: Union[nx.Graph, nx.MultiGraph]</span>
-<span class="sd">    """</span>
-    <span class="c1"># If we are extracting specific chains, do it here.</span>
-    <span class="k">if</span> <span class="n">chain_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">g</span> <span class="o">=</span> <span class="n">extract_subgraph_from_chains</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">chain_list</span><span class="p">)</span>
-
-    <span class="c1"># Initialise new graph with Metadata</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">()</span>
-    <span class="n">h</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">graph</span>
-    <span class="n">h</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"node_type"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"chain"</span>
-
-    <span class="c1"># Set nodes</span>
-    <span class="n">nodes_per_chain</span> <span class="o">=</span> <span class="p">{</span><span class="n">chain</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"chain_ids"</span><span class="p">]}</span>
-    <span class="n">sequences</span> <span class="o">=</span> <span class="p">{</span><span class="n">chain</span><span class="p">:</span> <span class="s2">""</span> <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"chain_ids"</span><span class="p">]}</span>
-    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">nodes_per_chain</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"chain_id"</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">sequences</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"chain_id"</span><span class="p">]]</span> <span class="o">+=</span> <span class="n">RESI_THREE_TO_1</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"residue_name"</span><span class="p">]]</span>
-
-    <span class="n">h</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"chain_ids"</span><span class="p">])</span>
-
-    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">h</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">d</span><span class="p">[</span><span class="s2">"num_residues"</span><span class="p">]</span> <span class="o">=</span> <span class="n">nodes_per_chain</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
-        <span class="n">d</span><span class="p">[</span><span class="s2">"sequence"</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequences</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
-
-    <span class="c1"># Add edges</span>
-    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">h</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
-            <span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="s2">"chain_id"</span><span class="p">],</span> <span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="s2">"chain_id"</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span>
-        <span class="p">)</span>
-    <span class="c1"># Remove self-loops if necessary. Checks for equality between nodes in a given edge.</span>
-    <span class="k">if</span> <span class="n">remove_self_loops</span><span class="p">:</span>
-        <span class="n">edges_to_remove</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">h</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">u</span> <span class="o">==</span> <span class="n">v</span>
-        <span class="p">]</span>
-        <span class="n">h</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">edges_to_remove</span><span class="p">)</span>
-
-    <span class="c1"># Compute a weighted graph if required.</span>
-    <span class="k">if</span> <span class="n">return_weighted_graph</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">compute_weighted_graph_from_multigraph</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">h</span></div>
-
-
-<div class="viewcode-block" id="compute_weighted_graph_from_multigraph"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.graphs.compute_weighted_graph_from_multigraph">[docs]</a><span class="k">def</span> <span class="nf">compute_weighted_graph_from_multigraph</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">"""Computes a weighted graph from a multigraph.</span>
-
-<span class="sd">    This function is used to convert a multigraph to a weighted graph. The</span>
-<span class="sd">    weights of the edges are the number of interactions between the nodes.</span>
-
-<span class="sd">    :param g: A multigraph.</span>
-<span class="sd">    :type g: nx.MultiGraph</span>
-<span class="sd">    :return: A weighted graph.</span>
-<span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    """</span>
-    <span class="n">H</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
-    <span class="n">H</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">graph</span>
-    <span class="n">H</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">H</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-            <span class="n">H</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="s2">"weight"</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">])</span>
-            <span class="n">H</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">kind</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]):</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">H</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="n">kind</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                    <span class="n">H</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="n">kind</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">H</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]),</span> <span class="n">kind</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">kind</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]):</span>
-                <span class="n">H</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="n">kind</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">H</span></div>
-
-
-<div class="viewcode-block" id="number_groups_of_runs"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.graphs.number_groups_of_runs">[docs]</a><span class="k">def</span> <span class="nf">number_groups_of_runs</span><span class="p">(</span><span class="n">list_of_values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-    <span class="sd">"""Numbers groups of runs in a list of values.</span>
-
-<span class="sd">    E.g. ``["A", "A", "B", "A", "A", "A", "B", "B"] -&gt;</span>
-<span class="sd">    ["A1", "A1", "B1", "A2", "A2", "A2", "B2", "B2"]``</span>
-
-<span class="sd">    :param list_of_values: List of values to number.</span>
-<span class="sd">    :type list_of_values: List[Any]</span>
-<span class="sd">    :return: List of numbered values.</span>
-<span class="sd">    :rtype: List[str]</span>
-<span class="sd">    """</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"val"</span><span class="p">:</span> <span class="n">list_of_values</span><span class="p">})</span>
-    <span class="n">df</span><span class="p">[</span><span class="s2">"idx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"val"</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">()</span> <span class="o">!=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"val"</span><span class="p">]</span>
-    <span class="n">df</span><span class="p">[</span><span class="s2">"sum"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"val"</span><span class="p">)[</span><span class="s2">"idx"</span><span class="p">]</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
-    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"val"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">"sum"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">))</span></div>
-
-
-<div class="viewcode-block" id="compute_secondary_structure_graph"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.graphs.compute_secondary_structure_graph">[docs]</a><span class="k">def</span> <span class="nf">compute_secondary_structure_graph</span><span class="p">(</span>
-    <span class="n">g</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
-    <span class="n">allowable_ss_elements</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">remove_non_ss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">remove_self_loops</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">return_weighted_graph</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">]:</span>
-    <span class="sd">"""Computes a secondary structure graph from a protein structure graph.</span>
-
-<span class="sd">    :param g: A protein structure graph to compute the secondary structure</span>
-<span class="sd">        graph of.</span>
-<span class="sd">    :type g: nx.Graph</span>
-<span class="sd">    :param remove_non_ss: Whether to remove non-secondary structure nodes from</span>
-<span class="sd">        the graph. These are denoted as ``"-"`` by DSSP. Default is True.</span>
-<span class="sd">    :type remove_non_ss: bool</span>
-<span class="sd">    :param remove_self_loops: Whether to remove self-loops from the graph.</span>
-<span class="sd">        Default is ``False``.</span>
-<span class="sd">    :type remove_self_loops: bool</span>
-<span class="sd">    :param return_weighted_graph: Whether to return a weighted graph.</span>
-<span class="sd">        Default is False.</span>
-<span class="sd">    :type return_weighted_graph: bool</span>
-<span class="sd">    :raises ProteinGraphConfigurationError: If the protein structure graph is</span>
-<span class="sd">        not configured correctly with secondary structure assignments on all</span>
-<span class="sd">        nodes.</span>
-<span class="sd">    :return: A secondary structure graph.</span>
-<span class="sd">    :rtype: Union[nx.Graph, nx.MultiGraph]</span>
-<span class="sd">    """</span>
-    <span class="c1"># Initialise list of secondary structure elements we use to build the graph</span>
-    <span class="n">ss_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="c1"># Check nodes have secondary structure assignment &amp; store them in list</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="k">if</span> <span class="s2">"ss"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">ProteinGraphConfigurationError</span><span class="p">(</span>
-                <span class="s2">"Secondary structure not defined for all nodes."</span>
-            <span class="p">)</span>
-        <span class="n">ss_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"ss"</span><span class="p">])</span>
-
-    <span class="c1"># Number SS elements</span>
-    <span class="n">ss_list</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">number_groups_of_runs</span><span class="p">(</span><span class="n">ss_list</span><span class="p">))</span>
-    <span class="n">ss_list</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
-
-    <span class="c1"># Remove unstructured elements if necessary</span>
-    <span class="k">if</span> <span class="n">remove_non_ss</span><span class="p">:</span>
-        <span class="n">ss_list</span> <span class="o">=</span> <span class="n">ss_list</span><span class="p">[</span><span class="o">~</span><span class="n">ss_list</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">"-"</span><span class="p">)]</span>
-    <span class="c1"># Subset to only allowable SS elements if necessary</span>
-    <span class="k">if</span> <span class="n">allowable_ss_elements</span><span class="p">:</span>
-        <span class="n">ss_list</span> <span class="o">=</span> <span class="n">ss_list</span><span class="p">[</span>
-            <span class="n">ss_list</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">"|"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">allowable_ss_elements</span><span class="p">))</span>
-        <span class="p">]</span>
-
-    <span class="n">constituent_residues</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ss_list</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
-        <span class="n">ss_list</span><span class="o">.</span><span class="n">values</span>
-    <span class="p">)</span>
-    <span class="n">constituent_residues</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">constituent_residues</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="n">configs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"granularity"</span><span class="p">:</span> <span class="s2">"CA"</span><span class="p">,</span>
+        <span class="s2">"keep_hets"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">"insertions"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">"verbose"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">"get_contacts_config"</span><span class="p">:</span> <span class="n">GetContactsConfig</span><span class="p">(),</span>
+        <span class="s2">"dssp_config"</span><span class="p">:</span> <span class="n">DSSPConfig</span><span class="p">(),</span>
+        <span class="s2">"graph_metadata_functions"</span><span class="p">:</span> <span class="p">[</span><span class="n">molecular_weight</span><span class="p">],</span>
     <span class="p">}</span>
-    <span class="n">residue_counts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">ss_list</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">ss_list</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">ProteinGraphConfig</span><span class="p">(</span><span class="o">**</span><span class="n">configs</span><span class="p">)</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">edge_construction_functions</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">add_k_nn_edges</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">long_interaction_threshold</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="c1"># Test High-level API</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">construct_graph</span><span class="p">(</span>
+        <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+        <span class="n">pdb_path</span><span class="o">=</span><span class="s2">"../examples/pdbs/3eiy.pdb"</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="c1"># Add Nodes from secondary structure list</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">()</span>
-    <span class="n">h</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">ss_list</span><span class="p">)</span>
-    <span class="n">nx</span><span class="o">.</span><span class="n">set_node_attributes</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">residue_counts</span><span class="p">,</span> <span class="s2">"residue_counts"</span><span class="p">)</span>
-    <span class="n">nx</span><span class="o">.</span><span class="n">set_node_attributes</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">constituent_residues</span><span class="p">,</span> <span class="s2">"constituent_residues"</span><span class="p">)</span>
-    <span class="c1"># Assign ss</span>
-    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">h</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">d</span><span class="p">[</span><span class="s2">"ss"</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="sd">"""</span>
+<span class="sd">    # Test Low-level API</span>
+<span class="sd">    raw_df = read_pdb_to_dataframe(</span>
+<span class="sd">        pdb_path="../../examples/pdbs/3eiy.pdb",</span>
+<span class="sd">        verbose=config.verbose,</span>
+<span class="sd">    )</span>
 
-    <span class="c1"># Add graph-level metadata</span>
-    <span class="n">h</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">graph</span>
-    <span class="n">h</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"node_type"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"secondary_structure"</span>
+<span class="sd">    processed_pdb_df = process_dataframe(</span>
+<span class="sd">        protein_df=raw_df,</span>
+<span class="sd">        atom_df_processing_funcs=None,</span>
+<span class="sd">        hetatom_df_processing_funcs=None,</span>
+<span class="sd">        granularity="centroids",</span>
+<span class="sd">        chain_selection="all",</span>
+<span class="sd">        insertions=False,</span>
+<span class="sd">        deprotonate=True,</span>
+<span class="sd">        keep_hets=[],</span>
+<span class="sd">        verbose=False,</span>
+<span class="sd">    )</span>
 
-    <span class="c1"># Iterate over edges in source graph and add SS-SS edges to new graph.</span>
-    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">h</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
-                <span class="n">ss_list</span><span class="p">[</span><span class="n">u</span><span class="p">],</span> <span class="n">ss_list</span><span class="p">[</span><span class="n">v</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">],</span> <span class="n">source</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">"</span>
-            <span class="p">)</span>
-        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"Edge </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2"> not added to secondary structure graph. </span><span class="se">\</span>
-<span class="s2">                Reason: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2"> not in graph"</span>
-            <span class="p">)</span>
+<span class="sd">    g = initialise_graph_with_metadata(</span>
+<span class="sd">        protein_df=processed_pdb_df,</span>
+<span class="sd">        raw_pdb_df=raw_df.df["ATOM"],</span>
+<span class="sd">        pdb_id="3eiy",</span>
+<span class="sd">        granularity=config.granularity,</span>
+<span class="sd">    )</span>
 
-    <span class="c1"># Remove self-loops if necessary.</span>
-    <span class="c1"># Checks for equality between nodes in a given edge.</span>
-    <span class="k">if</span> <span class="n">remove_self_loops</span><span class="p">:</span>
-        <span class="n">edges_to_remove</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">h</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">u</span> <span class="o">==</span> <span class="n">v</span>
-        <span class="p">]</span>
-        <span class="n">h</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">edges_to_remove</span><span class="p">)</span>
+<span class="sd">    g = add_nodes_to_graph(g)</span>
 
-    <span class="c1"># Create weighted graph from h</span>
-    <span class="k">if</span> <span class="n">return_weighted_graph</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">compute_weighted_graph_from_multigraph</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">h</span></div>
+<span class="sd">    g = annotate_node_metadata(g, [expasy_protein_scale, meiler_embedding])</span>
+<span class="sd">    g = compute_edges(</span>
+<span class="sd">        g,</span>
+<span class="sd">        config.get_contacts_config,</span>
+<span class="sd">        [</span>
+<span class="sd">            add_delaunay_triangulation,</span>
+<span class="sd">            peptide_bonds,</span>
+<span class="sd">            salt_bridge,</span>
+<span class="sd">            add_hydrogen_bond_interactions,</span>
+<span class="sd">        ],</span>
+<span class="sd">    )</span>
+
+<span class="sd">    g = annotate_graph_metadata(</span>
+<span class="sd">        g,</span>
+<span class="sd">        [</span>
+<span class="sd">            esm_sequence_embedding,</span>
+<span class="sd">            biovec_sequence_embedding,</span>
+<span class="sd">            molecular_weight,</span>
+<span class="sd">        ],</span>
+<span class="sd">    )</span>
+
+<span class="sd">    print(nx.info(g))</span>
+<span class="sd">    colors = nx.get_edge_attributes(g, "color").values()</span>
+<span class="sd">    """</span>
+    <span class="sd">"""</span>
+<span class="sd">    nx.draw(</span>
+<span class="sd">        g,</span>
+<span class="sd">        # pos = nx.circular_layout(g),</span>
+<span class="sd">        edge_color=colors,</span>
+<span class="sd">        with_labels=True,</span>
+<span class="sd">    )</span>
+<span class="sd">    plt.show()</span>
+<span class="sd">    """</span>
 </pre></div>
         </article>
       </div>

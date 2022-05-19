@@ -177,7 +177,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
@@ -200,7 +199,6 @@
 <p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
@@ -310,23 +308,15 @@
     <span class="k">return</span> <span class="n">eucl_dists</span></div>
 
 
-<div class="viewcode-block" id="add_sequence_distance_edges"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_sequence_distance_edges">[docs]</a><span class="k">def</span> <span class="nf">add_sequence_distance_edges</span><span class="p">(</span>
-    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"sequence_edge"</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+<div class="viewcode-block" id="add_peptide_bonds"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_peptide_bonds">[docs]</a><span class="k">def</span> <span class="nf">add_peptide_bonds</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
     <span class="sd">"""</span>
-<span class="sd">    Adds edges based on sequence distance to residues in each chain.</span>
-
-<span class="sd">    Eg. if ``d=6`` then we join: nodes ``(1,7), (2,8), (3,9)..`` based on their sequence number.</span>
+<span class="sd">    Adds peptide backbone as edges to residues in each chain.</span>
 
 <span class="sd">    :param G: networkx protein graph.</span>
 <span class="sd">    :type G: nx.Graph</span>
-<span class="sd">    :param d: Sequence separation to add edges on.</span>
-<span class="sd">    :param name: Name of the edge type. Defaults to ``"sequence_edge"``.</span>
-<span class="sd">    :type name: str</span>
 <span class="sd">    :return G: networkx protein graph with added peptide bonds.</span>
 <span class="sd">    :rtype: nx.Graph</span>
 <span class="sd">    """</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
     <span class="c1"># Iterate over every chain</span>
     <span class="k">for</span> <span class="n">chain_id</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"chain_ids"</span><span class="p">]:</span>
 
@@ -337,50 +327,36 @@
 
         <span class="c1"># Iterate over every residue in chain</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">residue</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chain_residues</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># Checks not at chain terminus - is this versatile enough?</span>
-                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">chain_residues</span><span class="p">)</span> <span class="o">-</span> <span class="n">d</span><span class="p">:</span>
-                    <span class="k">continue</span>
-                <span class="c1"># Asserts residues are on the same chain</span>
-                <span class="n">cond_1</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">residue</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">"chain_id"</span><span class="p">]</span>
-                    <span class="o">==</span> <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">"chain_id"</span><span class="p">]</span>
+            <span class="c1"># Checks not at chain terminus - is this versatile enough?</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">chain_residues</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># Asserts residues are on the same chain</span>
+            <span class="n">cond_1</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">residue</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">"chain_id"</span><span class="p">]</span> <span class="o">==</span> <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">"chain_id"</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="c1"># Asserts residue numbers are adjacent</span>
+            <span class="n">cond_2</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">abs</span><span class="p">(</span>
+                    <span class="n">residue</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">"residue_number"</span><span class="p">]</span>
+                    <span class="o">-</span> <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">"residue_number"</span><span class="p">]</span>
                 <span class="p">)</span>
-                <span class="c1"># Asserts residue numbers are adjacent</span>
-                <span class="n">cond_2</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="nb">abs</span><span class="p">(</span>
-                        <span class="n">residue</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">"residue_number"</span><span class="p">]</span>
-                        <span class="o">-</span> <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">"residue_number"</span><span class="p">]</span>
-                    <span class="p">)</span>
-                    <span class="o">==</span> <span class="n">d</span>
-                <span class="p">)</span>
+                <span class="o">==</span> <span class="mi">1</span>
+            <span class="p">)</span>
 
-                <span class="c1"># If this checks out, we add a peptide bond</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">cond_1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">cond_2</span><span class="p">):</span>
-                    <span class="c1"># Adds "peptide bond" between current residue and the next</span>
-                    <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">):</span>
-                        <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
-                            <span class="n">residue</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                            <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
-                            <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">},</span>
-                        <span class="p">)</span>
-            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="c1"># If this checks out, we add a peptide bond</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">cond_1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">cond_2</span><span class="p">):</span>
+                <span class="c1"># Adds "peptide bond" between current residue and the next</span>
+                <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"peptide_bond"</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
+                        <span class="n">residue</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="s2">"peptide_bond"</span><span class="p">},</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
                 <span class="k">continue</span>
     <span class="k">return</span> <span class="n">G</span></div>
-
-
-<div class="viewcode-block" id="add_peptide_bonds"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_peptide_bonds">[docs]</a><span class="k">def</span> <span class="nf">add_peptide_bonds</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Adds peptide backbone as edges to residues in each chain.</span>
-
-<span class="sd">    :param G: networkx protein graph.</span>
-<span class="sd">    :type G: nx.Graph</span>
-<span class="sd">    :return G: networkx protein graph with added peptide bonds.</span>
-<span class="sd">    :rtype: nx.Graph</span>
-<span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">add_sequence_distance_edges</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"peptide_bond"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="add_hydrophobic_interactions"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_hydrophobic_interactions">[docs]</a><span class="k">def</span> <span class="nf">add_hydrophobic_interactions</span><span class="p">(</span>
