@@ -24,11 +24,11 @@ from graphein.utils.utils import (
     import_message,
 )
 
+from .chembl import get_smiles_from_chembl
 from .config import MoleculeGraphConfig
 from .edges.atomic import add_atom_bonds
 from .utils import compute_fragments
 from .zinc import get_smiles_from_zinc
-from .chembl import get_smiles_from_chembl
 
 log = logging.getLogger(__name__)
 
