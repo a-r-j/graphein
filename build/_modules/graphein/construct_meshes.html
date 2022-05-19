@@ -1,0 +1,277 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>graphein.construct_meshes &mdash; Graphein 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Graphein
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graphein.construct_graphs.html">graphein.construct_graphs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graphein.construct_meshes.html">graphein.construct_meshes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graphein</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>graphein.construct_meshes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for graphein.construct_meshes</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Class for creating Protein Meshes&quot;&quot;&quot;</span>
+
+<span class="c1"># Graphein</span>
+<span class="c1"># Author: Arian Jamasb &lt;arian@jamasb.io&gt;</span>
+<span class="c1"># License: MIT</span>
+<span class="c1"># Project Website:</span>
+<span class="c1"># Code Repository: https://github.com/a-r-j/graphein</span>
+
+<span class="kn">from</span> <span class="nn">pytorch3d.io</span> <span class="kn">import</span> <span class="n">load_obj</span><span class="p">,</span> <span class="n">save_obj</span>
+<span class="kn">from</span> <span class="nn">ipymol</span> <span class="kn">import</span> <span class="n">viewer</span> <span class="k">as</span> <span class="n">pymol</span>
+
+
+<div class="viewcode-block" id="ProteinMesh"><a class="viewcode-back" href="../../modules/graphein.construct_meshes.html#graphein.construct_meshes.ProteinMesh">[docs]</a><span class="k">class</span> <span class="nc">ProteinMesh</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ProteinMesh.__init__"><a class="viewcode-back" href="../../modules/graphein.construct_meshes.html#graphein.construct_meshes.ProteinMesh.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise ProteinGraph Generator Class</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ProteinMesh.get_obj_file"><a class="viewcode-back" href="../../modules/graphein.construct_meshes.html#graphein.construct_meshes.ProteinMesh.get_obj_file">[docs]</a>    <span class="k">def</span> <span class="nf">get_obj_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pdb_code</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Produces .Obj file from PDB structure through IPyMol. pdb_code and pdb_file are optional arguments. Use one as suits your purposes</span>
+
+<span class="sd">        :param pdb_file: Path to local .PDB file</span>
+<span class="sd">        :type pdb_file: str</span>
+<span class="sd">        :param pdb_code: 4 character PDB accession code</span>
+<span class="sd">        :type pdb_code: str</span>
+<span class="sd">        :param out_dir: Path to output directory</span>
+<span class="sd">        :type out_dir: str</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span>
+        <span class="n">pymol</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pdb_code</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pdb_file</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Please pass a pdb_file or pdb_code argument&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pdb_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pdb_code</span> <span class="ow">and</span> <span class="n">pdb_file</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Do not pass both a PDB code and PDB file. Choose one.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pdb_file</span><span class="p">:</span>
+            <span class="n">pymol</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pdb_file</span><span class="p">)</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">pdb_file</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.obj&#39;</span>
+
+        <span class="k">if</span> <span class="n">pdb_code</span><span class="p">:</span>
+            <span class="n">pymol</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">pdb_code</span><span class="p">)</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s1">&#39;.obj&#39;</span>
+        <span class="n">pymol</span><span class="o">.</span><span class="n">do</span><span class="p">(</span><span class="s1">&#39;show_as surface&#39;</span><span class="p">)</span>
+        <span class="n">pymol</span><span class="o">.</span><span class="n">do</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;save </span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Saved file to: </span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">file_name</span></div>
+
+<div class="viewcode-block" id="ProteinMesh.create_mesh"><a class="viewcode-back" href="../../modules/graphein.construct_meshes.html#graphein.construct_meshes.ProteinMesh.create_mesh">[docs]</a>    <span class="k">def</span> <span class="nf">create_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_code</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pdb_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a PyTorch3D Mesh from an .Obj file. pdb_code and pdb_file are optional arguments. Use one as suits your purposes</span>
+
+<span class="sd">        :param pdb_code: 4-character PDB accession code</span>
+<span class="sd">        :type pdb_code: str</span>
+<span class="sd">        :param pdb_file: Path to local .PDB file</span>
+<span class="sd">        :type pdb_file: str</span>
+<span class="sd">        :param out_dir: Path to output directory</span>
+<span class="sd">        :type out_dir: str</span>
+<span class="sd">        :return: verts, faces, aux</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_obj_file</span><span class="p">(</span><span class="n">pdb_code</span><span class="o">=</span><span class="n">pdb_code</span><span class="p">,</span> <span class="n">pdb_file</span><span class="o">=</span><span class="n">pdb_file</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="n">out_dir</span><span class="p">)</span>
+        <span class="n">verts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">aux</span> <span class="o">=</span> <span class="n">load_obj</span><span class="p">(</span><span class="n">obj_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">verts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">aux</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">ProteinMesh</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">create_mesh</span><span class="p">(</span><span class="n">pdb_code</span><span class="o">=</span><span class="s1">&#39;3eiy&#39;</span><span class="p">,</span> <span class="n">out_dir</span><span class="o">=</span><span class="s1">&#39;../examples/meshes/&#39;</span><span class="p">))</span>
+    <span class="c1">#print(p.create_mesh(obj_file=&#39;../examples/meshes/3eiy.obj&#39;))</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Arian Jamasb
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

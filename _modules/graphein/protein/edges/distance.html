@@ -1,0 +1,1031 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>graphein.protein.edges.distance - Graphein 1.2.1</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand">Graphein 1.2.1</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.2.1</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing/contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <h1>Source code for graphein.protein.edges.distance</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Functions for computing biochemical edges of graphs."""</span>
+<span class="c1"># Graphein</span>
+<span class="c1"># Author: Eric Ma, Arian Jamasb &lt;arian@jamasb.io&gt;</span>
+<span class="c1"># License: MIT</span>
+<span class="c1"># Project Website: https://github.com/a-r-j/graphein</span>
+<span class="c1"># Code Repository: https://github.com/a-r-j/graphein</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">Delaunay</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">euclidean</span><span class="p">,</span> <span class="n">pdist</span><span class="p">,</span> <span class="n">rogerstanimoto</span><span class="p">,</span> <span class="n">squareform</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">pairwise_distances</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="kn">import</span> <span class="n">kneighbors_graph</span>
+
+<span class="kn">from</span> <span class="nn">graphein.protein.resi_atoms</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AA_RING_ATOMS</span><span class="p">,</span>
+    <span class="n">AROMATIC_RESIS</span><span class="p">,</span>
+    <span class="n">BACKBONE_ATOMS</span><span class="p">,</span>
+    <span class="n">BOND_TYPES</span><span class="p">,</span>
+    <span class="n">CATION_PI_RESIS</span><span class="p">,</span>
+    <span class="n">CATION_RESIS</span><span class="p">,</span>
+    <span class="n">DISULFIDE_ATOMS</span><span class="p">,</span>
+    <span class="n">DISULFIDE_RESIS</span><span class="p">,</span>
+    <span class="n">HYDROPHOBIC_RESIS</span><span class="p">,</span>
+    <span class="n">IONIC_RESIS</span><span class="p">,</span>
+    <span class="n">NEG_AA</span><span class="p">,</span>
+    <span class="n">PI_RESIS</span><span class="p">,</span>
+    <span class="n">POS_AA</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.utils</span> <span class="kn">import</span> <span class="n">filter_dataframe</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="compute_distmat"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.compute_distmat">[docs]</a><span class="k">def</span> <span class="nf">compute_distmat</span><span class="p">(</span><span class="n">pdb_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Compute pairwise euclidean distances between every atom.</span>
+
+<span class="sd">    Design choice: passed in a DataFrame to enable easier testing on</span>
+<span class="sd">    dummy data.</span>
+
+<span class="sd">    :param pdb_df: pd.Dataframe containing protein structure. Must contain columns ["x_coord", "y_coord", "z_coord"]</span>
+<span class="sd">    :type pdb_df: pd.DataFrame</span>
+<span class="sd">    :return: pd.Dataframe of euclidean distance matrix</span>
+<span class="sd">    :rtype: pd.DataFrame</span>
+<span class="sd">    """</span>
+    <span class="n">eucl_dists</span> <span class="o">=</span> <span class="n">pdist</span><span class="p">(</span>
+        <span class="n">pdb_df</span><span class="p">[[</span><span class="s2">"x_coord"</span><span class="p">,</span> <span class="s2">"y_coord"</span><span class="p">,</span> <span class="s2">"z_coord"</span><span class="p">]],</span> <span class="n">metric</span><span class="o">=</span><span class="s2">"euclidean"</span>
+    <span class="p">)</span>
+    <span class="n">eucl_dists</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">squareform</span><span class="p">(</span><span class="n">eucl_dists</span><span class="p">))</span>
+    <span class="n">eucl_dists</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pdb_df</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">eucl_dists</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">pdb_df</span><span class="o">.</span><span class="n">index</span>
+
+    <span class="k">return</span> <span class="n">eucl_dists</span></div>
+
+
+<div class="viewcode-block" id="add_sequence_distance_edges"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_sequence_distance_edges">[docs]</a><span class="k">def</span> <span class="nf">add_sequence_distance_edges</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"sequence_edge"</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Adds edges based on sequence distance to residues in each chain.</span>
+
+<span class="sd">    Eg. if ``d=6`` then we join: nodes ``(1,7), (2,8), (3,9)..`` based on their sequence number.</span>
+
+<span class="sd">    :param G: networkx protein graph.</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param d: Sequence separation to add edges on.</span>
+<span class="sd">    :param name: Name of the edge type. Defaults to ``"sequence_edge"``.</span>
+<span class="sd">    :type name: str</span>
+<span class="sd">    :return G: networkx protein graph with added peptide bonds.</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    """</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+    <span class="c1"># Iterate over every chain</span>
+    <span class="k">for</span> <span class="n">chain_id</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"chain_ids"</span><span class="p">]:</span>
+
+        <span class="c1"># Find chain residues</span>
+        <span class="n">chain_residues</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">"chain_id"</span><span class="p">]</span> <span class="o">==</span> <span class="n">chain_id</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Iterate over every residue in chain</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">residue</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chain_residues</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Checks not at chain terminus - is this versatile enough?</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">chain_residues</span><span class="p">)</span> <span class="o">-</span> <span class="n">d</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="c1"># Asserts residues are on the same chain</span>
+                <span class="n">cond_1</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">residue</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">"chain_id"</span><span class="p">]</span>
+                    <span class="o">==</span> <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">"chain_id"</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="c1"># Asserts residue numbers are adjacent</span>
+                <span class="n">cond_2</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">abs</span><span class="p">(</span>
+                        <span class="n">residue</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">"residue_number"</span><span class="p">]</span>
+                        <span class="o">-</span> <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">"residue_number"</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="o">==</span> <span class="n">d</span>
+                <span class="p">)</span>
+
+                <span class="c1"># If this checks out, we add a peptide bond</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">cond_1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">cond_2</span><span class="p">):</span>
+                    <span class="c1"># Adds "peptide bond" between current residue and the next</span>
+                    <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">):</span>
+                        <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
+                            <span class="n">residue</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">},</span>
+                        <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">continue</span>
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+<div class="viewcode-block" id="add_peptide_bonds"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_peptide_bonds">[docs]</a><span class="k">def</span> <span class="nf">add_peptide_bonds</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Adds peptide backbone as edges to residues in each chain.</span>
+
+<span class="sd">    :param G: networkx protein graph.</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :return G: networkx protein graph with added peptide bonds.</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">add_sequence_distance_edges</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"peptide_bond"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_hydrophobic_interactions"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_hydrophobic_interactions">[docs]</a><span class="k">def</span> <span class="nf">add_hydrophobic_interactions</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">rgroup_df</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Find all hydrophobic interactions.</span>
+
+<span class="sd">    Performs searches between the following residues:</span>
+<span class="sd">    ``[ALA, VAL, LEU, ILE, MET, PHE, TRP, PRO, TYR]`` (:const:`~graphein.protein.resi_atoms.HYDROPHOBIC_RESIS`).</span>
+
+<span class="sd">    Criteria: R-group residues are within 5A distance.</span>
+
+<span class="sd">    :param G: nx.Graph to add hydrophobic interactions to.</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param rgroup_df: Optional dataframe of R-group atoms.</span>
+<span class="sd">    :type rgroup_df: pd.DataFrame, optional</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">rgroup_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rgroup_df</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"rgroup_df"</span><span class="p">]</span>
+    <span class="n">hydrophobics_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">rgroup_df</span><span class="p">,</span> <span class="s2">"residue_name"</span><span class="p">,</span> <span class="n">HYDROPHOBIC_RESIS</span><span class="p">,</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">hydrophobics_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">hydrophobics_df</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()),</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">distmat</span> <span class="o">=</span> <span class="n">compute_distmat</span><span class="p">(</span><span class="n">hydrophobics_df</span><span class="p">)</span>
+    <span class="n">interacting_atoms</span> <span class="o">=</span> <span class="n">get_interacting_atoms</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">distmat</span><span class="p">)</span>
+    <span class="n">add_interacting_resis</span><span class="p">(</span>
+        <span class="n">G</span><span class="p">,</span> <span class="n">interacting_atoms</span><span class="p">,</span> <span class="n">hydrophobics_df</span><span class="p">,</span> <span class="p">[</span><span class="s2">"hydrophobic"</span><span class="p">]</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_disulfide_interactions"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_disulfide_interactions">[docs]</a><span class="k">def</span> <span class="nf">add_disulfide_interactions</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">rgroup_df</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Find all disulfide interactions between CYS residues (:const:`~graphein.protein.resi_atoms.DISULFIDE_RESIS`, :const:`~graphein.protein.resi_atoms.DISULFIDE_ATOMS`).</span>
+
+<span class="sd">    Criteria: sulfur atom pairs are within 2.2A of each other.</span>
+
+<span class="sd">    :param G: networkx protein graph</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param rgroup_df: pd.DataFrame containing rgroup data, defaults to None, which retrieves the df from the provided nx graph.</span>
+<span class="sd">    :type rgroup_df: pd.DataFrame, optional</span>
+<span class="sd">    """</span>
+    <span class="c1"># Check for existence of at least two Cysteine residues</span>
+    <span class="n">residues</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"residue_name"</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">residues</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">"CYS"</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">residues</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">'CYS'</span><span class="p">)</span><span class="si">}</span><span class="s2"> CYS residues found. Cannot add disulfide interactions with fewer than two CYS residues."</span>
+        <span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">rgroup_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rgroup_df</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"rgroup_df"</span><span class="p">]</span>
+    <span class="n">disulfide_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">rgroup_df</span><span class="p">,</span> <span class="s2">"residue_name"</span><span class="p">,</span> <span class="n">DISULFIDE_RESIS</span><span class="p">,</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">disulfide_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">disulfide_df</span><span class="p">,</span> <span class="s2">"atom_name"</span><span class="p">,</span> <span class="n">DISULFIDE_ATOMS</span><span class="p">,</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">distmat</span> <span class="o">=</span> <span class="n">compute_distmat</span><span class="p">(</span><span class="n">disulfide_df</span><span class="p">)</span>
+    <span class="n">interacting_atoms</span> <span class="o">=</span> <span class="n">get_interacting_atoms</span><span class="p">(</span><span class="mf">2.2</span><span class="p">,</span> <span class="n">distmat</span><span class="p">)</span>
+    <span class="n">add_interacting_resis</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">interacting_atoms</span><span class="p">,</span> <span class="n">disulfide_df</span><span class="p">,</span> <span class="p">[</span><span class="s2">"disulfide"</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="add_hydrogen_bond_interactions"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_hydrogen_bond_interactions">[docs]</a><span class="k">def</span> <span class="nf">add_hydrogen_bond_interactions</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">rgroup_df</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">"""Add all hydrogen-bond interactions."""</span>
+    <span class="c1"># For these atoms, find those that are within 3.5A of one another.</span>
+    <span class="k">if</span> <span class="n">rgroup_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rgroup_df</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"rgroup_df"</span><span class="p">]</span>
+    <span class="n">rgroup_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span><span class="n">rgroup_df</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()),</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">HBOND_ATOMS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"ND"</span><span class="p">,</span>  <span class="c1"># histidine and asparagine</span>
+        <span class="s2">"NE"</span><span class="p">,</span>  <span class="c1"># glutamate, tryptophan, arginine, histidine</span>
+        <span class="s2">"NH"</span><span class="p">,</span>  <span class="c1"># arginine</span>
+        <span class="s2">"NZ"</span><span class="p">,</span>  <span class="c1"># lysine</span>
+        <span class="s2">"OD1"</span><span class="p">,</span>
+        <span class="s2">"OD2"</span><span class="p">,</span>
+        <span class="s2">"OE"</span><span class="p">,</span>
+        <span class="s2">"OG"</span><span class="p">,</span>
+        <span class="s2">"OH"</span><span class="p">,</span>
+        <span class="s2">"SD"</span><span class="p">,</span>  <span class="c1"># cysteine</span>
+        <span class="s2">"SG"</span><span class="p">,</span>  <span class="c1"># methionine</span>
+        <span class="s2">"N"</span><span class="p">,</span>
+        <span class="s2">"O"</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">hbond_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span><span class="n">rgroup_df</span><span class="p">,</span> <span class="s2">"atom_name"</span><span class="p">,</span> <span class="n">HBOND_ATOMS</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hbond_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">distmat</span> <span class="o">=</span> <span class="n">compute_distmat</span><span class="p">(</span><span class="n">hbond_df</span><span class="p">)</span>
+        <span class="n">interacting_atoms</span> <span class="o">=</span> <span class="n">get_interacting_atoms</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="n">distmat</span><span class="p">)</span>
+        <span class="n">add_interacting_resis</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">interacting_atoms</span><span class="p">,</span> <span class="n">hbond_df</span><span class="p">,</span> <span class="p">[</span><span class="s2">"hbond"</span><span class="p">])</span>
+
+    <span class="c1"># For these atoms, find those that are within 4.0A of one another.</span>
+    <span class="n">HBOND_ATOMS_SULPHUR</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"SD"</span><span class="p">,</span> <span class="s2">"SG"</span><span class="p">]</span>
+    <span class="n">hbond_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">rgroup_df</span><span class="p">,</span> <span class="s2">"atom_name"</span><span class="p">,</span> <span class="n">HBOND_ATOMS_SULPHUR</span><span class="p">,</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hbond_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">distmat</span> <span class="o">=</span> <span class="n">compute_distmat</span><span class="p">(</span><span class="n">hbond_df</span><span class="p">)</span>
+        <span class="n">interacting_atoms</span> <span class="o">=</span> <span class="n">get_interacting_atoms</span><span class="p">(</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">distmat</span><span class="p">)</span>
+        <span class="n">add_interacting_resis</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">interacting_atoms</span><span class="p">,</span> <span class="n">hbond_df</span><span class="p">,</span> <span class="p">[</span><span class="s2">"hbond"</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="add_ionic_interactions"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_ionic_interactions">[docs]</a><span class="k">def</span> <span class="nf">add_ionic_interactions</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">rgroup_df</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Find all ionic interactions.</span>
+
+<span class="sd">    Criteria: ``[ARG, LYS, HIS, ASP, and GLU]`` (:const:`~graphein.protein.resi_atoms.IONIC_RESIS`) residues are within 6A.</span>
+<span class="sd">    We also check for opposing charges (:const:`~graphein.protein.resi_atoms.POS_AA`, :const:`~graphein.protein.resi_atoms.NEG_AA`)</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">rgroup_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rgroup_df</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"rgroup_df"</span><span class="p">]</span>
+    <span class="n">ionic_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span><span class="n">rgroup_df</span><span class="p">,</span> <span class="s2">"residue_name"</span><span class="p">,</span> <span class="n">IONIC_RESIS</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">ionic_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span><span class="n">rgroup_df</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()),</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">distmat</span> <span class="o">=</span> <span class="n">compute_distmat</span><span class="p">(</span><span class="n">ionic_df</span><span class="p">)</span>
+    <span class="n">interacting_atoms</span> <span class="o">=</span> <span class="n">get_interacting_atoms</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">distmat</span><span class="p">)</span>
+    <span class="n">add_interacting_resis</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">interacting_atoms</span><span class="p">,</span> <span class="n">ionic_df</span><span class="p">,</span> <span class="p">[</span><span class="s2">"ionic"</span><span class="p">])</span>
+    <span class="c1"># Check that the interacting residues are of opposite charges</span>
+    <span class="k">for</span> <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span> <span class="ow">in</span> <span class="n">get_edges_by_bond_type</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">"ionic"</span><span class="p">):</span>
+        <span class="n">condition1</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">r1</span><span class="p">][</span><span class="s2">"residue_name"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">POS_AA</span>
+            <span class="ow">and</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">r2</span><span class="p">][</span><span class="s2">"residue_name"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">NEG_AA</span>
+        <span class="p">)</span>
+
+        <span class="n">condition2</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">r2</span><span class="p">][</span><span class="s2">"residue_name"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">POS_AA</span>
+            <span class="ow">and</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">r1</span><span class="p">][</span><span class="s2">"residue_name"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">NEG_AA</span>
+        <span class="p">)</span>
+
+        <span class="n">is_ionic</span> <span class="o">=</span> <span class="n">condition1</span> <span class="ow">or</span> <span class="n">condition2</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_ionic</span><span class="p">:</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">"ionic"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_aromatic_interactions"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_aromatic_interactions">[docs]</a><span class="k">def</span> <span class="nf">add_aromatic_interactions</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">pdb_df</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Find all aromatic-aromatic interaction.</span>
+
+<span class="sd">    Criteria: phenyl ring centroids separated between 4.5A to 7A.</span>
+<span class="sd">    Phenyl rings are present on ``PHE, TRP, HIS, TYR`` (:const:`~graphein.protein.resi_atoms.AROMATIC_RESIS`).</span>
+<span class="sd">    Phenyl ring atoms on these amino acids are defined by the following</span>
+<span class="sd">    atoms:</span>
+<span class="sd">    - PHE: CG, CD, CE, CZ</span>
+<span class="sd">    - TRP: CD, CE, CH, CZ</span>
+<span class="sd">    - HIS: CG, CD, ND, NE, CE</span>
+<span class="sd">    - TYR: CG, CD, CE, CZ</span>
+<span class="sd">    Centroids of these atoms are taken by taking:</span>
+<span class="sd">        (mean x), (mean y), (mean z)</span>
+<span class="sd">    for each of the ring atoms.</span>
+<span class="sd">    Notes for future self/developers:</span>
+<span class="sd">    - Because of the requirement to pre-compute ring centroids, we do not</span>
+<span class="sd">        use the functions written above (filter_dataframe, compute_distmat,</span>
+<span class="sd">        get_interacting_atoms), as they do not return centroid atom</span>
+<span class="sd">        euclidean coordinates.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">pdb_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pdb_df</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"raw_pdb_df"</span><span class="p">]</span>
+    <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">resi</span> <span class="ow">in</span> <span class="n">AROMATIC_RESIS</span><span class="p">:</span>
+        <span class="n">resi_rings_df</span> <span class="o">=</span> <span class="n">get_ring_atoms</span><span class="p">(</span><span class="n">pdb_df</span><span class="p">,</span> <span class="n">resi</span><span class="p">)</span>
+        <span class="n">resi_rings_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+            <span class="n">resi_rings_df</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()),</span> <span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">resi_centroid_df</span> <span class="o">=</span> <span class="n">get_ring_centroids</span><span class="p">(</span><span class="n">resi_rings_df</span><span class="p">)</span>
+        <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resi_centroid_df</span><span class="p">)</span>
+    <span class="n">aromatic_df</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">"node_id"</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">distmat</span> <span class="o">=</span> <span class="n">compute_distmat</span><span class="p">(</span><span class="n">aromatic_df</span><span class="p">)</span>
+    <span class="n">distmat</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">aromatic_df</span><span class="p">[</span><span class="s2">"node_id"</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">distmat</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">aromatic_df</span><span class="p">[</span><span class="s2">"node_id"</span><span class="p">]</span>
+    <span class="n">distmat</span> <span class="o">=</span> <span class="n">distmat</span><span class="p">[(</span><span class="n">distmat</span> <span class="o">&gt;=</span> <span class="mf">4.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">distmat</span> <span class="o">&lt;=</span> <span class="mi">7</span><span class="p">)]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">distmat</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">interacting_resis</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">distmat</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="n">distmat</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="p">]</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">interacting_resis</span><span class="p">)</span><span class="si">}</span><span class="s2"> aromatic-aromatic interactions"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span> <span class="ow">in</span> <span class="n">interacting_resis</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">n1</span><span class="p">][</span><span class="s2">"residue_name"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">AROMATIC_RESIS</span>
+        <span class="k">assert</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">n2</span><span class="p">][</span><span class="s2">"residue_name"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">AROMATIC_RESIS</span>
+        <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">):</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"aromatic"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="s2">"aromatic"</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="add_aromatic_sulphur_interactions"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_aromatic_sulphur_interactions">[docs]</a><span class="k">def</span> <span class="nf">add_aromatic_sulphur_interactions</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">rgroup_df</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">"""Find all aromatic-sulphur interactions."""</span>
+    <span class="k">if</span> <span class="n">rgroup_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rgroup_df</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"rgroup_df"</span><span class="p">]</span>
+    <span class="n">RESIDUES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"MET"</span><span class="p">,</span> <span class="s2">"CYS"</span><span class="p">,</span> <span class="s2">"PHE"</span><span class="p">,</span> <span class="s2">"TYR"</span><span class="p">,</span> <span class="s2">"TRP"</span><span class="p">]</span>
+    <span class="n">SULPHUR_RESIS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"MET"</span><span class="p">,</span> <span class="s2">"CYS"</span><span class="p">]</span>
+    <span class="n">AROMATIC_RESIS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"PHE"</span><span class="p">,</span> <span class="s2">"TYR"</span><span class="p">,</span> <span class="s2">"TRP"</span><span class="p">]</span>
+
+    <span class="n">aromatic_sulphur_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">rgroup_df</span><span class="p">,</span> <span class="s2">"residue_name"</span><span class="p">,</span> <span class="n">RESIDUES</span><span class="p">,</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">aromatic_sulphur_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">aromatic_sulphur_df</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()),</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">distmat</span> <span class="o">=</span> <span class="n">compute_distmat</span><span class="p">(</span><span class="n">aromatic_sulphur_df</span><span class="p">)</span>
+    <span class="n">interacting_atoms</span> <span class="o">=</span> <span class="n">get_interacting_atoms</span><span class="p">(</span><span class="mf">5.3</span><span class="p">,</span> <span class="n">distmat</span><span class="p">)</span>
+    <span class="n">interacting_atoms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">interacting_atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">interacting_atoms</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">)</span> <span class="ow">in</span> <span class="n">interacting_atoms</span><span class="p">:</span>
+        <span class="n">resi1</span> <span class="o">=</span> <span class="n">aromatic_sulphur_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a1</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">]</span>
+        <span class="n">resi2</span> <span class="o">=</span> <span class="n">aromatic_sulphur_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a2</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">]</span>
+
+        <span class="n">condition1</span> <span class="o">=</span> <span class="n">resi1</span> <span class="ow">in</span> <span class="n">SULPHUR_RESIS</span> <span class="ow">and</span> <span class="n">resi2</span> <span class="ow">in</span> <span class="n">AROMATIC_RESIS</span>
+        <span class="n">condition2</span> <span class="o">=</span> <span class="n">resi1</span> <span class="ow">in</span> <span class="n">AROMATIC_RESIS</span> <span class="ow">and</span> <span class="n">resi2</span> <span class="ow">in</span> <span class="n">SULPHUR_RESIS</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">condition1</span> <span class="ow">or</span> <span class="n">condition2</span><span class="p">)</span> <span class="ow">and</span> <span class="n">resi1</span> <span class="o">!=</span> <span class="n">resi2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">resi1</span><span class="p">,</span> <span class="n">resi2</span><span class="p">):</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">resi1</span><span class="p">,</span> <span class="n">resi2</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"aromatic_sulphur"</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">resi1</span><span class="p">,</span> <span class="n">resi2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="s2">"aromatic_sulphur"</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="add_cation_pi_interactions"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_cation_pi_interactions">[docs]</a><span class="k">def</span> <span class="nf">add_cation_pi_interactions</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">rgroup_df</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">"""Add cation-pi interactions."""</span>
+    <span class="k">if</span> <span class="n">rgroup_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rgroup_df</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"rgroup_df"</span><span class="p">]</span>
+    <span class="n">cation_pi_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">rgroup_df</span><span class="p">,</span> <span class="s2">"residue_name"</span><span class="p">,</span> <span class="n">CATION_PI_RESIS</span><span class="p">,</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">cation_pi_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">cation_pi_df</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()),</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">distmat</span> <span class="o">=</span> <span class="n">compute_distmat</span><span class="p">(</span><span class="n">cation_pi_df</span><span class="p">)</span>
+    <span class="n">interacting_atoms</span> <span class="o">=</span> <span class="n">get_interacting_atoms</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">distmat</span><span class="p">)</span>
+    <span class="n">interacting_atoms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">interacting_atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">interacting_atoms</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">)</span> <span class="ow">in</span> <span class="n">interacting_atoms</span><span class="p">:</span>
+        <span class="n">resi1</span> <span class="o">=</span> <span class="n">cation_pi_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a1</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">]</span>
+        <span class="n">resi2</span> <span class="o">=</span> <span class="n">cation_pi_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a2</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">]</span>
+
+        <span class="n">condition1</span> <span class="o">=</span> <span class="n">resi1</span> <span class="ow">in</span> <span class="n">CATION_RESIS</span> <span class="ow">and</span> <span class="n">resi2</span> <span class="ow">in</span> <span class="n">PI_RESIS</span>
+        <span class="n">condition2</span> <span class="o">=</span> <span class="n">resi1</span> <span class="ow">in</span> <span class="n">PI_RESIS</span> <span class="ow">and</span> <span class="n">resi2</span> <span class="ow">in</span> <span class="n">CATION_RESIS</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">condition1</span> <span class="ow">or</span> <span class="n">condition2</span><span class="p">)</span> <span class="ow">and</span> <span class="n">resi1</span> <span class="o">!=</span> <span class="n">resi2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">resi1</span><span class="p">,</span> <span class="n">resi2</span><span class="p">):</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">resi1</span><span class="p">,</span> <span class="n">resi2</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"cation_pi"</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">resi1</span><span class="p">,</span> <span class="n">resi2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="s2">"cation_pi"</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="get_interacting_atoms"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.get_interacting_atoms">[docs]</a><span class="k">def</span> <span class="nf">get_interacting_atoms</span><span class="p">(</span><span class="n">angstroms</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">distmat</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+    <span class="sd">"""Find the atoms that are within a particular radius of one another."""</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">distmat</span> <span class="o">&lt;=</span> <span class="n">angstroms</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_delaunay_triangulation"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_delaunay_triangulation">[docs]</a><span class="k">def</span> <span class="nf">add_delaunay_triangulation</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">allowable_nodes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Compute the Delaunay triangulation of the protein structure.</span>
+
+<span class="sd">    This has been used in prior work. References:</span>
+
+<span class="sd">        Harrison, R. W., Yu, X. &amp; Weber, I. T. Using triangulation to include</span>
+<span class="sd">        target structure improves drug resistance prediction accuracy. in 1–1</span>
+<span class="sd">        (IEEE, 2013). doi:10.1109/ICCABS.2013.6629236</span>
+
+<span class="sd">        Yu, X., Weber, I. T. &amp; Harrison, R. W. Prediction of HIV drug</span>
+<span class="sd">        resistance from genotype with encoded three-dimensional protein</span>
+<span class="sd">        structure. BMC Genomics 15 Suppl 5, S1 (2014).</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">    1. We do not use the add_interacting_resis function, because this</span>
+<span class="sd">        interaction is computed on the ``CA`` atoms. Therefore, there is code</span>
+<span class="sd">        duplication. For now, I have chosen to leave this code duplication</span>
+<span class="sd">        in.</span>
+
+<span class="sd">    :param G: The networkx graph to add the triangulation to.</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param allowable_nodes: The nodes to include in the triangulation. If ``None`` (default), no filtering is done.</span>
+<span class="sd">        This parameter is used to filter out nodes that are not desired in the triangulation.</span>
+<span class="sd">        Eg if you wanted to construct a delaunay triangulation of the CA atoms of an atomic graph.</span>
+<span class="sd">    :type allowable_nodes: List[str], optional</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">allowable_nodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">d</span><span class="p">[</span><span class="s2">"coords"</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
+        <span class="n">node_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">d</span><span class="p">[</span><span class="s2">"coords"</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s2">"atom_type"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">allowable_nodes</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">node_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">i</span><span class="p">:</span> <span class="n">n</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s2">"atom_type"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">allowable_nodes</span>
+        <span class="p">}</span>
+        <span class="n">node_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">node_map</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+    <span class="n">tri</span> <span class="o">=</span> <span class="n">Delaunay</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>  <span class="c1"># this is the triangulation</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tri</span><span class="o">.</span><span class="n">simplices</span><span class="p">)</span><span class="si">}</span><span class="s2"> simplices in the Delaunay Triangulation."</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">simplex</span> <span class="ow">in</span> <span class="n">tri</span><span class="o">.</span><span class="n">simplices</span><span class="p">:</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">node_map</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">simplex</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">n1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span> <span class="ow">or</span> <span class="n">n2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">):</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"delaunay"</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="s2">"delaunay"</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="add_distance_threshold"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_distance_threshold">[docs]</a><span class="k">def</span> <span class="nf">add_distance_threshold</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">long_interaction_threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Adds edges to any nodes within a given distance of each other. Long interaction threshold is used</span>
+<span class="sd">    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold</span>
+
+<span class="sd">    :param G: Protein Structure graph to add distance edges to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected</span>
+<span class="sd">    :type long_interaction_threshold: int</span>
+<span class="sd">    :param threshold: Distance in angstroms, below which two nodes are connected</span>
+<span class="sd">    :type threshold: float</span>
+<span class="sd">    :return: Graph with distance-based edges added</span>
+<span class="sd">    """</span>
+    <span class="n">pdb_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">],</span> <span class="s2">"node_id"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()),</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">dist_mat</span> <span class="o">=</span> <span class="n">compute_distmat</span><span class="p">(</span><span class="n">pdb_df</span><span class="p">)</span>
+    <span class="n">interacting_nodes</span> <span class="o">=</span> <span class="n">get_interacting_atoms</span><span class="p">(</span><span class="n">threshold</span><span class="p">,</span> <span class="n">distmat</span><span class="o">=</span><span class="n">dist_mat</span><span class="p">)</span>
+    <span class="n">interacting_nodes</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">interacting_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">interacting_nodes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">interacting_nodes</span><span class="p">))</span><span class="si">}</span><span class="s2"> distance edges"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="ow">in</span> <span class="n">interacting_nodes</span><span class="p">:</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a1</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">]</span>
+        <span class="n">n2</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a2</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">]</span>
+        <span class="n">n1_chain</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a1</span><span class="p">,</span> <span class="s2">"chain_id"</span><span class="p">]</span>
+        <span class="n">n2_chain</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a2</span><span class="p">,</span> <span class="s2">"chain_id"</span><span class="p">]</span>
+        <span class="n">n1_position</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a1</span><span class="p">,</span> <span class="s2">"residue_number"</span><span class="p">]</span>
+        <span class="n">n2_position</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a2</span><span class="p">,</span> <span class="s2">"residue_number"</span><span class="p">]</span>
+
+        <span class="n">condition_1</span> <span class="o">=</span> <span class="n">n1_chain</span> <span class="o">!=</span> <span class="n">n2_chain</span>
+        <span class="n">condition_2</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">abs</span><span class="p">(</span><span class="n">n1_position</span> <span class="o">-</span> <span class="n">n2_position</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">long_interaction_threshold</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">condition_1</span> <span class="ow">or</span> <span class="n">condition_2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">):</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"distance_threshold"</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="s2">"distance_threshold"</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="add_k_nn_edges"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_k_nn_edges">[docs]</a><span class="k">def</span> <span class="nf">add_k_nn_edges</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
+    <span class="n">long_interaction_threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"connectivity"</span><span class="p">,</span>
+    <span class="n">metric</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"minkowski"</span><span class="p">,</span>
+    <span class="n">p</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">include_self</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Adds edges to nodes based on K nearest neighbours. Long interaction threshold is used</span>
+<span class="sd">    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold</span>
+
+<span class="sd">    :param G: Protein Structure graph to add distance edges to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected</span>
+<span class="sd">    :type long_interaction_threshold: int</span>
+<span class="sd">    :param k: Number of neighbors for each sample.</span>
+<span class="sd">    :type k: int</span>
+<span class="sd">    :param mode: Type of returned matrix: ``"connectivity"`` will return the connectivity matrix with ones and zeros,</span>
+<span class="sd">        and ``"distance"`` will return the distances between neighbors according to the given metric.</span>
+<span class="sd">    :type mode: str</span>
+<span class="sd">    :param metric: The distance metric used to calculate the k-Neighbors for each sample point.</span>
+<span class="sd">        The DistanceMetric class gives a list of available metrics.</span>
+<span class="sd">        The default distance is ``"euclidean"`` (``"minkowski"`` metric with the ``p`` param equal to ``2``).</span>
+<span class="sd">    :type metric: str</span>
+<span class="sd">    :param p: Power parameter for the Minkowski metric. When ``p = 1``, this is equivalent to using ``manhattan_distance`` (l1),</span>
+<span class="sd">        and ``euclidean_distance`` (l2) for ``p = 2``. For arbitrary ``p``, ``minkowski_distance`` (l_p) is used. Default is ``2`` (euclidean).</span>
+<span class="sd">    :type p: int</span>
+<span class="sd">    :param include_self: Whether or not to mark each sample as the first nearest neighbor to itself.</span>
+<span class="sd">        If ``"auto"``, then ``True`` is used for ``mode="connectivity"`` and ``False`` for ``mode="distance"``. Default is ``False``.</span>
+<span class="sd">    :type include_self: Union[bool, str]</span>
+<span class="sd">    :return: Graph with knn-based edges added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    """</span>
+    <span class="n">pdb_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">],</span> <span class="s2">"node_id"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()),</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">dist_mat</span> <span class="o">=</span> <span class="n">compute_distmat</span><span class="p">(</span><span class="n">pdb_df</span><span class="p">)</span>
+
+    <span class="n">nn</span> <span class="o">=</span> <span class="n">kneighbors_graph</span><span class="p">(</span>
+        <span class="n">X</span><span class="o">=</span><span class="n">dist_mat</span><span class="p">,</span>
+        <span class="n">n_neighbors</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+        <span class="n">include_self</span><span class="o">=</span><span class="n">include_self</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Create iterable of node indices</span>
+    <span class="n">outgoing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]))),</span> <span class="n">k</span><span class="p">)</span>
+    <span class="n">incoming</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">indices</span>
+    <span class="n">interacting_nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">outgoing</span><span class="p">,</span> <span class="n">incoming</span><span class="p">))</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">interacting_nodes</span><span class="p">)</span><span class="si">}</span><span class="s2"> KNN edges"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="ow">in</span> <span class="n">interacting_nodes</span><span class="p">:</span>
+        <span class="c1"># Get nodes IDs from indices</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a1</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">]</span>
+        <span class="n">n2</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a2</span><span class="p">,</span> <span class="s2">"node_id"</span><span class="p">]</span>
+
+        <span class="c1"># Get chains</span>
+        <span class="n">n1_chain</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a1</span><span class="p">,</span> <span class="s2">"chain_id"</span><span class="p">]</span>
+        <span class="n">n2_chain</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a2</span><span class="p">,</span> <span class="s2">"chain_id"</span><span class="p">]</span>
+
+        <span class="c1"># Get sequence position</span>
+        <span class="n">n1_position</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a1</span><span class="p">,</span> <span class="s2">"residue_number"</span><span class="p">]</span>
+        <span class="n">n2_position</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">"pdb_df"</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a2</span><span class="p">,</span> <span class="s2">"residue_number"</span><span class="p">]</span>
+
+        <span class="c1"># Check residues are not on same chain</span>
+        <span class="n">condition_1</span> <span class="o">=</span> <span class="n">n1_chain</span> <span class="o">!=</span> <span class="n">n2_chain</span>
+        <span class="c1"># Check residues are separated by long_interaction_threshold</span>
+        <span class="n">condition_2</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">abs</span><span class="p">(</span><span class="n">n1_position</span> <span class="o">-</span> <span class="n">n2_position</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">long_interaction_threshold</span>
+        <span class="p">)</span>
+
+        <span class="c1"># If not on same chain add edge or</span>
+        <span class="c1"># If on same chain and separation is sufficient add edge</span>
+        <span class="k">if</span> <span class="n">condition_1</span> <span class="ow">or</span> <span class="n">condition_2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">):</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"k_nn"</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="s2">"k_nn"</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="get_ring_atoms"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.get_ring_atoms">[docs]</a><span class="k">def</span> <span class="nf">get_ring_atoms</span><span class="p">(</span><span class="n">dataframe</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">aa</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Return ring atoms from a dataframe.</span>
+
+<span class="sd">    A helper function for add_aromatic_interactions.</span>
+
+<span class="sd">    Gets the ring atoms from the particular aromatic amino acid.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    ===========</span>
+<span class="sd">    - dataframe: the dataframe containing the atom records.</span>
+<span class="sd">    - aa: the amino acid of interest, passed in as 3-letter string.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ========</span>
+<span class="sd">    - dataframe: a filtered dataframe containing just those atoms from the</span>
+<span class="sd">                    particular amino acid selected. e.g. equivalent to</span>
+<span class="sd">                    selecting just the ring atoms from a particular amino</span>
+<span class="sd">                    acid.</span>
+<span class="sd">    """</span>
+    <span class="n">ring_atom_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="s2">"residue_name"</span><span class="p">,</span> <span class="p">[</span><span class="n">aa</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">ring_atom_df</span> <span class="o">=</span> <span class="n">filter_dataframe</span><span class="p">(</span>
+        <span class="n">ring_atom_df</span><span class="p">,</span> <span class="s2">"atom_name"</span><span class="p">,</span> <span class="n">AA_RING_ATOMS</span><span class="p">[</span><span class="n">aa</span><span class="p">],</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ring_atom_df</span></div>
+
+
+<div class="viewcode-block" id="get_ring_centroids"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.get_ring_centroids">[docs]</a><span class="k">def</span> <span class="nf">get_ring_centroids</span><span class="p">(</span><span class="n">ring_atom_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Return aromatic ring centrods.</span>
+
+<span class="sd">    A helper function for add_aromatic_interactions.</span>
+
+<span class="sd">    Computes the ring centroids for each a particular amino acid's ring</span>
+<span class="sd">    atoms.</span>
+
+<span class="sd">    Ring centroids are computed by taking the mean of the x, y, and z</span>
+<span class="sd">    coordinates.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    ===========</span>
+<span class="sd">    - ring_atom_df: a dataframe computed using get_ring_atoms.</span>
+<span class="sd">    - aa: the amino acid under study</span>
+<span class="sd">    Returns:</span>
+<span class="sd">    ========</span>
+<span class="sd">    - centroid_df: a dataframe containing just the centroid coordinates of</span>
+<span class="sd">                    the ring atoms of each residue.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">ring_atom_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"node_id"</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">mean</span><span class="p">()[[</span><span class="s2">"x_coord"</span><span class="p">,</span> <span class="s2">"y_coord"</span><span class="p">,</span> <span class="s2">"z_coord"</span><span class="p">]]</span>
+        <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_edges_by_bond_type"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.get_edges_by_bond_type">[docs]</a><span class="k">def</span> <span class="nf">get_edges_by_bond_type</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">bond_type</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Return edges of a particular bond type.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    ===========</span>
+<span class="sd">    - bond_type: (str) one of the elements in the variable BOND_TYPES</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ========</span>
+<span class="sd">    - resis: (list) a list of tuples, where each tuple is an edge.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">)</span> <span class="k">for</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">bond_type</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span>
+    <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="node_coords"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.node_coords">[docs]</a><span class="k">def</span> <span class="nf">node_coords</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Return the ``x, y, z`` coordinates of a node.</span>
+<span class="sd">    This is a helper function. Simplifies the code.</span>
+
+<span class="sd">    :param G: nx.Graph protein structure graph to extract coordinates from</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param n: str node ID in graph to extract coordinates from</span>
+<span class="sd">    :type n: str</span>
+<span class="sd">    :return: Tuple of coordinates ``(x, y, z)``</span>
+<span class="sd">    :rtype: Tuple[float, float, float]</span>
+<span class="sd">    """</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="s2">"x_coord"</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="s2">"y_coord"</span><span class="p">]</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="s2">"z_coord"</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span></div>
+
+
+<div class="viewcode-block" id="add_interacting_resis"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.distance.add_interacting_resis">[docs]</a><span class="k">def</span> <span class="nf">add_interacting_resis</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
+    <span class="n">interacting_atoms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">dataframe</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">kind</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Add interacting residues to graph.</span>
+
+<span class="sd">    Returns a list of 2-tuples indicating the interacting residues based</span>
+<span class="sd">    on the interacting atoms. This is most typically called after the</span>
+<span class="sd">    get_interacting_atoms function above.</span>
+
+<span class="sd">    Also filters out the list such that the residues have to be at least</span>
+<span class="sd">    two apart.</span>
+
+<span class="sd">    ### Parameters</span>
+
+<span class="sd">    - interacting_atoms:    (numpy array) result from get_interacting_atoms function.</span>
+<span class="sd">    - dataframe:            (pandas dataframe) a pandas dataframe that</span>
+<span class="sd">                            houses the euclidean locations of each atom.</span>
+<span class="sd">    - kind:                 (list) the kind of interaction. Contains one</span>
+<span class="sd">                            of :</span>
+<span class="sd">                            - hydrophobic</span>
+<span class="sd">                            - disulfide</span>
+<span class="sd">                            - hbond</span>
+<span class="sd">                            - ionic</span>
+<span class="sd">                            - aromatic</span>
+<span class="sd">                            - aromatic_sulphur</span>
+<span class="sd">                            - cation_pi</span>
+<span class="sd">                            - delaunay</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ========</span>
+<span class="sd">    - filtered_interacting_resis: (set of tuples) the residues that are in</span>
+<span class="sd">        an interaction, with the interaction kind specified</span>
+<span class="sd">    """</span>
+    <span class="c1"># This assertion/check is present for defensive programming!</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kind</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">BOND_TYPES</span>
+
+    <span class="n">resi1</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">interacting_atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">"node_id"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">resi2</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">interacting_atoms</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="s2">"node_id"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="n">interacting_resis</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">resi1</span><span class="p">,</span> <span class="n">resi2</span><span class="p">)))</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">interacting_resis</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> interactions."</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">interacting_resis</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i1</span> <span class="o">!=</span> <span class="n">i2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kind</span><span class="p">:</span>
+                    <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">kind</span><span class="p">))</span></div>
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/scripts/furo.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>

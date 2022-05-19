@@ -1,0 +1,1166 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    
+<meta property="og:title" content="PSCDB - Baselines" />
+  
+<meta property="og:type" content="website" />
+  
+<meta property="og:url" content="https://graphein.ai/notebooks/pscdb_baselines.html" />
+  
+<meta property="og:description" content="Load dataset: Transformation from Raw Structure to ML-ready Datasets Construction with Graphein: Convert Nx graphs to PyTorch Geometric: Model Configuration: Construct DataLoaders: Define Model: Tr..." />
+  
+<meta property="og:image" content="https://graphein.ai/_static/graphein.png" />
+  
+<meta property="og:image:alt" content="PSCDB - Baselines" />
+  <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="PPISP - Protein Protein Interaction Structure Prediction" href="../datasets/ppisp.html" /><link rel="prev" title="&lt;no title&gt;" href="pscdb_processing.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>PSCDB - Baselines - Graphein 1.3.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Graphein 1.3.0</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.3.0</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../datasets.html">Datasets</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'../'</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">'matplotlib'</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">'graphein'</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="PSCDB---Baselines">
+<h1>PSCDB - Baselines<a class="headerlink" href="#PSCDB---Baselines" title="Permalink to this headline">#</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">pytorch_lightning</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">from</span> <span class="nn">tqdm.notebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">torch_geometric</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">Data</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.utils</span> <span class="kn">import</span> <span class="n">from_networkx</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelBinarizer</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">f1_score</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+RDKit WARNING: [23:36:27] Enabling RDKit 2019.09.3 jupyter extensions
+[23:36:27] Enabling RDKit 2019.09.3 jupyter extensions
+</pre></div></div>
+</div>
+<div class="section" id="Load-dataset">
+<h2>Load dataset<a class="headerlink" href="#Load-dataset" title="Permalink to this headline">#</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"../datasets/pscdb/structural_rearrangement_data.csv"</span><span class="p">)</span>
+<span class="n">pdbs</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Free PDB"</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">lab</span><span class="p">))</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">)</span> <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">LabelBinarizer</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">motion_type</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Transformation-from-Raw-Structure-to-ML-ready-Datasets-Construction-with-Graphein">
+<h2>Transformation from Raw Structure to ML-ready Datasets Construction with Graphein<a class="headerlink" href="#Transformation-from-Raw-Structure-to-ML-ready-Datasets-Construction-with-Graphein" title="Permalink to this headline">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.config</span> <span class="kn">import</span> <span class="n">ProteinGraphConfig</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.edges.distance</span> <span class="kn">import</span> <span class="n">add_hydrogen_bond_interactions</span><span class="p">,</span> <span class="n">add_peptide_bonds</span><span class="p">,</span> <span class="n">add_k_nn_edges</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.graphs</span> <span class="kn">import</span> <span class="n">construct_graph</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+
+<span class="c1"># Override config with constructors</span>
+<span class="n">constructors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"edge_construction_functions"</span><span class="p">:</span> <span class="p">[</span><span class="n">partial</span><span class="p">(</span><span class="n">add_k_nn_edges</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">long_interaction_threshold</span><span class="o">=</span><span class="mi">0</span><span class="p">)],</span>
+    <span class="c1">#"edge_construction_functions": [add_hydrogen_bond_interactions, add_peptide_bonds],</span>
+    <span class="c1">#"node_metadata_functions": [add_dssp_feature]</span>
+<span class="p">}</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">ProteinGraphConfig</span><span class="p">(</span><span class="o">**</span><span class="n">constructors</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
+
+<span class="c1"># Make graphs</span>
+<span class="n">graph_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">y_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pdb</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">pdbs</span><span class="p">)):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">graph_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">construct_graph</span><span class="p">(</span><span class="n">pdb_code</span><span class="o">=</span><span class="n">pdb</span><span class="p">,</span>
+                        <span class="n">config</span><span class="o">=</span><span class="n">config</span>
+                       <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">y_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">+</span> <span class="s1">' processing error...'</span><span class="p">)</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{'granularity': 'CA', 'keep_hets': False, 'insertions': False, 'pdb_dir': PosixPath('../examples/pdbs'), 'verbose': False, 'exclude_waters': True, 'deprotonate': False, 'protein_df_processing_functions': None, 'edge_construction_functions': [functools.partial(&lt;function add_k_nn_edges at 0x7fb4b22bbf70&gt;, k=3, long_interaction_threshold=0)], 'node_metadata_functions': [&lt;function meiler_embedding at 0x7fb4b22c7430&gt;], 'edge_metadata_functions': None, 'graph_metadata_functions': None, 'get_contacts_config': None, 'dssp_config': None}
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "ff91e6386f7c422ba50479795794db33", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+URL Error [Errno 110] Connection timed out
+274 processing error...
+666 processing error...
+677 processing error...
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="n">pdbs</span><span class="p">[</span><span class="mi">274</span><span class="p">]</span>
+<span class="c1">#pdbs[266]</span>
+<span class="c1">#pdbs[677]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+'3e59'
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Convert-Nx-graphs-to-PyTorch-Geometric">
+<h2>Convert Nx graphs to PyTorch Geometric<a class="headerlink" href="#Convert-Nx-graphs-to-PyTorch-Geometric" title="Permalink to this headline">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">from</span> <span class="nn">graphein.ml.conversion</span> <span class="kn">import</span> <span class="n">GraphFormatConvertor</span>
+
+<span class="n">format_convertor</span> <span class="o">=</span> <span class="n">GraphFormatConvertor</span><span class="p">(</span><span class="s1">'nx'</span><span class="p">,</span> <span class="s1">'pyg'</span><span class="p">,</span>
+                                        <span class="n">verbose</span> <span class="o">=</span> <span class="s1">'gnn'</span><span class="p">,</span>
+                                        <span class="n">columns</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Using backend: pytorch
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="n">pyg_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">format_convertor</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span> <span class="k">for</span> <span class="n">graph</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">graph_list</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "563bbc190d4944c9af056dce12eddd39", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pyg_list</span><span class="p">):</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y_list</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pyg_list</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">node_id</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">pyg_list</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Data(coords=[10112, 3], dist_mat=[1], edge_index=[2, 120], name=[1], node_id=[1264], y=1)
+Data(coords=[820, 3], dist_mat=[1], edge_index=[2, 1431], name=[1], node_id=[808], y=2)
+Data(coords=[668, 3], dist_mat=[1], edge_index=[2, 1166], name=[1], node_id=[666], y=4)
+Data(coords=[2720, 3], dist_mat=[1], edge_index=[2, 3], name=[1], node_id=[340], y=5)
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Model-Configuration">
+<h2>Model Configuration<a class="headerlink" href="#Model-Configuration" title="Permalink to this headline">#</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="n">config_default</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">n_hid</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_out</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">lr</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
+    <span class="n">num_heads</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="n">num_att_dim</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>
+    <span class="n">model_name</span> <span class="o">=</span> <span class="s1">'GCN'</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Struct</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">entries</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">Struct</span><span class="p">(</span><span class="o">**</span><span class="n">config_default</span><span class="p">)</span>
+
+<span class="k">global</span> <span class="n">model_name</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">model_name</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Construct-DataLoaders">
+<h2>Construct DataLoaders<a class="headerlink" href="#Construct-DataLoaders" title="Permalink to this headline">#</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">idx_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pyg_list</span><span class="p">))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">idx_all</span><span class="p">)</span>
+
+<span class="n">train_idx</span><span class="p">,</span> <span class="n">valid_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">idx_all</span><span class="p">,</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mf">.8</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">pyg_list</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="mf">.9</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">pyg_list</span><span class="p">))])</span>
+<span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="p">[</span><span class="n">pyg_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">train_idx</span><span class="p">],</span> <span class="p">[</span><span class="n">pyg_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">valid_idx</span><span class="p">],</span> <span class="p">[</span><span class="n">pyg_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">test_idx</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">drop_last</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">valid_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="n">pyg_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Data(coords=[635, 3], dist_mat=[1], edge_index=[2, 1118], name=[1], node_id=[635], y=1)
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Define-Model">
+<h2>Define Model<a class="headerlink" href="#Define-Model" title="Permalink to this headline">#</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.nn</span> <span class="kn">import</span> <span class="n">GCNConv</span><span class="p">,</span> <span class="n">GATConv</span><span class="p">,</span> <span class="n">SAGEConv</span><span class="p">,</span> <span class="n">global_add_pool</span>
+<span class="kn">from</span> <span class="nn">torch.nn.functional</span> <span class="kn">import</span> <span class="n">mse_loss</span><span class="p">,</span> <span class="n">nll_loss</span><span class="p">,</span> <span class="n">relu</span><span class="p">,</span> <span class="n">softmax</span><span class="p">,</span> <span class="n">cross_entropy</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.metrics.functional</span> <span class="kn">import</span> <span class="n">accuracy</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="k">class</span> <span class="nc">GraphNets</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">'GCN'</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer1</span> <span class="o">=</span> <span class="n">GCNConv</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">n_hid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer2</span> <span class="o">=</span> <span class="n">GCNConv</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">n_hid</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">n_out</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">'GAT'</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer1</span> <span class="o">=</span> <span class="n">GATConv</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">num_att_dim</span><span class="p">,</span> <span class="n">heads</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer2</span> <span class="o">=</span> <span class="n">GATConv</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">num_att_dim</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">out_channels</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">n_out</span><span class="p">,</span> <span class="n">heads</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">concat</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                 <span class="n">dropout</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">'GraphSAGE'</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer1</span> <span class="o">=</span> <span class="n">SAGEConv</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">n_hid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer2</span> <span class="o">=</span> <span class="n">SAGEConv</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">n_hid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">n_out</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">n_out</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">coords</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">dropout</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">elu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_index</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">dropout</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_index</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">global_add_pool</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"train_loss"</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"train_acc"</span><span class="p">,</span> <span class="n">acc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span>
+
+    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"valid_loss"</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"valid_acc"</span><span class="p">,</span> <span class="n">acc</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="n">y_pred_softmax</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">y_pred_tags</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_pred_softmax</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">f1</span> <span class="o">=</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">y_pred_tags</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">average</span> <span class="o">=</span> <span class="s1">'weighted'</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"test_loss"</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"test_acc"</span><span class="p">,</span> <span class="n">acc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"test_f1"</span><span class="p">,</span> <span class="n">f1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">lr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">optimizer</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="n">GraphNets</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+GraphNets(
+  (layer1): GCNConv(3, 8)
+  (layer2): GCNConv(8, 8)
+  (decoder): Linear(in_features=8, out_features=7, bias=True)
+)
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.callbacks</span> <span class="kn">import</span> <span class="n">ModelCheckpoint</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">file_path</span> <span class="o">=</span> <span class="s1">'./graphein_model'</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+<span class="n">checkpoint_callback</span> <span class="o">=</span> <span class="n">ModelCheckpoint</span><span class="p">(</span>
+    <span class="n">monitor</span><span class="o">=</span><span class="s2">"valid_loss"</span><span class="p">,</span>
+    <span class="n">dirpath</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">"model-</span><span class="si">{epoch:02d}</span><span class="s2">-</span><span class="si">{val_loss:.2f}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="n">save_top_k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">"min"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Train!">
+<h2>Train!<a class="headerlink" href="#Train!" title="Permalink to this headline">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="c1"># Train Model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">GraphNets</span><span class="p">()</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">gpus</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">checkpoint_callback</span><span class="p">])</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">)</span>
+
+<span class="c1"># evaluate on the model with the best validation set</span>
+<span class="n">best_model</span> <span class="o">=</span> <span class="n">GraphNets</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_callback</span><span class="o">.</span><span class="n">best_model_path</span><span class="p">)</span>
+<span class="n">out_best_test</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">best_model</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+GPU available: True, used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+Traceback (most recent call last):
+  File "&lt;string&gt;", line 1, in &lt;module&gt;
+  File "/home/atj39/anaconda3/envs/graphein-dev/lib/python3.8/multiprocessing/spawn.py", line 116, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "/home/atj39/anaconda3/envs/graphein-dev/lib/python3.8/multiprocessing/spawn.py", line 126, in _main
+    self = reduction.pickle.load(from_parent)
+AttributeError: Can't get attribute 'GraphNets' on &lt;module '__main__' (built-in)&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_3426530/3685191286.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> model <span class="ansi-blue-fg">=</span> GraphNets<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> trainer <span class="ansi-blue-fg">=</span> pl<span class="ansi-blue-fg">.</span>Trainer<span class="ansi-blue-fg">(</span>max_epochs<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">200</span><span class="ansi-blue-fg">,</span> gpus<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">-</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">,</span> callbacks<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">[</span>checkpoint_callback<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">----&gt; 4</span><span class="ansi-red-fg"> </span>trainer<span class="ansi-blue-fg">.</span>fit<span class="ansi-blue-fg">(</span>model<span class="ansi-blue-fg">,</span> train_loader<span class="ansi-blue-fg">,</span> valid_loader<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span> <span class="ansi-red-fg"># evaluate on the model with the best validation set</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py</span> in <span class="ansi-cyan-fg">fit</span><span class="ansi-blue-fg">(self, model, train_dataloaders, val_dataloaders, datamodule, train_dataloader)</span>
+<span class="ansi-green-intense-fg ansi-bold">    551</span>         self<span class="ansi-blue-fg">.</span>checkpoint_connector<span class="ansi-blue-fg">.</span>resume_start<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    552</span>
+<span class="ansi-green-fg">--&gt; 553</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_run<span class="ansi-blue-fg">(</span>model<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    554</span>
+<span class="ansi-green-intense-fg ansi-bold">    555</span>         <span class="ansi-green-fg">assert</span> self<span class="ansi-blue-fg">.</span>state<span class="ansi-blue-fg">.</span>stopped
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py</span> in <span class="ansi-cyan-fg">_run</span><span class="ansi-blue-fg">(self, model)</span>
+<span class="ansi-green-intense-fg ansi-bold">    916</span>
+<span class="ansi-green-intense-fg ansi-bold">    917</span>         <span class="ansi-red-fg"># dispatch `start_training` or `start_evaluating` or `start_predicting`</span>
+<span class="ansi-green-fg">--&gt; 918</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_dispatch<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    919</span>
+<span class="ansi-green-intense-fg ansi-bold">    920</span>         <span class="ansi-red-fg"># plugin will finalized fitting (e.g. ddp_spawn will load trained model)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py</span> in <span class="ansi-cyan-fg">_dispatch</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    984</span>             self<span class="ansi-blue-fg">.</span>accelerator<span class="ansi-blue-fg">.</span>start_predicting<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    985</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 986</span><span class="ansi-red-fg">             </span>self<span class="ansi-blue-fg">.</span>accelerator<span class="ansi-blue-fg">.</span>start_training<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    987</span>
+<span class="ansi-green-intense-fg ansi-bold">    988</span>     <span class="ansi-green-fg">def</span> run_stage<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pytorch_lightning/accelerators/accelerator.py</span> in <span class="ansi-cyan-fg">start_training</span><span class="ansi-blue-fg">(self, trainer)</span>
+<span class="ansi-green-intense-fg ansi-bold">     90</span>
+<span class="ansi-green-intense-fg ansi-bold">     91</span>     <span class="ansi-green-fg">def</span> start_training<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> trainer<span class="ansi-blue-fg">:</span> <span class="ansi-blue-fg">"pl.Trainer"</span><span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-&gt;</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 92</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>training_type_plugin<span class="ansi-blue-fg">.</span>start_training<span class="ansi-blue-fg">(</span>trainer<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     93</span>
+<span class="ansi-green-intense-fg ansi-bold">     94</span>     <span class="ansi-green-fg">def</span> start_evaluating<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> trainer<span class="ansi-blue-fg">:</span> <span class="ansi-blue-fg">"pl.Trainer"</span><span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-&gt;</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pytorch_lightning/plugins/training_type/ddp_spawn.py</span> in <span class="ansi-cyan-fg">start_training</span><span class="ansi-blue-fg">(self, trainer)</span>
+<span class="ansi-green-intense-fg ansi-bold">    156</span>
+<span class="ansi-green-intense-fg ansi-bold">    157</span>     <span class="ansi-green-fg">def</span> start_training<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> trainer<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 158</span><span class="ansi-red-fg">         </span>mp<span class="ansi-blue-fg">.</span>spawn<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>new_process<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>self<span class="ansi-blue-fg">.</span>mp_spawn_kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    159</span>         <span class="ansi-red-fg"># reset optimizers, since main process is never used for training and thus does not have a valid optim state</span>
+<span class="ansi-green-intense-fg ansi-bold">    160</span>         trainer<span class="ansi-blue-fg">.</span>optimizers <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/torch/multiprocessing/spawn.py</span> in <span class="ansi-cyan-fg">spawn</span><span class="ansi-blue-fg">(fn, args, nprocs, join, daemon, start_method)</span>
+<span class="ansi-green-intense-fg ansi-bold">    228</span>                ' torch.multiprocessing.start_processes(...)' % start_method)
+<span class="ansi-green-intense-fg ansi-bold">    229</span>         warnings<span class="ansi-blue-fg">.</span>warn<span class="ansi-blue-fg">(</span>msg<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 230</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> start_processes<span class="ansi-blue-fg">(</span>fn<span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">,</span> nprocs<span class="ansi-blue-fg">,</span> join<span class="ansi-blue-fg">,</span> daemon<span class="ansi-blue-fg">,</span> start_method<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">'spawn'</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/torch/multiprocessing/spawn.py</span> in <span class="ansi-cyan-fg">start_processes</span><span class="ansi-blue-fg">(fn, args, nprocs, join, daemon, start_method)</span>
+<span class="ansi-green-intense-fg ansi-bold">    177</span>             daemon<span class="ansi-blue-fg">=</span>daemon<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    178</span>         )
+<span class="ansi-green-fg">--&gt; 179</span><span class="ansi-red-fg">         </span>process<span class="ansi-blue-fg">.</span>start<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    180</span>         error_queues<span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>error_queue<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    181</span>         processes<span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>process<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/multiprocessing/process.py</span> in <span class="ansi-cyan-fg">start</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    119</span>                <span class="ansi-blue-fg">'daemonic processes are not allowed to have children'</span>
+<span class="ansi-green-intense-fg ansi-bold">    120</span>         _cleanup<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 121</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_popen <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_Popen<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    122</span>         self<span class="ansi-blue-fg">.</span>_sentinel <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_popen<span class="ansi-blue-fg">.</span>sentinel
+<span class="ansi-green-intense-fg ansi-bold">    123</span>         <span class="ansi-red-fg"># Avoid a refcycle if the target function holds an indirect</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/multiprocessing/context.py</span> in <span class="ansi-cyan-fg">_Popen</span><span class="ansi-blue-fg">(process_obj)</span>
+<span class="ansi-green-intense-fg ansi-bold">    282</span>         <span class="ansi-green-fg">def</span> _Popen<span class="ansi-blue-fg">(</span>process_obj<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    283</span>             <span class="ansi-green-fg">from</span> <span class="ansi-blue-fg">.</span>popen_spawn_posix <span class="ansi-green-fg">import</span> Popen
+<span class="ansi-green-fg">--&gt; 284</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">return</span> Popen<span class="ansi-blue-fg">(</span>process_obj<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    285</span>
+<span class="ansi-green-intense-fg ansi-bold">    286</span>     <span class="ansi-green-fg">class</span> ForkServerProcess<span class="ansi-blue-fg">(</span>process<span class="ansi-blue-fg">.</span>BaseProcess<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/multiprocessing/popen_spawn_posix.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, process_obj)</span>
+<span class="ansi-green-intense-fg ansi-bold">     30</span>     <span class="ansi-green-fg">def</span> __init__<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> process_obj<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     31</span>         self<span class="ansi-blue-fg">.</span>_fds <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-fg">---&gt; 32</span><span class="ansi-red-fg">         </span>super<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>__init__<span class="ansi-blue-fg">(</span>process_obj<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     33</span>
+<span class="ansi-green-intense-fg ansi-bold">     34</span>     <span class="ansi-green-fg">def</span> duplicate_for_child<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> fd<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/multiprocessing/popen_fork.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, process_obj)</span>
+<span class="ansi-green-intense-fg ansi-bold">     17</span>         self<span class="ansi-blue-fg">.</span>returncode <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span>
+<span class="ansi-green-intense-fg ansi-bold">     18</span>         self<span class="ansi-blue-fg">.</span>finalizer <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span>
+<span class="ansi-green-fg">---&gt; 19</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_launch<span class="ansi-blue-fg">(</span>process_obj<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     20</span>
+<span class="ansi-green-intense-fg ansi-bold">     21</span>     <span class="ansi-green-fg">def</span> duplicate_for_child<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> fd<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/multiprocessing/popen_spawn_posix.py</span> in <span class="ansi-cyan-fg">_launch</span><span class="ansi-blue-fg">(self, process_obj)</span>
+<span class="ansi-green-intense-fg ansi-bold">     60</span>             self<span class="ansi-blue-fg">.</span>sentinel <span class="ansi-blue-fg">=</span> parent_r
+<span class="ansi-green-intense-fg ansi-bold">     61</span>             <span class="ansi-green-fg">with</span> open<span class="ansi-blue-fg">(</span>parent_w<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">'wb'</span><span class="ansi-blue-fg">,</span> closefd<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">False</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> f<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 62</span><span class="ansi-red-fg">                 </span>f<span class="ansi-blue-fg">.</span>write<span class="ansi-blue-fg">(</span>fp<span class="ansi-blue-fg">.</span>getbuffer<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     63</span>         <span class="ansi-green-fg">finally</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     64</span>             fds_to_close <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-red-fg">KeyboardInterrupt</span>:
+</pre></div></div>
+</div>
+</div>
+</div>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../datasets/ppisp.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">PPISP - Protein Protein Interaction Structure Prediction</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="pscdb_processing.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">&lt;no title&gt;</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">PSCDB - Baselines</a><ul>
+<li><a class="reference internal" href="#Load-dataset">Load dataset</a></li>
+<li><a class="reference internal" href="#Transformation-from-Raw-Structure-to-ML-ready-Datasets-Construction-with-Graphein">Transformation from Raw Structure to ML-ready Datasets Construction with Graphein</a></li>
+<li><a class="reference internal" href="#Convert-Nx-graphs-to-PyTorch-Geometric">Convert Nx graphs to PyTorch Geometric</a></li>
+<li><a class="reference internal" href="#Model-Configuration">Model Configuration</a></li>
+<li><a class="reference internal" href="#Construct-DataLoaders">Construct DataLoaders</a></li>
+<li><a class="reference internal" href="#Define-Model">Define Model</a></li>
+<li><a class="reference internal" href="#Train!">Train!</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </body>
+</html>

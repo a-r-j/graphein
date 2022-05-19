@@ -1,0 +1,836 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    
+<meta property="og:title" content="graphein.utils" />
+  
+<meta property="og:type" content="website" />
+  
+<meta property="og:url" content="https://graphein.ai/modules/graphein.utils.html" />
+  
+<meta property="og:description" content="Utils: Utilities for working with graph objects. Testing utilities for the Graphein library. CLI & Config: Yaml parser for config objects PyMol:" />
+  
+<meta property="og:image" content="https://graphein.ai/_static/graphein.png" />
+  
+<meta property="og:image:alt" content="graphein.utils" />
+  <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Contributing" href="../contributing/contributing.html" /><link rel="prev" title="graphein.ml" href="graphein.ml.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>graphein.utils - Graphein 1.3.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Graphein 1.3.0</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.3.0</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <div class="section" id="graphein-utils">
+<h1>graphein.utils<a class="headerlink" href="#graphein-utils" title="Permalink to this headline">#</a></h1>
+<div class="section" id="module-graphein.utils.utils">
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-graphein.utils.utils" title="Permalink to this headline">#</a></h2>
+<p>Utilities for working with graph objects.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.annotate_edge_metadata">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">annotate_edge_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.graph.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#annotate_edge_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.annotate_edge_metadata" title="Permalink to this definition">#</a></dt>
+<dd><p>Annotates Graph edges with edge metadata. Each function in <code class="docutils literal notranslate"><span class="pre">funcs</span></code> must take the three arguments <code class="docutils literal notranslate"><span class="pre">u</span></code>, <code class="docutils literal notranslate"><span class="pre">v</span></code> and <code class="docutils literal notranslate"><span class="pre">d</span></code>, where <code class="docutils literal notranslate"><span class="pre">u</span></code> and <code class="docutils literal notranslate"><span class="pre">v</span></code> are the nodes of the edge, and <code class="docutils literal notranslate"><span class="pre">d</span></code> is the edge data dictionary.</p>
+<p>Additional parameters can be provided by using partial functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – Graph to add edge metadata to</p></li>
+<li><p><strong>funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – List of edge metadata annotation functions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Graph with edge metadata added</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.annotate_graph_metadata">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">annotate_graph_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.graph.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#annotate_graph_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.annotate_graph_metadata" title="Permalink to this definition">#</a></dt>
+<dd><p>Annotates graph with graph-level metadata</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – Graph on which to add graph-level metadata to</p></li>
+<li><p><strong>funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – List of graph metadata annotation functions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Graph on which with node metadata added</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.annotate_node_features">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">annotate_node_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.graph.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#annotate_node_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.annotate_node_features" title="Permalink to this definition">#</a></dt>
+<dd><p>Annotates nodes with features data. Note: passes whole graph to function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – Graph to add node features to</p></li>
+<li><p><strong>funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – List of node feature annotation functions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Graph with node features added</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.annotate_node_metadata">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">annotate_node_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.graph.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#annotate_node_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.annotate_node_metadata" title="Permalink to this definition">#</a></dt>
+<dd><p>Annotates nodes with metadata. Each function in <code class="docutils literal notranslate"><span class="pre">funcs</span></code> must take two arguments <code class="docutils literal notranslate"><span class="pre">n</span></code> and <code class="docutils literal notranslate"><span class="pre">d</span></code>, where <code class="docutils literal notranslate"><span class="pre">n</span></code> is the node and <code class="docutils literal notranslate"><span class="pre">d</span></code> is the node data dictionary.</p>
+<p>Additional parameters can be provided by using partial functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – Graph to add node metadata to</p></li>
+<li><p><strong>funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – List of node metadata annotation functions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Graph with node metadata added</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.compute_edges">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">compute_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.graph.Graph</span></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#compute_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.compute_edges" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes edges for an Graph from a list of edge construction functions. Each func in <code class="docutils literal notranslate"><span class="pre">funcs</span></code> must take an <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code> and return an <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – Graph to add features to</p></li>
+<li><p><strong>funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – List of edge construction functions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Graph with edges added</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.filter_dataframe">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">filter_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.4.2)"><span class="pre">pandas.core.frame.DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.4.2)"><span class="pre">pandas.core.frame.DataFrame</span></a></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#filter_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.filter_dataframe" title="Permalink to this definition">#</a></dt>
+<dd><p>Applies transformation functions to a dataframe. Each function in <code class="docutils literal notranslate"><span class="pre">funcs</span></code> must accept a <code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code> and return a <code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code>.</p>
+<p>Additional parameters can be provided by using partial functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – Dataframe to apply transformations to.</p></li>
+<li><p><strong>funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – List of transformation functions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>nx.Graph</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.format_adjacency">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">format_adjacency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><span class="pre">numpy.ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#format_adjacency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.format_adjacency" title="Permalink to this definition">#</a></dt>
+<dd><p>Format adjacency matrix nicely.</p>
+<p>Intended to be used when computing an adjacency-like matrix
+of a graph object <code class="docutils literal notranslate"><span class="pre">G</span></code>.
+For example, in defining a func:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_adj_matrix_func</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="n">adj</span> <span class="o">=</span> <span class="n">some_adj_func</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">format_adjacency</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">adj</span><span class="p">,</span> <span class="s2">"xarray_coord_name"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Assumptions</strong></p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">adj</span></code> should be a 2D matrix of shape <code class="docutils literal notranslate"><span class="pre">(n_nodes,</span> <span class="pre">n_nodes)</span></code></p></li>
+</ol>
+<p>#. <code class="docutils literal notranslate"><span class="pre">name</span></code> is something that is unique amongst all names used
+in the final adjacency tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> – NetworkX-compatible Graph</p></li>
+<li><p><strong>adj</strong> (<em>np.ndarray</em>) – 2D numpy array of shape <code class="docutils literal notranslate"><span class="pre">(n_nodes,</span> <span class="pre">n_nodes)</span></code></p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – A unique name for the kind of adjacency matrix
+being constructed.
+Gets used in xarray as a coordinate in the <code class="docutils literal notranslate"><span class="pre">"name"</span></code> dimension.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An XArray DataArray of shape <code class="docutils literal notranslate"><span class="pre">(n_nodes,</span> <span class="pre">n_nodes,</span> <span class="pre">1)</span></code></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>xr.DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.generate_adjacency_tensor">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">generate_adjacency_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">xarray.core.dataarray.DataArray</span></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#generate_adjacency_tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.generate_adjacency_tensor" title="Permalink to this definition">#</a></dt>
+<dd><p>Generate adjacency tensor for a graph.</p>
+<p>Uses the collection of functions in <code class="docutils literal notranslate"><span class="pre">funcs</span></code>
+to build an xarray DataArray
+that houses the resulting “adjacency tensor”.</p>
+<p>A key design choice:
+We default to returning xarray DataArrays,
+to make inspecting the data easy,
+but for consumption in tensor libraries,
+you can turn on returning a NumPy array
+by switching <code class="docutils literal notranslate"><span class="pre">return_array=True</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – NetworkX Graph.</p></li>
+<li><p><strong>funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – A list of functions that take in G
+and return an xr.DataArray</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>xr.DataArray,
+which is of shape <code class="docutils literal notranslate"><span class="pre">(n_nodes,</span> <span class="pre">n_nodes,</span> <span class="pre">n_funcs)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>xr.DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.generate_feature_dataframe">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">generate_feature_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.4.2)"><span class="pre">pandas.core.frame.DataFrame</span></a></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#generate_feature_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.generate_feature_dataframe" title="Permalink to this definition">#</a></dt>
+<dd><p>Return a pandas DataFrame representation of node metadata.</p>
+<p><code class="docutils literal notranslate"><span class="pre">funcs</span></code> has to be list of callables whose signature is</p>
+<blockquote>
+<div><p>f(n, d) -&gt; pd.Series</p>
+</div></blockquote>
+<p>where <code class="docutils literal notranslate"><span class="pre">n</span></code> is the graph node,
+<code class="docutils literal notranslate"><span class="pre">d</span></code> is the node metadata dictionary.
+The function must return a pandas Series whose name is the node.</p>
+<p>Example function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">x_vec</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="n">Hashable</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Hashable</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">({</span><span class="s2">"x_coord"</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s2">"x_coord"</span><span class="p">]},</span> <span class="n">name</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>One fairly strong assumption is that each func
+has all the information it needs to act
+stored on the metadata dictionary.
+If you need to reference an external piece of information,
+such as a dictionary to look up values,
+set up the function to accept the dictionary,
+and use <code class="docutils literal notranslate"><span class="pre">functools.partial</span></code>
+to “reduce” the function signature to just <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">d)</span></code>.
+An example below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="k">def</span> <span class="nf">get_molweight</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">mw_dict</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">({</span><span class="s2">"mw"</span><span class="p">:</span> <span class="n">mw_dict</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"amino_acid"</span><span class="p">]]},</span> <span class="n">name</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+
+<span class="n">mw_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"PHE"</span><span class="p">:</span> <span class="mi">165</span><span class="p">,</span> <span class="s2">"GLY"</span><span class="p">:</span> <span class="mi">75</span><span class="p">,</span> <span class="o">...</span><span class="p">}</span>
+<span class="n">get_molweight_func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">get_molweight</span><span class="p">,</span> <span class="n">mw_dict</span><span class="o">=</span><span class="n">mw_dict</span><span class="p">)</span>
+
+<span class="n">generate_feature_dataframe</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="p">[</span><span class="n">get_molweight_func</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">name=n</span></code> piece is important;
+the <code class="docutils literal notranslate"><span class="pre">name</span></code> becomes the row index in the resulting dataframe.</p>
+<p>The series that is returned from each function
+need not only contain one key-value pair.
+You can have two or more, and that’s completely fine;
+each key becomes a column in the resulting dataframe.</p>
+<p>A key design choice: We default to returning DataFrames,
+to make inspecting the data easy,
+but for consumption in tensor libraries,
+you can turn on returning a NumPy array
+by switching <code class="docutils literal notranslate"><span class="pre">return_array=True</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>nx.Graph</em>) – A NetworkX-compatible graph object.</p></li>
+<li><p><strong>funcs</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – A list of functions.</p></li>
+<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether or not to return
+a NumPy array version of the data.
+Useful for consumption in tensor libs, like PyTorch or JAX.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>pandas DataFrame representation of node metadata.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.import_message">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">import_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">submodule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">package</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">conda_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pip_install</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#import_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.import_message" title="Permalink to this definition">#</a></dt>
+<dd><p>Return warning if package is not found.
+Generic message for indicating to the user when a function relies on an
+optional module / package that is not currently installed. Includes
+installation instructions. Typically used in conjunction without optional featurisation libraries</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>submodule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – graphein submodule that needs an external dependency.</p></li>
+<li><p><strong>package</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – External package this submodule relies on.</p></li>
+<li><p><strong>conda_channel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Conda channel package can be installed from, if at all. Defaults to None</p></li>
+<li><p><strong>pip_install</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether package can be installed via pip. Defaults to False</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.onek_encoding_unk">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">onek_encoding_unk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.10)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowable_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#onek_encoding_unk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.onek_encoding_unk" title="Permalink to this definition">#</a></dt>
+<dd><p>Function for perfroming one hot encoding</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>Iterable</em><em>[</em><em>Any</em><em>]</em>) – values to one-hot</p></li>
+<li><p><strong>allowable_set</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em>) – set of options to encode</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>one-hot encoding as list</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.ping">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">ping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#ping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.ping" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if host (str) responds to a ping request.
+Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – IP or hostname</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if host responds to a ping request.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.utils.protein_letters_3to1_all_caps">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.utils.</span></span><span class="sig-name descname"><span class="pre">protein_letters_3to1_all_caps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amino_acid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/graphein/utils/utils.html#protein_letters_3to1_all_caps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.utils.protein_letters_3to1_all_caps" title="Permalink to this definition">#</a></dt>
+<dd><p>Converts capitalised 3 letter amino acid code to single letter. Not provided in default biopython.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>amino_acid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Capitalised 3-letter amino acid code (eg. <code class="docutils literal notranslate"><span class="pre">"GLY"</span></code>)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Single-letter amino acid code</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+<span class="target" id="module-graphein.testing.utils"></span><p>Testing utilities for the Graphein library.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.testing.utils.compare_approximate">
+<span class="sig-prename descclassname"><span class="pre">graphein.testing.utils.</span></span><span class="sig-name descname"><span class="pre">compare_approximate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">second</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/testing/utils.html#compare_approximate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.testing.utils.compare_approximate" title="Permalink to this definition">#</a></dt>
+<dd><p>Return whether two dicts of arrays are approximates equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>first</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – The first dictionary.</p></li>
+<li><p><strong>second</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – The second dictionary.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the dictionaries are approx equal, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.testing.utils.compare_exact">
+<span class="sig-prename descclassname"><span class="pre">graphein.testing.utils.</span></span><span class="sig-name descname"><span class="pre">compare_exact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">second</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/testing/utils.html#compare_exact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.testing.utils.compare_exact" title="Permalink to this definition">#</a></dt>
+<dd><p>Return whether two dicts of arrays are exactly equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>first</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – The first dictionary.</p></li>
+<li><p><strong>second</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – The second dictionary.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the dictionaries are exactly equal, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.testing.utils.edge_data_equal">
+<span class="sig-prename descclassname"><span class="pre">graphein.testing.utils.</span></span><span class="sig-name descname"><span class="pre">edge_data_equal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g:</span> <span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h:</span> <span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comparison_func:</span> <span class="pre">typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">compare_exact&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/testing/utils.html#edge_data_equal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.testing.utils.edge_data_equal" title="Permalink to this definition">#</a></dt>
+<dd><p>Checks whether two graphs have the same edge features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>g</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">networkx.Graph</span></code>) – The first graph.</p></li>
+<li><p><strong>h</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">networkx.Graph</span></code>) – The second graph.</p></li>
+<li><p><strong>comparison_func</strong> – Matching function for edge features.
+Takes two edge feature dictionaries and returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if they are
+equal. Defaults to <a class="reference internal" href="#graphein.testing.utils.compare_exact" title="graphein.testing.utils.compare_exact"><code class="xref py py-func docutils literal notranslate"><span class="pre">compare_exact()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the graphs have the same node features, <code class="docutils literal notranslate"><span class="pre">False</span></code>
+otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.testing.utils.edges_equal">
+<span class="sig-prename descclassname"><span class="pre">graphein.testing.utils.</span></span><span class="sig-name descname"><span class="pre">edges_equal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/testing/utils.html#edges_equal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.testing.utils.edges_equal" title="Permalink to this definition">#</a></dt>
+<dd><p>Checks whether two graphs have the same edges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>g</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">networkx.Graph</span></code>) – The first graph.</p></li>
+<li><p><strong>h</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">networkx.Graph</span></code>) – The second graph.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AssertionError" title="(in Python v3.10)"><strong>AssertionError</strong></a> – If the graphs do not contain the same nodes</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.testing.utils.graphs_isomorphic">
+<span class="sig-prename descclassname"><span class="pre">graphein.testing.utils.</span></span><span class="sig-name descname"><span class="pre">graphs_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/testing/utils.html#graphs_isomorphic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.testing.utils.graphs_isomorphic" title="Permalink to this definition">#</a></dt>
+<dd><p>Checks for structural isomorphism between two graphs: <code class="docutils literal notranslate"><span class="pre">g</span></code> and <code class="docutils literal notranslate"><span class="pre">h</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>g</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">networkx.Graph</span></code>) – The first graph.</p></li>
+<li><p><strong>h</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">networkx.Graph</span></code>) – The second graph.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the graphs are isomorphic, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.testing.utils.nodes_equal">
+<span class="sig-prename descclassname"><span class="pre">graphein.testing.utils.</span></span><span class="sig-name descname"><span class="pre">nodes_equal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">networkx.classes.graph.Graph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/graphein/testing/utils.html#nodes_equal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.testing.utils.nodes_equal" title="Permalink to this definition">#</a></dt>
+<dd><p>Checks whether two graphs have the same nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>g</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">networkx.Graph</span></code>) – The first graph.</p></li>
+<li><p><strong>h</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">networkx.Graph</span></code>) – The second graph.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AssertionError" title="(in Python v3.10)"><strong>AssertionError</strong></a> – If the graphs do not contain the same nodes</p>
+</dd>
+</dl>
+</dd></dl>
+<div class="section" id="module-graphein.utils.config">
+<span id="cli-config"></span><h3>CLI &amp; Config<a class="headerlink" href="#module-graphein.utils.config" title="Permalink to this headline">#</a></h3>
+<p>Yaml parser for config objects</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.config.config_constructor">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.config.</span></span><span class="sig-name descname"><span class="pre">config_constructor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">yaml.loader.FullLoader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">yaml.nodes.MappingNode</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">pydantic.main.BaseModel</span></span></span><a class="reference internal" href="../_modules/graphein/utils/config.html#config_constructor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.config.config_constructor" title="Permalink to this definition">#</a></dt>
+<dd><p>Construct a BaseModel config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loader</strong> – Given yaml loader</p></li>
+<li><p><strong>type</strong> – yaml.FullLoader</p></li>
+<li><p><strong>loader</strong> – A mapping node</p></li>
+<li><p><strong>type</strong> – yaml.nodes.MappingNode</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.config.function_constructor">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.config.</span></span><span class="sig-name descname"><span class="pre">function_constructor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">yaml.loader.FullLoader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag_suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><span class="pre">yaml.nodes.MappingNode</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">yaml.nodes.ScalarNode</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a></span></span><a class="reference internal" href="../_modules/graphein/utils/config.html#function_constructor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.config.function_constructor" title="Permalink to this definition">#</a></dt>
+<dd><p>Construct a Callable. If function parameters are given, this returns a partial function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loader</strong> – Given yaml loader</p></li>
+<li><p><strong>type</strong> – yaml.FullLoader</p></li>
+<li><p><strong>tag_suffix</strong> – The name after the !func: tag</p></li>
+<li><p><strong>type</strong> – str</p></li>
+<li><p><strong>loader</strong> – A mapping node if function parameters are given, a scalar node if not</p></li>
+<li><p><strong>type</strong> – Union[yaml.nodes.MappingNode, yaml.nodes.ScalarNode]</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.config.get_loader">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.config.</span></span><span class="sig-name descname"><span class="pre">get_loader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">yaml.loader.Loader</span></span></span><a class="reference internal" href="../_modules/graphein/utils/config.html#get_loader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.config.get_loader" title="Permalink to this definition">#</a></dt>
+<dd><p>Add constructors to PyYAML loader.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="graphein.utils.config.parse_config">
+<span class="sig-prename descclassname"><span class="pre">graphein.utils.config.</span></span><span class="sig-name descname"><span class="pre">parse_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.10)"><span class="pre">pathlib.Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">pydantic.main.BaseModel</span></span></span><a class="reference internal" href="../_modules/graphein/utils/config.html#parse_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graphein.utils.config.parse_config" title="Permalink to this definition">#</a></dt>
+<dd><p>Parses a yaml configuration file into a config object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.10)"><em>pathlib.Path</em></a>) – Path to configuration file</p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="module-graphein.utils.pymol.core">
+<span id="pymol"></span><h2>PyMol<a class="headerlink" href="#module-graphein.utils.pymol.core" title="Permalink to this headline">#</a></h2>
+<span class="target" id="module-graphein.utils.pymol.compat"></span></div>
+</div>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../contributing/contributing.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Contributing</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="graphein.ml.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">graphein.ml</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">graphein.utils</a><ul>
+<li><a class="reference internal" href="#module-graphein.utils.utils">Utils</a><ul>
+<li><a class="reference internal" href="#module-graphein.utils.config">CLI &amp; Config</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-graphein.utils.pymol.core">PyMol</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>

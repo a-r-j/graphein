@@ -1,0 +1,1242 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>graphein.construct_graphs &mdash; Graphein 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Graphein
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graphein.construct_graphs.html">graphein.construct_graphs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graphein.construct_meshes.html">graphein.construct_meshes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graphein</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>graphein.construct_graphs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for graphein.construct_graphs</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Class for working with Protein Structure Graphs&quot;&quot;&quot;</span>
+<span class="c1"># %%</span>
+<span class="c1"># Graphein</span>
+<span class="c1"># Author: Arian Jamasb &lt;arian@jamasb.io&gt;</span>
+<span class="c1"># License: MIT</span>
+<span class="c1"># Project Website: https://github.com/a-r-j/graphein</span>
+<span class="c1"># Code Repository: https://github.com/a-r-j/graphein</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">dgl</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">Data</span>
+<span class="kn">from</span> <span class="nn">biopandas.pdb</span> <span class="kn">import</span> <span class="n">PandasPdb</span>
+<span class="kn">from</span> <span class="nn">Bio.PDB</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">Bio.PDB.DSSP</span> <span class="kn">import</span> <span class="n">residue_max_acc</span><span class="p">,</span> <span class="n">dssp_dict_from_pdb_file</span>
+<span class="kn">from</span> <span class="nn">Bio.PDB.Polypeptide</span> <span class="kn">import</span> <span class="n">aa1</span><span class="p">,</span> <span class="n">one_to_three</span>
+<span class="kn">from</span> <span class="nn">dgllife.utils</span> <span class="kn">import</span> <span class="n">mol_to_bigraph</span><span class="p">,</span> <span class="n">mol_to_complete_graph</span><span class="p">,</span> <span class="n">mol_to_nearest_neighbor_graph</span>
+<span class="kn">from</span> <span class="nn">dgllife.utils</span> <span class="kn">import</span> <span class="n">BaseBondFeaturizer</span><span class="p">,</span> <span class="n">BaseAtomFeaturizer</span><span class="p">,</span> <span class="n">CanonicalAtomFeaturizer</span><span class="p">,</span> <span class="n">CanonicalBondFeaturizer</span>
+<span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">MolFromPDBFile</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">pairwise_distances</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">preprocessing</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="kn">import</span> <span class="n">kneighbors_graph</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">spatial</span>
+
+
+<span class="c1"># Todo add SS featuriser for Mol Graph?</span>
+<span class="c1"># Todo atom featuriser</span>
+<span class="c1"># Todo create SS element-level graph</span>
+<span class="c1"># Todo include ligand</span>
+<span class="c1"># Todo  Mol graph Nearest Neighbour</span>
+
+
+<div class="viewcode-block" id="ProteinGraph"><a class="viewcode-back" href="../../modules/graphein.construct_graphs.html#graphein.construct_graphs.ProteinGraph">[docs]</a><span class="k">class</span> <span class="nc">ProteinGraph</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ProteinGraph.__init__"><a class="viewcode-back" href="../../modules/graphein.construct_graphs.html#graphein.construct_graphs.ProteinGraph.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">granularity</span><span class="p">,</span> <span class="n">keep_hets</span><span class="p">,</span> <span class="n">insertions</span><span class="p">,</span> <span class="n">node_featuriser</span><span class="p">,</span> <span class="n">get_contacts_path</span><span class="p">,</span> <span class="n">pdb_dir</span><span class="p">,</span>
+                 <span class="n">contacts_dir</span><span class="p">,</span> <span class="n">exclude_waters</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">covalent_bonds</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_ss</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_ligand</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">intramolecular_interactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_constructor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edge_featuriser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">edge_distance_cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">deprotonate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">remove_string_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">long_interaction_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise ProteinGraph Generator Class</span>
+<span class="sd">        :param deprotonate:</span>
+<span class="sd">        :type deprotonate: bool, optional</span>
+<span class="sd">        :param verbose:</span>
+<span class="sd">        :type verbose: bool, optional</span>
+<span class="sd">        :param graph_constructor</span>
+<span class="sd">        :type graph_constructor:</span>
+<span class="sd">        :param remove_string_labels:</span>
+<span class="sd">        :type remove_string_labels:</span>
+
+<span class="sd">        :param granularity: Specifies granularity of the graph construction. {&#39;atom&#39;, &#39;CA&#39;, &#39;CB&#39;}. CA = Alpha Carbon, \ CB = Beta Carbon</span>
+<span class="sd">        :type granularity: str</span>
+<span class="sd">        :param keep_hets: Keep heteroatoms present in the PDB file. Typically, these correspond to metal ions or modified residues (e.g. MSE)</span>
+<span class="sd">        :type keep_hets: bool</span>
+<span class="sd">        :param insertions: Keep atoms/residues with multiple insertion positions. Multiple insertions exist when the electron density is too vague to define a single insertion</span>
+<span class="sd">        :type insertions: bool</span>
+<span class="sd">        :param node_featuriser: DGL Node featuriser for atom-level graphs. Canonical Featurises recommended.</span>
+<span class="sd">        :type node_featuriser: DGL Node Featuriser</span>
+<span class="sd">        :param pdb_dir: Directory to PDB files. We will download .PDB files to this folder if you don&#39;t have an existing local copy of the requisite structure</span>
+<span class="sd">        :type pdb_dir: str</span>
+<span class="sd">        :param contacts_dir: Directory to GetContacts files</span>
+<span class="sd">        :type contacts_dir: str</span>
+<span class="sd">        :param exclude_waters: Specifies inclusion of water molecules. Not yet fully operational.</span>
+<span class="sd">        :type exclude_waters: bool</span>
+<span class="sd">        :param covalent_bonds: Specifies inclusion of covalent backbone. E.g. joins adjacent residues in the sequence</span>
+<span class="sd">        :type covalent_bonds: bool</span>
+<span class="sd">        :param include_ss: Specifies inclusion of secondary structure features computed by DSSP. Future warning: this will be changed in a subsequent update for managing feature selection.</span>
+<span class="sd">        :type include_ss: bool</span>
+<span class="sd">        :param include_ligand: Not yet implemented. Will specify option to include bound ligand(s) in the graph.</span>
+<span class="sd">        :type include_ligand: bool</span>
+<span class="sd">        :param intramolecular_interactions: List of allowable intramolecular interactions to include from GetContacts. [&#39;sb&#39;, &#39;pc&#39;, &#39;ps&#39;, &#39;ts&#39;, &#39;vdw&#39;, &#39;hb&#39;, &#39;hbb&#39;, &#39;hbsb&#39;, &#39;hbbb&#39;, &#39;hbss&#39;, &#39;wb&#39;, &#39;wb2&#39;,</span>
+<span class="sd">                                      &#39;hblb&#39;, &#39;hbls&#39;, &#39;lwb&#39;, &#39;lwb2&#39;, &#39;hp&#39;]. See https://getcontacts.github.io/interactions.html for details.</span>
+<span class="sd">        :type intramolecular_interactions: list</span>
+<span class="sd">        :param edge_distance_cutoff: Distance in angstroms specifying cutoff distance for constructing an edge when using distance construction</span>
+<span class="sd">        :type edge_distance_cutoff: float</span>
+<span class="sd">        :param long_interaction_threshold: Specifies minimum distance in sequence for two nodes to be connected</span>
+<span class="sd">        :type long_interaction_threshold: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">long_interaction_threshold</span> <span class="o">=</span> <span class="n">long_interaction_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_string_labels</span> <span class="o">=</span> <span class="n">remove_string_labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edge_distance_cutoff</span> <span class="o">=</span> <span class="n">edge_distance_cutoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_ligand</span> <span class="o">=</span> <span class="n">include_ligand</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_ss</span> <span class="o">=</span> <span class="n">include_ss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">=</span> <span class="n">granularity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keep_hets</span> <span class="o">=</span> <span class="n">keep_hets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">insertions</span> <span class="o">=</span> <span class="n">insertions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_featuriser</span> <span class="o">=</span> <span class="n">node_featuriser</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;meiler&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;ALA&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.28</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">,</span> <span class="mf">0.31</span><span class="p">,</span> <span class="mf">6.11</span><span class="p">,</span> <span class="mf">0.42</span><span class="p">,</span> <span class="mf">0.23</span><span class="p">],</span>
+                <span class="s1">&#39;GLY&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">6.07</span><span class="p">,</span> <span class="mf">0.13</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">],</span>
+                <span class="s1">&#39;VAL&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">3.67</span><span class="p">,</span> <span class="mf">0.14</span><span class="p">,</span> <span class="mf">3.00</span><span class="p">,</span> <span class="mf">1.22</span><span class="p">,</span> <span class="mf">6.02</span><span class="p">,</span> <span class="mf">0.27</span><span class="p">,</span> <span class="mf">0.49</span><span class="p">],</span>
+                <span class="s1">&#39;LEU&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.59</span><span class="p">,</span> <span class="mf">0.19</span><span class="p">,</span> <span class="mf">4.00</span><span class="p">,</span> <span class="mf">1.70</span><span class="p">,</span> <span class="mf">6.04</span><span class="p">,</span> <span class="mf">0.39</span><span class="p">,</span> <span class="mf">0.31</span><span class="p">],</span>
+                <span class="s1">&#39;ILE&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">4.19</span><span class="p">,</span> <span class="mf">0.19</span><span class="p">,</span> <span class="mf">4.00</span><span class="p">,</span> <span class="mf">1.80</span><span class="p">,</span> <span class="mf">6.04</span><span class="p">,</span> <span class="mf">0.30</span><span class="p">,</span> <span class="mf">0.45</span><span class="p">],</span>
+                <span class="s1">&#39;PHE&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.94</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">,</span> <span class="mf">5.89</span><span class="p">,</span> <span class="mf">1.79</span><span class="p">,</span> <span class="mf">5.67</span><span class="p">,</span> <span class="mf">0.30</span><span class="p">,</span> <span class="mf">0.38</span><span class="p">],</span>
+                <span class="s1">&#39;TYR&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.94</span><span class="p">,</span> <span class="mf">0.30</span><span class="p">,</span> <span class="mf">6.47</span><span class="p">,</span> <span class="mf">0.96</span><span class="p">,</span> <span class="mf">5.66</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">],</span>
+                <span class="s1">&#39;PTR&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.94</span><span class="p">,</span> <span class="mf">0.30</span><span class="p">,</span> <span class="mf">6.47</span><span class="p">,</span> <span class="mf">0.96</span><span class="p">,</span> <span class="mf">5.66</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">],</span>
+                <span class="s1">&#39;TRP&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">3.21</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">,</span> <span class="mf">8.08</span><span class="p">,</span> <span class="mf">2.25</span><span class="p">,</span> <span class="mf">5.94</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.42</span><span class="p">],</span>
+                <span class="s1">&#39;THR&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">3.03</span><span class="p">,</span> <span class="mf">0.11</span><span class="p">,</span> <span class="mf">2.60</span><span class="p">,</span> <span class="mf">0.26</span><span class="p">,</span> <span class="mf">5.60</span><span class="p">,</span> <span class="mf">0.21</span><span class="p">,</span> <span class="mf">0.36</span><span class="p">],</span>
+                <span class="s1">&#39;TPO&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">3.03</span><span class="p">,</span> <span class="mf">0.11</span><span class="p">,</span> <span class="mf">2.60</span><span class="p">,</span> <span class="mf">0.26</span><span class="p">,</span> <span class="mf">5.60</span><span class="p">,</span> <span class="mf">0.21</span><span class="p">,</span> <span class="mf">0.36</span><span class="p">],</span>
+                <span class="s1">&#39;SER&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.31</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">1.60</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">5.70</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">,</span> <span class="mf">0.28</span><span class="p">],</span>
+                <span class="s1">&#39;SEP&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.31</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">1.60</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">5.70</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">,</span> <span class="mf">0.28</span><span class="p">],</span>
+                <span class="s1">&#39;ARG&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.34</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">,</span> <span class="mf">6.13</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.01</span><span class="p">,</span> <span class="mf">10.74</span><span class="p">,</span> <span class="mf">0.36</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span>
+                <span class="s1">&#39;LYS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.89</span><span class="p">,</span> <span class="mf">0.22</span><span class="p">,</span> <span class="mf">4.77</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">9.99</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.27</span><span class="p">],</span>
+                <span class="s1">&#39;KCX&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.89</span><span class="p">,</span> <span class="mf">0.22</span><span class="p">,</span> <span class="mf">4.77</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">9.99</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.27</span><span class="p">],</span>
+                <span class="s1">&#39;LLP&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.89</span><span class="p">,</span> <span class="mf">0.22</span><span class="p">,</span> <span class="mf">4.77</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">9.99</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.27</span><span class="p">],</span>
+                <span class="s1">&#39;HIS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.99</span><span class="p">,</span> <span class="mf">0.23</span><span class="p">,</span> <span class="mf">4.66</span><span class="p">,</span> <span class="mf">0.13</span><span class="p">,</span> <span class="mf">7.69</span><span class="p">,</span> <span class="mf">0.27</span><span class="p">,</span> <span class="mf">0.30</span><span class="p">],</span>
+                <span class="s1">&#39;ASP&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.60</span><span class="p">,</span> <span class="mf">0.11</span><span class="p">,</span> <span class="mf">2.78</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.77</span><span class="p">,</span> <span class="mf">2.95</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">],</span>
+                <span class="s1">&#39;GLU&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.56</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">3.78</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.64</span><span class="p">,</span> <span class="mf">3.09</span><span class="p">,</span> <span class="mf">0.42</span><span class="p">,</span> <span class="mf">0.21</span><span class="p">],</span>
+                <span class="s1">&#39;PCA&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.56</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">3.78</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.64</span><span class="p">,</span> <span class="mf">3.09</span><span class="p">,</span> <span class="mf">0.42</span><span class="p">,</span> <span class="mf">0.21</span><span class="p">],</span>
+                <span class="s1">&#39;ASN&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.60</span><span class="p">,</span> <span class="mf">0.13</span><span class="p">,</span> <span class="mf">2.95</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.60</span><span class="p">,</span> <span class="mf">6.52</span><span class="p">,</span> <span class="mf">0.21</span><span class="p">,</span> <span class="mf">0.22</span><span class="p">],</span>
+                <span class="s1">&#39;GLN&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.56</span><span class="p">,</span> <span class="mf">0.18</span><span class="p">,</span> <span class="mf">3.95</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.22</span><span class="p">,</span> <span class="mf">5.65</span><span class="p">,</span> <span class="mf">0.36</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span>
+                <span class="s1">&#39;MET&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.35</span><span class="p">,</span> <span class="mf">0.22</span><span class="p">,</span> <span class="mf">4.43</span><span class="p">,</span> <span class="mf">1.23</span><span class="p">,</span> <span class="mf">5.71</span><span class="p">,</span> <span class="mf">0.38</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">],</span>
+                <span class="s1">&#39;MSE&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.35</span><span class="p">,</span> <span class="mf">0.22</span><span class="p">,</span> <span class="mf">4.43</span><span class="p">,</span> <span class="mf">1.23</span><span class="p">,</span> <span class="mf">5.71</span><span class="p">,</span> <span class="mf">0.38</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">],</span>
+                <span class="s1">&#39;PRO&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.67</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">2.72</span><span class="p">,</span> <span class="mf">0.72</span><span class="p">,</span> <span class="mf">6.80</span><span class="p">,</span> <span class="mf">0.13</span><span class="p">,</span> <span class="mf">0.34</span><span class="p">],</span>
+                <span class="s1">&#39;CYS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.77</span><span class="p">,</span> <span class="mf">0.13</span><span class="p">,</span> <span class="mf">2.43</span><span class="p">,</span> <span class="mf">1.54</span><span class="p">,</span> <span class="mf">6.35</span><span class="p">,</span> <span class="mf">0.17</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">],</span>
+                <span class="s1">&#39;CSO&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.77</span><span class="p">,</span> <span class="mf">0.13</span><span class="p">,</span> <span class="mf">2.43</span><span class="p">,</span> <span class="mf">1.54</span><span class="p">,</span> <span class="mf">6.35</span><span class="p">,</span> <span class="mf">0.17</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">],</span>
+                <span class="s1">&#39;CAS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.77</span><span class="p">,</span> <span class="mf">0.13</span><span class="p">,</span> <span class="mf">2.43</span><span class="p">,</span> <span class="mf">1.54</span><span class="p">,</span> <span class="mf">6.35</span><span class="p">,</span> <span class="mf">0.17</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">],</span>
+                <span class="s1">&#39;CAF&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.77</span><span class="p">,</span> <span class="mf">0.13</span><span class="p">,</span> <span class="mf">2.43</span><span class="p">,</span> <span class="mf">1.54</span><span class="p">,</span> <span class="mf">6.35</span><span class="p">,</span> <span class="mf">0.17</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">],</span>
+                <span class="s1">&#39;CSD&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.77</span><span class="p">,</span> <span class="mf">0.13</span><span class="p">,</span> <span class="mf">2.43</span><span class="p">,</span> <span class="mf">1.54</span><span class="p">,</span> <span class="mf">6.35</span><span class="p">,</span> <span class="mf">0.17</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">],</span>
+                <span class="s1">&#39;UNKNOWN&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;kidera&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.56</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.67</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.97</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.27</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.93</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.78</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.21</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.48</span><span class="p">],</span>
+                <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.12</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.89</span><span class="p">,</span> <span class="mf">0.45</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.71</span><span class="p">,</span> <span class="mf">2.41</span><span class="p">,</span> <span class="mf">1.52</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.69</span><span class="p">,</span> <span class="mf">1.13</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">],</span>
+                <span class="s1">&#39;E&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.45</span><span class="p">,</span> <span class="mf">0.19</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.61</span><span class="p">,</span> <span class="mf">1.17</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.31</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.38</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.35</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.12</span><span class="p">],</span>
+                <span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.58</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.22</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.58</span><span class="p">,</span> <span class="mf">0.81</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.92</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.52</span><span class="p">,</span> <span class="mf">0.47</span><span class="p">,</span> <span class="mf">0.76</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">],</span>
+                <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.46</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.96</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.23</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.11</span><span class="p">,</span> <span class="mf">1.32</span><span class="p">,</span> <span class="mf">2.36</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.66</span><span class="p">,</span> <span class="mf">0.46</span><span class="p">],</span>
+                <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.21</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.36</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.43</span><span class="p">,</span> <span class="mf">0.22</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.81</span><span class="p">,</span> <span class="mf">0.67</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.71</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.44</span><span class="p">],</span>
+                <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.73</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">1.79</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.77</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.54</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.83</span><span class="p">,</span> <span class="mf">0.51</span><span class="p">,</span> <span class="mf">0.66</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.78</span><span class="p">],</span>
+                <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.41</span><span class="p">,</span> <span class="mf">0.52</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.28</span><span class="p">,</span> <span class="mf">0.28</span><span class="p">,</span> <span class="mf">1.61</span><span class="p">,</span> <span class="mf">1.01</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.85</span><span class="p">,</span> <span class="mf">0.47</span><span class="p">,</span> <span class="mf">1.13</span><span class="p">,</span> <span class="mf">1.63</span><span class="p">],</span>
+                <span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.34</span><span class="p">,</span> <span class="mf">0.82</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.23</span><span class="p">,</span> <span class="mf">1.7</span><span class="p">,</span> <span class="mf">1.54</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.62</span><span class="p">,</span> <span class="mf">1.15</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.08</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.48</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span>
+                <span class="s1">&#39;M&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.4</span><span class="p">,</span> <span class="mf">0.18</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.42</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.73</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.52</span><span class="p">,</span> <span class="mf">0.26</span><span class="p">,</span> <span class="mf">0.11</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.27</span><span class="p">,</span> <span class="mf">0.27</span><span class="p">],</span>
+                <span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.04</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.24</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.55</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.05</span><span class="p">,</span> <span class="mf">0.96</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.76</span><span class="p">,</span> <span class="mf">0.45</span><span class="p">,</span> <span class="mf">0.93</span><span class="p">],</span>
+                <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.14</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.12</span><span class="p">,</span> <span class="mf">0.81</span><span class="p">,</span> <span class="mf">0.18</span><span class="p">,</span> <span class="mf">0.37</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">1.23</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.73</span><span class="p">],</span>
+                <span class="s1">&#39;Q&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.47</span><span class="p">,</span> <span class="mf">0.24</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.59</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.71</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.03</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.33</span><span class="p">],</span>
+                <span class="s1">&#39;P&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.06</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.33</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.15</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.88</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.45</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.3</span><span class="p">,</span> <span class="mf">0.74</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.28</span><span class="p">],</span>
+                <span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.81</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.08</span><span class="p">,</span> <span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.42</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.21</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.43</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.89</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.15</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.97</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.23</span><span class="p">],</span>
+                <span class="s1">&#39;R&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.22</span><span class="p">,</span> <span class="mf">1.27</span><span class="p">,</span> <span class="mf">1.37</span><span class="p">,</span> <span class="mf">1.87</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.7</span><span class="p">,</span> <span class="mf">0.46</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.39</span><span class="p">,</span> <span class="mf">0.23</span><span class="p">,</span> <span class="mf">0.93</span><span class="p">],</span>
+                <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.26</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">1.21</span><span class="p">,</span> <span class="mf">0.63</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.21</span><span class="p">,</span> <span class="mf">0.24</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.15</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.56</span><span class="p">,</span> <span class="mf">0.19</span><span class="p">],</span>
+                <span class="s1">&#39;W&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">2.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.72</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.57</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.16</span><span class="p">,</span> <span class="mf">0.57</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.48</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.6</span><span class="p">],</span>
+                <span class="s1">&#39;V&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.74</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.71</span><span class="p">,</span> <span class="mf">2.04</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.81</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.07</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.46</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">],</span>
+                <span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.38</span><span class="p">,</span> <span class="mf">1.48</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.56</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.68</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.31</span><span class="p">,</span> <span class="mf">1.03</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.53</span><span class="p">],</span>
+                <span class="s1">&#39;UNKNOWN&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">=</span> <span class="n">pdb_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">=</span> <span class="n">contacts_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_contacts_path</span> <span class="o">=</span> <span class="n">get_contacts_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">covalent_bonds</span> <span class="o">=</span> <span class="n">covalent_bonds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deprotonate</span> <span class="o">=</span> <span class="n">deprotonate</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">intramolecular_interactions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">INTERACTION_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sb&#39;</span><span class="p">,</span> <span class="s1">&#39;pc&#39;</span><span class="p">,</span> <span class="s1">&#39;ps&#39;</span><span class="p">,</span> <span class="s1">&#39;ts&#39;</span><span class="p">,</span> <span class="s1">&#39;vdw&#39;</span><span class="p">,</span> <span class="s1">&#39;hb&#39;</span><span class="p">,</span> <span class="s1">&#39;hbb&#39;</span><span class="p">,</span> <span class="s1">&#39;hbsb&#39;</span><span class="p">,</span> <span class="s1">&#39;hbbb&#39;</span><span class="p">,</span> <span class="s1">&#39;hbss&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">,</span> <span class="s1">&#39;wb2&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;hblb&#39;</span><span class="p">,</span> <span class="s1">&#39;hbls&#39;</span><span class="p">,</span> <span class="s1">&#39;lwb&#39;</span><span class="p">,</span> <span class="s1">&#39;lwb2&#39;</span><span class="p">,</span> <span class="s1">&#39;hp&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">INTERACTION_TYPES</span> <span class="o">=</span> <span class="n">intramolecular_interactions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">INTERACTION_FDIM</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">INTERACTION_TYPES</span><span class="p">)</span>
+
+        <span class="c1"># DGL Graph Constructors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_featuriser</span> <span class="o">=</span> <span class="n">node_featuriser</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edge_featuriser</span> <span class="o">=</span> <span class="n">edge_featuriser</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_constructor</span> <span class="o">=</span> <span class="n">graph_constructor</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_featuriser</span> <span class="o">==</span> <span class="s1">&#39;meiler&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_fdim</span> <span class="o">=</span> <span class="mi">7</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_featuriser</span> <span class="o">==</span> <span class="s1">&#39;kidera&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_fdim</span> <span class="o">=</span> <span class="mi">10</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_waters</span> <span class="o">=</span> <span class="n">exclude_waters</span></div>
+
+<div class="viewcode-block" id="ProteinGraph.dgl_graph_from_pdb_code"><a class="viewcode-back" href="../../modules/graphein.construct_graphs.html#graphein.construct_graphs.ProteinGraph.dgl_graph_from_pdb_code">[docs]</a>    <span class="k">def</span> <span class="nf">dgl_graph_from_pdb_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_code</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chain_selection</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">contact_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">edge_construction</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;contacts&#39;</span><span class="p">],</span> <span class="n">encoding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">k_nn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">custom_edges</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Produces a DGL graph from a PDB code and a selection of polypeptide chains</span>
+
+<span class="sd">        :param file_path: Path to local PDB file, optional</span>
+<span class="sd">        :type file_path: str</span>
+<span class="sd">        :param custom_edges: Pass user-defined custom edges to use in edge construction, defaults to None</span>
+<span class="sd">        :type custom_edges: Pandas DataFrame, optional</span>
+<span class="sd">        :param edge_construction: Specifies edge construction methods. {&#39;contact&#39;, &#39;distance&#39;, &#39;custom&#39;}, defaults to [&#39;contacts&#39;]</span>
+<span class="sd">        :type edge_construction: list</span>
+<span class="sd">        :param k_nn: Specifies number of nearest neighbours to make K_NN edges with</span>
+<span class="sd">        :type k_nn: int</span>
+<span class="sd">        :param encoding: Indicates whether or not node names and labels should be encoded</span>
+<span class="sd">        :type encoding: bool</span>
+<span class="sd">        :param contact_file: Path to local GetContacts output file, defaults to None</span>
+<span class="sd">        :type contact_file: str</span>
+<span class="sd">        :param pdb_code: 4 character PDB accession code</span>
+<span class="sd">        :type pdb_code: str</span>
+<span class="sd">        :param chain_selection: string indicating which chains to select {&#39;A&#39;, &#39;B&#39;, &#39;AB&#39;, ..., &#39;all&#39;}, defaults to &#39;all&#39;</span>
+<span class="sd">        :type chain_selection: list</span>
+<span class="sd">        :return: DGLGraph object, nodes populated by residues or atoms as specified in class initialisation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Todo Error Handling</span>
+        <span class="k">if</span> <span class="n">pdb_code</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;Do not provide both a PDB file and a file path&quot;</span>
+        <span class="k">if</span> <span class="n">file_path</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="n">pdb_code</span><span class="p">,</span> <span class="s2">&quot;Do not provide both a PDB file and a file path&quot;</span>
+        <span class="k">if</span> <span class="n">k_nn</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="s1">&#39;k_nn&#39;</span> <span class="ow">in</span> <span class="n">edge_construction</span><span class="p">,</span> <span class="s2">&quot;If providing KNN edges, include &#39;k_nn&#39; in the edgge_construction list&quot;</span>
+
+        <span class="k">if</span> <span class="n">contact_file</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="s1">&#39;contacts&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">edge_construction</span><span class="p">,</span> \
+                <span class="s1">&#39;do not provide a contacts file if not using contacts-based edge construction&#39;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">==</span> <span class="s1">&#39;atom&#39;</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_atom_graph</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">g</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">==</span> <span class="s1">&#39;ss&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="c1"># todo SS granularity</span>
+            <span class="c1"># get secondary structure nodes</span>
+            <span class="c1"># add secondary structure nodes</span>
+            <span class="c1"># get secondary structure edges</span>
+            <span class="c1"># add secondary structure edges</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">==</span> <span class="s1">&#39;CA&#39;</span> <span class="ow">or</span> <span class="s1">&#39;CB&#39;</span> <span class="ow">or</span> <span class="s1">&#39;centroids&#39;</span><span class="p">:</span>
+            <span class="c1"># Download PDB if file not found</span>
+            <span class="k">if</span> <span class="n">pdb_code</span><span class="p">:</span>
+                <span class="n">pdb_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s1">&#39;.pdb&#39;</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_download_pdb</span><span class="p">(</span><span class="n">pdb_code</span><span class="p">)</span>
+
+            <span class="c1"># Create Relevant protein dataframes</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_protein_df</span><span class="p">(</span><span class="n">pdb_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s1">&#39;.pdb&#39;</span><span class="p">)</span>
+            <span class="n">chains</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_chains</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">chain_selection</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">chains</span><span class="p">)</span>
+            <span class="c1"># Populate graph with nodes</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_protein_nodes</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+            <span class="c1"># Edge construction:</span>
+            <span class="k">if</span> <span class="n">k_nn</span><span class="p">:</span>
+                <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_nn_edges</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">k_nn</span><span class="p">)</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">add_edges</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">],</span>
+                            <span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">],</span>
+                            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;k_nn_dist&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]))})</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">contact_file</span> <span class="ow">and</span> <span class="s1">&#39;contacts&#39;</span> <span class="ow">in</span> <span class="n">edge_construction</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_compute_protein_contacts</span><span class="p">(</span><span class="n">pdb_code</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s1">&#39;contacts&#39;</span> <span class="ow">in</span> <span class="n">edge_construction</span><span class="p">:</span>
+                <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_protein_edges</span><span class="p">(</span><span class="n">pdb_code</span><span class="p">,</span> <span class="n">chain_selection</span><span class="p">,</span> <span class="n">contact_file</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_protein_edges_to_graph</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_distance_cutoff</span> <span class="ow">and</span> <span class="s1">&#39;distance&#39;</span> <span class="ow">in</span> <span class="n">edge_construction</span><span class="p">:</span>
+                <span class="c1"># Get distance-based edges</span>
+                <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_based_edges</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_distance_cutoff</span><span class="p">)</span>
+                <span class="c1"># Add edges</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">add_edges</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;level_0&#39;</span><span class="p">]),</span>
+                            <span class="nb">list</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;level_1&#39;</span><span class="p">]),</span>
+                            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dist&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]))})</span>
+
+            <span class="k">if</span> <span class="s1">&#39;delaunay&#39;</span> <span class="ow">in</span> <span class="n">edge_construction</span><span class="p">:</span>
+                <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_delaunay_edges</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">furthest_site</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">add_edges</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">]),</span>
+                            <span class="nb">list</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]),</span>
+                            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;delaunay_euclidean_distance&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]))})</span>
+
+            <span class="c1"># Add user supplied edges</span>
+            <span class="k">if</span> <span class="n">custom_edges</span><span class="p">:</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">add_edges</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">custom_edges</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">]),</span>
+                            <span class="nb">list</span><span class="p">(</span><span class="n">custom_edges</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]),</span>
+                            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;user_edge_data&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">custom_edges</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))})</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_ss</span><span class="p">:</span>
+                <span class="n">dssp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_protein_features</span><span class="p">(</span><span class="n">pdb_code</span><span class="p">,</span> <span class="n">file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chain_selection</span><span class="o">=</span><span class="n">chain_selection</span><span class="p">)</span>
+                <span class="n">feats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_protein_feature_representations</span><span class="p">(</span><span class="n">dssp</span><span class="p">)</span>
+                <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_protein_features</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">feats</span><span class="p">)</span>
+
+        <span class="c1"># Label Encoding of Node IDs</span>
+        <span class="k">if</span> <span class="n">encoding</span><span class="p">:</span>
+            <span class="n">resiude_name_encoder</span> <span class="o">=</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">LabelEncoder</span><span class="p">()</span>
+            <span class="n">residue_id_encoder</span> <span class="o">=</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">LabelEncoder</span><span class="p">()</span>
+
+            <span class="n">residue_names</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;residue_name&#39;</span><span class="p">]</span>
+            <span class="n">residue_id</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+            <span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;residue_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">resiude_name_encoder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">residue_names</span><span class="p">)</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">residue_id_encoder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">residue_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">g</span><span class="p">,</span> <span class="n">resiude_name_encoder</span><span class="p">,</span> <span class="n">residue_id_encoder</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_string_labels</span><span class="p">:</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;residue_name&#39;</span><span class="p">)</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">g</span></div>
+
+<div class="viewcode-block" id="ProteinGraph.dgl_graph_from_pdb_file"><a class="viewcode-back" href="../../modules/graphein.construct_graphs.html#graphein.construct_graphs.ProteinGraph.dgl_graph_from_pdb_file">[docs]</a>    <span class="k">def</span> <span class="nf">dgl_graph_from_pdb_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">chain_selection</span><span class="p">,</span> <span class="n">contact_file</span><span class="p">,</span> <span class="n">edges</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Produces a DGL graph from a PDB file and a selection of polypeptide chains</span>
+
+<span class="sd">        :param edges: User-defined custom edges, defaults to None</span>
+<span class="sd">        :type edges: Pandas DataFrame, optional</span>
+<span class="sd">        :param contact_file: Path to local GetContacts output file</span>
+<span class="sd">        :type contact_file: str,</span>
+<span class="sd">        :param file_path: 4 character PDB accession code</span>
+<span class="sd">        :type file_path: str</span>
+<span class="sd">        :param chain_selection:  Polypeptide chains in structure to select {&#39;A&#39;, &#39;B&#39;, &#39;AB&#39;, ..., &#39;all}</span>
+<span class="sd">        :type chain_selection: str</span>
+<span class="sd">        :return: DGLGraph object, nodes populated by residues or atoms as specified in class initialisation</span>
+<span class="sd">        :rtype: DGLGraph</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Atom-level Graph</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">==</span> <span class="s1">&#39;atom&#39;</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_atom_graph</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+        <span class="c1"># Residue-level graph</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">==</span> <span class="s1">&#39;CA&#39;</span> <span class="ow">or</span> <span class="s1">&#39;CB&#39;</span><span class="p">:</span>
+            <span class="c1"># Pre-process protein Df</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_protein_df</span><span class="p">(</span><span class="n">pdb_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="n">chains</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_chains</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">chain_selection</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">chains</span><span class="p">)</span>
+
+            <span class="c1"># Create Graph</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_protein_nodes</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+            <span class="c1"># Add edges</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">contact_file</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_compute_protein_contacts</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">edges</span><span class="p">:</span>
+                <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_protein_edges</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">chain_selection</span><span class="p">,</span> <span class="n">contact_file</span><span class="p">)</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_protein_edges_to_graph</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_ss</span><span class="p">:</span>
+                <span class="n">dssp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_protein_features</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span> <span class="n">pdb_code</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">feats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_protein_feature_representations</span><span class="p">(</span><span class="n">dssp</span><span class="p">)</span>
+                <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_protein_features</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">feats</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">g</span></div>
+
+<div class="viewcode-block" id="ProteinGraph.nx_graph_from_pdb_code"><a class="viewcode-back" href="../../modules/graphein.construct_graphs.html#graphein.construct_graphs.ProteinGraph.nx_graph_from_pdb_code">[docs]</a>    <span class="k">def</span> <span class="nf">nx_graph_from_pdb_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_code</span><span class="p">,</span> <span class="n">chain_selection</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">contact_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edge_construction</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;contacts&#39;</span><span class="p">],</span>
+                               <span class="n">encoding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">k_nn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">custom_edges</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Produces a NetworkX Graph Object</span>
+
+<span class="sd">        :param encoding:</span>
+<span class="sd">        :type bool:</span>
+<span class="sd">        :param edges: User-supplied edges, defaults to None</span>
+<span class="sd">        :type edges: Pandas DataFrame, optional</span>
+<span class="sd">        :param pdb_code: 4 character PDB accession code</span>
+<span class="sd">        :type pdb_code: str</span>
+<span class="sd">        :param chain_selection: string indicating chain selection {&#39;A&#39;, &#39;B&#39;, &#39;AB&#39;, ..., &#39;all&#39;}, defaults to &#39;all&#39;</span>
+<span class="sd">        :type chain_selection: str</span>
+<span class="sd">        :param contact_file: Path to GetContacts output file.</span>
+<span class="sd">        :type contact_file: str, optional</span>
+<span class="sd">        :return: NetworkX graph object of protein</span>
+<span class="sd">        :rtype: NetworkX graph</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">encoding</span><span class="p">,</span> <span class="s1">&#39;Non-numeric feature encoding must be True&#39;</span>
+        <span class="n">g</span><span class="p">,</span> <span class="n">resiude_name_encoder</span><span class="p">,</span> <span class="n">residue_id_encoder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgl_graph_from_pdb_code</span><span class="p">(</span><span class="n">pdb_code</span><span class="o">=</span><span class="n">pdb_code</span><span class="p">,</span>
+                                                                                   <span class="n">chain_selection</span><span class="o">=</span><span class="n">chain_selection</span><span class="p">,</span>
+                                                                                   <span class="n">contact_file</span><span class="o">=</span><span class="n">contact_file</span><span class="p">,</span>
+                                                                                   <span class="n">edge_construction</span><span class="o">=</span><span class="n">edge_construction</span><span class="p">,</span>
+                                                                                   <span class="n">custom_edges</span><span class="o">=</span><span class="n">custom_edges</span><span class="p">,</span>
+                                                                                   <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">,</span>
+                                                                                   <span class="n">k_nn</span><span class="o">=</span><span class="n">k_nn</span>
+                                                                                   <span class="p">)</span>
+        <span class="n">node_attrs</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">node_attr_schemes</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">edge_attrs</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_attr_schemes</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">dgl</span><span class="o">.</span><span class="n">to_networkx</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">node_attrs</span><span class="p">,</span> <span class="n">edge_attrs</span><span class="p">),</span> <span class="n">resiude_name_encoder</span><span class="p">,</span> <span class="n">residue_id_encoder</span></div>
+
+<div class="viewcode-block" id="ProteinGraph.nx_graph_from_pdb_file"><a class="viewcode-back" href="../../modules/graphein.construct_graphs.html#graphein.construct_graphs.ProteinGraph.nx_graph_from_pdb_file">[docs]</a>    <span class="k">def</span> <span class="nf">nx_graph_from_pdb_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_code</span><span class="p">,</span> <span class="n">chain_selection</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">contact_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Produces a NetworkX Graph Object</span>
+
+<span class="sd">        :param pdb_code: 4 character PDB accession code</span>
+<span class="sd">        :type pdb_code: str</span>
+<span class="sd">        :param chain_selection: string indicating chain selection {&#39;A&#39;, &#39;B&#39;, &#39;AB&#39;, ..., &#39;all&#39;}</span>
+<span class="sd">        :type chain_selection: str</span>
+<span class="sd">        :param contact_file: Path to GetContacts output file.</span>
+<span class="sd">        :type contact_file: str, optional</span>
+<span class="sd">        :return: NetworkX graph object of protein</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">g</span><span class="p">,</span> <span class="n">resiude_name_encoder</span><span class="p">,</span> <span class="n">residue_id_encoder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgl_graph_from_pdb_file</span><span class="p">(</span><span class="n">pdb_code</span><span class="p">,</span> <span class="n">chain_selection</span><span class="p">,</span>
+                                                                                   <span class="n">contact_file</span><span class="p">)</span>
+        <span class="n">node_attrs</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">node_attr_schemes</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">edge_attrs</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_attr_schemes</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">dgl</span><span class="o">.</span><span class="n">to_networkx</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">node_attrs</span><span class="p">,</span> <span class="n">edge_attrs</span><span class="p">),</span> <span class="n">resiude_name_encoder</span><span class="p">,</span> <span class="n">residue_id_encoder</span></div>
+
+<div class="viewcode-block" id="ProteinGraph.torch_geometric_graph_from_pdb_code"><a class="viewcode-back" href="../../modules/graphein.construct_graphs.html#graphein.construct_graphs.ProteinGraph.torch_geometric_graph_from_pdb_code">[docs]</a>    <span class="k">def</span> <span class="nf">torch_geometric_graph_from_pdb_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_code</span><span class="p">,</span> <span class="n">chain_selection</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">edge_construction</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;contacts&#39;</span><span class="p">],</span>
+                                            <span class="n">contact_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">k_nn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">custom_edges</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Produces a PyToch Geometric Data object from a protein structure</span>
+
+<span class="sd">        :param k_nn: Specifies  K nearest neighbours to use in KNN edge construction, defaults to None</span>
+<span class="sd">        :type k_nn: int, optional</span>
+<span class="sd">        :param custom_edges: User-supplied edges to use, defaults to None</span>
+<span class="sd">        :type custom_edges: Pandas DataFrame, optional</span>
+<span class="sd">        :param encoding:</span>
+<span class="sd">        :type encoding: bool</span>
+<span class="sd">        :param edge_construction: List containing edge construction to be used. [&#39;contacts&#39;, &#39;distance&#39;, &#39;delaunay&#39;], defaults to [&#39;contacts&#39;]</span>
+<span class="sd">        :type edge_construction: list</span>
+<span class="sd">        :param pdb_code: 4-character PDB accession code</span>
+<span class="sd">        :type pdb_code: str</span>
+<span class="sd">        :param chain_selection: Specifies polypeptide chains to include. e.g. one of {&#39;A&#39;, &#39;B&#39; ,&#39;AB&#39;, &#39;BC&#39;}, defaults to &#39;all&#39;</span>
+<span class="sd">        :type chain_selection: str</span>
+<span class="sd">        :param contact_file: Path to contact file if using local file.</span>
+<span class="sd">        :type contact_file: str</span>
+<span class="sd">        :return: Pytorch Geometric Graph of protein structure.</span>
+<span class="sd">        :rtype: PyTorch Geometric Data object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">encoding</span><span class="p">,</span> <span class="s1">&#39;Non-numeric feature encoding must be True&#39;</span>
+
+        <span class="n">g</span><span class="p">,</span> <span class="n">resiude_name_encoder</span><span class="p">,</span> <span class="n">residue_id_encoder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgl_graph_from_pdb_code</span><span class="p">(</span><span class="n">pdb_code</span><span class="o">=</span><span class="n">pdb_code</span><span class="p">,</span>
+                                                                                   <span class="n">chain_selection</span><span class="o">=</span><span class="n">chain_selection</span><span class="p">,</span>
+                                                                                   <span class="n">contact_file</span><span class="o">=</span><span class="n">contact_file</span><span class="p">,</span>
+                                                                                   <span class="n">edge_construction</span><span class="o">=</span><span class="n">edge_construction</span><span class="p">,</span>
+                                                                                   <span class="n">custom_edges</span><span class="o">=</span><span class="n">custom_edges</span><span class="p">,</span>
+                                                                                   <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">,</span>
+                                                                                   <span class="n">k_nn</span><span class="o">=</span><span class="n">k_nn</span><span class="p">)</span>
+        <span class="c1"># Get node features from DGL graph and concatenate them</span>
+        <span class="n">node_feature_names</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">node_attr_schemes</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">dgl_graph_features</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="n">feat</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">node_feature_names</span><span class="p">]</span>
+        <span class="n">dgl_graph_features</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dgl_graph_features</span><span class="p">]</span>
+        <span class="n">node_features</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dgl_graph_features</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Get edge features from DGL graph and concatenate them</span>
+        <span class="n">edge_types</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_attr_schemes</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">edge_feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">edata</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edge_types</span><span class="p">]</span>
+        <span class="n">edge_feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edge_feats</span><span class="p">]</span>
+        <span class="n">edge_feats</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">edge_feats</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Create the Torch Geometric graph</span>
+        <span class="n">geom_graph</span> <span class="o">=</span> <span class="p">(</span><span class="n">Data</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">node_features</span><span class="p">,</span>
+                           <span class="n">edge_index</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                           <span class="n">edge_attr</span><span class="o">=</span><span class="n">edge_feats</span>
+                           <span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">geom_graph</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">geom_graph</span></div>
+
+    <span class="k">def</span> <span class="nf">_make_atom_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_code</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pdb_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_featurizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edge_featurizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">graph_type</span><span class="o">=</span><span class="s1">&#39;bigraph&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create atom-level graph from PDB structure</span>
+
+<span class="sd">        :param graph_type:</span>
+<span class="sd">        :param pdb_code:</span>
+<span class="sd">        :param pdb_path:</span>
+<span class="sd">        :param node_featurizer:</span>
+<span class="sd">        :param edge_featurizer:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">node_featurizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">node_featurizer</span> <span class="o">=</span> <span class="n">CanonicalAtomFeaturizer</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">edge_featurizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">edge_featurizer</span> <span class="o">=</span> <span class="n">CanonicalBondFeaturizer</span><span class="p">()</span>
+
+        <span class="c1"># Read in protein as mol</span>
+        <span class="c1"># if pdb_path:</span>
+        <span class="k">if</span> <span class="n">pdb_code</span><span class="p">:</span>
+            <span class="n">pdb_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s1">&#39;.pdb&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No PDB file detected. Downloading...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_download_pdb</span><span class="p">(</span><span class="n">pdb_code</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using PDB file: </span><span class="si">{</span><span class="n">pdb_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span>
+        <span class="n">mol</span> <span class="o">=</span> <span class="n">MolFromPDBFile</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span>
+
+        <span class="c1"># DGL mol to graph</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing molgraph (atom-level) with </span><span class="si">{</span><span class="n">graph_type</span><span class="si">}</span><span class="s2"> constructor&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">graph_type</span> <span class="o">==</span> <span class="s1">&#39;bigraph&#39;</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">mol_to_bigraph</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span>
+                               <span class="n">node_featurizer</span><span class="o">=</span><span class="n">node_featurizer</span><span class="p">,</span>
+                               <span class="n">edge_featurizer</span><span class="o">=</span><span class="n">edge_featurizer</span>
+                               <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">graph_type</span> <span class="o">==</span> <span class="s1">&#39;complete&#39;</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">mol_to_complete_graph</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span>
+                                      <span class="n">node_featurizer</span><span class="o">=</span><span class="n">node_featurizer</span><span class="p">,</span>
+                                      <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">graph_type</span> <span class="o">==</span> <span class="s1">&#39;k_nn&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">g</span>
+
+    <span class="k">def</span> <span class="nf">_protein_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pre-processes protein structure dataframe.</span>
+
+<span class="sd">        :param pdb_path:</span>
+<span class="sd">        :param pdb_code - 4 letter PDB accession code</span>
+<span class="sd">        :return: &#39;cleaned protein dataframe&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">protein_df</span> <span class="o">=</span> <span class="n">PandasPdb</span><span class="p">()</span><span class="o">.</span><span class="n">read_pdb</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span>
+
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">protein_df</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ATOM&#39;</span><span class="p">]</span>
+        <span class="n">hetatms</span> <span class="o">=</span> <span class="n">protein_df</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;HETATM&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">==</span> <span class="s1">&#39;centroids&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calculating centroid positions&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">deprotonate</span><span class="p">:</span>
+                <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">atoms</span><span class="p">[</span><span class="s1">&#39;atom_name&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;H&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="n">centroids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_centroid_positions</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">atoms</span><span class="p">[</span><span class="s1">&#39;atom_name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;CA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="n">atoms</span><span class="p">[</span><span class="s1">&#39;x_coord&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">centroids</span><span class="p">[</span><span class="s1">&#39;x_coord&#39;</span><span class="p">]</span>
+            <span class="n">atoms</span><span class="p">[</span><span class="s1">&#39;y_coord&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">centroids</span><span class="p">[</span><span class="s1">&#39;y_coord&#39;</span><span class="p">]</span>
+            <span class="n">atoms</span><span class="p">[</span><span class="s1">&#39;z_coord&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">centroids</span><span class="p">[</span><span class="s1">&#39;z_coord&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">atoms</span><span class="p">[</span><span class="s1">&#39;atom_name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keep_hets</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Processing PDB dataframe&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude_waters</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Excluding waters&#39;</span><span class="p">)</span>
+                <span class="n">hetatms</span> <span class="o">=</span> <span class="n">hetatms</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">hetatms</span><span class="p">[</span><span class="s1">&#39;residue_name&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;HOH&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">hetatms</span><span class="p">)</span><span class="si">}</span><span class="s1"> HETATOM nodes&#39;</span><span class="p">)</span>
+            <span class="n">protein_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">atoms</span><span class="p">,</span> <span class="n">hetatms</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">protein_df</span> <span class="o">=</span> <span class="n">atoms</span>
+
+        <span class="c1"># Remove alt_loc resdiues</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removing alt location residues. Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">protein_df</span><span class="p">[</span><span class="s1">&#39;alt_loc&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">]))</span><span class="si">}</span><span class="s2"> alt_locs.&quot;</span><span class="p">)</span>
+        <span class="n">protein_df</span> <span class="o">=</span> <span class="n">protein_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">protein_df</span><span class="p">[</span><span class="s1">&#39;alt_loc&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">])]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">protein_df</span><span class="p">)</span><span class="si">}</span><span class="s1"> total nodes&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">protein_df</span>
+
+    <span class="k">def</span> <span class="nf">_calculate_centroid_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates position of sidechain centroids</span>
+<span class="sd">        :param atoms: ATOM df of protein structure</span>
+<span class="sd">        :return: centroids (df)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">centroids</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;residue_number&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()[[</span><span class="s1">&#39;x_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;y_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;z_coord&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Calculated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">centroids</span><span class="p">)</span><span class="si">}</span><span class="s1"> centroid nodes&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">centroids</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_chains</span><span class="p">(</span><span class="n">protein_df</span><span class="p">,</span> <span class="n">chain_selection</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extracts relevant chains from protein_df</span>
+
+<span class="sd">        :param protein_df: pandas dataframe of PDB subsetted to relevant atoms (CA, CB)</span>
+<span class="sd">        :param chain_selection:</span>
+<span class="sd">        :return</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">chain_selection</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="n">chains</span> <span class="o">=</span> <span class="p">[</span><span class="n">protein_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">protein_df</span><span class="p">[</span><span class="s1">&#39;chain_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">chain</span><span class="p">]</span> <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">chain_selection</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">chains</span> <span class="o">=</span> <span class="p">[</span><span class="n">protein_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">protein_df</span><span class="p">[</span><span class="s1">&#39;chain_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">chain</span><span class="p">]</span> <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">protein_df</span><span class="p">[</span><span class="s1">&#39;chain_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="n">chains</span>
+
+    <span class="k">def</span> <span class="nf">_add_protein_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chain</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add protein nodes to graph from list of PandasPDB dataframes for each chain</span>
+<span class="sd">        :param chain: (list of dataframes) Contains a dataframe for each chain in the protein</span>
+<span class="sd">        :return: g (DGLGraph): Graph of protein only populated by the nodes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">dgl</span><span class="o">.</span><span class="n">DGLGraph</span><span class="p">()</span>
+
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">chain</span><span class="p">[</span><span class="s1">&#39;chain_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">chain</span><span class="p">[</span><span class="s1">&#39;residue_name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">chain</span><span class="p">[</span><span class="s1">&#39;residue_number&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">==</span> <span class="s1">&#39;atom&#39;</span><span class="p">:</span>
+            <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">chain</span><span class="p">[</span><span class="s1">&#39;atom_name&#39;</span><span class="p">]</span>
+        <span class="n">node_features</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_aa_features</span><span class="p">(</span><span class="n">residue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_featuriser</span><span class="p">)</span> <span class="k">for</span> <span class="n">residue</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">[</span><span class="s1">&#39;residue_name&#39;</span><span class="p">]]</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chain</span><span class="p">[[</span><span class="s1">&#39;x_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;y_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;z_coord&#39;</span><span class="p">]]))</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="s1">&#39;torch.FloatTensor&#39;</span><span class="p">)</span>
+
+        <span class="n">g</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">),</span>
+                    <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">nodes</span><span class="p">,</span>
+                     <span class="s1">&#39;residue_name&#39;</span><span class="p">:</span> <span class="n">chain</span><span class="p">[</span><span class="s1">&#39;residue_name&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">node_features</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="s1">&#39;torch.FloatTensor&#39;</span><span class="p">),</span>
+                     <span class="s1">&#39;coords&#39;</span><span class="p">:</span> <span class="n">coords</span>
+                     <span class="p">})</span>
+        <span class="k">return</span> <span class="n">g</span>
+
+    <span class="k">def</span> <span class="nf">_aa_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">residue</span><span class="p">,</span> <span class="n">embedding</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves amino acid embeddings</span>
+<span class="sd">        :param residue: str specifying the amino acid</span>
+<span class="sd">        :param embedding: embedding to use {&#39;meiler&#39;, &#39;kidera&#39;}</span>
+<span class="sd">        :return: features: torch tensor of features</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">residue</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_dict</span><span class="p">[</span><span class="n">embedding</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">residue</span> <span class="o">=</span> <span class="s1">&#39;UNKNOWN&#39;</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_dict</span><span class="p">[</span><span class="n">embedding</span><span class="p">][</span><span class="n">residue</span><span class="p">])</span><span class="o">.</span><span class="n">double</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">features</span>
+
+    <span class="k">def</span> <span class="nf">_download_pdb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_code</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download PDB structure from PDB</span>
+
+<span class="sd">        :param pdb_code: 4 character PDB accession code</span>
+<span class="sd">        :return: # todo impl return</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initialise class and download pdb file</span>
+        <span class="n">pdbl</span> <span class="o">=</span> <span class="n">PDBList</span><span class="p">()</span>
+        <span class="n">pdbl</span><span class="o">.</span><span class="n">retrieve_pdb_file</span><span class="p">(</span><span class="n">pdb_code</span><span class="p">,</span> <span class="n">pdir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;pdb&#39;</span><span class="p">)</span>
+        <span class="c1"># Rename file to .pdb from .ent</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">+</span> <span class="s2">&quot;pdb&quot;</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s1">&#39;.ent&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s1">&#39;.pdb&#39;</span><span class="p">)</span>
+        <span class="c1"># Assert file has been downloaded</span>
+        <span class="k">assert</span> <span class="nb">any</span><span class="p">(</span><span class="n">pdb_code</span> <span class="ow">in</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloaded PDB file for: </span><span class="si">{</span><span class="n">pdb_code</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_protein_contacts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_code</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Computes contacts from .pdb file using GetContacts - https://www.github.com/getcontacts/getcontacs</span>
+
+<span class="sd">        :param: pdb_code - 4 character PDB accession code</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check for existence of contacts file</span>
+        <span class="k">if</span> <span class="n">file_name</span><span class="p">:</span>
+            <span class="n">contacts_file</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">+</span> <span class="n">file_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">contacts_file</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">+</span> <span class="s2">&quot;*&quot;</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s2">&quot;*.tsv&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">contacts_file</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Contact file found: </span><span class="si">{</span><span class="n">contacts_file</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pdb_code</span><span class="p">)</span>
+        <span class="c1"># Check for existence of pdb file</span>
+        <span class="n">pdb_file</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">+</span> <span class="s2">&quot;*&quot;</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s2">&quot;*.pdb&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pdb_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pdb_file</span><span class="p">:</span>
+            <span class="c1"># Download PDB file</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;PDB file not downloaded&#39;</span><span class="p">)</span>
+            <span class="c1"># self.download_pdb(pdb_code)</span>
+            <span class="n">pdb_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s2">&quot;.pdb&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pdb_file</span> <span class="o">=</span> <span class="n">pdb_file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;PDB file detected: </span><span class="si">{</span><span class="n">pdb_file</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Run GetContacts</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_contacts_path</span><span class="si">}</span><span class="s1">/get_static_contacts.py &#39;</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;--structure </span><span class="si">{</span><span class="n">pdb_file</span><span class="si">}</span><span class="s1"> &#39;</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;--output </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s2">&quot;_contacts.tsv&quot;</span><span class="si">}</span><span class="s1"> &#39;</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s1">&#39;--itypes all&#39;</span>  <span class="c1"># --sele &quot;protein&quot;&#39;</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s2">&quot;_contacts.tsv&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Computed Contacts for: </span><span class="si">{</span><span class="n">pdb_code</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_protein_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_code</span><span class="p">,</span> <span class="n">chain_selection</span><span class="p">,</span> <span class="n">contact_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute protein edges</span>
+
+<span class="sd">        :param contact_file:</span>
+<span class="sd">        :param chain_selection:</span>
+<span class="sd">        :param pdb_code: 4 character pdb accession code</span>
+<span class="sd">        :return: edges : dataframe containing edges derived from GetContacts analysis</span>
+<span class="sd">        # todo impl covalent bond structure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">contact_file</span><span class="p">:</span>
+            <span class="n">contact_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s1">&#39;_contacts&#39;</span> <span class="o">+</span> <span class="s1">&#39;.tsv&#39;</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="c1"># Read Contacts File</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">contact_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="nb">next</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="nb">next</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">linfo</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">interaction_type</span> <span class="o">=</span> <span class="n">linfo</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="c1"># Select interacting Residues</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">==</span> <span class="s1">&#39;CA&#39;</span> <span class="ow">or</span> <span class="s1">&#39;CB&#39;</span> <span class="ow">or</span> <span class="s1">&#39;atom&#39;</span><span class="p">:</span>
+                    <span class="n">res1</span> <span class="o">=</span> <span class="n">linfo</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">res2</span> <span class="o">=</span> <span class="n">linfo</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">!=</span> <span class="s1">&#39;atom&#39;</span><span class="p">:</span>
+                        <span class="n">res1</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.\:(.*?)\:(.*?)(?=:)&#39;</span><span class="p">,</span> <span class="n">res1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">res2</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.\:(.*?)\:(.*?)(?=:)&#39;</span><span class="p">,</span> <span class="n">res2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># Add edge to set of edges</span>
+                <span class="n">edges</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">interaction_type</span><span class="p">))</span>
+
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">edges</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">,</span> <span class="s1">&#39;res2&#39;</span><span class="p">,</span> <span class="s1">&#39;interaction_type&#39;</span><span class="p">])</span>
+        <span class="c1"># Remove all unallowed interactions</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;interaction_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">INTERACTION_TYPES</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">chain_selection</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">chain_selection</span><span class="p">))]</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">chain_selection</span><span class="p">))]</span>
+
+        <span class="c1"># Filter out interactions for disordered/unassigned residues</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&quot;[A-Z]$&quot;</span><span class="p">)]</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&quot;[A-Z]$&quot;</span><span class="p">)]</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&quot;:0$&quot;</span><span class="p">)]</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&quot;:0$&quot;</span><span class="p">)]</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;^X:&#39;</span><span class="p">)]</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;^X:&#39;</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_interaction_threshold</span><span class="p">:</span>
+            <span class="n">res1</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s1">&#39;(\d+)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">res2</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s1">&#39;(\d+)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">inds</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">res1</span> <span class="o">-</span> <span class="n">res2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_interaction_threshold</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Calculated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span><span class="si">}</span><span class="s1"> intramolecular interaction-based edges&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">edges</span>
+
+    <span class="k">def</span> <span class="nf">_add_protein_edges_to_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add protein edges from dataframe of edges</span>
+
+<span class="sd">        :param g: Dgl graph of protein</span>
+<span class="sd">        :param e: Pandas dataframe of edges</span>
+<span class="sd">        :return: g DGL Graph with edges added</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">granularity</span> <span class="o">==</span> <span class="s1">&#39;dense&#39;</span><span class="p">:</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">add_edges</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">())</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span> <span class="p">[</span>
+                    <span class="n">j</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">())</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">())</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">j</span>
+                <span class="p">])</span>
+            <span class="k">return</span> <span class="n">g</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]),</span>
+                             <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])))</span>
+                             <span class="p">))</span>
+
+            <span class="c1"># Remove interactions for edges between nodes not in graph. E.g hetatms</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
+
+            <span class="n">res1_ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="n">res</span><span class="p">]</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">e</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">]]</span>
+            <span class="n">res2_ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="n">res</span><span class="p">]</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">e</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]]</span>
+            <span class="n">interactions</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_onek_encoding_unk</span><span class="p">(</span><span class="n">interaction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">INTERACTION_TYPES</span><span class="p">)</span> <span class="k">for</span> <span class="n">interaction</span> <span class="ow">in</span>
+                            <span class="n">e</span><span class="p">[</span><span class="s1">&#39;interaction_type&#39;</span><span class="p">]]</span>
+
+            <span class="n">g</span><span class="o">.</span><span class="n">add_edges</span><span class="p">(</span><span class="n">res1_ind</span><span class="p">,</span> <span class="n">res2_ind</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;rel_type&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">interactions</span><span class="p">)</span><span class="o">.</span><span class="n">double</span><span class="p">(),</span>
+                                             <span class="s1">&#39;norm&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">interactions</span><span class="p">))})</span>
+            <span class="k">return</span> <span class="n">g</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_onek_encoding_unk</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">allowable_set</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function for one hot encoding</span>
+<span class="sd">        :param x: value to one-hot</span>
+<span class="sd">        :param allowable_set: set of options to encode</span>
+<span class="sd">        :return: one-hot encoding as torch tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if x not in allowable_set:</span>
+        <span class="c1">#    x = allowable_set[-1]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="o">==</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">allowable_set</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_protein_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdb_code</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">chain_selection</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param file_path: (str) file path to PDB file</span>
+<span class="sd">        :param pdb_code: (str) String containing four letter PDB accession</span>
+<span class="sd">        :return df (pd.DataFrame): Dataframe containing output of DSSP (Solvent accessibility, secondary structure for each residue)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Run DSSP on relevant PDB file</span>
+        <span class="k">if</span> <span class="n">pdb_code</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">dssp_dict_from_pdb_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">+</span> <span class="n">pdb_code</span> <span class="o">+</span> <span class="s1">&#39;.pdb&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">file_path</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">dssp_dict_from_pdb_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+        <span class="c1"># Parse DSSP output to DataFrame</span>
+        <span class="n">appender</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">to_append</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">chain</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">residue</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">het</span> <span class="o">=</span> <span class="n">residue</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">resnum</span> <span class="o">=</span> <span class="n">residue</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">icode</span> <span class="o">=</span> <span class="n">residue</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">to_append</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">chain</span><span class="p">,</span> <span class="n">resnum</span><span class="p">,</span> <span class="n">icode</span><span class="p">])</span>
+            <span class="n">to_append</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">appender</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to_append</span><span class="p">)</span>
+
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;chain&#39;</span><span class="p">,</span> <span class="s1">&#39;resnum&#39;</span><span class="p">,</span> <span class="s1">&#39;icode&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="s1">&#39;ss&#39;</span><span class="p">,</span> <span class="s1">&#39;exposure_rsa&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;phi&#39;</span><span class="p">,</span> <span class="s1">&#39;psi&#39;</span><span class="p">,</span> <span class="s1">&#39;dssp_index&#39;</span><span class="p">,</span> <span class="s1">&#39;NH_O_1_relidx&#39;</span><span class="p">,</span> <span class="s1">&#39;NH_O_1_energy&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;O_NH_1_relidx&#39;</span><span class="p">,</span> <span class="s1">&#39;O_NH_1_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;NH_O_2_relidx&#39;</span><span class="p">,</span> <span class="s1">&#39;NH_O_2_energy&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;O_NH_2_relidx&#39;</span><span class="p">,</span> <span class="s1">&#39;O_NH_2_energy&#39;</span><span class="p">]</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span><span class="n">appender</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
+        <span class="c1"># Subset dataframe to those in chain_selection</span>
+        <span class="k">if</span> <span class="n">chain_selection</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;chain&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">chain_selection</span><span class="p">)]</span>
+        <span class="c1"># Rename cysteines to &#39;C&#39;</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;aa&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;aa&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[a-z]&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;aa&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">aa1</span><span class="p">))]</span>
+
+        <span class="c1"># Drop alt_loc residues</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;icode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span><span class="p">]</span>
+
+        <span class="c1"># Add additional Columns</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;aa_three&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;aa&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">one_to_three</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;max_acc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;aa_three&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">residue_max_acc</span><span class="p">[</span><span class="s1">&#39;Sander&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;exposure_rsa&#39;</span><span class="p">,</span> <span class="s1">&#39;max_acc&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;exposure_rsa&#39;</span><span class="p">,</span> <span class="s1">&#39;max_acc&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;exposure_asa&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;exposure_rsa&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;max_acc&#39;</span><span class="p">]</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;chain&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;aa_three&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;resnum&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">def</span> <span class="nf">_compute_protein_feature_representations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dssp_df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param dssp_df: (pd.DataFrame): Df containing parsed output of DSSP</span>
+<span class="sd">        :return feature_dict (dict): Dictionary of tensorized features</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># One hot encoded secondary structure assignments</span>
+        <span class="n">ss_set</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">]</span>
+        <span class="n">ss</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_onek_encoding_unk</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span> <span class="n">ss_set</span><span class="p">)</span> <span class="k">for</span> <span class="n">ss</span> <span class="ow">in</span> <span class="n">dssp_df</span><span class="p">[</span><span class="s1">&#39;ss&#39;</span><span class="p">]]</span>
+        <span class="c1"># Create feature dictionary</span>
+
+        <span class="n">feature_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ss&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">ss</span><span class="p">),</span>
+                        <span class="s1">&#39;asa&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dssp_df</span><span class="p">[</span><span class="s1">&#39;exposure_asa&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dssp_df</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span>
+                        <span class="s1">&#39;rsa&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dssp_df</span><span class="p">[</span><span class="s1">&#39;exposure_rsa&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dssp_df</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">feature_dict</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_add_protein_features</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">feature_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add computed protein features to graph</span>
+
+<span class="sd">        :param g: DGL Graph of protein.</span>
+<span class="sd">        :param feature_dict: Dictionary of features calculated by DSSP</span>
+<span class="sd">        :return: g DGL Graph of protein with SS and solvent accessibility features added to node data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 0 Pad Tensors for Proteins with HETATMS that DSSP Can&#39;t Deal with</span>
+        <span class="n">pad_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;ss&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">pad_length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">pad</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pad_length</span><span class="p">]</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;ss&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;ss&#39;</span><span class="p">],</span> <span class="n">pad</span><span class="p">,</span> <span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;asa&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;asa&#39;</span><span class="p">],</span> <span class="n">pad</span><span class="p">,</span> <span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;rsa&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;rsa&#39;</span><span class="p">],</span> <span class="n">pad</span><span class="p">,</span> <span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Assign Features</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;ss&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;ss&#39;</span><span class="p">]</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;asa&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;asa&#39;</span><span class="p">]</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;rsa&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;rsa&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">g</span>
+
+    <span class="k">def</span> <span class="nf">_k_nn_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protein_df</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;connectivity&#39;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;minkowski&#39;</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">include_self</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct edges based on K nearest neighbours</span>
+
+<span class="sd">        :param protein_df: PandasPDB DF of protein structure</span>
+<span class="sd">        :param k: number of nearest neighbour edges for each node</span>
+<span class="sd">        :param mode: {&#39;connectivity&#39;, &#39;distance&#39;}</span>
+<span class="sd">        :param metric: {&#39;minkowskii}</span>
+<span class="sd">        :param p:</span>
+<span class="sd">        :param include_self: bool - whether or not to include self-loops</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create coordinate matrix</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">protein_df</span><span class="p">[[</span><span class="s1">&#39;x_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;y_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;z_coord&#39;</span><span class="p">]]</span>
+        <span class="n">dists</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="c1"># Perform K-NN on coordinates</span>
+        <span class="n">nn</span> <span class="o">=</span> <span class="n">kneighbors_graph</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">dists</span><span class="p">,</span>
+                              <span class="n">n_neighbors</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+                              <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+                              <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+                              <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+                              <span class="n">include_self</span><span class="o">=</span><span class="n">include_self</span>
+                              <span class="p">)</span>
+        <span class="c1"># Create dataframe of edges</span>
+        <span class="n">outgoing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))),</span> <span class="n">k</span><span class="p">)</span>
+        <span class="n">incoming</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">indices</span>
+        <span class="n">edge_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;res1&#39;</span><span class="p">:</span> <span class="n">outgoing</span><span class="p">,</span>
+                                <span class="s1">&#39;res2&#39;</span><span class="p">:</span> <span class="n">incoming</span><span class="p">,</span>
+                                <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">data</span>
+                                <span class="p">})</span>
+
+        <span class="c1"># Threshold edges based on sequence position</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_interaction_threshold</span><span class="p">:</span>
+            <span class="n">edge_df</span> <span class="o">=</span> <span class="n">edge_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">edge_df</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">edge_df</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_interaction_threshold</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Calculated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">edge_df</span><span class="p">)</span><span class="si">}</span><span class="s1"> K-nearest neighbour edges&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">edge_df</span>
+
+    <span class="k">def</span> <span class="nf">_distance_based_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protein_df</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate distance-based edges from coordinates in 3D structure.</span>
+
+<span class="sd">        Produce Edge list dataframe based on pairwise distance matrix calculation</span>
+<span class="sd">        :param protein_df: PandasPDB Dataframe</span>
+<span class="sd">        :param cutoff: Distance threshold to create an edge (Angstroms)</span>
+<span class="sd">        :return: dists : pandas dataframe of edge list and distance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create distance matrix</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">protein_df</span><span class="p">[[</span><span class="s1">&#39;x_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;y_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;z_coord&#39;</span><span class="p">]]</span>
+        <span class="n">dists</span> <span class="o">=</span> <span class="n">pairwise_distances</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
+        <span class="c1"># Filter distance matrix and select lower triangle</span>
+        <span class="n">dists</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tril</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dists</span> <span class="o">&lt;</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">dists</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+        <span class="c1"># Reshape to produce edge list</span>
+        <span class="n">dists</span><span class="o">.</span><span class="n">values</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dists</span><span class="p">))]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">dists</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="c1"># Filter to remove edges that exceed cutoff</span>
+        <span class="n">dists</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dists</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Filted edges based on sequence position</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_interaction_threshold</span><span class="p">:</span>
+            <span class="n">dists</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">dists</span><span class="p">[</span><span class="s1">&#39;level_0&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dists</span><span class="p">[</span><span class="s1">&#39;level_1&#39;</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_interaction_threshold</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Calcuclated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dists</span><span class="p">)</span><span class="si">}</span><span class="s1"> distance-based edges&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dists</span>
+
+    <span class="sd">&quot;&quot;&quot;&quot;</span>
+<span class="sd">    @staticmethod</span>
+<span class="sd">    def get_voronoi_edges(protein_df, furthest_site=False, incremental=False):</span>
+<span class="sd">        </span>
+<span class="sd">        #Calculate Voronoi edges from protein dataframe</span>
+<span class="sd">        #:param protein_df:</span>
+<span class="sd">        #:param furthest_site:</span>
+<span class="sd">        ##:param incremental:</span>
+<span class="sd">        #:return:</span>
+<span class="sd">        </span>
+<span class="sd">        coord = protein_df[[&#39;x_coord&#39;, &#39;y_coord&#39;, &#39;z_coord&#39;]]</span>
+<span class="sd">        vor = spatial.Voronoi(points=coord, furthest_site=furthest_site, incremental=incremental)</span>
+<span class="sd">        edges = pd.DataFrame(vor.ridge_points)</span>
+<span class="sd">        print(edges)</span>
+<span class="sd">        edges.columns = [&#39;res1&#39;, &#39;res2&#39;]</span>
+<span class="sd">        print(f&#39;Calculated {len(edges)} voronoi-ridge edges&#39;)</span>
+<span class="sd">        return edges</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_get_delaunay_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protein_df</span><span class="p">,</span> <span class="n">furthest_site</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate Delaunay edges from a dataframe of coordinates</span>
+<span class="sd">        :param protein_df: dataframe of protein structure</span>
+<span class="sd">        :type protein_df: Pandas DataFrame</span>
+<span class="sd">        :param furthest_site:</span>
+<span class="sd">        :type furthest_site: bool</span>
+<span class="sd">        :param incremental:</span>
+<span class="sd">        :type incremental: bool</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Produce coordinate matrix and compute delaunay triangulation</span>
+        <span class="n">coord</span> <span class="o">=</span> <span class="n">protein_df</span><span class="p">[[</span><span class="s1">&#39;x_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;y_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;z_coord&#39;</span><span class="p">]]</span>
+        <span class="n">delaunay</span> <span class="o">=</span> <span class="n">spatial</span><span class="o">.</span><span class="n">Delaunay</span><span class="p">(</span><span class="n">coord</span><span class="p">,</span> <span class="n">furthest_site</span><span class="o">=</span><span class="n">furthest_site</span><span class="p">,</span> <span class="n">incremental</span><span class="o">=</span><span class="n">incremental</span><span class="p">)</span>
+
+        <span class="c1"># Turn simplices into edgelist</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">indices</span><span class="p">,</span> <span class="n">indptr</span> <span class="o">=</span> <span class="n">delaunay</span><span class="o">.</span><span class="n">vertex_neighbor_vertices</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">indices</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">indptr</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span><span class="n">indices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+        <span class="c1"># Create edge DataFrame</span>
+        <span class="n">edge_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+        <span class="n">edge_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">,</span> <span class="s1">&#39;res2&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Get distances between edges</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">edge_df</span><span class="p">)):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">coord</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">edge_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="s1">&#39;res1&#39;</span><span class="p">]]</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">coord</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">edge_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="s1">&#39;res2&#39;</span><span class="p">]]</span>
+            <span class="n">distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spatial</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">euclidean</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+
+        <span class="n">edge_df</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">distances</span>
+
+        <span class="c1"># Filter edges by sequence position</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_interaction_threshold</span><span class="p">:</span>
+            <span class="n">edge_df</span> <span class="o">=</span> <span class="n">edge_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">edge_df</span><span class="p">[</span><span class="s1">&#39;res1&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">edge_df</span><span class="p">[</span><span class="s1">&#39;res2&#39;</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_interaction_threshold</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Calculated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">edge_df</span><span class="p">)</span><span class="si">}</span><span class="s1"> Delaunay edges&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">edge_df</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;   </span>
+<span class="sd">    pg = ProteinGraph(granularity=&#39;CA&#39;, insertions=False, keep_hets=True,</span>
+<span class="sd">                      node_featuriser=&#39;meiler&#39;,</span>
+<span class="sd">                      allowed_interactions=None,</span>
+<span class="sd">                      get_contacts_path=&#39;/home/arj39/Documents/github/getcontacts&#39;,</span>
+<span class="sd">                      pdb_dir=&#39;/home/arj39/Documents/test/pdb/&#39;, contacts_dir=&#39;/home/arj39/Documents/test/contacts/&#39;,</span>
+<span class="sd">                      exclude_waters=True, covalent_bonds=False, include_ss=True, include_ligand=False,</span>
+<span class="sd">                      edge_distance_cutoff=5</span>
+<span class="sd">                      # node_featuriser=dgl.data.chem.atom_type_one_hot(),</span>
+<span class="sd">                      # edge_featuriser=dgl.data.chem.bond_type_one_hot(),</span>
+<span class="sd">                      # graph_constructor=dgl.data.chem.mol_to_graph())</span>
+<span class="sd">                      )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pg = ProteinGraph(granularity=&#39;CA&#39;, insertions=False, keep_hets=True,</span>
+<span class="sd">                      node_featuriser=&#39;meiler&#39;,</span>
+<span class="sd">                      allowed_interactions=None,</span>
+<span class="sd">                      get_contacts_path=&#39;/home/arj39/Documents/github/getcontacts&#39;,</span>
+<span class="sd">                      pdb_dir=&#39;/home/arj39/Documents/test/pdb/&#39;, contacts_dir=&#39;/home/arj39/Documents/test/contacts/&#39;,</span>
+<span class="sd">                      exclude_waters=True, covalent_bonds=False, include_ss=True, include_ligand=False,</span>
+<span class="sd">                      edge_distance_cutoff=10</span>
+<span class="sd">                      # node_featuriser=dgl.data.chem.atom_type_one_hot(),</span>
+<span class="sd">                      # edge_featuriser=dgl.data.chem.bond_type_one_hot(),</span>
+<span class="sd">                      # graph_constructor=dgl.data.chem.mol_to_graph())</span>
+<span class="sd">                      )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pg</span> <span class="o">=</span> <span class="n">ProteinGraph</span><span class="p">(</span><span class="n">granularity</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="n">insertions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keep_hets</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">node_featuriser</span><span class="o">=</span><span class="s1">&#39;meiler&#39;</span><span class="p">,</span>
+                      <span class="n">intramolecular_interactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">get_contacts_path</span><span class="o">=</span><span class="s1">&#39;/Users/arianjamasb/github/getcontacts&#39;</span><span class="p">,</span>
+                      <span class="n">pdb_dir</span><span class="o">=</span><span class="s1">&#39;../examples/pdbs/&#39;</span><span class="p">,</span>
+                      <span class="n">contacts_dir</span><span class="o">=</span><span class="s1">&#39;../examples/contacts/&#39;</span><span class="p">,</span>
+                      <span class="n">exclude_waters</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">covalent_bonds</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">include_ss</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">include_ligand</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">long_interaction_threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                      <span class="n">edge_distance_cutoff</span><span class="o">=</span><span class="mi">10</span>
+                      <span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    g = pg.dgl_graph_from_pdb_code(&#39;3eiy&#39;,</span>
+<span class="sd">                                   chain_selection=&#39;all&#39;,</span>
+<span class="sd">                                   edge_construction=[&#39;distance&#39;, &#39;delaunay&#39;],  # , &#39;delaunay&#39;, &#39;k_nn&#39;],</span>
+<span class="sd">                                   encoding=False,</span>
+<span class="sd">                                   k_nn=None)</span>
+
+<span class="sd">    pg.torch_geometric_graph_from_pdb_code(&#39;3eiy&#39;,</span>
+<span class="sd">                                           chain_selection=&#39;all&#39;,</span>
+<span class="sd">                                           edge_construction=[&#39;distance&#39;, &#39;delaunay&#39;],</span>
+<span class="sd">                                           encoding=True,</span>
+<span class="sd">                                           k_nn=None)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">g</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">nx_graph_from_pdb_code</span><span class="p">(</span><span class="n">pdb_code</span><span class="o">=</span><span class="s1">&#39;3eiy&#39;</span><span class="p">,</span>
+                                         <span class="n">chain_selection</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                         <span class="n">edge_construction</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;contacts&#39;</span><span class="p">],</span>
+                                         <span class="n">encoding</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1">#pg.make_atom_graph(pdb_code=&#39;3eiy&#39;)</span>
+
+    <span class="c1"># Check KNN</span>
+    <span class="c1"># g, resiude_name_encoder, residue_id_encoder = pg.nx_graph_from_pdb_code(&#39;3eiy&#39;, chain_selection=&#39;all&#39;,</span>
+    <span class="c1">#                                                                        edge_construction=[&#39;distance&#39;, &#39;contacts&#39;],</span>
+    <span class="c1">#                                                                        encoding=True)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Arian Jamasb
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

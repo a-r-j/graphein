@@ -1,0 +1,9 @@
+graphein.diffusion
+==================
+
+
+Diffusion
+---------
+.. automodule:: graphein.diffusion
+    :members:
+

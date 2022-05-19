@@ -1,0 +1,475 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    
+<meta property="og:title" content="Contributing" />
+  
+<meta property="og:type" content="website" />
+  
+<meta property="og:url" content="https://graphein.ai/contributing/contributing.html" />
+  
+<meta property="og:description" content="Introduction: Hey, what up! if you’re reading this then I’m super psyched because that means that you’re thinking about contributing to Graphein! Thanks so much for your time and consideration. It’..." />
+  
+<meta property="og:image" content="https://graphein.ai/_static/graphein.png" />
+  
+<meta property="og:image:alt" content="Contributing" />
+  <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Contributor Covenant Code of Conduct" href="code_of_conduct.html" /><link rel="prev" title="graphein.utils" href="../modules/graphein.utils.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>Contributing - Graphein 1.3.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Graphein 1.3.0</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.3.0</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <div class="section" id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">#</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">#</a></h2>
+<p>Hey, what up! if you’re reading this then I’m super psyched because that means that you’re thinking about contributing to Graphein! Thanks so much for your time and consideration. It’s rad people like you that make Graphein such a cool computational biology tool.</p>
+<p>I wrote this contributor’s guide to help newcomers feel welcome. Getting started with a new project can be complicated and I wanted to make it as easy as possible for you to contribute and as easy as possible for me to help.</p>
+<p>Currently any sincere pull request is a good request.
+Graphein is still evolving so there are so many way to contribute!
+Here’s a list of ideas but feel free to suggest anything I may have forgotten to include.</p>
+<ul class="simple">
+<li><p>Feature requests - especially cool new algorithms with citations.</p></li>
+<li><p>Visualisation, plots, analysis functions</p></li>
+<li><p>Featurisition utils</p></li>
+<li><p>Devops features. Github action bots, linters, deployment, etc.</p></li>
+<li><p>Unit and integration tests.</p></li>
+<li><p>Writing, editing, and translating tutorials, documentation, or blog posts.</p></li>
+<li><p>Auditing for accessibility.</p></li>
+<li><p>Bug reports.</p></li>
+<li><p>Bug triaging.</p></li>
+<li><p>Community management.</p></li>
+<li><p>Art! Dreams! Your excellence!</p></li>
+<li><p>Code that can be pulled into Graphein itself.</p></li>
+</ul>
+</div>
+<div class="section" id="contributor-guidelines">
+<h2>Contributor guidelines<a class="headerlink" href="#contributor-guidelines" title="Permalink to this headline">#</a></h2>
+<div class="section" id="excellence-and-the-contributor-s-code-of-conduct">
+<h3>Excellence, and the contributor’s code of conduct<a class="headerlink" href="#excellence-and-the-contributor-s-code-of-conduct" title="Permalink to this headline">#</a></h3>
+<p>First up, most importantly we have a contributor’s code of conduct. For some reason the internet is a dehumanizing experience and it’s easy to forget that aside from the bots we’re all humans on this thing. Approach each other with kindness. Please read our <a class="reference external" href="CODE_OF_CONDUCT.md">contributor’s code of conduct</a> and when in doubt just remember our one true rule as once spoken by the ever so wise duo of Bill and Ted.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Bill:</span> <span class="pre">Be</span> <span class="pre">excellent,</span> <span class="pre">...</span> <span class="pre">to</span> <span class="pre">each</span> <span class="pre">other,</span> <span class="pre">...</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">Ted:</span> <span class="pre">and</span> <span class="pre">party</span> <span class="pre">on,</span> <span class="pre">dudes!</span> <span class="pre">[sic]</span></code></p>
+<a class="reference external image-reference" href="https://media.giphy.com/media/ef0zYcF7AKu4b0Sns6/giphy-downsized-large.gif"><img alt='Abraham Licoln saying, "Be Excellent to each other and party on dudes!". [sic]' src="https://media.giphy.com/media/ef0zYcF7AKu4b0Sns6/giphy-downsized-large.gif"/></a>
+</div>
+<div class="section" id="do-ocracy">
+<h3>Do-ocracy<a class="headerlink" href="#do-ocracy" title="Permalink to this headline">#</a></h3>
+<p>Graphein runs on do-ocracy. Do-ocracy is a simple concept. If you don’t like something you don’t need permission to fix it, you can just go ahead and fix it! If you actually want to merge your fix, or contribute in someway that benefits everybody, it’d really, really, really help if you got some light consensus from the rest of the Graphein development community but hey, if you really need to do something then you just gotta do it! Just don’t expect me to merge it if it doesn’t meet our technical criteria or isn’t quite right for Graphein.</p>
+</div>
+<div class="section" id="technical-requirements">
+<h3>Technical requirements<a class="headerlink" href="#technical-requirements" title="Permalink to this headline">#</a></h3>
+<p>Part of what makes Graphein so special is that we have standards. DNA is already spaghetti code on its own and we just don’t need to add to that.</p>
+<p>All successfully merged pull requests must meet the following criteria:</p>
+<ul class="simple">
+<li><p>All current tests must pass.</p></li>
+<li><p>At least one new test must be written to prove that the merged feature works correctly.</p></li>
+<li><p>At least one new example must be written to demonstrate the merged feature in our docs.</p></li>
+<li><p>Build tests must pass for all currently supported systems and package managers. Linux, Mac OSX, Windows, etc.</p></li>
+<li><p>Code must be clean, readable, and commented. How you do that is up to you!</p></li>
+</ul>
+<p>Don’t worry if you submit a pull request and all the tests break and the code is not readable. We won’t merge it just yet and then you can get some feedback about what needs to be changed before we do!</p>
+</div>
+<div class="section" id="be-welcoming">
+<h3>Be welcoming<a class="headerlink" href="#be-welcoming" title="Permalink to this headline">#</a></h3>
+<p>As one final guideline please be welcoming to newcomers and encourage new contributors from all walks of life. I want Graphein to be for everyone and that includes you and people who don’t look, sound, or act like you!</p>
+</div>
+</div>
+<div class="section" id="your-first-contribution">
+<h2>Your first contribution<a class="headerlink" href="#your-first-contribution" title="Permalink to this headline">#</a></h2>
+<p>Unsure where to begin contributing to Graphein? You can start by looking through these beginner and help-wanted issues:</p>
+<p><a class="reference external" href="https://github.com/a-r-j/graphein/issues?q=is%3Aissue+is%3Aopen+label%3A%22beginner%22+">Beginner issues</a> - issues which should only require a few lines of code, and a test or two.</p>
+<p><a class="reference external" href="https://github.com/a-r-j/graphein/contribute">Good first issues</a> - issues which are good for first time contributors.</p>
+<p><a class="reference external" href="https://github.com/a-r-j/graphein/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22+">Help wanted issues</a> - issues which should be a bit more involved than beginner issues.</p>
+<p><a class="reference external" href="https://github.com/a-r-j/graphein/labels/enhancement">Feature requests</a> - before requesting a new feature search through previous feature requests to see if it’s already been requested. If not then feel free to submit a request and tag it with the enhancement tag!</p>
+<div class="section" id="working-on-your-first-pull-request">
+<h3>Working on your first Pull Request?<a class="headerlink" href="#working-on-your-first-pull-request" title="Permalink to this headline">#</a></h3>
+<p>You can learn how from this <em>free</em> series, <a class="reference external" href="https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github">How to Contribute to an Open Source Project on GitHub</a>.</p>
+<p>You can also check out <a class="reference external" href="http://makeapullrequest.com/">these</a> <a class="reference external" href="http://www.firsttimersonly.com/">tutorials</a>.</p>
+<p>At this point, you’re ready to make your changes! Feel free to ask for help; everyone is a beginner at first :smile_cat:</p>
+</div>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">#</a></h2>
+<p>For something that is bigger than a one or two line fix:</p>
+<ol class="arabic simple">
+<li><p>Create your own fork of the code.</p></li>
+<li><p>Make a branch in your fork</p></li>
+<li><p>Do the changes in your fork’s branch.</p></li>
+<li><p>Send a pull request.</p></li>
+</ol>
+<p>In order to simplify the development experience, and environment setup, the Graphein Github repository comes packaged to support <em>Github CodeSpaces</em> and <a class="reference external" href="https://code.visualstudio.com/docs/remote/containers#_getting-started">*VSCode Development Containers*</a>. <em>Github CodeSpaces</em> will give you ability to spin up a Github hosted instance of Ubuntu that would allow you run, test, develop Graphein from the browser. <em>VSCode Development Containers</em> in turn will allow your installation of VSCode to spin up a docker instance of Ubuntu on your computer and automatically mount your code onto it so that you continue developing on this docker instance that has all the required development environment setup.</p>
+<p>Whether you’re a beginner with Python or you’re an experienced developer, You should see the suggestions popup automatically when you goto the <em>Plugins</em> tab in VSCode. Using these plugins can help accelerate the development experience and also allow you to work more collaboratively with other Graphein developers.</p>
+</div>
+<div class="section" id="how-to-report-a-bug">
+<h2>How to report a bug<a class="headerlink" href="#how-to-report-a-bug" title="Permalink to this headline">#</a></h2>
+<div class="section" id="security-disclosures">
+<h3>Security disclosures<a class="headerlink" href="#security-disclosures" title="Permalink to this headline">#</a></h3>
+<p>If you find a security vulnerability, do NOT open an issue. I’ve yet to set up a security email for this so please in the interim DM me on twitter for my email <a class="reference external" href="https://twitter.com/arian_jamasb">@arian_jamasb</a> or grab my contact from my <a class="reference external" href="jamasb.io">website</a>.</p>
+<p>In order to determine whether you are dealing with a security issue, ask yourself these two questions:</p>
+<ul class="simple">
+<li><p>Can I access something that’s not mine, or something I shouldn’t have access to?</p></li>
+<li><p>Can I disable something for other people?</p></li>
+</ul>
+<p>If the answer to either of those two questions are “yes”, then you’re probably dealing with a security issue. Note that even if you answer “no” to both questions, you may still be dealing with a security issue, so if you’re unsure, just DM me <a class="reference external" href="https://twitter.com/arian_jamasb">@arian_jamasb</a> for my personal email until I can set up a security related email.</p>
+</div>
+<div class="section" id="non-security-related-bugs">
+<h3>Non-security related bugs<a class="headerlink" href="#non-security-related-bugs" title="Permalink to this headline">#</a></h3>
+<p>For non-security bug reports please <a class="reference external" href="https://github.com/a-r-j/graphein/issues/new?assignees=&amp;labels=&amp;template=bug_report.md&amp;title=">submit it using this template!</a></p>
+</div>
+</div>
+<div class="section" id="how-to-suggest-a-feature-or-enhancement">
+<h2>How to suggest a feature or enhancement<a class="headerlink" href="#how-to-suggest-a-feature-or-enhancement" title="Permalink to this headline">#</a></h2>
+<p>If you want to suggest a feature it’s as easy as filling out this <a class="reference external" href="https://github.com/a-r-j/graphein/issues/new?assignees=&amp;labels=&amp;template=feature_request.md&amp;title=">issue template</a>, but before you do please <a class="reference external" href="https://github.com/a-r-j/graphein/labels/enhancement">check to see if it’s already been suggested!</a></p>
+</div>
+<div class="section" id="how-add-a-recommended-vscode-plugin">
+<h2>How add a recommended VSCode Plugin<a class="headerlink" href="#how-add-a-recommended-vscode-plugin" title="Permalink to this headline">#</a></h2>
+<p>Graphein comes with a set of recommended plugins for VSCode. If you have suggestions that will simplify life for the Graphein dev community, consider doing a pull-request after modifying <code class="docutils literal notranslate"><span class="pre">.vscode/extensions.json</span></code>.</p>
+</div>
+<div class="section" id="in-closing">
+<h2>In closing<a class="headerlink" href="#in-closing" title="Permalink to this headline">#</a></h2>
+<p>Thanks, for reading and I’m super psyched to see what you’ll do with Graphein!</p>
+</div>
+</div>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="code_of_conduct.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Contributor Covenant Code of Conduct</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../modules/graphein.utils.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">graphein.utils</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Contributing</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#contributor-guidelines">Contributor guidelines</a><ul>
+<li><a class="reference internal" href="#excellence-and-the-contributor-s-code-of-conduct">Excellence, and the contributor’s code of conduct</a></li>
+<li><a class="reference internal" href="#do-ocracy">Do-ocracy</a></li>
+<li><a class="reference internal" href="#technical-requirements">Technical requirements</a></li>
+<li><a class="reference internal" href="#be-welcoming">Be welcoming</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#your-first-contribution">Your first contribution</a><ul>
+<li><a class="reference internal" href="#working-on-your-first-pull-request">Working on your first Pull Request?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#getting-started">Getting started</a></li>
+<li><a class="reference internal" href="#how-to-report-a-bug">How to report a bug</a><ul>
+<li><a class="reference internal" href="#security-disclosures">Security disclosures</a></li>
+<li><a class="reference internal" href="#non-security-related-bugs">Non-security related bugs</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-suggest-a-feature-or-enhancement">How to suggest a feature or enhancement</a></li>
+<li><a class="reference internal" href="#how-add-a-recommended-vscode-plugin">How add a recommended VSCode Plugin</a></li>
+<li><a class="reference internal" href="#in-closing">In closing</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>

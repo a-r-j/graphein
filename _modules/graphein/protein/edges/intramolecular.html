@@ -1,0 +1,654 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>graphein.protein.edges.intramolecular &#8212; Graphein 1.2.0 documentation</title>
+    
+  <link href="../../../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../../../_static/sphinx-book-theme.css?digest=84ace793992934648b4de8eed757e5a2" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    
+  <link rel="preload" as="script" href="../../../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha512-VCK7oF67GXNc+J7zsu5o57jtxhLA75nSMHGaq8Q8TCOxDj4nMDw5dhQZvm9Cd9RN+3zgcodqbKcRc9gyPP8a2w==" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/sphinx-book-theme.9d8b4a8b9bb19db25eeaddc40d639ba2.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<div class="col-12 col-md-3 bd-sidebar site-navigation " id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../../../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../../../../_static/graphein.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">Graphein 1.2.0 documentation</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <p class="caption">
+ <span class="caption-text">
+  Getting Started
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../getting_started/installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../getting_started/introduction.html">
+   Graphein
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../license.html">
+   License
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Tutorials
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../notebooks_index.html">
+   Notebooks
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../notebooks/residue_graphs.html">
+     Graphein - Residue Graph Tutorial
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../notebooks/atom_graph_tutorial.html">
+     Graphein - Atom Graph Tutorial
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../notebooks/alphafold_protein_graph_tutorial.html">
+     Constructing Graphs from AlphaFold Protein Structure Database
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../notebooks/subgraphing_tutorial.html">
+     Constructing Subgraphs in Graphein
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../notebooks/protein_mesh_tutorial.html">
+     Creating Protein Meshes in Graphein &amp; 3D Visualisation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../notebooks/interactive_plotly_example.html">
+     Distance Matrix
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../notebooks/ppi_tutorial.html">
+     PPI Networks and Structural Interactomics
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../notebooks/grn_tutorial.html">
+     Gene Regulatory Network Tutorial
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Datasets
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../datasets.html">
+   Datasets
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../datasets/pscdb.html">
+     PSCDB - Protein Structural Change Database
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../notebooks/pscdb_baselines.html">
+     PSCDB - Baselines
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../../datasets/ppisp.html">
+     PPISP - Protein Protein Interaction Structure Prediction
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  API Reference
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../modules/graphein.protein.html">
+   graphein.protein
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../modules/graphein.rna.html">
+   graphein.rna
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../modules/graphein.ppi.html">
+   graphein.ppi
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../modules/graphein.grn.html">
+   graphein.grn
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../modules/graphein.ml.html">
+   graphein.ml
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<!-- This is an invisible pixel that we watch to see if we've scrolled. -->
+<div class="sbt-scroll-pixel-helper"></div>
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            <div class="topbar-left">
+                
+                <label class="nav-toggle-button" for="__navigation">
+                    <div class="visually-hidden">Toggle navigation</div>
+                    <i class="fas fa-bars"></i>
+                </label>
+                
+            </div>
+            
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1></h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <h1>Source code for graphein.protein.edges.intramolecular</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Featurization functions for graph edges.&quot;&quot;&quot;</span>
+<span class="c1"># Graphein</span>
+<span class="c1"># Author: Arian Jamasb &lt;arian@jamasb.io&gt;, Eric Ma, Charlie Harris</span>
+<span class="c1"># License: MIT</span>
+<span class="c1"># Project Website: https://github.com/a-r-j/graphein</span>
+<span class="c1"># Code Repository: https://github.com/a-r-j/graphein</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">graphein.protein.utils</span> <span class="kn">import</span> <span class="n">download_pdb</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="peptide_bonds"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.peptide_bonds">[docs]</a><span class="k">def</span> <span class="nf">peptide_bonds</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds peptide backbone to residues in each chain</span>
+
+<span class="sd">    :param G: nx.Graph protein graph</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :returns: nx.Graph protein graph with added peptide bonds</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Adding peptide bonds to graph&quot;</span><span class="p">)</span>
+    <span class="c1"># Iterate over every chain</span>
+    <span class="k">for</span> <span class="n">chain_id</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">&quot;chain_ids&quot;</span><span class="p">]:</span>
+
+        <span class="c1"># Find chain residues</span>
+        <span class="n">chain_residues</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;chain_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">chain_id</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Iterate over every residue in chain</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">residue</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chain_residues</span><span class="p">):</span>
+            <span class="c1"># Checks not at chain terminus - is this versatile enough?</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">chain_residues</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># Asserts residues are on the same chain</span>
+            <span class="n">cond_1</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">residue</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;chain_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;chain_id&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="c1"># Asserts residue numbers are adjacent</span>
+            <span class="n">cond_2</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">abs</span><span class="p">(</span>
+                    <span class="n">residue</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;residue_number&quot;</span><span class="p">]</span>
+                    <span class="o">-</span> <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;residue_number&quot;</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="o">==</span> <span class="mi">1</span>
+            <span class="p">)</span>
+
+            <span class="c1"># If this checks out, we add a peptide bond</span>
+            <span class="k">if</span> <span class="n">cond_1</span> <span class="ow">and</span> <span class="n">cond_2</span><span class="p">:</span>
+                <span class="c1"># Adds &quot;peptide_bond&quot; between current residue and the next</span>
+                <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;peptide_bond&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
+                        <span class="n">residue</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">chain_residues</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;peptide_bond&quot;</span><span class="p">},</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">continue</span>
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+<span class="c1">####################################</span>
+<span class="c1">#                                  #</span>
+<span class="c1">#     GetContacts Interactions     #</span>
+<span class="c1">#                                  #</span>
+<span class="c1">####################################</span>
+
+
+<div class="viewcode-block" id="get_contacts_df"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.get_contacts_df">[docs]</a><span class="k">def</span> <span class="nf">get_contacts_df</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">GetContactsConfig</span><span class="p">,</span> <span class="n">pdb_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads GetContact File and returns it as a pd.DataFrame</span>
+
+<span class="sd">    :param config: GetContactsConfig object</span>
+<span class="sd">    :type config: GetContactsConfig</span>
+<span class="sd">    :param pdb_name: Name of PDB file. Contacts files are name {pdb_name}_contacts.tsv</span>
+<span class="sd">    :type pdb_name: str</span>
+<span class="sd">    :return: DataFrame of prased GetContacts output</span>
+<span class="sd">    :rtype: pd.DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">contacts_dir</span><span class="p">:</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/tmp/&quot;</span><span class="p">)</span>
+
+    <span class="n">contacts_file</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">/</span> <span class="p">(</span><span class="n">pdb_name</span> <span class="o">+</span> <span class="s2">&quot;_contacts.tsv&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check for existence of GetContacts file</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">contacts_file</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;GetContacts file not found. Running GetContacts...&quot;</span><span class="p">)</span>
+        <span class="n">run_get_contacts</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">pdb_name</span><span class="p">)</span>
+
+    <span class="n">contacts_df</span> <span class="o">=</span> <span class="n">read_contacts_file</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">contacts_file</span><span class="p">)</span>
+
+    <span class="c1"># remove temp GetContacts file</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">==</span> <span class="s2">&quot;/tmp/&quot;</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">contacts_file</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">contacts_df</span></div>
+
+
+<div class="viewcode-block" id="run_get_contacts"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.run_get_contacts">[docs]</a><span class="k">def</span> <span class="nf">run_get_contacts</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">GetContactsConfig</span><span class="p">,</span>
+    <span class="n">pdb_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">file_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Runs GetContacts on a protein structure. If no file_name is provided, a PDB file is downloaded for the pdb_id</span>
+
+<span class="sd">    :param config: GetContactsConfig object containing GetContacts parameters</span>
+<span class="sd">    :type config: graphein.protein.config.GetContactsConfig</span>
+<span class="sd">    :param pdb_id: 4-character PDB accession code</span>
+<span class="sd">    :type pdb_id: str, optional</span>
+<span class="sd">    :param file_name: PDB_name file to use, if annotations to be retrieved from the PDB</span>
+<span class="sd">    :type file_name: str, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check for GetContacts Installation</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">get_contacts_path</span><span class="si">}</span><span class="s2">/get_static_contacts.py&quot;</span>
+    <span class="p">),</span> <span class="s2">&quot;No GetContacts Installation Detected. Please install from: https://getcontacts.github.io&quot;</span>
+
+    <span class="c1"># Check for existence of pdb file. If not, download it.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">/</span> <span class="n">file_name</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;No pdb file found for </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">/</span> <span class="n">file_name</span><span class="si">}</span><span class="s2">. Checking pdb_id...&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">/</span> <span class="n">pdb_id</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No pdb file found for </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">/</span> <span class="n">pdb_id</span><span class="si">}</span><span class="s2">. Downloading...&quot;</span>
+            <span class="p">)</span>
+            <span class="n">pdb_file</span> <span class="o">=</span> <span class="n">download_pdb</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">pdb_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pdb_file</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pdb_dir</span> <span class="o">+</span> <span class="n">pdb_id</span> <span class="o">+</span> <span class="s2">&quot;.pdb&quot;</span>
+
+    <span class="c1"># Run GetContacts</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">get_contacts_path</span><span class="si">}</span><span class="s2">/get_static_contacts.py &quot;</span>
+    <span class="n">command</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;--structure </span><span class="si">{</span><span class="n">pdb_file</span><span class="si">}</span><span class="s2"> &quot;</span>
+    <span class="n">command</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;--output </span><span class="si">{</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">/</span> <span class="p">(</span><span class="n">pdb_id</span> <span class="o">+</span> <span class="s2">&quot;_contacts.tsv&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s1"> &#39;</span>
+    <span class="n">command</span> <span class="o">+=</span> <span class="s2">&quot;--itypes all&quot;</span>  <span class="c1"># --sele &quot;protein&quot;&#39;</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running GetContacts with command: </span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Check it all checks out</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">contacts_dir</span> <span class="o">/</span> <span class="p">(</span><span class="n">pdb_id</span> <span class="o">+</span> <span class="s2">&quot;_contacts.tsv&quot;</span><span class="p">))</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computed Contacts for: </span><span class="si">{</span><span class="n">pdb_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="read_contacts_file"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.read_contacts_file">[docs]</a><span class="k">def</span> <span class="nf">read_contacts_file</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">GetContactsConfig</span><span class="p">,</span> <span class="n">contacts_file</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parses GetContacts file to an edgelist (pd.DataFrame)</span>
+
+<span class="sd">    :param config: GetContactsConfig object (graphein.protein.config.GetContactsConfig)</span>
+<span class="sd">    :type config: GetContactsConfig</span>
+<span class="sd">    :param contacts_file: file name of contacts file</span>
+<span class="sd">    :type contacts_file: str</span>
+<span class="sd">    :return: Pandas Dataframe of edge list</span>
+<span class="sd">    :rtype: pd.DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parsing GetContacts output file at: </span><span class="si">{</span><span class="n">contacts_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">contacts_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">contacts_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="n">contacts</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Extract every contact and residue types</span>
+    <span class="k">for</span> <span class="n">contact</span> <span class="ow">in</span> <span class="n">contacts_file</span><span class="p">[</span><span class="mi">2</span><span class="p">:]:</span>
+        <span class="n">contact</span> <span class="o">=</span> <span class="n">contact</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">interaction_type</span> <span class="o">=</span> <span class="n">contact</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">res1</span> <span class="o">=</span> <span class="n">contact</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">res2</span> <span class="o">=</span> <span class="n">contact</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+        <span class="c1"># Remove atom names if not using atom granularity</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">granularity</span> <span class="o">!=</span> <span class="s2">&quot;atom&quot;</span><span class="p">:</span>
+            <span class="n">res1</span> <span class="o">=</span> <span class="n">res1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+            <span class="n">res2</span> <span class="o">=</span> <span class="n">res2</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+
+            <span class="n">res1</span> <span class="o">=</span> <span class="n">res1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">res1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">res1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">res2</span> <span class="o">=</span> <span class="n">res2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">res2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">res2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">contacts</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">interaction_type</span><span class="p">])</span>
+
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">contacts</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;res1&quot;</span><span class="p">,</span> <span class="s2">&quot;res2&quot;</span><span class="p">,</span> <span class="s2">&quot;interaction_type&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">edges</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="add_contacts_edge"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.add_contacts_edge">[docs]</a><span class="k">def</span> <span class="nf">add_contacts_edge</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">interaction_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds specific interaction types to the protein graph.</span>
+
+<span class="sd">    :param G: networkx protein graph</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param interaction_type: interaction type to be added</span>
+<span class="sd">    :type interaction_type: str</span>
+<span class="sd">    :return G: nx.Graph with specified interaction-based edges added.</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adding </span><span class="si">{</span><span class="n">interaction_type</span><span class="si">}</span><span class="s2"> edges to graph&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;contacts_df&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No &#39;contacts_df&#39; found in G.graph. Running GetContacts.&quot;</span><span class="p">)</span>
+
+        <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">&quot;contacts_df&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_contacts_df</span><span class="p">(</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_contacts_config</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">&quot;pdb_id&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="n">contacts</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">&quot;contacts_df&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Select specific interaction type</span>
+    <span class="n">interactions</span> <span class="o">=</span> <span class="n">contacts</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">contacts</span><span class="p">[</span><span class="s2">&quot;interaction_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">interaction_type</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="p">[</span><span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">interaction_type</span><span class="p">]</span> <span class="ow">in</span> <span class="n">interactions</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="c1"># Check residues are actually in graph</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">has_node</span><span class="p">(</span><span class="n">res1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">G</span><span class="o">.</span><span class="n">has_node</span><span class="p">(</span><span class="n">res2</span><span class="p">)):</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">):</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">][</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">interaction_type</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="p">{</span><span class="n">interaction_type</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+<div class="viewcode-block" id="hydrogen_bond"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.hydrogen_bond">[docs]</a><span class="k">def</span> <span class="nf">hydrogen_bond</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds hydrogen bonds to protein structure graph</span>
+
+<span class="sd">    :param G: nx.Graph to add hydrogen bonds to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :return: nx.Graph with hydrogen bonds added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">add_contacts_edge</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&quot;hb&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="salt_bridge"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.salt_bridge">[docs]</a><span class="k">def</span> <span class="nf">salt_bridge</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds salt bridges to protein structure graph</span>
+
+<span class="sd">    :param G: nx.Graph to add salt bridges to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :return: nx.Graph with salt bridges added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">add_contacts_edge</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&quot;sb&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="pi_cation"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.pi_cation">[docs]</a><span class="k">def</span> <span class="nf">pi_cation</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds pi-cation interactions to protein structure graph</span>
+
+<span class="sd">    :param G: nx.Graph to add pi-cation interactions to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :return: nx.Graph with pi-pi_cation interactions added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">add_contacts_edge</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&quot;pc&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="pi_stacking"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.pi_stacking">[docs]</a><span class="k">def</span> <span class="nf">pi_stacking</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds pi-stacking interactions to protein structure graph</span>
+
+<span class="sd">    :param G: nx.Graph to add pi-stacking interactions to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :return: nx.Graph with pi-stacking interactions added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">add_contacts_edge</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&quot;ps&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="t_stacking"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.t_stacking">[docs]</a><span class="k">def</span> <span class="nf">t_stacking</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds t-stacking interactions to protein structure graph</span>
+
+<span class="sd">    :param G: nx.Graph to add t-stacking interactions to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :return: nx.Graph with t-stacking interactions added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">add_contacts_edge</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&quot;ts&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="hydrophobic"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.hydrophobic">[docs]</a><span class="k">def</span> <span class="nf">hydrophobic</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds hydrophobic interactions to protein structure graph</span>
+
+<span class="sd">    :param G: nx.Graph to add hydrophobic interaction edges to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :return: nx.Graph with hydrophobic interactions added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">add_contacts_edge</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&quot;hp&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="van_der_waals"><a class="viewcode-back" href="../../../../modules/graphein.protein.html#graphein.protein.edges.intramolecular.van_der_waals">[docs]</a><span class="k">def</span> <span class="nf">van_der_waals</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds van der Waals interactions to protein structure graph</span>
+
+<span class="sd">    :param G: nx.Graph to add van der Waals interactions to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :return: nx.Graph with van der Waals interactions added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">add_contacts_edge</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&quot;vdw&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Arian Jamasb<br/>
+    
+        &copy; Copyright 2022, Arian Jamasb.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../../../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

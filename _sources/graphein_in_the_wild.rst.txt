@@ -1,0 +1,23 @@
+Publications Using Graphein
+----------------------------
+
+    Junkang Wei, Siyuan Chen, Licheng Zong, Xin Gao, Yu Li
+    Protein–RNA interaction prediction with deep learning: structure matters
+    Briefings in Bioinformatics, 2022
+    https://doi.org/10.1093/bib/bbab540
+
+    Kexin Huang, Cao Xiao, Lucas M. Glass, Cathy W. Critchlow, Greg Gibson, Jimeng Sun
+    Machine learning applications for therapeutic tasks with genomics data,
+    Patterns, 2021
+    https://doi.org/10.1016/j.patter.2021.100328.
+
+    Thomas Gaudelet, Ben Day, Arian R Jamasb, Jyothish Soman, Cristian Regep, Gertrude Liu,
+    Jeremy B R Hayter, Richard Vickers, Charles Roberts, Jian Tang, David Roblin, Tom L Blundell,
+    Michael M Bronstein, Jake P Taylor-King
+    Utilizing graph machine learning within drug discovery and development
+    Briefings in Bioinformatics, 2021
+    https://doi.org/10.1093/bib/bbab159
+
+    Ben Day, Catalina Cangea, Arian R. Jamasb, Pietro Lio
+    Message Passing Neural Processes
+    https://arxiv.org/abs/2009.13895

@@ -1,0 +1,376 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>graphein.construct_graphs &mdash; Graphein 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="graphein.construct_meshes" href="graphein.construct_meshes.html" />
+    <link rel="prev" title="License" href="../license.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> Graphein
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">graphein.construct_graphs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#graphein-construct-graphs-proteingraph">graphein.construct_graphs.ProteinGraph</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="graphein.construct_meshes.html">graphein.construct_meshes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Graphein</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>graphein.construct_graphs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/modules/graphein.construct_graphs.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="graphein-construct-graphs">
+<h1>graphein.construct_graphs<a class="headerlink" href="#graphein-construct-graphs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="graphein-construct-graphs-proteingraph">
+<h2>graphein.construct_graphs.ProteinGraph<a class="headerlink" href="#graphein-construct-graphs-proteingraph" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="graphein.construct_graphs.ProteinGraph">
+<em class="property">class </em><code class="sig-prename descclassname">graphein.construct_graphs.</code><code class="sig-name descname">ProteinGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">granularity</span></em>, <em class="sig-param"><span class="n">keep_hets</span></em>, <em class="sig-param"><span class="n">insertions</span></em>, <em class="sig-param"><span class="n">node_featuriser</span></em>, <em class="sig-param"><span class="n">get_contacts_path</span></em>, <em class="sig-param"><span class="n">pdb_dir</span></em>, <em class="sig-param"><span class="n">contacts_dir</span></em>, <em class="sig-param"><span class="n">exclude_waters</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">covalent_bonds</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">include_ss</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">include_ligand</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">intramolecular_interactions</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">graph_constructor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge_featuriser</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge_distance_cutoff</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">deprotonate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">remove_string_labels</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">long_interaction_threshold</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/construct_graphs.html#ProteinGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphein.construct_graphs.ProteinGraph" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="graphein.construct_graphs.ProteinGraph.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">granularity</span></em>, <em class="sig-param"><span class="n">keep_hets</span></em>, <em class="sig-param"><span class="n">insertions</span></em>, <em class="sig-param"><span class="n">node_featuriser</span></em>, <em class="sig-param"><span class="n">get_contacts_path</span></em>, <em class="sig-param"><span class="n">pdb_dir</span></em>, <em class="sig-param"><span class="n">contacts_dir</span></em>, <em class="sig-param"><span class="n">exclude_waters</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">covalent_bonds</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">include_ss</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">include_ligand</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">intramolecular_interactions</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">graph_constructor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge_featuriser</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge_distance_cutoff</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">deprotonate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">remove_string_labels</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">long_interaction_threshold</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/construct_graphs.html#ProteinGraph.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphein.construct_graphs.ProteinGraph.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise ProteinGraph Generator Class
+:param deprotonate:
+:type deprotonate: bool, optional
+:param verbose:
+:type verbose: bool, optional
+:param graph_constructor
+:type graph_constructor:
+:param remove_string_labels:
+:type remove_string_labels:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>granularity</strong> (<em>str</em>) – Specifies granularity of the graph construction. {‘atom’, ‘CA’, ‘CB’}. CA = Alpha Carbon, CB = Beta Carbon</p></li>
+<li><p><strong>keep_hets</strong> (<em>bool</em>) – Keep heteroatoms present in the PDB file. Typically, these correspond to metal ions or modified residues (e.g. MSE)</p></li>
+<li><p><strong>insertions</strong> (<em>bool</em>) – Keep atoms/residues with multiple insertion positions. Multiple insertions exist when the electron density is too vague to define a single insertion</p></li>
+<li><p><strong>node_featuriser</strong> (<em>DGL Node Featuriser</em>) – DGL Node featuriser for atom-level graphs. Canonical Featurises recommended.</p></li>
+<li><p><strong>pdb_dir</strong> (<em>str</em>) – Directory to PDB files. We will download .PDB files to this folder if you don’t have an existing local copy of the requisite structure</p></li>
+<li><p><strong>contacts_dir</strong> (<em>str</em>) – Directory to GetContacts files</p></li>
+<li><p><strong>exclude_waters</strong> (<em>bool</em>) – Specifies inclusion of water molecules. Not yet fully operational.</p></li>
+<li><p><strong>covalent_bonds</strong> (<em>bool</em>) – Specifies inclusion of covalent backbone. E.g. joins adjacent residues in the sequence</p></li>
+<li><p><strong>include_ss</strong> (<em>bool</em>) – Specifies inclusion of secondary structure features computed by DSSP. Future warning: this will be changed in a subsequent update for managing feature selection.</p></li>
+<li><p><strong>include_ligand</strong> (<em>bool</em>) – Not yet implemented. Will specify option to include bound ligand(s) in the graph.</p></li>
+<li><p><strong>intramolecular_interactions</strong> (<em>list</em>) – List of allowable intramolecular interactions to include from GetContacts. [‘sb’, ‘pc’, ‘ps’, ‘ts’, ‘vdw’, ‘hb’, ‘hbb’, ‘hbsb’, ‘hbbb’, ‘hbss’, ‘wb’, ‘wb2’,
+‘hblb’, ‘hbls’, ‘lwb’, ‘lwb2’, ‘hp’]. See <a class="reference external" href="https://getcontacts.github.io/interactions.html">https://getcontacts.github.io/interactions.html</a> for details.</p></li>
+<li><p><strong>edge_distance_cutoff</strong> (<em>float</em>) – Distance in angstroms specifying cutoff distance for constructing an edge when using distance construction</p></li>
+<li><p><strong>long_interaction_threshold</strong> (<em>int</em>) – Specifies minimum distance in sequence for two nodes to be connected</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="graphein.construct_graphs.ProteinGraph.dgl_graph_from_pdb_code">
+<code class="sig-name descname">dgl_graph_from_pdb_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdb_code</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">file_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">chain_selection</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">contact_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge_construction</span><span class="o">=</span><span class="default_value">['contacts']</span></em>, <em class="sig-param"><span class="n">encoding</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">k_nn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">custom_edges</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/construct_graphs.html#ProteinGraph.dgl_graph_from_pdb_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphein.construct_graphs.ProteinGraph.dgl_graph_from_pdb_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a DGL graph from a PDB code and a selection of polypeptide chains</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<em>str</em>) – Path to local PDB file, optional</p></li>
+<li><p><strong>custom_edges</strong> (<em>Pandas DataFrame</em><em>, </em><em>optional</em>) – Pass user-defined custom edges to use in edge construction, defaults to None</p></li>
+<li><p><strong>edge_construction</strong> (<em>list</em>) – Specifies edge construction methods. {‘contact’, ‘distance’, ‘custom’}, defaults to [‘contacts’]</p></li>
+<li><p><strong>k_nn</strong> (<em>int</em>) – Specifies number of nearest neighbours to make K_NN edges with</p></li>
+<li><p><strong>encoding</strong> (<em>bool</em>) – Indicates whether or not node names and labels should be encoded</p></li>
+<li><p><strong>contact_file</strong> (<em>str</em>) – Path to local GetContacts output file, defaults to None</p></li>
+<li><p><strong>pdb_code</strong> (<em>str</em>) – 4 character PDB accession code</p></li>
+<li><p><strong>chain_selection</strong> (<em>list</em>) – string indicating which chains to select {‘A’, ‘B’, ‘AB’, …, ‘all’}, defaults to ‘all’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>DGLGraph object, nodes populated by residues or atoms as specified in class initialisation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="graphein.construct_graphs.ProteinGraph.dgl_graph_from_pdb_file">
+<code class="sig-name descname">dgl_graph_from_pdb_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">chain_selection</span></em>, <em class="sig-param"><span class="n">contact_file</span></em>, <em class="sig-param"><span class="n">edges</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/construct_graphs.html#ProteinGraph.dgl_graph_from_pdb_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphein.construct_graphs.ProteinGraph.dgl_graph_from_pdb_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a DGL graph from a PDB file and a selection of polypeptide chains</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edges</strong> (<em>Pandas DataFrame</em><em>, </em><em>optional</em>) – User-defined custom edges, defaults to None</p></li>
+<li><p><strong>contact_file</strong> (<em>str</em><em>,</em>) – Path to local GetContacts output file</p></li>
+<li><p><strong>file_path</strong> (<em>str</em>) – 4 character PDB accession code</p></li>
+<li><p><strong>chain_selection</strong> (<em>str</em>) – Polypeptide chains in structure to select {‘A’, ‘B’, ‘AB’, …, ‘all}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>DGLGraph object, nodes populated by residues or atoms as specified in class initialisation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DGLGraph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="graphein.construct_graphs.ProteinGraph.nx_graph_from_pdb_code">
+<code class="sig-name descname">nx_graph_from_pdb_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdb_code</span></em>, <em class="sig-param"><span class="n">chain_selection</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">contact_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge_construction</span><span class="o">=</span><span class="default_value">['contacts']</span></em>, <em class="sig-param"><span class="n">encoding</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">k_nn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">custom_edges</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/construct_graphs.html#ProteinGraph.nx_graph_from_pdb_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphein.construct_graphs.ProteinGraph.nx_graph_from_pdb_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a NetworkX Graph Object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoding</strong> – </p></li>
+<li><p><strong>edges</strong> (<em>Pandas DataFrame</em><em>, </em><em>optional</em>) – User-supplied edges, defaults to None</p></li>
+<li><p><strong>pdb_code</strong> (<em>str</em>) – 4 character PDB accession code</p></li>
+<li><p><strong>chain_selection</strong> (<em>str</em>) – string indicating chain selection {‘A’, ‘B’, ‘AB’, …, ‘all’}, defaults to ‘all’</p></li>
+<li><p><strong>contact_file</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to GetContacts output file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>NetworkX graph object of protein</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>NetworkX graph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="graphein.construct_graphs.ProteinGraph.nx_graph_from_pdb_file">
+<code class="sig-name descname">nx_graph_from_pdb_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdb_code</span></em>, <em class="sig-param"><span class="n">chain_selection</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">contact_file</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/construct_graphs.html#ProteinGraph.nx_graph_from_pdb_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphein.construct_graphs.ProteinGraph.nx_graph_from_pdb_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a NetworkX Graph Object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdb_code</strong> (<em>str</em>) – 4 character PDB accession code</p></li>
+<li><p><strong>chain_selection</strong> (<em>str</em>) – string indicating chain selection {‘A’, ‘B’, ‘AB’, …, ‘all’}</p></li>
+<li><p><strong>contact_file</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to GetContacts output file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>NetworkX graph object of protein</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="graphein.construct_graphs.ProteinGraph.torch_geometric_graph_from_pdb_code">
+<code class="sig-name descname">torch_geometric_graph_from_pdb_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdb_code</span></em>, <em class="sig-param"><span class="n">chain_selection</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">edge_construction</span><span class="o">=</span><span class="default_value">['contacts']</span></em>, <em class="sig-param"><span class="n">contact_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">encoding</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">k_nn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">custom_edges</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphein/construct_graphs.html#ProteinGraph.torch_geometric_graph_from_pdb_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphein.construct_graphs.ProteinGraph.torch_geometric_graph_from_pdb_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a PyToch Geometric Data object from a protein structure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k_nn</strong> (<em>int</em><em>, </em><em>optional</em>) – Specifies  K nearest neighbours to use in KNN edge construction, defaults to None</p></li>
+<li><p><strong>custom_edges</strong> (<em>Pandas DataFrame</em><em>, </em><em>optional</em>) – User-supplied edges to use, defaults to None</p></li>
+<li><p><strong>encoding</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>edge_construction</strong> (<em>list</em>) – List containing edge construction to be used. [‘contacts’, ‘distance’, ‘delaunay’], defaults to [‘contacts’]</p></li>
+<li><p><strong>pdb_code</strong> (<em>str</em>) – 4-character PDB accession code</p></li>
+<li><p><strong>chain_selection</strong> (<em>str</em>) – Specifies polypeptide chains to include. e.g. one of {‘A’, ‘B’ ,’AB’, ‘BC’}, defaults to ‘all’</p></li>
+<li><p><strong>contact_file</strong> (<em>str</em>) – Path to contact file if using local file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pytorch Geometric Graph of protein structure.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>PyTorch Geometric Data object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="graphein.construct_meshes.html" class="btn btn-neutral float-right" title="graphein.construct_meshes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../license.html" class="btn btn-neutral float-left" title="License" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Arian Jamasb
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

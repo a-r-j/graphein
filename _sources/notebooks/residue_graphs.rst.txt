@@ -1,0 +1,1 @@
+.. include:: ../notebooks/residue_graphs.ipynb

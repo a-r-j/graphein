@@ -1,0 +1,682 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>graphein.utils.utils - Graphein 1.2.1</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">Graphein 1.2.1</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.2.1</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <h1>Source code for graphein.utils.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Utilities for working with graph objects."""</span>
+<span class="c1"># Graphein</span>
+<span class="c1"># Author: Arian Jamasb &lt;arian@jamasb.io&gt;, Eric Ma</span>
+<span class="c1"># License: MIT</span>
+<span class="c1"># Project Website: https://github.com/a-r-j/graphein</span>
+<span class="c1"># Code Repository: https://github.com/a-r-j/graphein</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">Bio.Data.IUPACData</span> <span class="kn">import</span> <span class="n">protein_letters_3to1</span>
+
+
+<div class="viewcode-block" id="onek_encoding_unk"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.onek_encoding_unk">[docs]</a><span class="k">def</span> <span class="nf">onek_encoding_unk</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">allowable_set</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Function for perfroming one hot encoding</span>
+
+<span class="sd">    :param x: values to one-hot</span>
+<span class="sd">    :type x: Iterable[Any]</span>
+<span class="sd">    :param allowable_set: set of options to encode</span>
+<span class="sd">    :type allowable_set: List[Any]</span>
+<span class="sd">    :return: one-hot encoding as list</span>
+<span class="sd">    :rtype: List[bool]</span>
+<span class="sd">    """</span>
+    <span class="c1"># if x not in allowable_set:</span>
+    <span class="c1">#    x = allowable_set[-1]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="o">==</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">allowable_set</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="filter_dataframe"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.filter_dataframe">[docs]</a><span class="k">def</span> <span class="nf">filter_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Applies transformation functions to a dataframe. Each function in ``funcs`` must accept a ``pd.DataFrame`` and return a ``pd.DataFrame``.</span>
+
+<span class="sd">    Additional parameters can be provided by using partial functions.</span>
+
+<span class="sd">    :param df: Dataframe to apply transformations to.</span>
+<span class="sd">    :type df: pd.DataFrame</span>
+<span class="sd">    :param funcs: List of transformation functions.</span>
+<span class="sd">    :type funcs: List[Callable]</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
+        <span class="n">func</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="annotate_graph_metadata"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.annotate_graph_metadata">[docs]</a><span class="k">def</span> <span class="nf">annotate_graph_metadata</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Annotates graph with graph-level metadata</span>
+
+<span class="sd">    :param G: Graph on which to add graph-level metadata to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param funcs: List of graph metadata annotation functions</span>
+<span class="sd">    :type funcs: List[Callable]</span>
+<span class="sd">    :return: Graph on which with node metadata added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
+        <span class="n">func</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+<div class="viewcode-block" id="annotate_edge_metadata"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.annotate_edge_metadata">[docs]</a><span class="k">def</span> <span class="nf">annotate_edge_metadata</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Annotates Graph edges with edge metadata. Each function in ``funcs`` must take the three arguments ``u``, ``v`` and ``d``, where ``u`` and ``v`` are the nodes of the edge, and ``d`` is the edge data dictionary.</span>
+
+<span class="sd">    Additional parameters can be provided by using partial functions.</span>
+
+<span class="sd">    :param G: Graph to add edge metadata to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param funcs: List of edge metadata annotation functions</span>
+<span class="sd">    :type funcs: List[Callable]</span>
+<span class="sd">    :return: Graph with edge metadata added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">func</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+<div class="viewcode-block" id="annotate_node_metadata"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.annotate_node_metadata">[docs]</a><span class="k">def</span> <span class="nf">annotate_node_metadata</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Annotates nodes with metadata. Each function in ``funcs`` must take two arguments ``n`` and ``d``, where ``n`` is the node and ``d`` is the node data dictionary.</span>
+
+<span class="sd">    Additional parameters can be provided by using partial functions.</span>
+
+<span class="sd">    :param G: Graph to add node metadata to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param funcs: List of node metadata annotation functions</span>
+<span class="sd">    :type funcs: List[Callable]</span>
+<span class="sd">    :return: Graph with node metadata added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    """</span>
+
+    <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">func</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+<div class="viewcode-block" id="annotate_node_features"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.annotate_node_features">[docs]</a><span class="k">def</span> <span class="nf">annotate_node_features</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Annotates nodes with features data. Note: passes whole graph to function.</span>
+
+<span class="sd">    :param G: Graph to add node features to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param funcs: List of node feature annotation functions</span>
+<span class="sd">    :type funcs: List[Callable]</span>
+<span class="sd">    :return: Graph with node features added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
+        <span class="n">func</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+<div class="viewcode-block" id="compute_edges"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.compute_edges">[docs]</a><span class="k">def</span> <span class="nf">compute_edges</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Computes edges for an Graph from a list of edge construction functions. Each func in ``funcs`` must take an ``nx.Graph`` and return an ``nx.Graph``.</span>
+
+<span class="sd">    :param G: Graph to add features to</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param funcs: List of edge construction functions</span>
+<span class="sd">    :type funcs: List[Callable]</span>
+<span class="sd">    :return: Graph with edges added</span>
+<span class="sd">    :rtype: nx.Graph</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
+        <span class="n">func</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">G</span></div>
+
+
+<div class="viewcode-block" id="generate_feature_dataframe"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.generate_feature_dataframe">[docs]</a><span class="k">def</span> <span class="nf">generate_feature_dataframe</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
+    <span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">],</span>
+    <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Return a pandas DataFrame representation of node metadata.</span>
+
+<span class="sd">    ``funcs`` has to be list of callables whose signature is</span>
+
+<span class="sd">        f(n, d) -&gt; pd.Series</span>
+
+<span class="sd">    where ``n`` is the graph node,</span>
+<span class="sd">    ``d`` is the node metadata dictionary.</span>
+<span class="sd">    The function must return a pandas Series whose name is the node.</span>
+
+<span class="sd">    Example function:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        def x_vec(n: Hashable, d: Dict[Hashable, Any]) -&gt; pd.Series:</span>
+<span class="sd">            return pd.Series({"x_coord": d["x_coord"]}, name=n)</span>
+
+<span class="sd">    One fairly strong assumption is that each func</span>
+<span class="sd">    has all the information it needs to act</span>
+<span class="sd">    stored on the metadata dictionary.</span>
+<span class="sd">    If you need to reference an external piece of information,</span>
+<span class="sd">    such as a dictionary to look up values,</span>
+<span class="sd">    set up the function to accept the dictionary,</span>
+<span class="sd">    and use ``functools.partial``</span>
+<span class="sd">    to "reduce" the function signature to just ``(n, d)``.</span>
+<span class="sd">    An example below:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from functools import partial</span>
+<span class="sd">        def get_molweight(n, d, mw_dict):</span>
+<span class="sd">            return pd.Series({"mw": mw_dict[d["amino_acid"]]}, name=n)</span>
+
+<span class="sd">        mw_dict = {"PHE": 165, "GLY": 75, ...}</span>
+<span class="sd">        get_molweight_func = partial(get_molweight, mw_dict=mw_dict)</span>
+
+<span class="sd">        generate_feature_dataframe(G, [get_molweight_func])</span>
+
+<span class="sd">    The ``name=n`` piece is important;</span>
+<span class="sd">    the ``name`` becomes the row index in the resulting dataframe.</span>
+
+<span class="sd">    The series that is returned from each function</span>
+<span class="sd">    need not only contain one key-value pair.</span>
+<span class="sd">    You can have two or more, and that's completely fine;</span>
+<span class="sd">    each key becomes a column in the resulting dataframe.</span>
+
+<span class="sd">    A key design choice: We default to returning DataFrames,</span>
+<span class="sd">    to make inspecting the data easy,</span>
+<span class="sd">    but for consumption in tensor libraries,</span>
+<span class="sd">    you can turn on returning a NumPy array</span>
+<span class="sd">    by switching ``return_array=True``.</span>
+
+
+<span class="sd">    :param G: A NetworkX-compatible graph object.</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param funcs: A list of functions.</span>
+<span class="sd">    :type funcs: List[Callable]</span>
+<span class="sd">    :param return_array: Whether or not to return</span>
+<span class="sd">        a NumPy array version of the data.</span>
+<span class="sd">        Useful for consumption in tensor libs, like PyTorch or JAX.</span>
+<span class="sd">    :type return_array: bool</span>
+<span class="sd">    :return: pandas DataFrame representation of node metadata.</span>
+<span class="sd">    :rtype: pd.DataFrame</span>
+<span class="sd">    """</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"function </span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> returns a series "</span>
+                    <span class="s2">"that is not named after the node."</span>
+                <span class="p">)</span>
+            <span class="n">series</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="n">matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">series</span><span class="p">))</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="format_adjacency"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.format_adjacency">[docs]</a><span class="k">def</span> <span class="nf">format_adjacency</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">adj</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Format adjacency matrix nicely.</span>
+
+<span class="sd">    Intended to be used when computing an adjacency-like matrix</span>
+<span class="sd">    of a graph object ``G``.</span>
+<span class="sd">    For example, in defining a func:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        def my_adj_matrix_func(G):</span>
+<span class="sd">            adj = some_adj_func(G)</span>
+<span class="sd">            return format_adjacency(G, adj, "xarray_coord_name")</span>
+
+<span class="sd">    **Assumptions**</span>
+
+<span class="sd">    #. ``adj`` should be a 2D matrix of shape ``(n_nodes, n_nodes)``</span>
+<span class="sd">    #. ``name`` is something that is unique amongst all names used</span>
+<span class="sd">    in the final adjacency tensor.</span>
+
+<span class="sd">    :param G: NetworkX-compatible Graph</span>
+<span class="sd">    :type param: nx.Graph</span>
+<span class="sd">    :param adj: 2D numpy array of shape ``(n_nodes, n_nodes)``</span>
+<span class="sd">    :type adj: np.ndarray</span>
+<span class="sd">    :param name: A unique name for the kind of adjacency matrix</span>
+<span class="sd">        being constructed.</span>
+<span class="sd">        Gets used in xarray as a coordinate in the ``"name"`` dimension.</span>
+<span class="sd">    :type name: str</span>
+<span class="sd">    :returns: An XArray DataArray of shape ``(n_nodes, n_nodes, 1)``</span>
+<span class="sd">    :rtype: xr.DataArray</span>
+<span class="sd">    """</span>
+    <span class="n">expected_shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">adj</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected_shape</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"Adjacency matrix is not shaped correctly, "</span>
+            <span class="sa">f</span><span class="s2">"should be of shape </span><span class="si">{</span><span class="n">expected_shape</span><span class="si">}</span><span class="s2">, "</span>
+            <span class="sa">f</span><span class="s2">"instead got shape </span><span class="si">{</span><span class="n">adj</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
+    <span class="n">adj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">adj</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+        <span class="n">adj</span><span class="p">,</span>
+        <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s2">"n1"</span><span class="p">,</span> <span class="s2">"n2"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">],</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">"n1"</span><span class="p">:</span> <span class="n">nodes</span><span class="p">,</span> <span class="s2">"n2"</span><span class="p">:</span> <span class="n">nodes</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">:</span> <span class="p">[</span><span class="n">name</span><span class="p">]},</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="generate_adjacency_tensor"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.generate_adjacency_tensor">[docs]</a><span class="k">def</span> <span class="nf">generate_adjacency_tensor</span><span class="p">(</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">],</span> <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Generate adjacency tensor for a graph.</span>
+
+<span class="sd">    Uses the collection of functions in ``funcs``</span>
+<span class="sd">    to build an xarray DataArray</span>
+<span class="sd">    that houses the resulting "adjacency tensor".</span>
+
+<span class="sd">    A key design choice:</span>
+<span class="sd">    We default to returning xarray DataArrays,</span>
+<span class="sd">    to make inspecting the data easy,</span>
+<span class="sd">    but for consumption in tensor libraries,</span>
+<span class="sd">    you can turn on returning a NumPy array</span>
+<span class="sd">    by switching ``return_array=True``.</span>
+
+<span class="sd">    :param G: NetworkX Graph.</span>
+<span class="sd">    :type G: nx.Graph</span>
+<span class="sd">    :param funcs: A list of functions that take in G</span>
+<span class="sd">        and return an xr.DataArray</span>
+<span class="sd">    :type funcs: List[Callable]</span>
+<span class="sd">    :returns: xr.DataArray,</span>
+<span class="sd">        which is of shape ``(n_nodes, n_nodes, n_funcs)``.</span>
+<span class="sd">    :rtype: xr.DataArray</span>
+<span class="sd">    """</span>
+    <span class="n">mats</span> <span class="o">=</span> <span class="p">[</span><span class="n">func</span><span class="p">(</span><span class="n">G</span><span class="p">)</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">]</span>
+    <span class="n">da</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">mats</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">"name"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">return</span> <span class="n">da</span></div>
+
+
+<div class="viewcode-block" id="protein_letters_3to1_all_caps"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.protein_letters_3to1_all_caps">[docs]</a><span class="k">def</span> <span class="nf">protein_letters_3to1_all_caps</span><span class="p">(</span><span class="n">amino_acid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Converts capitalised 3 letter amino acid code to single letter. Not provided in default biopython.</span>
+
+<span class="sd">    :param amino_acid: Capitalised 3-letter amino acid code (eg. ``"GLY"``)</span>
+<span class="sd">    :type amino_acid: str</span>
+<span class="sd">    :returns: Single-letter amino acid code</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    """</span>
+    <span class="n">amino_acid</span> <span class="o">=</span> <span class="n">amino_acid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">amino_acid</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">protein_letters_3to1</span><span class="p">[</span><span class="n">amino_acid</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="import_message"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.import_message">[docs]</a><span class="k">def</span> <span class="nf">import_message</span><span class="p">(</span>
+    <span class="n">submodule</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">package</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">conda_channel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">pip_install</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Return warning if package is not found.</span>
+<span class="sd">    Generic message for indicating to the user when a function relies on an</span>
+<span class="sd">    optional module / package that is not currently installed. Includes</span>
+<span class="sd">    installation instructions. Typically used in conjunction without optional featurisation libraries</span>
+
+<span class="sd">    :param submodule: graphein submodule that needs an external dependency.</span>
+<span class="sd">    :type submodule: str</span>
+<span class="sd">    :param package: External package this submodule relies on.</span>
+<span class="sd">    :type package: str</span>
+<span class="sd">    :param conda_channel: Conda channel package can be installed from, if at all. Defaults to None</span>
+<span class="sd">    :type conda_channel: str, optional</span>
+<span class="sd">    :param pip_install: Whether package can be installed via pip. Defaults to False</span>
+<span class="sd">    :type pip_install: bool</span>
+<span class="sd">    """</span>
+    <span class="n">is_conda</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s2">"conda-meta"</span><span class="p">))</span>
+    <span class="n">installable</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">is_conda</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">conda_channel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">installable</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">installation</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2"> cannot be installed via conda"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">installation</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"conda install -c </span><span class="si">{</span><span class="n">conda_channel</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">elif</span> <span class="n">pip_install</span><span class="p">:</span>
+        <span class="n">installation</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"pip install </span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">installable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">installation</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2"> cannot be installed via pip"</span>
+
+    <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"To use the Graphein submodule </span><span class="si">{</span><span class="n">submodule</span><span class="si">}</span><span class="s2">, you need to install: </span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2"> "</span>
+    <span class="k">if</span> <span class="n">installable</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">To do so, use the following command: </span><span class="si">{</span><span class="n">installation</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="si">{</span><span class="n">installation</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="n">message</span></div>
+
+
+<div class="viewcode-block" id="ping"><a class="viewcode-back" href="../../../modules/graphein.utils.html#graphein.utils.utils.ping">[docs]</a><span class="k">def</span> <span class="nf">ping</span><span class="p">(</span><span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Returns ``True`` if host (str) responds to a ping request.</span>
+<span class="sd">    Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.</span>
+
+<span class="sd">    :param host: IP or hostname</span>
+<span class="sd">    :type host: str</span>
+<span class="sd">    :returns: True if host responds to a ping request.</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># Option for the number of packets as a function of</span>
+    <span class="n">param</span> <span class="o">=</span> <span class="s2">"-n"</span> <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"windows"</span> <span class="k">else</span> <span class="s2">"-c"</span>
+
+    <span class="c1"># Building the command. Ex: "ping -c 1 google.com"</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ping"</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="s2">"1"</span><span class="p">,</span> <span class="n">host</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">command</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span></div>
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/scripts/furo.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>

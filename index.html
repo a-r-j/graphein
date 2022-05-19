@@ -1,0 +1,602 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    
+<meta property="og:title" content="Welcome to Graphein’s documentation!" />
+  
+<meta property="og:type" content="website" />
+  
+<meta property="og:url" content="https://graphein.ai/index.html" />
+  
+<meta property="og:description" content="This package provides functionality for producing a number of types of graph-based representations of proteins. We provide compatibility with standard geometric deep learning library formats (curre..." />
+  
+<meta property="og:image" content="https://graphein.ai/_static/graphein.png" />
+  
+<meta property="og:image:alt" content="Welcome to Graphein’s documentation!" />
+  <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Installation" href="getting_started/installation.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>Graphein 1.3.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="#"><div class="brand">Graphein 1.3.0</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="#">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.3.0</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing/contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <div class="section" id="welcome-to-graphein-s-documentation">
+<h1>Welcome to Graphein’s documentation!<a class="headerlink" href="#welcome-to-graphein-s-documentation" title="Permalink to this headline">#</a></h1>
+<p>This package provides functionality for producing a number of types of graph-based representations of proteins. We provide compatibility with standard geometric deep learning library formats (currently: NetworkX nx.Graph, pytorch_geometric.data.Data and dgl.DGLGraph), as well as graph objects designed for ease of use with popular deep learning libraries.</p>
+<p>The repository can be found at <a class="reference external" href="https://www.github.com/a-r-j/graphein">a-r-j/graphein</a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is an early-stage project and a lot more documentation and functionality is planned to be included. If you are a structural biologist or machine learning researcher in computational biology, my inbox is always open for suggestions and assistance!</p>
+</div>
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/a-r-j/graphein-binder/master?urlpath=git-pull%3Frepo%3Dhttps%253A%252F%252Fgithub.com%252Fa-r-j%252Fgraphein%26urlpath%3Dlab%252Ftree%252Fgraphein%252Fnotebooks%26branch%3Dmaster"><img alt="Binder" src="https://mybinder.org/badge_logo.svg"/></a>
+<a class="reference external image-reference" href="https://badge.fury.io/py/graphein"><img alt="PyPI version" src="https://badge.fury.io/py/graphein.svg"/></a>
+<a class="reference external image-reference" href="https://img.shields.io/pypi/pyversions/graphein"><img alt="supported python versions" src="https://img.shields.io/pypi/pyversions/graphein"/></a>
+<a class="reference external image-reference" href="http://www.graphein.ai"><img alt="Docs" src="https://assets.readthedocs.org/static/projects/badges/passing-flat.svg"/></a>
+<a class="reference external image-reference" href="https://doi.org/10.1101/2020.07.15.204701"><img alt="DOI:10.1101/2020.07.15.204701" src="https://zenodo.org/badge/DOI/10.1101/2020.07.15.204701.svg"/></a>
+<a class="reference external image-reference" href="https://www.repostatus.org/#active"><img alt="Project Status: Active – The project has reached a stable, usable state and is being actively developed." src="https://www.repostatus.org/badges/latest/active.svg"/></a>
+<a class="reference external image-reference" href="https://www.repostatus.org/#active"><img alt="Project Status: Active – The project has reached a stable, usable state and is being actively developed." src="https://www.repostatus.org/badges/latest/active.svg"/></a>
+<a class="reference external image-reference" href="https://www.codefactor.io/repository/github/a-r-j/graphein"><img alt="CodeFactor" src="https://www.codefactor.io/repository/github/a-r-j/graphein/badge"/></a>
+<a class="reference external image-reference" href="https://sonarcloud.io/dashboard?id=a-r-j_graphein"><img alt="Quality Gate Status" src="https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&amp;metric=alert_status"/></a>
+<a class="reference external image-reference" href="https://sonarcloud.io/dashboard?id=a-r-j_graphein"><img alt="Bugs" src="https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&amp;metric=bugs"/></a>
+<a class="reference external image-reference" href="https://sonarcloud.io/dashboard?id=a-r-j_graphein"><img alt="Maintainability Rating" src="https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&amp;metric=sqale_rating"/></a>
+<a class="reference external image-reference" href="https://sonarcloud.io/dashboard?id=a-r-j_graphein"><img alt="Reliability Rating" src="https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&amp;metric=reliability_rating"/></a>
+<a class="reference external image-reference" href="https://gitter.im/graphein"><img alt="Gitter chat" src="https://badges.gitter.im/gitterHQ/gitter.png"/></a>
+<a class="reference external image-reference" href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"/></a>
+<p><span class="raw-html-m2r"><a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"/></a></span></p>
+<a class="reference external image-reference" href="http://www.graphein.ai"><img alt="banner" src="https://github.com/a-r-j/graphein/blob/master/imgs/graphein.png?raw=true"/></a>
+<p><span class="raw-html-m2r"><br/></span></p>
+<p><a class="reference external" href="http://www.graphein.ai">Documentation</a> | <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2020.07.15.204701v1">Paper</a> | <a class="reference external" href="http://graphein.ai/notebooks_index.html">Tutorials</a> | <a class="reference external" href="#installation">Installation</a></p>
+<p>Protein &amp; Interactomic Graph Library</p>
+<p>This package provides functionality for producing geometric representations of protein and RNA structures, and biological interaction networks. We provide compatibility with standard PyData formats, as well as graph objects designed for ease of use with popular deep learning libraries.</p>
+<div class="section" id="what-s-new">
+<h2>What’s New?<a class="headerlink" href="#what-s-new" title="Permalink to this headline">#</a></h2>
+</div>
+<div class="section" id="example-usage">
+<h2>Example usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">#</a></h2>
+<p>Graphein provides both a programmatic API and a command-line interface for constructing graphs.</p>
+<div class="section" id="cli">
+<h3>CLI<a class="headerlink" href="#cli" title="Permalink to this headline">#</a></h3>
+<p>Graphein configs can be specified as <code class="docutils literal notranslate"><span class="pre">.yaml</span></code> files to batch process graphs from the commandline.</p>
+<p><a class="reference external" href="http://graphein.ai/getting_started/usage.html">Docs</a></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>graphein -c config.yaml -p path/to/pdbs -o path/to/output
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-protein-graph">
+<h3>Creating a Protein Graph<a class="headerlink" href="#creating-a-protein-graph" title="Permalink to this headline">#</a></h3>
+<p><a class="reference external" href="http://graphein.ai/notebooks/residue_graphs.html">Tutorial (Residue-level)</a> | <a class="reference external" href="http://graphein.ai/notebooks/atom_graph_tutorial.html">Tutorial (Atomic)</a> | <a class="reference external" href="http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs">Docs</a>
+|
+.. image:: <a class="reference external" href="https://colab.research.google.com/assets/colab-badge.svg">https://colab.research.google.com/assets/colab-badge.svg</a></p>
+<blockquote>
+<div><blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">target</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb">https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb</a></p>
+</dd>
+<dt class="field-even">alt</dt>
+<dd class="field-even"><p>Open In Colab</p>
+</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br/></div>
+</div>
+</div></blockquote>
+<img alt="https://colab.research.google.com/assets/colab-badge.svg:target:https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/atom_graph_tutorial.ipynb:alt:OpenInColab(https://colab.research.google.com/assets/colab-badge.svg)||" src="https://colab.research.google.com/assets/colab-badge.svg:target:https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/atom_graph_tutorial.ipynb:alt:OpenInColab(https://colab.research.google.com/assets/colab-badge.svg)||"/>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graphein.protein.config</span> <span class="kn">import</span> <span class="n">ProteinGraphConfig</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.graphs</span> <span class="kn">import</span> <span class="n">construct_graph</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">ProteinGraphConfig</span><span class="p">()</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">construct_graph</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">pdb_code</span><span class="o">=</span><span class="s2">"3eiy"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-protein-graph-from-the-alphafold-protein-structure-database">
+<h3>Creating a Protein Graph from the AlphaFold Protein Structure Database<a class="headerlink" href="#creating-a-protein-graph-from-the-alphafold-protein-structure-database" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graphein.protein.config</span> <span class="kn">import</span> <span class="n">ProteinGraphConfig</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.graphs</span> <span class="kn">import</span> <span class="n">construct_graph</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.utils</span> <span class="kn">import</span> <span class="n">download_alphafold_structure</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">ProteinGraphConfig</span><span class="p">()</span>
+<span class="n">fp</span> <span class="o">=</span> <span class="n">download_alphafold_structure</span><span class="p">(</span><span class="s2">"Q5VSL9"</span><span class="p">,</span> <span class="n">aligned_score</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">construct_graph</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">pdb_path</span><span class="o">=</span><span class="n">fp</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-protein-mesh">
+<h3>Creating a Protein Mesh<a class="headerlink" href="#creating-a-protein-mesh" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graphein.protein.config</span> <span class="kn">import</span> <span class="n">ProteinMeshConfig</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.meshes</span> <span class="kn">import</span> <span class="n">create_mesh</span>
+
+<span class="n">verts</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">aux</span> <span class="o">=</span> <span class="n">create_mesh</span><span class="p">(</span><span class="n">pdb_code</span><span class="o">=</span><span class="s2">"3eiy"</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-an-rna-graph">
+<h3>Creating an RNA Graph<a class="headerlink" href="#creating-an-rna-graph" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graphein.rna.graphs</span> <span class="kn">import</span> <span class="n">construct_rna_graph</span>
+<span class="c1"># Build the graph from a dotbracket &amp; optional sequence</span>
+<span class="n">rna</span> <span class="o">=</span> <span class="n">construct_rna_graph</span><span class="p">(</span><span class="n">dotbracket</span><span class="o">=</span><span class="s1">'..(((((..(((...)))..)))))...'</span><span class="p">,</span>
+                          <span class="n">sequence</span><span class="o">=</span><span class="s1">'UUGGAGUACACAACCUGUACACUCUUUC'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-protein-protein-interaction-graph">
+<h3>Creating a Protein-Protein Interaction Graph<a class="headerlink" href="#creating-a-protein-protein-interaction-graph" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graphein.ppi.config</span> <span class="kn">import</span> <span class="n">PPIGraphConfig</span>
+<span class="kn">from</span> <span class="nn">graphein.ppi.graphs</span> <span class="kn">import</span> <span class="n">compute_ppi_graph</span>
+<span class="kn">from</span> <span class="nn">graphein.ppi.edges</span> <span class="kn">import</span> <span class="n">add_string_edges</span><span class="p">,</span> <span class="n">add_biogrid_edges</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">PPIGraphConfig</span><span class="p">()</span>
+<span class="n">protein_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"CDC42"</span><span class="p">,</span> <span class="s2">"CDK1"</span><span class="p">,</span> <span class="s2">"KIF23"</span><span class="p">,</span> <span class="s2">"PLK1"</span><span class="p">,</span> <span class="s2">"RAC2"</span><span class="p">,</span> <span class="s2">"RACGAP1"</span><span class="p">,</span> <span class="s2">"RHOA"</span><span class="p">,</span> <span class="s2">"RHOB"</span><span class="p">]</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">compute_ppi_graph</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+                      <span class="n">protein_list</span><span class="o">=</span><span class="n">protein_list</span><span class="p">,</span>
+                      <span class="n">edge_construction_funcs</span><span class="o">=</span><span class="p">[</span><span class="n">add_string_edges</span><span class="p">,</span> <span class="n">add_biogrid_edges</span><span class="p">]</span>
+                     <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-gene-regulatory-network-graph">
+<h3>Creating a Gene Regulatory Network Graph<a class="headerlink" href="#creating-a-gene-regulatory-network-graph" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graphein.grn.config</span> <span class="kn">import</span> <span class="n">GRNGraphConfig</span>
+<span class="kn">from</span> <span class="nn">graphein.grn.graphs</span> <span class="kn">import</span> <span class="n">compute_grn_graph</span>
+<span class="kn">from</span> <span class="nn">graphein.grn.edges</span> <span class="kn">import</span> <span class="n">add_regnetwork_edges</span><span class="p">,</span> <span class="n">add_trrust_edges</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">GRNGraphConfig</span><span class="p">()</span>
+<span class="n">gene_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AATF"</span><span class="p">,</span> <span class="s2">"MYC"</span><span class="p">,</span> <span class="s2">"USF1"</span><span class="p">,</span> <span class="s2">"SP1"</span><span class="p">,</span> <span class="s2">"TP53"</span><span class="p">,</span> <span class="s2">"DUSP1"</span><span class="p">]</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">compute_grn_graph</span><span class="p">(</span>
+    <span class="n">gene_list</span><span class="o">=</span><span class="n">gene_list</span><span class="p">,</span>
+    <span class="n">edge_construction_funcs</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">add_trrust_edges</span><span class="p">,</span> <span class="n">trrust_filtering_funcs</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">trrust_config</span><span class="o">.</span><span class="n">filtering_functions</span><span class="p">),</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">add_regnetwork_edges</span><span class="p">,</span> <span class="n">regnetwork_filtering_funcs</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">regnetwork_config</span><span class="o">.</span><span class="n">filtering_functions</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id11">
+<h2>Installation<a class="headerlink" href="#id11" title="Permalink to this headline">#</a></h2>
+<div class="section" id="pip">
+<h3>Pip<a class="headerlink" href="#pip" title="Permalink to this headline">#</a></h3>
+<p>The simplest install is via pip. <em>N.B this does not install ML/DL libraries which are required for conversion to their data formats and for generating protein structure meshes with PyTorch 3D.</em> <a class="reference external" href="http://graphein.ai//getting_started/installation.html">Further details</a></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install graphein <span class="c1"># For base install</span>
+pip install graphein<span class="o">[</span>extras<span class="o">]</span> <span class="c1"># For additional featurisation dependencies</span>
+pip install graphein<span class="o">[</span>dev<span class="o">]</span> <span class="c1"># For dev dependencies</span>
+pip install graphein<span class="o">[</span>all<span class="o">]</span> <span class="c1"># To get the lot</span>
+</pre></div>
+</div>
+<p>However, there are a number of (optional) utilities (<a class="reference external" href="https://anaconda.org/salilab/dssp">DSSP</a>, <a class="reference external" href="https://pymol.org/2/">PyMol</a>, <a class="reference external" href="https://getcontacts.github.io/">GetContacts</a>) that are not available via PyPI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">salilab</span> <span class="n">dssp</span> <span class="c1"># Required for computing secondary structural features</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">schrodinger</span> <span class="n">pymol</span> <span class="c1"># Required for PyMol visualisations &amp; mesh generation</span>
+
+<span class="c1"># GetContacts - used as an alternative way to compute intramolecular interactions</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">vmd</span><span class="o">-</span><span class="n">python</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">getcontacts</span><span class="o">/</span><span class="n">getcontacts</span>
+
+<span class="c1"># Add folder to PATH</span>
+<span class="n">echo</span> <span class="s2">"export PATH=\$PATH:`pwd`/getcontacts"</span> <span class="o">&gt;&gt;</span> <span class="o">~/.</span><span class="n">bashrc</span>
+<span class="n">source</span> <span class="o">~/.</span><span class="n">bashrc</span>
+<span class="n">To</span> <span class="n">test</span> <span class="n">the</span> <span class="n">installation</span><span class="p">,</span> <span class="n">run</span><span class="p">:</span>
+
+<span class="n">cd</span> <span class="n">getcontacts</span><span class="o">/</span><span class="n">example</span><span class="o">/</span><span class="mi">5</span><span class="n">xnd</span>
+<span class="n">get_dynamic_contacts</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">topology</span> <span class="mi">5</span><span class="n">xnd_topology</span><span class="o">.</span><span class="n">pdb</span> \
+                        <span class="o">--</span><span class="n">trajectory</span> <span class="mi">5</span><span class="n">xnd_trajectory</span><span class="o">.</span><span class="n">dcd</span> \
+                        <span class="o">--</span><span class="n">itypes</span> <span class="n">hb</span> \
+                        <span class="o">--</span><span class="n">output</span> <span class="mi">5</span><span class="n">xnd_hbonds</span><span class="o">.</span><span class="n">tsv</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="conda-environment">
+<h3>Conda environment<a class="headerlink" href="#conda-environment" title="Permalink to this headline">#</a></h3>
+<p>The dev environment includes GPU Builds (CUDA 11.1) for each of the deep learning libraries integrated into graphein.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://www.github.com/a-r-j/graphein
+<span class="nb">cd</span> graphein
+conda env create -f environment-dev.yml
+pip install -e .
+</pre></div>
+</div>
+<p>A lighter install can be performed with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://www.github.com/a-r-j/graphein
+<span class="nb">cd</span> graphein
+conda env create -f environment.yml
+pip install -e .
+</pre></div>
+</div>
+</div>
+<div class="section" id="dockerfile">
+<h3>Dockerfile<a class="headerlink" href="#dockerfile" title="Permalink to this headline">#</a></h3>
+<p>We provide two <code class="docutils literal notranslate"><span class="pre">docker-compose</span></code> files for CPU (<code class="docutils literal notranslate"><span class="pre">docker-compose.cpu.yml</span></code>) and GPU usage (<code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code>) locally. For GPU usage please ensure that you have <a class="reference external" href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html">NVIDIA Container Toolkit</a> installed. Ensure that you install the locally mounted volume after entering the container (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code>). This will also setup the dev environment locally.</p>
+<p>To build (GPU) run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">up</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">build</span> <span class="c1"># start the container</span>
+<span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">down</span> <span class="c1"># stop the container</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="citing-graphein">
+<h2>Citing Graphein<a class="headerlink" href="#citing-graphein" title="Permalink to this headline">#</a></h2>
+<p>Please consider citing graphein if it proves useful in your work.</p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><span class="nc">@article</span> <span class="p">{</span><span class="nl">Jamasb2020.07.15.204701</span><span class="p">,</span>
+ <span class="na">author</span> <span class="p">=</span> <span class="s">{Jamasb, Arian R. and Vi{\~n}as, Ramon and Ma, Eric J. and Harris, Charlie and Huang, Kexin and Hall, Dominic and Li{\'o}, Pietro and Blundell, Tom L.}</span><span class="p">,</span>
+ <span class="na">title</span> <span class="p">=</span> <span class="s">{Graphein - a Python Library for Geometric Deep Learning and Network Analysis on Protein Structures and Interaction Networks}</span><span class="p">,</span>
+ <span class="na">elocation-id</span> <span class="p">=</span> <span class="s">{2020.07.15.204701}</span><span class="p">,</span>
+ <span class="na">year</span> <span class="p">=</span> <span class="s">{2021}</span><span class="p">,</span>
+ <span class="na">doi</span> <span class="p">=</span> <span class="s">{10.1101/2020.07.15.204701}</span><span class="p">,</span>
+ <span class="na">publisher</span> <span class="p">=</span> <span class="s">{Cold Spring Harbor Laboratory}</span><span class="p">,</span>
+ <span class="na">abstract</span> <span class="p">=</span> <span class="s">{Geometric deep learning has well-motivated applications in the context of biology, a domain where relational structure in datasets can be meaningfully leveraged. Currently, efforts in both geometric deep learning and, more broadly, deep learning applied to biomolecular tasks have been hampered by a scarcity of appropriate datasets accessible to domain specialists and machine learning researchers alike. However, there has been little exploration of how to best to integrate and construct geometric representations of these datatypes. To address this, we introduce Graphein as a turn-key tool for transforming raw data from widely-used bioinformatics databases into machine learning-ready datasets in a high-throughput and flexible manner. Graphein is a Python library for constructing graph and surface-mesh representations of protein structures and biological interaction networks for computational analysis. Graphein provides utilities for data retrieval from widely-used bioinformatics databases for structural data, including the Protein Data Bank, the recently-released AlphaFold Structure Database, and for biomolecular interaction networks from STRINGdb, BioGrid, TRRUST and RegNetwork. The library interfaces with popular geometric deep learning libraries: DGL, PyTorch Geometric and PyTorch3D though remains framework agnostic as it is built on top of the PyData ecosystem to enable inter-operability with scientific computing tools and libraries. Graphein is designed to be highly flexible, allowing the user to specify each step of the data preparation, scalable to facilitate working with large protein complexes and interaction graphs, and contains useful pre-processing tools for preparing experimental files. Graphein facilitates network-based, graph-theoretic and topological analyses of structural and interaction datasets in a high-throughput manner. As example workflows, we make available two new protein structure-related datasets, previously unused by the geometric deep learning community. We envision that Graphein will facilitate developments in computational biology, graph representation learning and drug discovery.Availability and implementation Graphein is written in Python. Source code, example usage and tutorials, datasets, and documentation are made freely available under the MIT License at the following URL: graphein.aiCompeting Interest StatementThe authors have declared no competing interest.}</span><span class="p">,</span>
+ <span class="na">URL</span> <span class="p">=</span> <span class="s">{https://www.biorxiv.org/content/early/2021/10/12/2020.07.15.204701}</span><span class="p">,</span>
+ <span class="na">eprint</span> <span class="p">=</span> <span class="s">{https://www.biorxiv.org/content/early/2021/10/12/2020.07.15.204701.full.pdf}</span><span class="p">,</span>
+ <span class="na">journal</span> <span class="p">=</span> <span class="s">{bioRxiv}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<p>If Graphein proves useful to your work, please consider citing:</p>
+<div class="highlight-latex notranslate"><div class="highlight"><pre><span></span>@article <span class="nb">{</span>Jamasb2020.07.15.204701,
+   author = <span class="nb">{</span>Jamasb, Arian R. and Vi<span class="nb">{</span><span class="k">\~</span>n<span class="nb">}</span>as, Ramon and Ma, Eric J. and Harris, Charlie and Huang, Kexin and Hall, Dominic and Li<span class="nb">{</span><span class="k">\'</span>o<span class="nb">}</span>, Pietro and Blundell, Tom L.<span class="nb">}</span>,
+   title = <span class="nb">{</span>Graphein - a Python Library for Geometric Deep Learning and Network Analysis on Protein Structures and Interaction Networks<span class="nb">}</span>,
+   elocation-id = <span class="nb">{</span>2020.07.15.204701<span class="nb">}</span>,
+   year = <span class="nb">{</span>2021<span class="nb">}</span>,
+   doi = <span class="nb">{</span>10.1101/2020.07.15.204701<span class="nb">}</span>,
+   publisher = <span class="nb">{</span>Cold Spring Harbor Laboratory<span class="nb">}</span>,
+   abstract = <span class="nb">{</span>Geometric deep learning has well-motivated applications in the context of biology, a domain where relational structure in datasets can be meaningfully leveraged. Currently, efforts in both geometric deep learning and, more broadly, deep learning applied to biomolecular tasks have been hampered by a scarcity of appropriate datasets accessible to domain specialists and machine learning researchers alike. However, there has been little exploration of how to best to integrate and construct geometric representations of these datatypes. To address this, we introduce Graphein as a turn-key tool for transforming raw data from widely-used bioinformatics databases into machine learning-ready datasets in a high-throughput and flexible manner. Graphein is a Python library for constructing graph and surface-mesh representations of protein structures and biological interaction networks for computational analysis. Graphein provides utilities for data retrieval from widely-used bioinformatics databases for structural data, including the Protein Data Bank, the recently-released AlphaFold Structure Database, and for biomolecular interaction networks from STRINGdb, BioGrid, TRRUST and RegNetwork. The library interfaces with popular geometric deep learning libraries: DGL, PyTorch Geometric and PyTorch3D though remains framework agnostic as it is built on top of the PyData ecosystem to enable inter-operability with scientific computing tools and libraries. Graphein is designed to be highly flexible, allowing the user to specify each step of the data preparation, scalable to facilitate working with large protein complexes and interaction graphs, and contains useful pre-processing tools for preparing experimental files. Graphein facilitates network-based, graph-theoretic and topological analyses of structural and interaction datasets in a high-throughput manner. As example workflows, we make available two new protein structure-related datasets, previously unused by the geometric deep learning community. We envision that Graphein will facilitate developments in computational biology, graph representation learning and drug discovery.Availability and implementation Graphein is written in Python. Source code, example usage and tutorials, datasets, and documentation are made freely available under the MIT License at the following URL: graphein.aiCompeting Interest StatementThe authors have declared no competing interest.<span class="nb">}</span>,
+   URL = <span class="nb">{</span>https://www.biorxiv.org/content/early/2021/10/12/2020.07.15.204701<span class="nb">}</span>,
+   eprint = <span class="nb">{</span>https://www.biorxiv.org/content/early/2021/10/12/2020.07.15.204701.full.pdf<span class="nb">}</span>,
+   journal = <span class="nb">{</span>bioRxiv<span class="nb">}</span>
+<span class="nb">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">#</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="getting_started/installation.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Installation</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Welcome to Graphein’s documentation!</a><ul>
+<li><a class="reference internal" href="#what-s-new">What’s New?</a></li>
+<li><a class="reference internal" href="#example-usage">Example usage</a><ul>
+<li><a class="reference internal" href="#cli">CLI</a></li>
+<li><a class="reference internal" href="#creating-a-protein-graph">Creating a Protein Graph</a></li>
+<li><a class="reference internal" href="#creating-a-protein-graph-from-the-alphafold-protein-structure-database">Creating a Protein Graph from the AlphaFold Protein Structure Database</a></li>
+<li><a class="reference internal" href="#creating-a-protein-mesh">Creating a Protein Mesh</a></li>
+<li><a class="reference internal" href="#creating-an-rna-graph">Creating an RNA Graph</a></li>
+<li><a class="reference internal" href="#creating-a-protein-protein-interaction-graph">Creating a Protein-Protein Interaction Graph</a></li>
+<li><a class="reference internal" href="#creating-a-gene-regulatory-network-graph">Creating a Gene Regulatory Network Graph</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id11">Installation</a><ul>
+<li><a class="reference internal" href="#pip">Pip</a></li>
+<li><a class="reference internal" href="#conda-environment">Conda environment</a></li>
+<li><a class="reference internal" href="#dockerfile">Dockerfile</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#citing-graphein">Citing Graphein</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>

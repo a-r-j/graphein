@@ -1,0 +1,1172 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
+
+    <meta name="generator" content="sphinx-4.1.2, furo 2021.08.17.beta43"/>
+        <title>PSCDB - Baselines - Graphein 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=910ac4ccc9d7c023151c34010d7b500fb9777a51" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=16fb25fabf47304eee183a5e9af80b1ba98259b1" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style>
+    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="../_static/pygments_dark.css"></head>
+  <body>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" />
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Graphein 1.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.0.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks_index.html">Notebooks</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="protein_mesh_tutorial.html">Creating Protein Meshes in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Datasets</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pscdb_processing.html">PSCDB Processing</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.ml.html">graphein.ml</a></li>
+</ul>
+
+</div>
+</div>
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <article role="main">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'../'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="PSCDB---Baselines">
+<h1>PSCDB - Baselines<a class="headerlink" href="#PSCDB---Baselines" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">pytorch_lightning</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">from</span> <span class="nn">tqdm.notebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">torch_geometric</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">Data</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.utils</span> <span class="kn">import</span> <span class="n">from_networkx</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelBinarizer</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">f1_score</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/3783657278.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> <span class="ansi-green-fg">import</span> torch
+<span class="ansi-green-intense-fg ansi-bold">      5</span> <span class="ansi-green-fg">import</span> torch<span class="ansi-blue-fg">.</span>nn <span class="ansi-green-fg">as</span> nn
+<span class="ansi-green-fg">----&gt; 6</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">import</span> pytorch_lightning <span class="ansi-green-fg">as</span> pl
+<span class="ansi-green-intense-fg ansi-bold">      7</span> <span class="ansi-green-fg">from</span> tqdm<span class="ansi-blue-fg">.</span>notebook <span class="ansi-green-fg">import</span> tqdm
+<span class="ansi-green-intense-fg ansi-bold">      8</span> <span class="ansi-green-fg">import</span> networkx <span class="ansi-green-fg">as</span> nx
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named 'pytorch_lightning'
+</pre></div></div>
+</div>
+<section id="Load-dataset">
+<h2>Load dataset<a class="headerlink" href="#Load-dataset" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"../datasets/pscdb/structural_rearrangement_data.csv"</span><span class="p">)</span>
+<span class="n">pdbs</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Free PDB"</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">lab</span><span class="p">))</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">)</span> <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">LabelBinarizer</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">motion_type</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">FileNotFoundError</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/343701451.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>df <span class="ansi-blue-fg">=</span> pd<span class="ansi-blue-fg">.</span>read_csv<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">"../datasets/pscdb/structural_rearrangement_data.csv"</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> pdbs <span class="ansi-blue-fg">=</span> df<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">"Free PDB"</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> y <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span>torch<span class="ansi-blue-fg">.</span>argmax<span class="ansi-blue-fg">(</span>torch<span class="ansi-blue-fg">.</span>Tensor<span class="ansi-blue-fg">(</span>lab<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>type<span class="ansi-blue-fg">(</span>torch<span class="ansi-blue-fg">.</span>LongTensor<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> lab <span class="ansi-green-fg">in</span> LabelBinarizer<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>fit_transform<span class="ansi-blue-fg">(</span>df<span class="ansi-blue-fg">.</span>motion_type<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pandas/util/_decorators.py</span> in <span class="ansi-cyan-fg">wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    309</span>                     stacklevel<span class="ansi-blue-fg">=</span>stacklevel<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    310</span>                 )
+<span class="ansi-green-fg">--&gt; 311</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">return</span> func<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    312</span>
+<span class="ansi-green-intense-fg ansi-bold">    313</span>         <span class="ansi-green-fg">return</span> wrapper
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pandas/io/parsers/readers.py</span> in <span class="ansi-cyan-fg">read_csv</span><span class="ansi-blue-fg">(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, squeeze, prefix, mangle_dupe_cols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, skipfooter, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, dayfirst, cache_dates, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, doublequote, escapechar, comment, encoding, encoding_errors, dialect, error_bad_lines, warn_bad_lines, on_bad_lines, delim_whitespace, low_memory, memory_map, float_precision, storage_options)</span>
+<span class="ansi-green-intense-fg ansi-bold">    584</span>     kwds<span class="ansi-blue-fg">.</span>update<span class="ansi-blue-fg">(</span>kwds_defaults<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    585</span>
+<span class="ansi-green-fg">--&gt; 586</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> _read<span class="ansi-blue-fg">(</span>filepath_or_buffer<span class="ansi-blue-fg">,</span> kwds<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    587</span>
+<span class="ansi-green-intense-fg ansi-bold">    588</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pandas/io/parsers/readers.py</span> in <span class="ansi-cyan-fg">_read</span><span class="ansi-blue-fg">(filepath_or_buffer, kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">    480</span>
+<span class="ansi-green-intense-fg ansi-bold">    481</span>     <span class="ansi-red-fg"># Create the parser.</span>
+<span class="ansi-green-fg">--&gt; 482</span><span class="ansi-red-fg">     </span>parser <span class="ansi-blue-fg">=</span> TextFileReader<span class="ansi-blue-fg">(</span>filepath_or_buffer<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    483</span>
+<span class="ansi-green-intense-fg ansi-bold">    484</span>     <span class="ansi-green-fg">if</span> chunksize <span class="ansi-green-fg">or</span> iterator<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pandas/io/parsers/readers.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, f, engine, **kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">    809</span>             self<span class="ansi-blue-fg">.</span>options<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">"has_index_names"</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> kwds<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">"has_index_names"</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">    810</span>
+<span class="ansi-green-fg">--&gt; 811</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_engine <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_make_engine<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>engine<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    812</span>
+<span class="ansi-green-intense-fg ansi-bold">    813</span>     <span class="ansi-green-fg">def</span> close<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pandas/io/parsers/readers.py</span> in <span class="ansi-cyan-fg">_make_engine</span><span class="ansi-blue-fg">(self, engine)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1038</span>             )
+<span class="ansi-green-intense-fg ansi-bold">   1039</span>         <span class="ansi-red-fg"># error: Too many arguments for "ParserBase"</span>
+<span class="ansi-green-fg">-&gt; 1040</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> mapping<span class="ansi-blue-fg">[</span>engine<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>f<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>self<span class="ansi-blue-fg">.</span>options<span class="ansi-blue-fg">)</span>  <span class="ansi-red-fg"># type: ignore[call-arg]</span>
+<span class="ansi-green-intense-fg ansi-bold">   1041</span>
+<span class="ansi-green-intense-fg ansi-bold">   1042</span>     <span class="ansi-green-fg">def</span> _failover_to_python<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pandas/io/parsers/c_parser_wrapper.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, src, **kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">     49</span>
+<span class="ansi-green-intense-fg ansi-bold">     50</span>         <span class="ansi-red-fg"># open handles</span>
+<span class="ansi-green-fg">---&gt; 51</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_open_handles<span class="ansi-blue-fg">(</span>src<span class="ansi-blue-fg">,</span> kwds<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     52</span>         <span class="ansi-green-fg">assert</span> self<span class="ansi-blue-fg">.</span>handles <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span>
+<span class="ansi-green-intense-fg ansi-bold">     53</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pandas/io/parsers/base_parser.py</span> in <span class="ansi-cyan-fg">_open_handles</span><span class="ansi-blue-fg">(self, src, kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">    220</span>         Let the readers open IOHandles after they are done <span class="ansi-green-fg">with</span> their potential raises<span class="ansi-blue-fg">.</span>
+<span class="ansi-green-intense-fg ansi-bold">    221</span>         """
+<span class="ansi-green-fg">--&gt; 222</span><span class="ansi-red-fg">         self.handles = get_handle(
+</span><span class="ansi-green-intense-fg ansi-bold">    223</span>             src<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    224</span>             <span class="ansi-blue-fg">"r"</span><span class="ansi-blue-fg">,</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/pandas/io/common.py</span> in <span class="ansi-cyan-fg">get_handle</span><span class="ansi-blue-fg">(path_or_buf, mode, encoding, compression, memory_map, is_text, errors, storage_options)</span>
+<span class="ansi-green-intense-fg ansi-bold">    699</span>         <span class="ansi-green-fg">if</span> ioargs<span class="ansi-blue-fg">.</span>encoding <span class="ansi-green-fg">and</span> <span class="ansi-blue-fg">"b"</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">in</span> ioargs<span class="ansi-blue-fg">.</span>mode<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    700</span>             <span class="ansi-red-fg"># Encoding</span>
+<span class="ansi-green-fg">--&gt; 701</span><span class="ansi-red-fg">             handle = open(
+</span><span class="ansi-green-intense-fg ansi-bold">    702</span>                 handle<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    703</span>                 ioargs<span class="ansi-blue-fg">.</span>mode<span class="ansi-blue-fg">,</span>
+
+<span class="ansi-red-fg">FileNotFoundError</span>: [Errno 2] No such file or directory: '../datasets/pscdb/structural_rearrangement_data.csv'
+</pre></div></div>
+</div>
+</section>
+<section id="Transformation-from-Raw-Structure-to-ML-ready-Datasets-Construction-with-Graphein">
+<h2>Transformation from Raw Structure to ML-ready Datasets Construction with Graphein<a class="headerlink" href="#Transformation-from-Raw-Structure-to-ML-ready-Datasets-Construction-with-Graphein" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">graphein.protein.config</span> <span class="kn">import</span> <span class="n">ProteinGraphConfig</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.edges.distance</span> <span class="kn">import</span> <span class="n">add_hydrogen_bond_interactions</span><span class="p">,</span> <span class="n">add_peptide_bonds</span><span class="p">,</span> <span class="n">add_k_nn_edges</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.graphs</span> <span class="kn">import</span> <span class="n">construct_graph</span>
+<span class="kn">from</span> <span class="nn">graphein.ml.conversion</span> <span class="kn">import</span> <span class="n">graph_format_convert</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+
+<span class="c1"># Override config with constructors</span>
+<span class="n">constructors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"edge_construction_functions"</span><span class="p">:</span> <span class="p">[</span><span class="n">partial</span><span class="p">(</span><span class="n">add_k_nn_edges</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">long_interaction_threshold</span><span class="o">=</span><span class="mi">0</span><span class="p">)],</span>
+    <span class="c1">#"edge_construction_functions": [add_hydrogen_bond_interactions, add_peptide_bonds],</span>
+    <span class="c1">#"node_metadata_functions": [add_dssp_feature]</span>
+<span class="p">}</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">ProteinGraphConfig</span><span class="p">(</span><span class="o">**</span><span class="n">constructors</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
+
+<span class="c1"># Make graphs</span>
+<span class="n">graph_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">y_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pdb</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">pdbs</span><span class="p">)):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">graph_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">construct_graph</span><span class="p">(</span><span class="n">pdb_code</span><span class="o">=</span><span class="n">pdb</span><span class="p">,</span>
+                        <span class="n">config</span><span class="o">=</span><span class="n">config</span>
+                       <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">y_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">+</span> <span class="s1">' processing error...'</span><span class="p">)</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+DEBUG:matplotlib:matplotlib data path: /home/atj39/anaconda3/envs/graphein-dev/lib/python3.8/site-packages/matplotlib/mpl-data
+DEBUG:matplotlib:CONFIGDIR=/home/atj39/.config/matplotlib
+DEBUG:matplotlib:matplotlib version 3.4.3
+DEBUG:matplotlib:interactive is False
+DEBUG:matplotlib:platform is linux
+DEBUG:matplotlib:loaded modules: ['sys', 'builtins', '_frozen_importlib', '_imp', '_warnings', '_io', 'marshal', 'posix', '_frozen_importlib_external', '_thread', '_weakref', 'time', 'zipimport', '_codecs', 'codecs', 'encodings.aliases', 'encodings', 'encodings.utf_8', '_signal', '__main__', 'encodings.latin_1', '_abc', 'abc', 'io', '_stat', 'stat', '_collections_abc', 'genericpath', 'posixpath', 'os.path', 'os', '_sitebuiltins', '_locale', '_bootlocale', 'types', 'importlib._bootstrap', 'importlib._bootstrap_external', 'warnings', 'importlib', 'importlib.machinery', 'importlib.abc', '_operator', 'operator', 'keyword', '_heapq', 'heapq', 'itertools', 'reprlib', '_collections', 'collections', '_functools', 'functools', 'contextlib', 'importlib.util', 'mpl_toolkits', 'sphinxcontrib', 'zope', 'site', '_weakrefset', 'weakref', 'pkgutil', 'runpy', 'ipykernel._version', 'enum', '_sre', 'sre_constants', 'sre_parse', 'sre_compile', 'copyreg', 're', '_json', 'json.scanner', 'json.decoder', 'json.encoder', 'json', 'errno', 'signal', 'threading', '_posixsubprocess', 'select', 'collections.abc', 'math', 'selectors', 'subprocess', 'ipython_genutils._version', 'ipython_genutils', 'fnmatch', 'zlib', '_compression', '_bz2', 'bz2', '_lzma', 'lzma', 'pwd', 'grp', 'shutil', '_bisect', 'bisect', '_sha512', '_random', 'random', 'locale', 'ipython_genutils.encoding', 'platform', 'ipython_genutils.py3compat', 'ipython_genutils.path', 'typing.io', 'typing.re', 'typing', 'jupyter_client._version', '_ast', 'ast', '_opcode', 'opcode', 'dis', 'token', 'tokenize', 'linecache', 'inspect', 'traitlets.utils', 'traitlets.utils.getargspec', 'traitlets.utils.importstring', 'traitlets.utils.sentinel', 'traitlets.utils.bunch', 'traitlets.utils.descriptions', 'traitlets.traitlets', 'copy', 'traitlets.utils.decorators', 'traitlets._version', 'traitlets', 'concurrent', 'traceback', '_string', 'string', 'atexit', 'logging', 'concurrent.futures._base', 'concurrent.futures', '_socket', 'socket', '_ssl', '_struct', 'struct', 'binascii', 'base64', 'ssl', 'asyncio.constants', 'asyncio.format_helpers', 'asyncio.base_futures', 'asyncio.log', 'asyncio.coroutines', '_contextvars', 'contextvars', 'asyncio.exceptions', 'asyncio.base_tasks', '_asyncio', 'asyncio.events', 'asyncio.futures', 'asyncio.protocols', 'asyncio.transports', 'asyncio.sslproto', 'asyncio.locks', 'asyncio.tasks', 'asyncio.staggered', 'asyncio.trsock', 'asyncio.base_events', 'asyncio.runners', 'asyncio.queues', 'asyncio.streams', 'asyncio.subprocess', 'asyncio.base_subprocess', 'asyncio.selector_events', 'asyncio.unix_events', 'asyncio', '_queue', 'queue', '_ctypes', 'ctypes._endian', 'ctypes', 'zmq.backend.select', 'cython_runtime', 'zmq.backend.cython.constants', '_cython_0_29_24', 'zmq.backend.cython.error', 'zmq.error', 'zmq.backend.cython.message', 'zmq.backend.cython.context', '_compat_pickle', '_pickle', 'pickle', 'zmq.backend.cython.socket', 'zmq.backend.cython.utils', 'zmq.backend.cython._poll', 'zmq.backend.cython._version', 'zmq.backend.cython._device', 'zmq.backend.cython._proxy_steerable', 'zmq.backend.cython', 'zmq.backend', 'zmq.utils', 'zmq.utils.constant_names', 'zmq.sugar.constants', 'zmq.sugar.attrsettr', 'zmq.sugar.poll', 'zmq.utils.jsonapi', 'zmq.utils.strtypes', 'zmq.sugar.socket', 'zmq.sugar.context', 'zmq.sugar.frame', 'zmq.sugar.tracker', 'zmq.sugar.version', 'zmq.sugar.stopwatch', 'zmq.sugar', 'zmq', 'zmq._future', 'zmq.asyncio', 'jupyter_client.channelsabc', '_hashlib', '_blake2', '_sha3', 'hashlib', 'hmac', 'pprint', '_datetime', 'datetime', 'gettext', 'argparse', 'traitlets.config.loader', 'textwrap', 'ipython_genutils.text', 'traitlets.config.configurable', 'traitlets.config.application', 'traitlets.config', 'traitlets.log', '__future__', 'tornado', 'logging.handlers', 'html.entities', 'html', 'urllib', 'urllib.parse', 'array', 'tornado.speedups', 'tornado.util', 'tornado.escape', 'colorama.ansi', 'colorama.win32', 'colorama.winterm', 'colorama.ansitowin32', 'colorama.initialise', 'colorama', '_curses', 'curses', 'tornado.log', 'numbers', 'tornado.concurrent', 'tornado.ioloop', 'tornado.platform', 'tornado.gen', 'tornado.platform.asyncio', 'zmq.eventloop.ioloop', 'zmq.eventloop', 'zmq.eventloop.zmqstream', 'jupyter_client.adapter', 'dateutil._version', 'dateutil', 'calendar', 'six', '_decimal', 'decimal', 'dateutil._common', 'dateutil.relativedelta', 'six.moves', 'dateutil.tz._common', 'dateutil.tz._factories', 'dateutil.tz.tz', 'dateutil.tz', 'dateutil.parser._parser', 'dateutil.parser.isoparser', 'dateutil.parser', '_strptime', 'jupyter_client.jsonutil', 'jupyter_client.session', 'jupyter_client.channels', 'termios', 'getpass', 'jupyter_client.clientabc', 'glob', 'tempfile', 'jupyter_core.version', 'jupyter_core', 'jupyter_core.paths', 'jupyter_client.localinterfaces', 'jupyter_client.utils', 'jupyter_client.connect', 'jupyter_client.client', 'jupyter_client.asynchronous.client', 'jupyter_client.asynchronous', 'jupyter_client.blocking.client', 'jupyter_client.blocking', 'jupyter_client.launcher', 'uuid', 'jupyter_client.managerabc', 'zipfile', 'configparser', 'entrypoints', 'jupyter_client.provisioning.provisioner_base', 'jupyter_client.provisioning.factory', 'jupyter_client.provisioning.local_provisioner', 'jupyter_client.provisioning', 'jupyter_client.kernelspec', 'jupyter_client.manager', 'jupyter_client.multikernelmanager', 'jupyter_client', 'ipykernel.connect', 'ipykernel', 'IPython.core', 'IPython.core.getipython', 'IPython.core.release', 'sysconfig', '_sysconfigdata__linux_x86_64-linux-gnu', 'pydoc', 'bdb', 'IPython.utils', 'IPython.utils.ipstruct', 'IPython.utils.coloransi', 'pygments', 'IPython.utils.colorable', 'IPython.utils.PyColorize', 'IPython.utils.encoding', 'IPython.utils.py3compat', 'IPython.core.excolors', 'IPython.testing', 'IPython.testing.skipdoctest', 'cmd', 'codeop', 'code', 'pdb', 'IPython.core.debugger', 'IPython.core.display_trap', 'pexpect.exceptions', 'pexpect.utils', 'pexpect.expect', 'tty', 'pty', 'fcntl', 'resource', 'ptyprocess.util', 'ptyprocess.ptyprocess', 'ptyprocess', 'pexpect.spawnbase', 'pexpect.pty_spawn', 'pexpect.run', 'pexpect', 'shlex', 'IPython.utils._process_common', 'IPython.utils._process_posix', 'IPython.utils.process', 'IPython.utils.decorators', 'IPython.utils.path', 'IPython.utils.data', 'IPython.utils.terminal', 'IPython.core.ultratb', 'IPython.utils._sysinfo', 'IPython.utils.sysinfo', 'IPython.core.crashhandler', 'IPython.utils.importstring', 'IPython.paths', 'IPython.core.profiledir', 'IPython.core.application', 'IPython.terminal', 'IPython.core.compilerop', 'IPython.core.error', 'ntpath', 'pathlib', 'IPython.utils.text', 'IPython.core.magic_arguments', 'getopt', 'mimetypes', 'IPython.core.display', 'IPython.core.page', 'IPython.lib.security', 'IPython.lib', 'IPython.lib.pretty', 'IPython.utils.openpy', 'IPython.utils.dir2', 'IPython.utils.wildcard', 'pygments.lexers._mapping', 'pygments.modeline', 'pygments.plugin', 'pygments.util', 'pygments.lexers', 'pygments.filter', 'pygments.token', 'pygments.filters', 'pygments.regexopt', 'pygments.lexer', 'pygments.unistring', 'pygments.lexers.python', 'pygments.formatters._mapping', 'pygments.formatters', 'pygments.styles', 'pygments.formatter', 'pygments.formatters.html', 'IPython.core.oinspect', 'IPython.core.inputtransformer2', 'decorator', 'IPython.core.magic', 'pickleshare', 'IPython.core.autocall', 'IPython.core.macro', 'IPython.core.splitinput', 'IPython.core.prefilter', 'IPython.core.alias', 'IPython.core.builtin_trap', 'backcall.backcall', 'backcall', 'IPython.core.events', 'IPython.core.displayhook', 'IPython.core.displaypub', 'IPython.core.extensions', 'IPython.utils.sentinel', 'IPython.core.formatters', '_sqlite3', 'sqlite3.dbapi2', 'sqlite3', 'IPython.core.history', 'IPython.core.logger', 'IPython.core.payload', 'IPython.core.usage', 'IPython.lib.display', 'IPython.display', 'IPython.utils.capture', 'IPython.utils.io', 'IPython.core.hooks', 'IPython.utils.strdispatch', 'IPython.utils.syspathcontext', 'IPython.utils.tempdir', 'IPython.utils.contexts', 'IPython.core.async_helpers', 'IPython.core.interactiveshell', 'prompt_toolkit.application.current', 'prompt_toolkit.eventloop.utils', 'prompt_toolkit.eventloop.async_generator', 'wcwidth.table_wide', 'wcwidth.table_zero', 'wcwidth.unicode_versions', 'wcwidth.wcwidth', 'wcwidth', 'prompt_toolkit.utils', 'prompt_toolkit.eventloop.inputhook', 'prompt_toolkit.eventloop', 'prompt_toolkit.application.run_in_terminal', 'prompt_toolkit.selection', 'prompt_toolkit.clipboard.base', 'prompt_toolkit.clipboard.in_memory', 'prompt_toolkit.clipboard', 'prompt_toolkit.cache', 'prompt_toolkit.enums', 'prompt_toolkit.filters.base', 'prompt_toolkit.filters.app', 'prompt_toolkit.filters.cli', 'prompt_toolkit.filters.utils', 'prompt_toolkit.filters', 'prompt_toolkit.document', 'prompt_toolkit.auto_suggest', 'prompt_toolkit.data_structures', 'prompt_toolkit.styles.base', 'prompt_toolkit.styles.named_colors', 'prompt_toolkit.styles.style', 'prompt_toolkit.styles.defaults', 'prompt_toolkit.styles.pygments', 'colorsys', 'prompt_toolkit.styles.style_transformation', 'prompt_toolkit.styles', 'prompt_toolkit.output.color_depth', 'prompt_toolkit.output.base', 'prompt_toolkit.output.defaults', 'prompt_toolkit.output', 'prompt_toolkit.output.vt100', 'prompt_toolkit.mouse_events', 'prompt_toolkit.formatted_text.base', 'prompt_toolkit.formatted_text.ansi', 'xml', 'xml.dom.domreg', 'xml.dom', 'xml.dom.minicompat', 'xml.dom.NodeFilter', 'xml.dom.xmlbuilder', 'xml.dom.minidom', 'prompt_toolkit.formatted_text.html', 'prompt_toolkit.formatted_text.pygments', 'prompt_toolkit.formatted_text.utils', 'prompt_toolkit.formatted_text', 'prompt_toolkit.completion.base', 'prompt_toolkit.completion.deduplicate', 'prompt_toolkit.completion.filesystem', 'prompt_toolkit.completion.word_completer', 'prompt_toolkit.completion.fuzzy_completer', 'prompt_toolkit.completion.nested', 'prompt_toolkit.completion', 'prompt_toolkit.history', 'prompt_toolkit.keys', 'prompt_toolkit.key_binding.key_bindings', 'prompt_toolkit.key_binding.key_processor', 'prompt_toolkit.key_binding', 'prompt_toolkit.key_binding.vi_state', 'prompt_toolkit.search', 'prompt_toolkit.validation', 'prompt_toolkit.buffer', 'prompt_toolkit.input.base', 'prompt_toolkit.input.defaults', 'prompt_toolkit.input', 'prompt_toolkit.input.typeahead', 'prompt_toolkit.key_binding.bindings', 'prompt_toolkit.key_binding.bindings.scroll', 'prompt_toolkit.key_binding.bindings.page_navigation', 'prompt_toolkit.lexers.base', 'prompt_toolkit.lexers.pygments', 'prompt_toolkit.lexers', 'prompt_toolkit.layout.utils', 'prompt_toolkit.layout.processors', 'prompt_toolkit.layout.controls', 'prompt_toolkit.layout.dimension', 'prompt_toolkit.layout.margins', 'prompt_toolkit.layout.mouse_handlers', 'prompt_toolkit.layout.screen', 'prompt_toolkit.layout.containers', 'prompt_toolkit.layout.layout', 'prompt_toolkit.layout.menus', 'prompt_toolkit.layout.scrollable_pane', 'prompt_toolkit.layout', 'prompt_toolkit.key_binding.bindings.completion', 'prompt_toolkit.key_binding.bindings.named_commands', 'prompt_toolkit.key_binding.bindings.basic', 'prompt_toolkit.key_binding.bindings.cpr', 'prompt_toolkit.key_binding.bindings.emacs', 'prompt_toolkit.key_binding.bindings.mouse', 'prompt_toolkit.input.ansi_escape_sequences', 'prompt_toolkit.input.vt100_parser', 'prompt_toolkit.key_binding.digraphs', 'prompt_toolkit.key_binding.bindings.vi', 'prompt_toolkit.key_binding.defaults', 'prompt_toolkit.key_binding.emacs_state', 'prompt_toolkit.layout.dummy', 'prompt_toolkit.renderer', 'prompt_toolkit.application.application', 'prompt_toolkit.application.dummy', 'prompt_toolkit.application', 'prompt_toolkit.key_binding.bindings.focus', 'prompt_toolkit.widgets.toolbars', 'prompt_toolkit.widgets.base', 'prompt_toolkit.widgets.dialogs', 'prompt_toolkit.widgets.menus', 'prompt_toolkit.widgets', 'prompt_toolkit.shortcuts.dialogs', 'prompt_toolkit.shortcuts.progress_bar.formatters', 'prompt_toolkit.shortcuts.progress_bar.base', 'prompt_toolkit.shortcuts.progress_bar', 'prompt_toolkit.key_binding.bindings.auto_suggest', 'prompt_toolkit.key_binding.bindings.open_in_editor', 'prompt_toolkit.shortcuts.prompt', 'prompt_toolkit.shortcuts.utils', 'prompt_toolkit.shortcuts', 'prompt_toolkit', 'prompt_toolkit.patch_stdout', 'pygments.style', 'unicodedata', 'IPython.core.latex_symbols', 'IPython.utils.generics', 'parso.utils', 'parso.tree', 'parso.python', 'parso.python.token', 'parso.python.tokenize', 'parso.pgen2.grammar_parser', 'parso.pgen2.generator', 'parso.pgen2', 'parso.parser', 'parso._compatibility', 'difflib', 'parso.python.prefix', 'parso.python.tree', 'parso.python.parser', 'parso.python.diff', 'gc', 'parso.cache', 'parso.normalizer', 'parso.python.errors', 'parso.python.pep8', 'parso.file_io', 'parso.grammar', 'parso', 'jedi._compatibility', 'jedi.parser_utils', 'jedi.debug', 'jedi.settings', 'jedi.cache', 'jedi.file_io', 'jedi.inference.cache', 'jedi.inference.helpers', 'jedi.inference.utils', 'jedi.inference.base_value', 'jedi.inference.sys_path', 'jedi.inference.recursion', 'jedi.inference.flow_analysis', 'jedi.common', 'jedi.inference.lazy_value', 'jedi.inference.docstrings', 'jedi.plugins', 'jedi.inference.names', 'jedi.inference.filters', 'jedi.inference.compiled.getattr_static', 'jedi.inference.compiled.access', 'jedi.inference.signature', 'jedi.inference.context', 'jedi.inference.compiled.value', 'jedi.inference.compiled', 'jedi.inference.analysis', 'jedi.inference.gradual', 'jedi.inference.value.module', 'jedi.inference.value.dynamic_arrays', 'jedi.inference.value.iterable', 'jedi.inference.arguments', 'jedi.inference.parser_cache', 'jedi.inference.gradual.generics', 'jedi.inference.value.function', 'jedi.inference.value.klass', 'jedi.inference.value.instance', 'jedi.inference.value', 'jedi.inference.gradual.base', 'jedi.inference.gradual.type_var', 'jedi.inference.gradual.typing', 'jedi.inference.gradual.stub_value', 'jedi.inference.gradual.typeshed', 'jedi.inference.compiled.subprocess.functions', 'jedi.api.exceptions', 'jedi.inference.compiled.subprocess', 'jedi.inference.imports', 'jedi.inference.param', 'jedi.inference.gradual.annotation', 'jedi.inference.value.decorator', 'jedi.inference.syntax_tree', 'jedi.inference', 'jedi.inference.gradual.conversion', 'jedi.inference.compiled.mixed', 'pydoc_data', 'pydoc_data.topics', 'jedi.api.keywords', 'jedi.api.completion_cache', 'jedi.api.helpers', 'jedi.api.classes', 'jedi.api.interpreter', 'jedi.api.strings', 'jedi.api.file_name', 'jedi.api.completion', 'filecmp', 'jedi.api.environment', 'jedi.inference.references', 'jedi.api.project', 'jedi.api.errors', 'jedi.api.refactoring', 'jedi.api.refactoring.extract', 'jedi.inference.gradual.utils', 'jedi.api', 'jedi.plugins.stdlib', 'jedi.plugins.flask', 'jedi.plugins.pytest', 'jedi.plugins.django', 'jedi.plugins.registry', 'jedi', 'IPython.core.completer', 'IPython.terminal.ptutils', 'IPython.terminal.shortcuts', 'IPython.terminal.debugger', 'IPython.lib.clipboard', 'IPython.terminal.magics', 'IPython.terminal.pt_inputhooks', 'IPython.terminal.prompts', 'IPython.terminal.interactiveshell', 'IPython.core.magics.auto', 'IPython.core.magics.basic', 'email', 'http', 'email.errors', 'email.quoprimime', 'email.base64mime', 'quopri', 'email.encoders', 'email.charset', 'email.header', 'email._parseaddr', 'email.utils', 'email._policybase', 'email.feedparser', 'email.parser', 'uu', 'email._encoded_words', 'email.iterators', 'email.message', 'http.client', 'urllib.response', 'urllib.error', 'urllib.request', 'IPython.core.magics.code', 'IPython.core.magics.config', 'IPython.core.magics.display', 'timeit', '_lsprof', 'profile', 'cProfile', 'pstats', 'IPython.utils.module_paths', 'IPython.utils.timing', 'IPython.core.magics.execution', 'IPython.core.magics.extension', 'IPython.core.magics.history', 'IPython.core.magics.logging', 'IPython.core.magics.namespace', 'IPython.core.magics.osm', 'IPython.core.magics.packaging', 'IPython.core.pylabtools', 'IPython.core.magics.pylab', 'IPython.lib.backgroundjobs', 'IPython.core.magics.script', 'IPython.core.magics', 'IPython.core.shellapp', 'IPython.extensions', 'IPython.extensions.storemagic', 'IPython.terminal.ipapp', 'IPython.terminal.embed', 'IPython.utils.frame', 'IPython', 'imp', 'ipykernel.iostream', 'ipykernel.control', 'ipykernel.heartbeat', 'IPython.utils.tokenutil', 'tornado.locks', 'tornado.queues', 'ipykernel.jsonutil', 'ipykernel.kernelbase', 'ipykernel.comm.comm', 'ipykernel.comm.manager', 'ipykernel.comm', 'IPython.core.payloadpage', 'ipykernel.displayhook', 'ipykernel.zmqshell', 'distutils', 'distutils.version', 'ipykernel.eventloops', 'ipykernel.compiler', 'ipykernel.debugger', 'ipykernel.ipkernel', 'ipykernel.parentpoller', 'ipykernel.kernelapp', 'faulthandler', 'IPython.core.completerlib', 'storemagic', 'numpy._globals', 'numpy.__config__', 'numpy._version', 'numpy._distributor_init', 'numpy.version', 'numpy.core._multiarray_umath', 'numpy.compat._inspect', 'numpy.compat.py3k', 'numpy.compat', 'numpy.core.overrides', 'numpy.core.multiarray', 'numpy.core.umath', 'numpy.core._string_helpers', 'numpy.core._dtype', 'numpy.core._type_aliases', 'numpy.core.numerictypes', 'numpy.core._exceptions', 'numpy.core._methods', 'numpy.core.fromnumeric', 'numpy.core.shape_base', 'numpy.core._ufunc_config', 'numpy.core.arrayprint', 'numpy.core._asarray', 'numpy.core.numeric', 'numpy.core.defchararray', 'numpy.core.records', 'numpy.core.memmap', 'numpy.core.function_base', 'numpy.core.machar', 'numpy.core.getlimits', 'numpy.core.einsumfunc', 'numpy.core._multiarray_tests', 'numpy.core._add_newdocs', 'numpy.core._add_newdocs_scalars', 'numpy.core._dtype_ctypes', 'numpy.core._internal', 'numpy._pytesttester', 'numpy.core', 'numpy.lib.mixins', 'numpy.lib.ufunclike', 'numpy.lib.type_check', 'numpy.lib.scimath', 'numpy.lib.stride_tricks', 'numpy.lib.twodim_base', 'numpy.linalg.lapack_lite', 'numpy.linalg._umath_linalg', 'numpy.linalg.linalg', 'numpy.linalg', 'numpy.matrixlib.defmatrix', 'numpy.matrixlib', 'numpy.lib.histograms', 'numpy.lib.function_base', 'numpy.lib.index_tricks', 'numpy.lib.nanfunctions', 'numpy.lib.shape_base', 'numpy.lib.polynomial', 'numpy.lib.utils', 'numpy.lib.arraysetops', 'numpy.lib.format', 'numpy.lib._datasource', 'numpy.lib._iotools', 'numpy.lib.npyio', 'numpy.lib.arrayterator', 'numpy.lib.arraypad', 'numpy.lib._version', 'numpy.lib', 'numpy.fft._pocketfft_internal', 'numpy.fft._pocketfft', 'numpy.fft.helper', 'numpy.fft', 'numpy.polynomial.polyutils', 'numpy.polynomial._polybase', 'numpy.polynomial.polynomial', 'numpy.polynomial.chebyshev', 'numpy.polynomial.legendre', 'numpy.polynomial.hermite', 'numpy.polynomial.hermite_e', 'numpy.polynomial.laguerre', 'numpy.polynomial', 'numpy.random._common', 'secrets', 'numpy.random.bit_generator', 'numpy.random._bounded_integers', 'numpy.random._mt19937', 'numpy.random.mtrand', 'numpy.random._philox', 'numpy.random._pcg64', 'numpy.random._sfc64', 'numpy.random._generator', 'numpy.random._pickle', 'numpy.random', 'numpy.ctypeslib', 'numpy.ma.core', 'numpy.ma.extras', 'numpy.ma', 'numpy', 'pytz.exceptions', 'pytz.lazy', 'pytz.tzinfo', 'pytz.tzfile', 'pytz', 'mmap', 'pandas._typing', 'pandas._libs.tslibs.dtypes', 'pandas._libs.tslibs.base', 'pandas._libs.tslibs.np_datetime', 'pandas._libs.tslibs.nattype', 'pandas._libs.tslibs.timezones', 'pandas._libs.tslibs.ccalendar', 'pandas._libs.tslibs.tzconversion', 'pandas._config.config', 'pandas._config.dates', 'pandas._config.display', 'pandas._config', 'pandas._config.localization', 'pandas._libs.tslibs.strptime', 'pandas._libs.tslibs.fields', 'pandas._libs.tslibs.timedeltas', 'pandas._libs.tslibs.timestamps', 'dateutil.easter', 'pandas._libs.properties', 'pandas._libs.tslibs.offsets', 'pandas._libs.tslibs.parsing', 'pandas._libs.tslibs.conversion', 'pandas._libs.tslibs.period', 'pandas._libs.tslibs.vectorized', 'pandas._libs.tslibs', 'pandas._libs.ops_dispatch', 'pandas._libs.missing', 'pandas._libs.hashtable', 'pandas._libs.algos', 'pandas._libs.interval', 'pandas._libs', 'pandas.util._decorators', 'pandas.core', 'pandas.core.util', 'pandas._libs.tslib', 'pandas._libs.lib', 'pandas._libs.hashing', 'pandas.core.dtypes', 'pandas.errors', 'pandas.core.dtypes.generic', 'pandas.core.dtypes.base', 'pandas.core.dtypes.inference', 'pandas.core.dtypes.dtypes', 'pandas.core.dtypes.common', 'pandas.core.util.hashing', 'pandas.util', 'pandas.util.version', 'pandas.compat.numpy', 'pandas.compat.pyarrow', 'pandas.compat', 'pandas.core.config_init', 'pandas.core.dtypes.missing', 'pandas.util._exceptions', 'pandas.util._validators', 'pandas.core.dtypes.cast', 'pandas.core.array_algos', 'pandas.core.common', 'pandas.core.construction', 'pandas.core.array_algos.take', 'pandas.core.indexers', 'pandas.core.algorithms', 'pandas.compat.numpy.function', 'pandas.compat._optional', 'pandas.core.missing', 'pandas.core.roperator', 'pandas._libs.ops', 'pandas.core.computation', 'pandas.core.computation.check', 'pandas.core.computation.expressions', 'pandas.core.ops.missing', 'pandas.core.ops.dispatch', 'pandas.core.ops.invalid', 'pandas.core.ops.array_ops', 'pandas.core.ops.common', 'pandas.core.ops.docstrings', 'pandas.core.ops.mask_ops', 'pandas.core.ops.methods', 'pandas.core.ops', 'pandas.core.sorting', 'pandas.core.arrays.base', 'pandas.core.nanops', 'pandas.core.array_algos.masked_reductions', 'pandas.core.arraylike', 'pandas.core.arrays.masked', 'pandas.core.arrays.boolean', '_csv', 'csv', 'pandas._libs.arrays', 'pandas.core.accessor', 'pandas.core.array_algos.transforms', 'pandas.core.arrays._mixins', 'pandas.core.base', 'pandas.core.strings.accessor', 'pandas.core.strings.base', 'pandas.core.strings', 'pandas.core.strings.object_array', 'pandas.io', 'pandas.io.formats', 'pandas.io.formats.console', 'pandas.core.arrays.categorical', 'pandas.tseries', 'pandas.tseries.frequencies', 'pandas.core.arrays.datetimelike', 'pandas.core.arrays._ranges', 'pandas.core.arrays.numeric', 'pandas.core.tools', 'pandas.core.tools.numeric', 'pandas.core.arrays.integer', 'pandas.tseries.offsets', 'pandas.core.arrays.datetimes', 'pandas.core.arrays.floating', 'pandas.core.indexes', 'pandas._libs.index', 'pandas._libs.join', 'pandas._libs.sparse', 'pandas.core.arrays.sparse.dtype', 'pandas.io.formats.printing', 'pandas.core.arrays.sparse.array', 'pandas.core.arrays.sparse.accessor', 'pandas.core.arrays.sparse', 'pandas.core.dtypes.concat', 'pandas.core.array_algos.putmask', 'pandas.core.indexes.frozen', 'pandas.core.indexes.base', 'pandas.core.arrays.interval', 'pandas.core.arrays.numpy_', 'pandas.core.arrays.period', 'pandas.core.arrays.string_', 'pandas.core.arrays.string_arrow', 'pandas.core.arrays.timedeltas', 'pandas.core.arrays', 'pandas.core.flags', 'pandas._libs.reduction', 'pandas.core.indexes.extension', 'pandas.core.indexes.category', 'pandas.core.indexes.numeric', 'pandas.core.tools.timedeltas', 'pandas.core.indexes.datetimelike', 'pandas.core.tools.times', 'pandas.core.indexes.datetimes', 'pandas.core.indexes.multi', 'pandas.core.indexes.timedeltas', 'pandas.core.indexes.interval', 'pandas.core.indexes.period', 'pandas.core.indexes.range', 'pandas.core.indexes.api', 'pandas.core.aggregation', 'pandas.core.apply', 'pandas._libs.indexing', 'pandas.core.indexing', 'pandas.core.reshape', 'pandas._libs.internals', 'pandas._libs.writers', 'pandas.core.array_algos.quantile', 'pandas.core.array_algos.replace', 'pandas.core.internals.blocks', 'pandas.core.internals.api', 'pandas.core.internals.base', 'pandas.core.internals.array_manager', 'pandas.core.internals.ops', 'pandas.core.internals.managers', 'pandas.core.internals.concat', 'pandas.core.internals', 'pandas.core.reshape.concat', 'dataclasses', 'gzip', 'pandas.io.common', 'pandas.io.formats.format', 'pandas.core.describe', 'pandas.core.internals.construction', 'pandas.core.shared_docs', 'pandas._libs.window', 'pandas._libs.window.aggregations', 'pandas.core.util.numba_', 'pandas.core.window.common', 'pandas.core.window.doc', 'pandas._libs.window.indexers', 'pandas.core.window.indexers', 'pandas.core.window.numba_', 'pandas.core.window.online', 'pandas.core.window.rolling', 'pandas.core.window.ewm', 'pandas.core.window.expanding', 'pandas.core.window', 'pandas.core.generic', 'pandas.core.reshape.util', 'pandas.core.reshape.melt', 'pandas._libs.reshape', 'pandas.core.indexes.accessors', 'pandas.arrays', 'pandas.core.tools.datetimes', 'pandas.plotting._core', 'pandas.plotting._misc', 'pandas.plotting', 'pandas.core.series', 'pandas.io.formats.info', 'pandas.core.frame', 'pandas.core.groupby.base', 'pandas._libs.groupby', 'pandas.core.groupby.numba_', 'pandas.core.groupby.categorical', 'pandas.core.groupby.grouper', 'pandas.core.groupby.ops', 'pandas.core.groupby.groupby', 'pandas.core.groupby.generic', 'pandas.core.groupby', 'pandas.core.api', 'pandas.tseries.api', 'pandas.core.computation.common', 'pandas.core.computation.align', 'pandas.compat.chainmap', 'pandas.core.computation.scope', 'pandas.core.computation.ops', 'pandas.core.computation.parsing', 'pandas.core.computation.expr', 'pandas.core.computation.engines', 'pandas.core.computation.eval', 'pandas.core.computation.api', 'pandas.core.reshape.merge', 'pandas.core.reshape.pivot', 'pandas.core.reshape.reshape', 'pandas.core.reshape.tile', 'pandas.core.reshape.api', 'pandas.api.extensions', 'pandas.api.indexers', 'pandas.core.dtypes.api', 'pandas.api.types', 'pandas.api', 'pandas.util._print_versions', 'pandas.io.clipboards', 'pandas._libs.parsers', 'pandas.io.excel._util', 'pandas.io.date_converters', 'pandas.io.parsers.base_parser', 'pandas.io.parsers.c_parser_wrapper', 'pandas.io.parsers.python_parser', 'pandas.io.parsers.readers', 'pandas.io.parsers', 'pandas.io.excel._odfreader', 'pandas.io.excel._openpyxl', 'pandas.io.excel._pyxlsb', 'pandas.io.excel._xlrd', 'pandas.io.excel._base', 'pandas._libs.json', 'pandas.io.formats._color_data', 'pandas.io.formats.css', 'pandas.io.formats.excel', 'pandas.io.excel._odswriter', 'pandas.io.excel._xlsxwriter', 'pandas.io.excel._xlwt', 'pandas.io.excel', 'pandas.io.feather_format', 'pandas.io.gbq', 'pandas.io.html', 'pandas.io.json._normalize', 'pandas.io.json._table_schema', 'pandas.io.json._json', 'pandas.io.json', 'pandas.io.orc', 'pandas.io.parquet', 'pandas.compat.pickle_compat', 'pandas.io.pickle', 'pandas.core.computation.pytables', 'pandas.io.pytables', 'pandas.io.sas.sasreader', 'pandas.io.sas', 'pandas.io.spss', 'pandas.io.sql', 'pandas.io.stata', 'pandas.io.xml', 'pandas.io.api', 'pandas.util._tester', 'pandas._testing._random', 'pandas._testing.contexts', 'pandas._testing._io', 'pandas._testing._warnings', 'cmath', 'pandas._libs.testing', 'pandas._testing.asserters', 'pandas._testing.compat', 'pandas._testing', 'pandas.testing', 'pandas._version', 'pandas', 'torch._utils', 'torch._utils_internal', 'torch.version', 'torch._six', 'torch._C._onnx', 'torch._C._jit', 'torch._C._jit_tree_views', 'torch._C._te', 'torch._C.cpp', 'torch._C.cpp.nn', 'torch._C._cudart', 'torch._C._nvtx', 'torch._C._cudnn', 'torch._C', 'torch._C._fft', 'torch._C._fx', 'torch._C._linalg', 'torch._C._nn', 'torch._C._special', 'torch._namedtensor_internals', 'torch.overrides', 'torch.utils.throughput_benchmark', 'torch.utils._crash_handler', 'torch.utils', 'torch.utils.hooks', 'torch._tensor', 'torch.storage', 'torch.random', 'tarfile', 'torch.types', 'torch.serialization', 'torch._tensor_str', 'torch.cuda._utils', 'torch.cuda.streams', 'torch.cuda.memory', 'torch.cuda.random', 'torch.cuda.sparse', 'torch.cuda.profiler', 'torch.cuda.nvtx', 'torch.cuda.amp.common', 'torch.cuda.amp.autocast_mode', 'torch.cuda.amp.grad_scaler', 'torch.cuda.amp', 'torch.cuda', 'torch.sparse', 'torch.nn.parameter', 'torch.nn.modules.module', 'torch._VF', 'torch._torch_docs', 'torch._C._distributed_c10d', 'torch.distributed.constants', 'torch.distributed.rendezvous', 'torch.distributed.distributed_c10d', 'torch.distributed', 'torch._C._distributed_rpc', 'torch.futures', 'torch.distributed.rpc.internal', 'torch.distributed.rpc.constants', 'torch.distributed.rpc.api', 'torch.distributed.rpc.backend_registry', 'torch.distributed.rpc.functions', 'torch._C._distributed_autograd', 'torch.distributed.autograd', 'torch.distributed.rpc.options', 'torch.autograd.variable', 'torch.autograd.function', 'torch.testing._core', 'torch.testing._asserts', 'torch.testing._check_kernel_launches', 'torch.testing', 'torch.utils._pytree', 'torch._vmap_internals', 'torch.autograd.gradcheck', 'torch.autograd.grad_mode', 'torch.autograd.anomaly_mode', 'torch.autograd.functional', 'torch.autograd.forward_ad', 'torch._C._autograd', 'torch.autograd.profiler', 'torch.autograd', 'torch.distributed.rpc.server_process_global_profiler', 'torch.distributed.rpc', 'torch.package.analyze.trace_dependencies', 'torch.package.analyze', 'torch.package._mangling', 'torch.package.analyze.is_from_package', 'torch.package.glob_group', 'torch.package.file_structure_representation', 'torch.package.importer', 'pickletools', 'torch.package._digraph', 'torch.package._importlib', 'torch.package._package_pickler', 'torch.package._stdlib', 'torch.package.find_file_dependencies', 'torch.package.package_exporter', 'torch.package._mock_zipreader', 'torch.package._package_unpickler', 'torch.package.package_importer', 'torch.package', 'torch._jit_internal', 'torch.nn._reduction', 'torch.nn.modules.utils', 'torch.nn.grad', 'torch.nn.functional', 'torch.nn.init', 'typing_extensions', 'torch.nn.modules.lazy', 'torch.nn.modules.linear', 'torch.nn.common_types', 'torch.nn.modules.conv', 'torch.nn.modules.activation', 'torch.nn.modules.distance', 'torch.nn.modules.loss', 'torch.nn.modules.container', 'torch.nn.modules.pooling', 'torch.nn.modules._functions', 'torch.nn.modules.batchnorm', 'torch.nn.modules.instancenorm', 'torch.nn.modules.normalization', 'torch.nn.modules.dropout', 'torch.nn.modules.padding', 'torch.nn.modules.sparse', 'torch.nn.utils.rnn', 'torch.nn.utils.clip_grad', 'torch.nn.utils.weight_norm', 'torch.nn.utils.convert_parameters', 'torch.nn.utils.spectral_norm', 'torch.nn.utils.fusion', 'torch.nn.utils.memory_format', 'torch.nn.utils.parametrize', 'torch.nn.utils.parametrizations', 'torch.nn.utils', 'torch.nn.modules.rnn', 'torch.nn.modules.pixelshuffle', 'torch.nn.modules.upsampling', 'torch.nn.modules.fold', 'torch.nn.modules.adaptive', 'torch.nn.modules.transformer', 'torch.nn.modules.flatten', 'torch.nn.modules.channelshuffle', 'torch.nn.modules', 'torch.nn.parallel.parallel_apply', 'torch.cuda.nccl', 'torch.nn.parallel.comm', 'torch.nn.parallel.replicate', 'torch.nn.parallel._functions', 'torch.nn.parallel.scatter_gather', 'torch.nn.parallel.data_parallel', 'torch.nn.parallel.distributed', 'torch.nn.parallel', 'torch.nn', 'torch._linalg_utils', 'torch._lowrank', 'torch._autograd_functions', 'torch.functional', 'torch.fft', 'torch.nn.intrinsic.modules.fused', 'torch.nn.intrinsic.modules', 'torch.nn.intrinsic', 'torch.nn.quantized.modules.utils', 'torch.jit._monkeytype_config', 'torch.jit._state', 'torch.jit.annotations', 'torch.jit.frontend', 'torch.backends', 'torch.backends.cudnn', 'torch.jit._builtins', 'torch.jit._check', 'torch.jit._recursive', 'torch.jit._fuser', 'torch.jit._serialization', 'torch.jit._script', 'torch.jit._trace', 'torch.jit._async', 'torch.jit._freeze', 'torch.jit', 'torch.nn.quantized.functional', 'torch.nn.quantized.modules.activation', 'torch.nn.quantized.modules.batchnorm', 'torch.nn.quantized.modules.normalization', 'torch.nn.qat.modules.linear', 'torch.nn.qat.modules.conv', 'torch.nn.qat.modules', 'torch.nn.qat', 'torch.nn.intrinsic.qat.modules.linear_relu', 'torch.nn.intrinsic.qat.modules.conv_fused', 'torch.nn.intrinsic.qat.modules', 'torch.nn.intrinsic.qat', 'torch._ops', 'torch.nn.quantized.modules.conv', 'torch.nn.quantized.modules.linear', 'torch.nn.quantized.modules.embedding_ops', 'torch.nn.quantized.modules.functional_modules', 'torch.nn.quantized.modules', 'torch.nn.quantized', 'torch.nn.quantizable.modules.activation', 'torch.nn.quantizable.modules.rnn', 'torch.nn.quantizable.modules', 'torch.nn.quantizable', 'torch.optim._functional', 'torch.optim.optimizer', 'torch.optim.adadelta', 'torch.optim.adagrad', 'torch.optim.adam', 'torch.optim.adamw', 'torch.optim.sparse_adam', 'torch.optim.adamax', 'torch.optim.asgd', 'torch.optim.sgd', 'torch.optim.rprop', 'torch.optim.rmsprop', 'torch.optim.lbfgs', 'torch.optim.lr_scheduler', 'torch.optim.swa_utils', 'torch.optim', 'torch.optim._multi_tensor.adam', 'torch.optim._multi_tensor.adamw', 'torch.optim._multi_tensor.sgd', 'torch.optim._multi_tensor.rmsprop', 'torch.optim._multi_tensor.rprop', 'torch.optim._multi_tensor.asgd', 'torch.optim._multi_tensor.adamax', 'torch.optim._multi_tensor.adadelta', 'torch.optim._multi_tensor', 'multiprocessing.process', 'multiprocessing.reduction', 'multiprocessing.context', '__mp_main__', 'multiprocessing', 'multiprocessing.util', 'multiprocessing.resource_sharer', 'torch.multiprocessing.reductions', '_multiprocessing', 'multiprocessing.connection', 'torch.multiprocessing.spawn', 'torch.multiprocessing', 'torch.special', 'torch.utils.backcompat', 'torch.onnx', 'torch.linalg', 'tqdm._monitor', 'tqdm._tqdm_pandas', 'tqdm.utils', 'tqdm.std', 'tqdm._dist_ver', 'tqdm.version', 'tqdm.cli', 'tqdm.gui', 'tqdm', 'ipywidgets._version', 'ipywidgets.widgets.widget', 'ipywidgets.widgets.util', 'ipywidgets.widgets.trait_types', 'ipywidgets.widgets.widget_layout', 'ipywidgets.widgets.widget_style', 'ipywidgets.widgets.domwidget', 'ipywidgets.widgets.valuewidget', 'ipywidgets.widgets.widget_core', 'ipywidgets.widgets.widget_description', 'ipywidgets.widgets.widget_bool', 'ipywidgets.widgets.widget_button', 'ipywidgets.widgets.docutils', 'ipywidgets.widgets.widget_box', 'ipywidgets.widgets.widget_int', 'ipywidgets.widgets.widget_float', 'ipywidgets.widgets.widget_color', 'ipywidgets.widgets.widget_date', 'ipywidgets.widgets.widget_output', 'ipywidgets.widgets.widget_selection', 'ipywidgets.widgets.widget_selectioncontainer', 'ipywidgets.widgets.widget_string', 'ipywidgets.widgets.widget_controller', 'ipywidgets.widgets.interaction', 'ipywidgets.widgets.widget_link', 'ipywidgets.widgets.widget_media', 'ipywidgets.widgets.widget_templates', 'ipywidgets.widgets.widget_upload', 'ipywidgets.widgets', 'ipywidgets', 'tqdm.notebook', 'tqdm.autonotebook', 'tqdm.asyncio', 'tqdm.auto', 'torch.hub', 'torch.distributions.constraints', 'torch.distributions.utils', 'torch.distributions.distribution', 'torch.distributions.exp_family', 'torch.distributions.bernoulli', 'torch.distributions.dirichlet', 'torch.distributions.beta', 'torch.distributions.binomial', 'torch.distributions.categorical', 'torch.distributions.cauchy', 'torch.distributions.gamma', 'torch.distributions.chi2', 'torch.distributions.transforms', 'torch.distributions.constraint_registry', 'torch.distributions.continuous_bernoulli', 'torch.distributions.exponential', 'torch.distributions.fishersnedecor', 'torch.distributions.geometric', 'torch.distributions.uniform', 'torch.distributions.independent', 'torch.distributions.transformed_distribution', 'torch.distributions.gumbel', 'torch.distributions.half_cauchy', 'torch.distributions.normal', 'torch.distributions.half_normal', 'torch.distributions.laplace', 'torch.distributions.multivariate_normal', 'torch.distributions.lowrank_multivariate_normal', 'torch.distributions.one_hot_categorical', 'torch.distributions.pareto', 'torch.distributions.poisson', 'torch.distributions.kl', 'torch.distributions.kumaraswamy', 'torch.distributions.lkj_cholesky', 'torch.distributions.log_normal', 'torch.distributions.logistic_normal', 'torch.distributions.mixture_same_family', 'torch.distributions.multinomial', 'torch.distributions.negative_binomial', 'torch.distributions.relaxed_bernoulli', 'torch.distributions.relaxed_categorical', 'torch.distributions.studentT', 'torch.distributions.von_mises', 'torch.distributions.weibull', 'torch.distributions', 'torch.backends.cuda', 'torch.backends.mkl', 'torch.backends.mkldnn', 'torch.backends.openmp', 'torch.backends.quantized', 'torch.nn.intrinsic.quantized.modules.linear_relu', 'torch.nn.intrinsic.quantized.modules.conv_relu', 'torch.nn.intrinsic.quantized.modules.bn_relu', 'torch.nn.intrinsic.quantized.modules', 'torch.nn.intrinsic.quantized', 'torch.nn.quantized.dynamic.modules.linear', 'torch.nn.quantized.dynamic.modules.rnn', 'torch.nn.quantized.dynamic.modules', 'torch.nn.quantized.dynamic', 'torch.quantization.stubs', 'torch.quantization.observer', 'torch.quantization.fake_quantize', 'torch.quantization.quant_type', 'torch.quantization.utils', 'torch.quantization.quantization_mappings', 'torch.quantization.qconfig', 'torch.quantization.quantize', 'torch.quantization.fuser_method_mappings', 'torch.quantization.fuse_modules', 'torch.quantization.quantize_jit', 'torch.quantization', 'torch.utils.data.sampler', 'torch.utils.data._typing', 'torch.utils.data.dataset', 'torch.utils.data.distributed', 'torch.utils.data._utils.signal_handling', 'torch.utils.data._utils.worker', 'torch.utils.data._utils.pin_memory', 'torch.utils.data._utils.collate', 'torch.utils.data._utils.fetch', 'torch.utils.data._utils', 'torch.utils.data.dataloader', 'torch.utils.data._decorator', 'torch.utils.data.datapipes.utils', 'torch.utils.data.datapipes.utils.common', 'torch.utils.data.datapipes.iter.listdirfiles', 'torch.utils.data.datapipes.iter.loadfilesfromdisk', 'torch.utils.data.datapipes.iter.readfilesfromtar', 'torch.utils.data.datapipes.iter.readfilesfromzip', 'torch.utils.data.datapipes.utils.decoder', 'torch.utils.data.datapipes.iter.routeddecoder', 'torch.utils.data.datapipes.iter.callable', 'torch.utils.data.datapipes.iter.combining', 'torch.utils.data.datapipes.iter.combinatorics', 'torch.utils.data.datapipes.iter.grouping', 'torch.utils.data.datapipes.iter.selecting', 'torch.utils.data.datapipes.iter', 'torch.utils.data.datapipes', 'torch.utils.data', 'torch.__config__', 'torch.__future__', 'torch.profiler.profiler', 'torch.profiler', 'torch._tensor_docs', 'torch._storage_docs', 'torch._classes', 'torch.quasirandom', 'torch.multiprocessing._atfork', 'torch._lobpcg', 'torch', 'graphein', 'graphein.utils', 'networkx.exception', 'networkx.utils.misc', 'networkx.utils.decorators', 'networkx.utils.random_sequence', 'networkx.utils.union_find', 'networkx.utils.rcm', 'networkx.utils.heaps', 'networkx.utils.contextmanagers', 'networkx.utils', 'networkx.classes.coreviews', 'networkx.classes.reportviews', 'networkx.convert', 'networkx.classes.graph', 'networkx.classes.digraph', 'networkx.classes.multigraph', 'networkx.classes.multidigraph', 'networkx.classes.ordered', 'networkx.classes.filters', 'networkx.classes.graphviews', 'networkx.classes.function', 'networkx.classes', 'networkx.convert_matrix', 'networkx.relabel', 'networkx.generators.atlas', 'networkx.generators.classic', 'networkx.generators.cographs', 'networkx.generators.community', 'networkx.generators.degree_seq', 'networkx.generators.directed', 'networkx.generators.duplication', 'networkx.generators.ego', 'networkx.generators.expanders', 'networkx.generators.geometric', 'networkx.generators.internet_as_graphs', 'networkx.generators.intersection', 'networkx.generators.interval_graph', 'networkx.generators.joint_degree_seq', 'networkx.generators.lattice', 'networkx.generators.line', 'networkx.generators.mycielski', 'networkx.generators.nonisomorphic_trees', 'networkx.generators.random_clustered', 'networkx.generators.random_graphs', 'networkx.generators.small', 'networkx.generators.social', 'networkx.generators.sudoku', 'networkx.generators.spectral_graph_forge', 'networkx.generators.stochastic', 'networkx.generators.trees', 'networkx.generators.triads', 'networkx.generators', 'networkx.readwrite.adjlist', 'networkx.readwrite.multiline_adjlist', 'networkx.readwrite.edgelist', 'networkx.readwrite.gpickle', 'networkx.readwrite.pajek', 'networkx.readwrite.leda', 'networkx.readwrite.graph6', 'networkx.readwrite.sparse6', 'networkx.readwrite.gml', 'networkx.readwrite.graphml', 'xml.etree', 'xml.etree.ElementPath', 'pyexpat.errors', 'pyexpat.model', 'pyexpat', '_elementtree', 'xml.etree.ElementTree', 'networkx.readwrite.gexf', 'networkx.readwrite.nx_shp', 'networkx.readwrite.json_graph.node_link', 'networkx.readwrite.json_graph.adjacency', 'networkx.readwrite.json_graph.tree', 'networkx.readwrite.json_graph.jit', 'networkx.readwrite.json_graph.cytoscape', 'networkx.readwrite.json_graph', 'networkx.readwrite.text', 'networkx.readwrite', 'networkx.algorithms.assortativity.connectivity', 'networkx.algorithms.assortativity.pairs', 'networkx.algorithms.assortativity.mixing', 'networkx.algorithms.assortativity.correlation', 'networkx.algorithms.assortativity.neighbor_degree', 'networkx.algorithms.assortativity', 'networkx.algorithms.asteroidal', 'networkx.algorithms.boundary', 'networkx.algorithms.bridges', 'networkx.algorithms.chains', 'networkx.algorithms.centrality.betweenness', 'networkx.algorithms.centrality.betweenness_subset', 'networkx.algorithms.centrality.closeness', 'networkx.algorithms.centrality.subgraph_alg', 'networkx.algorithms.centrality.flow_matrix', 'networkx.algorithms.centrality.current_flow_closeness', 'networkx.algorithms.centrality.current_flow_betweenness', 'networkx.algorithms.centrality.current_flow_betweenness_subset', 'networkx.algorithms.centrality.degree_alg', 'networkx.algorithms.centrality.dispersion', 'networkx.algorithms.centrality.eigenvector', 'networkx.algorithms.centrality.group', 'networkx.algorithms.centrality.harmonic', 'networkx.algorithms.centrality.katz', 'networkx.algorithms.centrality.load', 'networkx.algorithms.centrality.reaching', 'networkx.algorithms.centrality.percolation', 'networkx.algorithms.centrality.second_order', 'networkx.algorithms.centrality.trophic', 'networkx.algorithms.centrality.voterank_alg', 'networkx.algorithms.centrality', 'networkx.algorithms.components.connected', 'networkx.algorithms.components.strongly_connected', 'networkx.algorithms.components.weakly_connected', 'networkx.algorithms.components.attracting', 'networkx.algorithms.components.biconnected', 'networkx.algorithms.components.semiconnected', 'networkx.algorithms.components', 'networkx.algorithms.chordal', 'networkx.algorithms.cluster', 'networkx.algorithms.clique', 'networkx.algorithms.communicability_alg', 'networkx.algorithms.coloring.greedy_coloring_with_interchange', 'networkx.algorithms.coloring.greedy_coloring', 'networkx.algorithms.coloring.equitable_coloring', 'networkx.algorithms.coloring', 'networkx.algorithms.core', 'networkx.algorithms.covering', 'networkx.algorithms.cycles', 'networkx.algorithms.cuts', 'networkx.algorithms.d_separation', 'networkx.algorithms.dag', 'networkx.algorithms.distance_measures', 'networkx.algorithms.distance_regular', 'networkx.algorithms.dominance', 'networkx.algorithms.dominating', 'networkx.algorithms.efficiency_measures', 'networkx.algorithms.euler', 'networkx.algorithms.graphical', 'networkx.algorithms.hierarchy', 'networkx.algorithms.hybrid', 'networkx.algorithms.link_analysis.pagerank_alg', 'networkx.algorithms.link_analysis.hits_alg', 'networkx.algorithms.link_analysis', 'networkx.algorithms.link_prediction', 'networkx.algorithms.lowest_common_ancestors', 'networkx.algorithms.isolate', 'networkx.algorithms.matching', 'networkx.algorithms.minors.contraction', 'networkx.algorithms.minors', 'networkx.algorithms.mis', 'networkx.algorithms.moral', 'networkx.algorithms.non_randomness', 'networkx.algorithms.operators.all', 'networkx.algorithms.operators.binary', 'networkx.algorithms.operators.product', 'networkx.algorithms.operators.unary', 'networkx.algorithms.operators', 'networkx.algorithms.planarity', 'networkx.algorithms.planar_drawing', 'networkx.algorithms.reciprocity', 'networkx.algorithms.regular', 'networkx.algorithms.richclub', 'networkx.algorithms.shortest_paths.generic', 'networkx.algorithms.shortest_paths.unweighted', 'networkx.algorithms.shortest_paths.weighted', 'networkx.algorithms.shortest_paths.astar', 'networkx.algorithms.shortest_paths.dense', 'networkx.algorithms.shortest_paths', 'networkx.algorithms.similarity', 'networkx.algorithms.graph_hashing', 'networkx.algorithms.simple_paths', 'networkx.algorithms.smallworld', 'networkx.algorithms.smetric', 'networkx.algorithms.structuralholes', 'networkx.algorithms.sparsifiers', 'networkx.algorithms.summarization', 'networkx.algorithms.swap', 'networkx.algorithms.traversal.breadth_first_search', 'networkx.algorithms.traversal.beamsearch', 'networkx.algorithms.traversal.depth_first_search', 'networkx.algorithms.traversal.edgedfs', 'networkx.algorithms.traversal.edgebfs', 'networkx.algorithms.traversal', 'networkx.algorithms.triads', 'networkx.algorithms.vitality', 'networkx.algorithms.voronoi', 'networkx.algorithms.wiener', 'networkx.algorithms.approximation.clustering_coefficient', 'networkx.algorithms.approximation.ramsey', 'networkx.algorithms.approximation.clique', 'networkx.algorithms.approximation.connectivity', 'networkx.algorithms.approximation.distance_measures', 'networkx.algorithms.approximation.dominating_set', 'networkx.algorithms.approximation.kcomponents', 'networkx.algorithms.approximation.matching', 'networkx.algorithms.approximation.steinertree', 'networkx.algorithms.approximation.traveling_salesman', 'networkx.algorithms.approximation.treewidth', 'networkx.algorithms.approximation.vertex_cover', 'networkx.algorithms.approximation.maxcut', 'networkx.algorithms.approximation', 'networkx.algorithms.bipartite.basic', 'networkx.algorithms.bipartite.centrality', 'networkx.algorithms.bipartite.cluster', 'networkx.algorithms.bipartite.matrix', 'networkx.algorithms.bipartite.matching', 'networkx.algorithms.bipartite.covering', 'networkx.algorithms.bipartite.edgelist', 'networkx.algorithms.bipartite.projection', 'networkx.algorithms.bipartite.redundancy', 'networkx.algorithms.bipartite.spectral', 'networkx.algorithms.bipartite.generators', 'networkx.algorithms.bipartite', 'networkx.algorithms.node_classification.utils', 'networkx.algorithms.node_classification.hmn', 'networkx.algorithms.node_classification.lgc', 'networkx.algorithms.node_classification', 'networkx.algorithms.community.asyn_fluid', 'networkx.algorithms.community.centrality', 'networkx.algorithms.community.kclique', 'networkx.algorithms.community.community_utils', 'networkx.algorithms.community.kernighan_lin', 'networkx.algorithms.community.label_propagation', 'networkx.algorithms.community.lukes', 'networkx.algorithms.community.quality', 'networkx.utils.mapped_queue', 'networkx.algorithms.community.modularity_max', 'networkx.algorithms.community', 'networkx.algorithms.flow.utils', 'networkx.algorithms.flow.boykovkolmogorov', 'networkx.algorithms.flow.dinitz_alg', 'networkx.algorithms.flow.edmondskarp', 'networkx.algorithms.flow.preflowpush', 'networkx.algorithms.flow.shortestaugmentingpath', 'networkx.algorithms.flow.maxflow', 'networkx.algorithms.flow.mincost', 'networkx.algorithms.flow.gomory_hu', 'networkx.algorithms.flow.capacityscaling', 'networkx.algorithms.flow.networksimplex', 'networkx.algorithms.flow', 'networkx.algorithms.isomorphism.isomorph', 'networkx.algorithms.isomorphism.isomorphvf2', 'networkx.algorithms.isomorphism.vf2userfunc', 'networkx.algorithms.isomorphism.matchhelpers', 'networkx.algorithms.isomorphism.temporalisomorphvf2', 'networkx.algorithms.isomorphism.ismags', 'networkx.algorithms.isomorphism.tree_isomorphism', 'networkx.algorithms.isomorphism', 'networkx.algorithms.tournament', 'networkx.algorithms.tree.recognition', 'networkx.algorithms.tree.branchings', 'networkx.algorithms.tree.coding', 'networkx.algorithms.tree.mst', 'networkx.algorithms.tree.operations', 'networkx.algorithms.tree.decomposition', 'networkx.algorithms.tree', 'networkx.algorithms.connectivity.utils', 'networkx.algorithms.connectivity.connectivity', 'networkx.algorithms.connectivity.cuts', 'networkx.algorithms.connectivity.edge_augmentation', 'networkx.algorithms.connectivity.edge_kcomponents', 'networkx.algorithms.connectivity.disjoint_paths', 'networkx.algorithms.connectivity.kcomponents', 'networkx.algorithms.connectivity.kcutsets', 'networkx.algorithms.connectivity.stoerwagner', 'networkx.algorithms.connectivity', 'networkx.algorithms', 'networkx.linalg.attrmatrix', 'networkx.linalg.spectrum', 'networkx.linalg.graphmatrix', 'networkx.linalg.laplacianmatrix', 'networkx.linalg.algebraicconnectivity', 'networkx.linalg.modularitymatrix', 'networkx.linalg.bethehessianmatrix', 'networkx.linalg', 'networkx.testing.utils', 'networkx.testing.test', 'networkx.testing', 'networkx.drawing.layout', 'networkx.drawing.nx_pylab', 'networkx.drawing.nx_agraph', 'networkx.drawing.nx_pydot', 'networkx.drawing', 'networkx', 'xml.parsers', 'xml.parsers.expat.model', 'xml.parsers.expat.errors', 'xml.parsers.expat', 'plistlib', 'pkg_resources.extern', 'pkg_resources._vendor', 'pkg_resources._vendor.appdirs', 'pkg_resources.extern.appdirs', 'pkg_resources._vendor.packaging.__about__', 'pkg_resources._vendor.packaging', 'pkg_resources.extern.packaging', 'pkg_resources.extern.packaging._structures', 'pkg_resources.extern.packaging._typing', 'pkg_resources.extern.packaging.version', 'pkg_resources.extern.packaging._compat', 'pkg_resources.extern.packaging.utils', 'pkg_resources.extern.packaging.specifiers', 'pkg_resources._vendor.pyparsing', 'pkg_resources.extern.pyparsing', 'pkg_resources.extern.packaging.markers', 'pkg_resources.extern.packaging.requirements', 'pkg_resources', 'xarray.core', 'xarray.core.utils', 'xarray.core.pycompat', 'xarray.core.dask_array_compat', 'xarray.core.dtypes', 'xarray.core.nputils', 'xarray.core.dask_array_ops', 'numpy.typing._nbit', 'numpy.typing._char_codes', 'numpy.typing._scalars', 'numpy.typing._shape', 'numpy.typing._dtype_like', 'numpy.typing._array_like', 'numpy.typing._generic_alias', 'numpy.typing._add_docstring', 'numpy.typing', 'xarray.core.npcompat', 'xarray.core.nanops', 'xarray.core.duck_array_ops', 'xarray.core.indexing', 'xarray.core.options', 'xarray.core.formatting', 'xarray.core.indexes', 'xarray.core.formatting_html', 'xarray.core.ops', 'xarray.core.pdcompat', 'xarray.core.rolling_exp', 'xarray.core.common', 'xarray.core._typed_ops', 'xarray.core.arithmetic', 'xarray.core.variable', 'xarray.core.alignment', 'xarray.plot.utils', 'xarray.plot.facetgrid', 'xarray.plot.dataset_plot', 'xarray.plot.plot', 'xarray.plot', 'xarray.core.merge', 'xarray.core.computation', 'xarray.core.concat', 'xarray.core.groupby', 'xarray.core.resample', 'xarray.core.rolling', 'xarray.core.weighted', 'xarray.core.accessor_dt', 'xarray.core.accessor_str', 'xarray.core.coordinates', 'xarray.coding', 'xarray.coding.variables', 'xarray.coding.times', 'xarray.coding.cftimeindex', 'xarray.core.missing', 'xarray.core.dataset', 'xarray.core.dataarray', 'xarray.testing', 'xarray.coding.strings', 'xarray.conventions', 'xarray.backends.common', 'xarray.backends.locks', 'xarray.backends.store', 'xarray.backends.cfgrib_', 'xarray.backends.lru_cache', 'xarray.backends.file_manager', 'xarray.backends.netcdf3', 'xarray.backends.netCDF4_', 'xarray.backends.h5netcdf_', 'xarray.backends.memory', 'xarray.backends.plugins', 'xarray.backends.pseudonetcdf_', 'xarray.backends.pydap_', 'xarray.backends.pynio_', 'scipy._lib._testutils', 'scipy._lib', 'scipy._lib.deprecation', 'scipy.__config__', 'scipy.version', 'scipy._distributor_init', 'scipy._lib._pep440', 'scipy._lib._ccallback_c', 'scipy._lib._ccallback', 'scipy', 'scipy._lib.doccer', 'scipy.io.matlab.byteordercodes', 'scipy.io.matlab.miobase', 'scipy._lib._util', 'scipy.sparse.sputils', 'scipy.sparse.base', 'scipy.sparse._sparsetools', 'scipy.sparse.data', 'scipy.sparse.dia', 'scipy.sparse._index', 'scipy.sparse.compressed', 'scipy.sparse.csr', 'scipy.sparse.csc', 'scipy.sparse._csparsetools', 'scipy.sparse.lil', 'scipy.sparse.dok', 'scipy.sparse.coo', 'scipy.sparse.bsr', 'scipy.sparse.construct', 'scipy.sparse.extract', 'scipy.sparse._matrix_io', 'scipy.sparse.csgraph._laplacian', '_cython_0_29_23', 'scipy.sparse.csgraph._tools', 'scipy.sparse.csgraph._validation', 'scipy.sparse.csgraph._shortest_path', 'scipy.sparse.csgraph._traversal', 'scipy.sparse.csgraph._min_spanning_tree', 'scipy.sparse.csgraph._flow', 'scipy.sparse.csgraph._matching', 'scipy.sparse.csgraph._reordering', 'scipy.sparse.csgraph', 'scipy.sparse', 'scipy.io.matlab.mio_utils', 'scipy.io.matlab.mio4', 'scipy.io.matlab.streams', 'scipy.io.matlab.mio5_params', 'scipy.io.matlab.mio5_utils', 'scipy.io.matlab.mio5', 'scipy.io.matlab.mio', 'scipy.io.matlab', 'scipy.io.netcdf', 'scipy.io._fortran', 'scipy.io.mmio', 'scipy.io.idl', 'scipy.io.harwell_boeing._fortran_format_parser', 'scipy.io.harwell_boeing.hb', 'scipy.io.harwell_boeing', 'scipy.io', 'xarray.backends.scipy_', 'xarray.backends.zarr', 'xarray.backends', 'xarray.core.combine', 'xarray.backends.api', 'xarray.backends.rasterio_', 'xarray.tutorial', 'xarray.ufuncs', 'xarray.coding.cftime_offsets', 'xarray.coding.frequencies', 'xarray.core.extensions', 'xarray.core.parallel', 'xarray.util', 'xarray.util.print_versions', 'xarray', 'Bio', 'Bio.Data', 'Bio.Data.IUPACData', 'yaml.error', 'yaml.tokens', 'yaml.events', 'yaml.nodes', 'yaml.reader', 'yaml.scanner', 'yaml.parser', 'yaml.composer', 'yaml.constructor', 'yaml.resolver', 'yaml.loader', 'yaml.emitter', 'yaml.serializer', 'yaml.representer', 'yaml.dumper', 'yaml._yaml', 'yaml.cyaml', 'yaml', 'graphein.utils.utils', 'graphein._version', 'graphein.protein', 'pydantic.typing', 'pydantic.errors', 'pydantic.version', 'pydantic.utils', 'pydantic.class_validators', 'ipaddress', 'pydantic.color', 'pydantic.datetime_parse', 'pydantic.validators', 'pydantic.types', 'pydantic.json', 'pydantic.error_wrappers', 'pydantic.fields', 'pydantic.parse', 'pydantic.networks', 'pydantic.schema', 'pydantic.main', 'pydantic.dataclasses', 'pydantic.annotated_types', 'pydantic.decorator', 'pydantic.env_settings', 'pydantic.tools', 'pydantic', 'scipy.spatial.ckdtree', 'scipy.spatial.kdtree', 'scipy._lib.messagestream', 'scipy.spatial.qhull', 'scipy.spatial._voronoi', 'scipy.spatial._spherical_voronoi', 'scipy._lib.decorator', 'scipy.spatial._plotutils', 'scipy.linalg._fblas', 'scipy.linalg.blas', 'scipy.linalg._flapack', 'scipy.linalg.lapack', 'scipy.linalg.misc', 'scipy.linalg._flinalg', 'scipy.linalg.flinalg', 'scipy.linalg.decomp', 'scipy.linalg.decomp_svd', 'scipy.linalg._solve_toeplitz', 'scipy.linalg.basic', 'scipy.linalg.decomp_lu', 'scipy.linalg._decomp_ldl', 'scipy.linalg.decomp_cholesky', 'scipy.linalg.decomp_qr', 'scipy.linalg._decomp_qz', 'scipy.linalg.decomp_schur', 'scipy.linalg._decomp_polar', 'scipy.linalg.special_matrices', 'scipy.linalg._expm_frechet', 'scipy.linalg._matfuncs_sqrtm_triu', 'scipy.linalg._matfuncs_sqrtm', 'scipy.linalg.matfuncs', 'scipy.linalg._solvers', 'scipy.linalg._procrustes', 'scipy.linalg.cython_blas', 'scipy.linalg.cython_lapack', 'scipy.linalg._decomp_update', 'scipy.linalg._sketches', 'scipy.linalg._decomp_cossin', 'scipy.linalg', 'scipy.spatial._procrustes', 'scipy.spatial._distance_wrap', 'scipy.spatial._hausdorff', 'scipy.special.sf_error', 'scipy.special._ufuncs_cxx', 'scipy.special._ufuncs', 'scipy.special.specfun', 'scipy.special.orthogonal', 'scipy.special._comb', 'scipy.special._basic', 'scipy.special._logsumexp', 'scipy.special.spfun_stats', 'scipy.special._ellip_harm_2', 'scipy.special._ellip_harm', 'scipy.special._lambertw', 'scipy.special._spherical_bessel', 'scipy.special', 'scipy.spatial.distance', 'scipy.spatial._geometric_slerp', 'scipy.constants.codata', 'scipy.constants.constants', 'scipy.constants', 'scipy.spatial.transform._rotation_groups', 'scipy.spatial.transform.rotation', 'scipy.spatial.transform._rotation_spline', 'scipy.spatial.transform', 'scipy.spatial', 'sklearn._config', 'sklearn._distributor_init', 'sklearn.__check_build._check_build', 'sklearn.__check_build', 'sklearn.utils.murmurhash', 'joblib.hashing', 'joblib.disk', 'joblib.logger', 'joblib.func_inspect', 'joblib.backports', 'joblib.compressor', 'joblib.numpy_pickle_utils', 'joblib.numpy_pickle_compat', 'joblib.numpy_pickle', 'joblib._store_backends', 'joblib.memory', 'joblib._multiprocessing_helpers', 'joblib._deprecated_my_exceptions', 'joblib.my_exceptions', 'joblib.externals', 'joblib.externals.loky._base', 'joblib.externals.loky.backend.compat_posix', 'joblib.externals.loky.backend.compat', 'joblib.externals.loky.backend.process', 'joblib.externals.loky.backend.context', 'multiprocessing.synchronize', 'joblib.externals.loky.backend', 'joblib.externals.loky.backend._posix_reduction', 'joblib.externals.cloudpickle.compat', 'joblib.externals.cloudpickle.cloudpickle', 'joblib.externals.cloudpickle.cloudpickle_fast', 'joblib.externals.cloudpickle', 'joblib.externals.loky.backend.reduction', 'multiprocessing.queues', 'joblib.externals.loky.backend.queues', 'psutil._common', 'psutil._compat', 'psutil._psposix', 'psutil._psutil_linux', 'psutil._psutil_posix', 'psutil._pslinux', 'psutil', 'joblib.externals.loky.backend.utils', 'concurrent.futures.process', 'joblib.externals.loky.process_executor', 'joblib.externals.loky.reusable_executor', 'joblib.externals.loky.cloudpickle_wrapper', 'joblib.externals.loky', 'joblib.externals.loky.backend.spawn', 'joblib.externals.loky.backend.resource_tracker', 'joblib._memmapping_reducer', 'multiprocessing.pool', 'joblib.pool', 'joblib.executor', 'joblib._parallel_backends', 'joblib.parallel', 'joblib', 'scipy.ndimage._ni_support', 'scipy.ndimage._nd_image', 'scipy.ndimage._ni_docstrings', 'scipy.ndimage.filters', 'scipy.ndimage.fourier', 'scipy.ndimage.interpolation', '_ni_label', 'scipy.ndimage._ni_label', 'scipy.ndimage.morphology', 'scipy.ndimage.measurements', 'scipy.ndimage', 'scipy.stats._distr_params', 'scipy.optimize.minpack2', 'scipy.optimize.linesearch', 'scipy.sparse.linalg.isolve._iterative', 'scipy.sparse.linalg.interface', 'scipy.sparse.linalg.isolve.utils', 'scipy._lib._threadsafety', 'scipy.sparse.linalg.isolve.iterative', 'scipy.sparse.linalg.isolve.minres', 'scipy.sparse.linalg.isolve._gcrotmk', 'scipy.sparse.linalg.isolve.lgmres', 'scipy.sparse.linalg.isolve.lsqr', 'scipy.sparse.linalg.isolve.lsmr', 'scipy.sparse.linalg.isolve', 'scipy.sparse.linalg.dsolve._superlu', 'scipy.sparse.linalg.dsolve.linsolve', 'scipy.sparse.linalg.dsolve._add_newdocs', 'scipy.sparse.linalg.dsolve', 'scipy.sparse.linalg.eigen.arpack._arpack', 'scipy.sparse.linalg.eigen.lobpcg.lobpcg', 'scipy.sparse.linalg.eigen.lobpcg', 'scipy.sparse.linalg.eigen.arpack.arpack', 'scipy.sparse.linalg.eigen.arpack', 'scipy.sparse.linalg.eigen', 'scipy.sparse.linalg._expm_multiply', 'scipy.sparse.linalg.matfuncs', 'scipy.sparse.linalg._onenormest', 'scipy.sparse.linalg._norm', 'scipy.sparse.linalg', 'scipy.optimize._group_columns', 'scipy.optimize._numdiff', 'scipy.optimize._hessian_update_strategy', 'scipy.optimize._differentiable_functions', 'scipy.optimize.optimize', 'scipy.optimize._trustregion', 'scipy.optimize._trustregion_dogleg', 'scipy.optimize._trustregion_ncg', 'scipy.optimize._trlib._trlib', 'scipy.optimize._trlib', 'scipy.optimize._trustregion_krylov', 'scipy.optimize._trustregion_exact', 'unittest.util', 'unittest.result', 'unittest.case', 'unittest.async_case', 'unittest.suite', 'unittest.loader', 'unittest.signals', 'unittest.runner', 'unittest.main', 'unittest', 'numpy.testing._private', 'numpy.testing._private.utils', 'numpy.testing._private.decorators', 'numpy.testing._private.nosetester', 'numpy.testing', 'scipy.optimize._constraints', 'scipy.optimize._trustregion_constr.projections', 'scipy.optimize._trustregion_constr.qp_subproblem', 'scipy.optimize._trustregion_constr.equality_constrained_sqp', 'scipy.optimize._trustregion_constr.canonical_constraint', 'scipy.optimize._trustregion_constr.tr_interior_point', 'scipy.optimize._trustregion_constr.report', 'scipy.optimize._trustregion_constr.minimize_trustregion_constr', 'scipy.optimize._trustregion_constr', 'scipy.optimize._lbfgsb', 'scipy.optimize.lbfgsb', 'scipy.optimize.moduleTNC', 'scipy.optimize.tnc', 'scipy.optimize._cobyla', 'scipy.optimize.cobyla', 'scipy.optimize._slsqp', 'scipy.optimize.slsqp', 'scipy.optimize._minimize', 'scipy.optimize._minpack', 'scipy.optimize._lsq.common', 'scipy.optimize._lsq.trf', 'scipy.optimize._lsq.dogbox', 'scipy.optimize._lsq.least_squares', 'scipy.optimize._lsq.givens_elimination', 'scipy.optimize._lsq.trf_linear', 'scipy.optimize._lsq.bvls', 'scipy.optimize._lsq.lsq_linear', 'scipy.optimize._lsq', 'scipy.optimize.minpack', 'scipy.optimize._spectral', 'scipy.optimize.nonlin', 'scipy.optimize._root', 'scipy.optimize._zeros', 'scipy.optimize.zeros', 'scipy.optimize._root_scalar', 'scipy.optimize.__nnls', 'scipy.optimize._nnls', 'scipy.optimize._basinhopping', 'scipy.optimize._highs', 'scipy.optimize._highs.cython.src._highs_wrapper', 'scipy.optimize._highs._highs_wrapper', 'scipy.optimize._highs.cython.src._highs_constants', 'scipy.optimize._highs._highs_constants', 'scipy.optimize._linprog_highs', 'scipy.linalg._interpolative', 'scipy.linalg._interpolative_backend', 'scipy.linalg.interpolative', 'scipy.optimize._remove_redundancy', 'scipy.optimize._linprog_util', 'scipy.optimize._linprog_ip', 'scipy.optimize._linprog_simplex', 'scipy.optimize._bglu_dense', 'scipy.optimize._linprog_rs', 'scipy.optimize._linprog_doc', 'scipy.optimize._linprog', 'scipy.optimize._lsap_module', 'scipy.optimize._lsap', 'scipy.optimize._differentialevolution', 'scipy.optimize._shgo_lib', 'scipy.optimize._shgo_lib.sobol_seq', 'scipy.optimize._shgo_lib.triangulation', 'scipy.optimize._shgo', 'scipy.optimize._dual_annealing', 'scipy.optimize._qap', 'scipy.optimize', 'scipy.integrate._quadrature', 'scipy.integrate._odepack', 'scipy.integrate.odepack', 'scipy.integrate._quadpack', 'scipy.integrate.quadpack', 'scipy.integrate.vode', 'scipy.integrate._dop', 'scipy.integrate.lsoda', 'scipy.integrate._ode', 'scipy.integrate._bvp', 'scipy.integrate._ivp.common', 'scipy.integrate._ivp.base', 'scipy.integrate._ivp.bdf', 'scipy.integrate._ivp.radau', 'scipy.integrate._ivp.dop853_coefficients', 'scipy.integrate._ivp.rk', 'scipy.integrate._ivp.lsoda', 'scipy.integrate._ivp.ivp', 'scipy.integrate._ivp', 'scipy.integrate._quad_vec', 'scipy.integrate', 'scipy.misc.doccer', 'scipy.misc.common', 'scipy.misc', 'scipy.stats._constants', 'scipy.stats._distn_infrastructure', 'scipy.interpolate._fitpack', 'scipy.interpolate.dfitpack', 'scipy.interpolate._fitpack_impl', 'scipy.interpolate._bspl', 'scipy.interpolate._bsplines', 'scipy.interpolate.fitpack', 'scipy.interpolate.polyint', 'scipy.interpolate._ppoly', 'scipy.interpolate.fitpack2', 'scipy.interpolate.interpnd', 'scipy.interpolate.interpolate', 'scipy.interpolate.rbf', 'scipy.interpolate._cubic', 'scipy.interpolate.ndgriddata', 'scipy.interpolate._pade', 'scipy.interpolate', 'scipy.special.cython_special', 'scipy.stats._stats', 'scipy.stats._rvs_sampling', 'scipy.stats._tukeylambda_stats', 'scipy.stats._ksstats', 'scipy.stats._continuous_distns', 'scipy.stats._discrete_distns', 'scipy.stats.distributions', 'scipy._lib._bunch', 'scipy.stats._stats_mstats_common', 'scipy.stats.mstats_basic', 'scipy.stats._wilcoxon_data', 'scipy.stats._hypotests', 'scipy.stats.stats', 'scipy.stats.statlib', 'scipy.stats.contingency', 'scipy.stats.morestats', 'scipy.stats._binned_statistic', 'scipy.stats.mvn', 'scipy.stats.kde', 'scipy.stats.mstats_extras', 'scipy.stats.mstats', 'scipy.stats._multivariate', 'scipy.stats', 'sklearn.utils.deprecation', 'sklearn.utils.fixes', 'sklearn.exceptions', 'sklearn.utils.validation', 'sklearn.utils.class_weight', 'sklearn.utils._joblib', 'sklearn.utils._estimator_html_repr', 'sklearn.utils', 'sklearn.utils._tags', 'sklearn.base', 'sklearn.utils._openmp_helpers', 'sklearn.utils._show_versions', 'sklearn', 'sklearn.utils.multiclass', 'sklearn.utils._logistic_sigmoid', 'sklearn.utils.sparsefuncs_fast', 'sklearn.utils.extmath', 'sklearn.utils.sparsefuncs', 'sklearn.preprocessing._function_transformer', 'sklearn.preprocessing._csr_polynomial_expansion', 'sklearn.utils._encode', 'sklearn.preprocessing._encoders', 'sklearn.preprocessing._data', 'sklearn.preprocessing._label', 'sklearn.preprocessing._discretization', 'sklearn.preprocessing', 'sklearn.metrics._base', 'sklearn.metrics._ranking', 'sklearn.metrics._classification', 'sklearn.metrics.cluster._expected_mutual_info_fast', 'sklearn.metrics.cluster._supervised', 'sklearn.utils._mask', 'sklearn.metrics._pairwise_fast', 'sklearn.metrics.pairwise', 'sklearn.metrics.cluster._unsupervised', 'sklearn.metrics.cluster._bicluster', 'sklearn.metrics.cluster', 'sklearn._loss', 'sklearn._loss.glm_distribution', 'sklearn.utils.stats', 'sklearn.metrics._regression', 'sklearn.metrics._scorer', 'sklearn.metrics._plot', 'sklearn.metrics._plot.base', 'sklearn.metrics._plot.det_curve', 'sklearn.metrics._plot.roc_curve', 'sklearn.metrics._plot.precision_recall_curve', 'sklearn.metrics._plot.confusion_matrix', 'sklearn.metrics', 'sklearn.neighbors._typedefs', 'sklearn.neighbors._dist_metrics', 'sklearn.neighbors._ball_tree', 'sklearn.neighbors._kd_tree', 'sklearn.neighbors._base', 'sklearn.neighbors._unsupervised', 'sklearn.neighbors._graph', 'sklearn.neighbors._classification', 'sklearn.neighbors._regression', 'sklearn.neighbors._nearest_centroid', 'sklearn.neighbors._kde', 'sklearn.neighbors._lof', 'sklearn.decomposition._cdnmf_fast', 'sklearn.decomposition._nmf', 'sklearn.decomposition._base', 'sklearn.utils._arpack', 'sklearn.decomposition._pca', 'sklearn.decomposition._incremental_pca', 'sklearn.decomposition._kernel_pca', 'sklearn.utils._random', 'sklearn.utils._seq_dataset', 'sklearn.linear_model._base', 'sklearn.linear_model._bayes', 'sklearn.utils._cython_blas', 'sklearn.utils.arrayfuncs', 'sklearn.model_selection._split', 'sklearn.utils.metaestimators', 'sklearn.model_selection._validation', 'sklearn.utils.random', 'sklearn.model_selection._search', 'sklearn.model_selection', 'sklearn.linear_model._least_angle', 'sklearn.linear_model._cd_fast', 'sklearn.linear_model._coordinate_descent', 'sklearn.utils.optimize', 'sklearn.linear_model._glm.link', 'sklearn.linear_model._glm.glm', 'sklearn.linear_model._glm', 'sklearn.linear_model._huber', 'sklearn.utils._weight_vector', 'sklearn.linear_model._sgd_fast', 'sklearn.linear_model._stochastic_gradient', 'sklearn.linear_model._sag_fast', 'sklearn.linear_model._sag', 'sklearn.linear_model._ridge', 'sklearn.svm._libsvm', 'sklearn.svm._liblinear', 'sklearn.svm._libsvm_sparse', 'sklearn.svm._base', 'sklearn.svm._classes', 'sklearn.svm._bounds', 'sklearn.svm', 'sklearn.linear_model._logistic', 'sklearn.linear_model._omp', 'sklearn.linear_model._passive_aggressive', 'sklearn.linear_model._perceptron', 'sklearn.linear_model._ransac', 'sklearn.linear_model._theil_sen', 'sklearn.linear_model', 'sklearn.decomposition._dict_learning', 'sklearn.decomposition._sparse_pca', 'sklearn.decomposition._truncated_svd', 'sklearn.decomposition._fastica', 'sklearn.decomposition._factor_analysis', 'sklearn.decomposition._online_lda_fast', 'sklearn.decomposition._lda', 'sklearn.decomposition', 'sklearn.neighbors._nca', 'sklearn.neighbors', 'graphein.protein.resi_atoms', 'wget', 'Bio.File', 'Bio.PDB.PDBExceptions', 'Bio.PDB.Entity', 'Bio.PDB.vectors', 'Bio.PDB.Atom', 'Bio.Data.SCOPData', 'Bio.Data.CodonTable', 'Bio.Seq', 'Bio.PDB.Polypeptide', 'Bio.PDB.ic_data', 'Bio.PDB.internal_coords', 'Bio.PDB.Structure', 'Bio.PDB.Model', 'Bio.PDB.Chain', 'Bio.PDB.Residue', 'Bio.PDB.StructureBuilder', 'Bio.PDB.parse_pdb_header', 'Bio.PDB.PDBParser', 'Bio.PDB.MMCIF2Dict', 'Bio.PDB.MMCIFParser', 'Bio.PDB.PDBList', 'Bio.PDB.PDBIO', 'Bio.PDB.mmcifio', 'Bio.PDB.Selection', 'Bio.SVDSuperimposer', 'Bio.PDB.Superimposer', 'Bio.PDB.StructureAlignment', 'Bio.PDB.AbstractPropertyMap', 'Bio.PDB.DSSP', 'Bio.PDB.ResidueDepth', 'Bio.PDB.HSExposure', 'Bio.PDB.FragmentMapper', 'Bio.PDB.Dice', 'Bio.PDB.NeighborSearch', 'Bio.PDB.kdtrees', 'Bio.PDB.SASA', 'Bio.PDB', 'graphein.protein.utils', 'graphein.protein.edges.distance', 'graphein.protein.edges.atomic', 'graphein.protein.edges.intramolecular', 'graphein.protein.edges', 'graphein.protein.features.data', 'graphein.protein.features.graph', 'graphein.protein.features.nodes.amino_acid', 'graphein.protein.features.nodes.dssp', 'graphein.protein.features.nodes', 'graphein.protein.features.pretrained_models', 'graphein.protein.features.sequence.utils', 'gensim.parsing.porter', 'smart_open.version', 'smart_open.local_file', 'smart_open.compression', 'smart_open.bytebuffer', 'smart_open.constants', 'smart_open.azure', 'smart_open.utils', 'smart_open.gcs', 'smart_open.hdfs', 'urllib3.packages.ssl_match_hostname', 'urllib3.packages', 'urllib3.packages.six', 'urllib3.packages.six.moves', 'urllib3.packages.six.moves.http_client', 'urllib3.exceptions', 'urllib3._version', 'urllib3.contrib', 'urllib3.contrib._appengine_environ', 'urllib3.util.wait', 'urllib3.util.connection', '_cffi_backend', '_brotli.lib', '_brotli', 'brotli._brotli', 'brotli.brotli', 'brotli', 'urllib3.util.request', 'urllib3.util.response', 'urllib3.util.retry', 'urllib3.util.url', 'urllib3.util.ssltransport', 'urllib3.util.ssl_', 'urllib3.util.timeout', 'urllib3.util', 'urllib3.util.proxy', 'urllib3._collections', 'urllib3.connection', 'urllib3.fields', 'urllib3.filepost', 'urllib3.packages.six.moves.urllib', 'urllib3.packages.six.moves.urllib.parse', 'urllib3.request', 'urllib3.response', 'urllib3.util.queue', 'urllib3.connectionpool', 'urllib3.poolmanager', 'urllib3', 'requests.exceptions', 'charset_normalizer.constant', '_multibytecodec', 'charset_normalizer.utils', 'charset_normalizer.md', 'charset_normalizer.models', 'charset_normalizer.assets', 'charset_normalizer.cd', 'charset_normalizer.api', 'charset_normalizer.legacy', 'charset_normalizer.version', 'charset_normalizer.hook', 'charset_normalizer', 'chardet.enums', 'chardet.charsetprober', 'chardet.charsetgroupprober', 'chardet.codingstatemachine', 'chardet.escsm', 'chardet.escprober', 'chardet.latin1prober', 'chardet.mbcssm', 'chardet.utf8prober', 'chardet.mbcharsetprober', 'chardet.euctwfreq', 'chardet.euckrfreq', 'chardet.gb2312freq', 'chardet.big5freq', 'chardet.jisfreq', 'chardet.chardistribution', 'chardet.jpcntx', 'chardet.sjisprober', 'chardet.eucjpprober', 'chardet.gb2312prober', 'chardet.euckrprober', 'chardet.cp949prober', 'chardet.big5prober', 'chardet.euctwprober', 'chardet.mbcsgroupprober', 'chardet.hebrewprober', 'chardet.sbcharsetprober', 'chardet.langbulgarianmodel', 'chardet.langgreekmodel', 'chardet.langhebrewmodel', 'chardet.langrussianmodel', 'chardet.langthaimodel', 'chardet.langturkishmodel', 'chardet.sbcsgroupprober', 'chardet.universaldetector', 'chardet.version', 'chardet', 'requests.__version__', 'importlib.resources', 'certifi.core', 'certifi', 'requests.certs', 'http.cookiejar', 'http.cookies', 'requests.compat', 'requests._internal_utils', 'requests.cookies', 'requests.structures', 'requests.utils', 'requests.packages.urllib3.packages.ssl_match_hostname', 'requests.packages.urllib3.packages', 'requests.packages.urllib3.packages.six', 'requests.packages.urllib3.packages.six.moves', 'requests.packages.urllib3.packages.six.moves.http_client', 'requests.packages.urllib3.exceptions', 'requests.packages.urllib3._version', 'requests.packages.urllib3.contrib', 'requests.packages.urllib3.contrib._appengine_environ', 'requests.packages.urllib3.util.wait', 'requests.packages.urllib3.util.connection', 'requests.packages.urllib3.util.request', 'requests.packages.urllib3.util.response', 'requests.packages.urllib3.util.retry', 'requests.packages.urllib3.util.url', 'requests.packages.urllib3.util.ssltransport', 'requests.packages.urllib3.util.ssl_', 'requests.packages.urllib3.util.timeout', 'requests.packages.urllib3.util', 'requests.packages.urllib3.util.proxy', 'requests.packages.urllib3._collections', 'requests.packages.urllib3.connection', 'requests.packages.urllib3.fields', 'requests.packages.urllib3.filepost', 'requests.packages.urllib3.packages.six.moves.urllib', 'requests.packages.urllib3.packages.six.moves.urllib.parse', 'requests.packages.urllib3.request', 'requests.packages.urllib3.response', 'requests.packages.urllib3.util.queue', 'requests.packages.urllib3.connectionpool', 'requests.packages.urllib3.poolmanager', 'requests.packages.urllib3', 'idna.package_data', 'idna.idnadata', 'idna.intranges', 'idna.core', 'idna', 'requests.packages.idna.package_data', 'requests.packages.idna.idnadata', 'requests.packages.idna.intranges', 'requests.packages.idna.core', 'requests.packages.idna', 'requests.packages.chardet', 'requests.packages', 'stringprep', 'encodings.idna', 'requests.hooks', 'requests.auth', 'requests.status_codes', 'requests.models', 'socks', 'urllib3.contrib.socks', 'requests.adapters', 'requests.sessions', 'requests.api', 'requests', 'smart_open.http', 'smart_open.concurrency', 'smart_open.s3', 'smart_open.ssh', 'smart_open.webhdfs', 'smart_open.transport', 'smart_open.doctools', 'smart_open.smart_open_lib', 'smart_open', 'gensim.utils', 'gensim.parsing.preprocessing', 'gensim.parsing', '_cython_0_27_3', 'gensim._matutils', 'gensim.corpora._mmreader', 'gensim.matutils', 'gensim.interfaces', 'gensim.corpora.indexedcorpus', 'gensim.corpora.mmcorpus', 'gensim.corpora.bleicorpus', 'gensim.corpora.svmlightcorpus', 'gensim.corpora.lowcorpus', 'gensim.corpora.dictionary', 'gensim.corpora.hashdictionary', 'xml.etree.cElementTree', 'gensim.corpora.textcorpus', 'gensim.corpora.wikicorpus', 'gensim.corpora.ucicorpus', 'gensim.corpora.malletcorpus', 'gensim.corpora', 'gensim.topic_coherence', 'gensim.topic_coherence.segmentation', 'gensim.models._utils_any2vec', 'gensim.models.utils_any2vec', 'gensim.models.keyedvectors', 'gensim.models.base_any2vec', 'gensim.models.word2vec_inner', 'gensim.models.word2vec', 'gensim.topic_coherence.text_analysis', 'gensim.topic_coherence.probability_estimation', 'gensim.topic_coherence.direct_confirmation_measure', 'gensim.topic_coherence.indirect_confirmation_measure', 'gensim.topic_coherence.aggregation', 'gensim.models.coherencemodel', 'gensim.models.basemodel', 'gensim.models.callbacks', 'gensim.models.ldamodel', 'gensim.models.hdpmodel', 'scipy.sparse.sparsetools', 'gensim.models.lsimodel', 'gensim.models.tfidfmodel', 'gensim.models.rpmodel', 'gensim.models.logentropy_model', 'gensim.models.doc2vec_inner', 'gensim.models.doc2vec', 'gensim.models.ldamulticore', 'gensim.models.phrases', 'gensim.models.normmodel', 'gensim.models.atmodel', 'gensim.models.ldaseqmodel', 'gensim.models.fasttext_inner', 'gensim.models.fasttext', 'gensim.models.translation_matrix', 'gensim.models.wrappers.ldamallet', 'gensim.models.wrappers.dtmmodel', 'gensim.models.wrappers.ldavowpalwabbit', 'gensim.models.deprecated', 'gensim.models.deprecated.keyedvectors', 'gensim.models.deprecated.old_saveload', 'gensim.models.deprecated.word2vec', 'gensim.models.deprecated.fasttext_wrapper', 'gensim.models.wrappers.fasttext', 'gensim.scripts', 'gensim.scripts.glove2word2vec', 'gensim.models.wrappers.wordrank', 'gensim.models.wrappers.varembed', 'gensim.models.wrappers', 'gensim.models', 'gensim.similarities.docsim', 'gensim.similarities', 'gensim.summarization.pagerank_weighted', 'gensim.summarization.syntactic_unit', 'gensim.summarization.textcleaner', 'gensim.summarization.graph', 'gensim.summarization.commons', 'gensim.summarization.bm25', 'gensim.summarization.summarizer', 'six.moves.queue', 'gensim.summarization.keywords', 'gensim.summarization.mz_entropy', 'gensim.summarization', 'gensim', 'pyfasta.records', 'pyfasta.fasta', 'optparse', 'pyfasta.split_fasta', 'pyfasta', 'biovec.utils', 'biovec.models.prot_vec', 'biovec.models', 'biovec', 'graphein.protein.features.sequence.embeddings', 'graphein.protein.features.utils', 'graphein.protein.features.sequence.propy', 'Bio.SeqUtils', 'multipledispatch.utils', 'multipledispatch.variadic', 'multipledispatch.conflict', 'multipledispatch.dispatcher', 'multipledispatch.core', 'multipledispatch', 'graphein.protein.features.sequence.sequence', 'graphein.protein.features.sequence', 'graphein.protein.features', 'graphein.protein.config', 'biopandas', 'biopandas.pdb.engines', 'biopandas.pdb.pandas_pdb', 'biopandas.pdb', 'graphein.protein.graphs', 'graphein.protein.visualisation', 'matplotlib', 'matplotlib._api.deprecation', 'matplotlib._api', 'matplotlib._c_internal_utils', 'matplotlib.cbook', 'matplotlib.docstring', 'PIL._version', 'PIL', 'PIL.ImageMode', 'PIL.TiffTags', 'PIL._binary', 'PIL._util', 'PIL._imaging', 'cffi.lock', 'cffi.error', 'cffi.model', 'cffi.api', 'cffi', 'PIL.Image', 'matplotlib._animation_data', 'matplotlib.animation', 'PIL.ImageChops', 'PIL.ImageFile', 'PIL.GimpGradientFile', 'PIL.GimpPaletteFile', 'PIL.ImageColor', 'PIL.PaletteFile', 'PIL.ImagePalette', 'PIL.ImageSequence', 'PIL.PngImagePlugin', 'matplotlib._path', 'matplotlib.bezier', 'matplotlib.path', 'matplotlib.transforms', 'matplotlib.ticker', 'matplotlib.scale', 'matplotlib._color_data', 'matplotlib.colors', 'pyparsing', 'matplotlib.fontconfig_pattern', 'matplotlib._enums', 'cycler', 'matplotlib.rcsetup', 'matplotlib._version', 'matplotlib.ft2font', 'kiwisolver', 'dateutil.rrule', 'matplotlib.units', 'matplotlib.dates']
+DEBUG:matplotlib:CACHEDIR=/home/atj39/.cache/matplotlib
+DEBUG:matplotlib.font_manager:Using fontManager instance from /home/atj39/.cache/matplotlib/fontlist-v330.json
+DEBUG:matplotlib.pyplot:Loaded backend module://matplotlib_inline.backend_inline version unknown.
+DEBUG:matplotlib.pyplot:Loaded backend module://matplotlib_inline.backend_inline version unknown.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/2728878411.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-green-fg">from</span> graphein<span class="ansi-blue-fg">.</span>protein<span class="ansi-blue-fg">.</span>edges<span class="ansi-blue-fg">.</span>distance <span class="ansi-green-fg">import</span> add_hydrogen_bond_interactions<span class="ansi-blue-fg">,</span> add_peptide_bonds<span class="ansi-blue-fg">,</span> add_k_nn_edges
+<span class="ansi-green-intense-fg ansi-bold">      3</span> <span class="ansi-green-fg">from</span> graphein<span class="ansi-blue-fg">.</span>protein<span class="ansi-blue-fg">.</span>graphs <span class="ansi-green-fg">import</span> construct_graph
+<span class="ansi-green-fg">----&gt; 4</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">from</span> graphein<span class="ansi-blue-fg">.</span>ml<span class="ansi-blue-fg">.</span>conversion <span class="ansi-green-fg">import</span> graph_format_convert
+<span class="ansi-green-intense-fg ansi-bold">      5</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span> <span class="ansi-green-fg">from</span> functools <span class="ansi-green-fg">import</span> partial
+
+<span class="ansi-green-fg">~/github/graphein/graphein/ml/conversion.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span> <span class="ansi-green-fg">import</span> numpy <span class="ansi-green-fg">as</span> np
+<span class="ansi-green-intense-fg ansi-bold">      7</span> <span class="ansi-green-fg">import</span> torch
+<span class="ansi-green-fg">----&gt; 8</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">import</span> dgl
+<span class="ansi-green-intense-fg ansi-bold">      9</span>
+<span class="ansi-green-intense-fg ansi-bold">     10</span> <span class="ansi-green-fg">from</span> graphein<span class="ansi-blue-fg">.</span>utils<span class="ansi-blue-fg">.</span>utils <span class="ansi-green-fg">import</span> import_message
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named 'dgl'
+</pre></div></div>
+</div>
+</section>
+<section id="Convert-Nx-graphs-to-PyTorch-Geometric">
+<h2>Convert Nx graphs to PyTorch Geometric<a class="headerlink" href="#Convert-Nx-graphs-to-PyTorch-Geometric" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">graphein.ml.conversion</span> <span class="kn">import</span> <span class="n">graph_format_convert</span>
+
+<span class="n">format_convertor</span> <span class="o">=</span> <span class="n">graph_format_convert</span><span class="p">(</span><span class="s1">'nx'</span><span class="p">,</span> <span class="s1">'pyg'</span><span class="p">,</span>
+                                        <span class="n">verbose</span> <span class="o">=</span> <span class="s1">'gnn'</span><span class="p">,</span>
+                                        <span class="n">columns</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/1450073167.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">from</span> graphein<span class="ansi-blue-fg">.</span>ml<span class="ansi-blue-fg">.</span>conversion <span class="ansi-green-fg">import</span> graph_format_convert
+<span class="ansi-green-intense-fg ansi-bold">      2</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> format_convertor = graph_format_convert('nx', 'pyg',
+<span class="ansi-green-intense-fg ansi-bold">      4</span>                                         verbose <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">'gnn'</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span>                                         columns = None)
+
+<span class="ansi-green-fg">~/github/graphein/graphein/ml/conversion.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span> <span class="ansi-green-fg">import</span> numpy <span class="ansi-green-fg">as</span> np
+<span class="ansi-green-intense-fg ansi-bold">      7</span> <span class="ansi-green-fg">import</span> torch
+<span class="ansi-green-fg">----&gt; 8</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">import</span> dgl
+<span class="ansi-green-intense-fg ansi-bold">      9</span>
+<span class="ansi-green-intense-fg ansi-bold">     10</span> <span class="ansi-green-fg">from</span> graphein<span class="ansi-blue-fg">.</span>utils<span class="ansi-blue-fg">.</span>utils <span class="ansi-green-fg">import</span> import_message
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named 'dgl'
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pyg_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">format_convertor</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span> <span class="k">for</span> <span class="n">graph</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">graph_list</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/3070549574.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>pyg_list <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span>format_convertor<span class="ansi-blue-fg">(</span>graph<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> graph <span class="ansi-green-fg">in</span> tqdm<span class="ansi-blue-fg">(</span>graph_list<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-red-fg">NameError</span>: name 'tqdm' is not defined
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pyg_list</span><span class="p">):</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y_list</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/1500964547.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">for</span> idx<span class="ansi-blue-fg">,</span> g <span class="ansi-green-fg">in</span> enumerate<span class="ansi-blue-fg">(</span>pyg_list<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span>     g<span class="ansi-blue-fg">.</span>y <span class="ansi-blue-fg">=</span> y_list<span class="ansi-blue-fg">[</span>idx<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     g<span class="ansi-blue-fg">.</span>coords <span class="ansi-blue-fg">=</span> torch<span class="ansi-blue-fg">.</span>FloatTensor<span class="ansi-blue-fg">(</span>g<span class="ansi-blue-fg">.</span>coords<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name 'pyg_list' is not defined
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pyg_list</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">node_id</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">pyg_list</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/627943831.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">for</span> i <span class="ansi-green-fg">in</span> pyg_list<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span>     <span class="ansi-green-fg">if</span> i<span class="ansi-blue-fg">.</span>coords<span class="ansi-blue-fg">.</span>shape<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">==</span> len<span class="ansi-blue-fg">(</span>i<span class="ansi-blue-fg">.</span>node_id<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>         <span class="ansi-green-fg">pass</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span>         print<span class="ansi-blue-fg">(</span>i<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name 'pyg_list' is not defined
+</pre></div></div>
+</div>
+</section>
+<section id="Model-Configuration">
+<h2>Model Configuration<a class="headerlink" href="#Model-Configuration" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">config_default</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">n_hid</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_out</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">lr</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
+    <span class="n">num_heads</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="n">num_att_dim</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>
+    <span class="n">model_name</span> <span class="o">=</span> <span class="s1">'GCN'</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Struct</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">entries</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">Struct</span><span class="p">(</span><span class="o">**</span><span class="n">config_default</span><span class="p">)</span>
+
+<span class="k">global</span> <span class="n">model_name</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">model_name</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Construct-DataLoaders">
+<h2>Construct DataLoaders<a class="headerlink" href="#Construct-DataLoaders" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">idx_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pyg_list</span><span class="p">))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">idx_all</span><span class="p">)</span>
+
+<span class="n">train_idx</span><span class="p">,</span> <span class="n">valid_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">idx_all</span><span class="p">,</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mf">.8</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">pyg_list</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="mf">.9</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">pyg_list</span><span class="p">))])</span>
+<span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="p">[</span><span class="n">pyg_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">train_idx</span><span class="p">],</span> <span class="p">[</span><span class="n">pyg_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">valid_idx</span><span class="p">],</span> <span class="p">[</span><span class="n">pyg_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">test_idx</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">drop_last</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">valid_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/3477297634.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-green-fg">import</span> numpy <span class="ansi-green-fg">as</span> np
+<span class="ansi-green-intense-fg ansi-bold">      2</span> np<span class="ansi-blue-fg">.</span>random<span class="ansi-blue-fg">.</span>seed<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">42</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>idx_all <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>arange<span class="ansi-blue-fg">(</span>len<span class="ansi-blue-fg">(</span>pyg_list<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> np<span class="ansi-blue-fg">.</span>random<span class="ansi-blue-fg">.</span>shuffle<span class="ansi-blue-fg">(</span>idx_all<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span>
+
+<span class="ansi-red-fg">NameError</span>: name 'pyg_list' is not defined
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pyg_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/1443470597.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>pyg_list<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-red-fg">NameError</span>: name 'pyg_list' is not defined
+</pre></div></div>
+</div>
+</section>
+<section id="Define-Model">
+<h2>Define Model<a class="headerlink" href="#Define-Model" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">torch_geometric.nn</span> <span class="kn">import</span> <span class="n">GCNConv</span><span class="p">,</span> <span class="n">GATConv</span><span class="p">,</span> <span class="n">SAGEConv</span><span class="p">,</span> <span class="n">global_add_pool</span>
+<span class="kn">from</span> <span class="nn">torch.nn.functional</span> <span class="kn">import</span> <span class="n">mse_loss</span><span class="p">,</span> <span class="n">nll_loss</span><span class="p">,</span> <span class="n">relu</span><span class="p">,</span> <span class="n">softmax</span><span class="p">,</span> <span class="n">cross_entropy</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.metrics.functional</span> <span class="kn">import</span> <span class="n">accuracy</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/3471948262.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">from</span> torch_geometric<span class="ansi-blue-fg">.</span>nn <span class="ansi-green-fg">import</span> GCNConv<span class="ansi-blue-fg">,</span> GATConv<span class="ansi-blue-fg">,</span> SAGEConv<span class="ansi-blue-fg">,</span> global_add_pool
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-green-fg">from</span> torch<span class="ansi-blue-fg">.</span>nn<span class="ansi-blue-fg">.</span>functional <span class="ansi-green-fg">import</span> mse_loss<span class="ansi-blue-fg">,</span> nll_loss<span class="ansi-blue-fg">,</span> relu<span class="ansi-blue-fg">,</span> softmax<span class="ansi-blue-fg">,</span> cross_entropy
+<span class="ansi-green-intense-fg ansi-bold">      3</span> <span class="ansi-green-fg">from</span> torch<span class="ansi-blue-fg">.</span>nn <span class="ansi-green-fg">import</span> functional <span class="ansi-green-fg">as</span> F
+<span class="ansi-green-intense-fg ansi-bold">      4</span> <span class="ansi-green-fg">from</span> pytorch_lightning<span class="ansi-blue-fg">.</span>metrics<span class="ansi-blue-fg">.</span>functional <span class="ansi-green-fg">import</span> accuracy
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named 'torch_geometric'
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">class</span> <span class="nc">GraphNets</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">'GCN'</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer1</span> <span class="o">=</span> <span class="n">GCNConv</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">n_hid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer2</span> <span class="o">=</span> <span class="n">GCNConv</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">n_hid</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">n_out</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">'GAT'</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer1</span> <span class="o">=</span> <span class="n">GATConv</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">num_att_dim</span><span class="p">,</span> <span class="n">heads</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer2</span> <span class="o">=</span> <span class="n">GATConv</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">num_att_dim</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">out_channels</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">n_out</span><span class="p">,</span> <span class="n">heads</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">concat</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                 <span class="n">dropout</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">dropout</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">'GraphSAGE'</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer1</span> <span class="o">=</span> <span class="n">SAGEConv</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">n_hid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer2</span> <span class="o">=</span> <span class="n">SAGEConv</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">n_hid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">n_out</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">n_out</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">coords</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">dropout</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">elu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_index</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">dropout</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_index</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">global_add_pool</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"train_loss"</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"train_acc"</span><span class="p">,</span> <span class="n">acc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span>
+
+    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"valid_loss"</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"valid_acc"</span><span class="p">,</span> <span class="n">acc</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="n">y_pred_softmax</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">y_pred_tags</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_pred_softmax</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">f1</span> <span class="o">=</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">y_pred_tags</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">average</span> <span class="o">=</span> <span class="s1">'weighted'</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"test_loss"</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"test_acc"</span><span class="p">,</span> <span class="n">acc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">"test_f1"</span><span class="p">,</span> <span class="n">f1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">lr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">optimizer</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/2525578106.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">class</span> GraphNets<span class="ansi-blue-fg">(</span>pl<span class="ansi-blue-fg">.</span>LightningModule<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span>     <span class="ansi-green-fg">def</span> __init__<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>         super<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>__init__<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span>         <span class="ansi-green-fg">if</span> model_name <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">'GCN'</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">NameError</span>: name 'pl' is not defined
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pytorch_lightning.callbacks</span> <span class="kn">import</span> <span class="n">ModelCheckpoint</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">file_path</span> <span class="o">=</span> <span class="s1">'./graphein_model'</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+<span class="n">checkpoint_callback</span> <span class="o">=</span> <span class="n">ModelCheckpoint</span><span class="p">(</span>
+    <span class="n">monitor</span><span class="o">=</span><span class="s2">"valid_loss"</span><span class="p">,</span>
+    <span class="n">dirpath</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">"model-</span><span class="si">{epoch:02d}</span><span class="s2">-</span><span class="si">{val_loss:.2f}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="n">save_top_k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">"min"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ModuleNotFoundError</span>                       Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/3539925742.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">from</span> pytorch_lightning<span class="ansi-blue-fg">.</span>callbacks <span class="ansi-green-fg">import</span> ModelCheckpoint
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-green-fg">import</span> os
+<span class="ansi-green-intense-fg ansi-bold">      3</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> file_path <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">'./graphein_model'</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> os<span class="ansi-blue-fg">.</span>path<span class="ansi-blue-fg">.</span>exists<span class="ansi-blue-fg">(</span>file_path<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named 'pytorch_lightning'
+</pre></div></div>
+</div>
+</section>
+<section id="Train!">
+<h2>Train!<a class="headerlink" href="#Train!" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Train Model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">GraphNets</span><span class="p">()</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">gpus</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">checkpoint_callback</span><span class="p">])</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">)</span>
+
+<span class="c1"># evaluate on the model with the best validation set</span>
+<span class="n">best_model</span> <span class="o">=</span> <span class="n">GraphNets</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_callback</span><span class="o">.</span><span class="n">best_model_path</span><span class="p">)</span>
+<span class="n">out_best_test</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">best_model</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_2896276/3685191286.py</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># Train Model</span>
+<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span>model <span class="ansi-blue-fg">=</span> GraphNets<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> trainer <span class="ansi-blue-fg">=</span> pl<span class="ansi-blue-fg">.</span>Trainer<span class="ansi-blue-fg">(</span>max_epochs<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">200</span><span class="ansi-blue-fg">,</span> gpus<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">-</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">,</span> callbacks<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">[</span>checkpoint_callback<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> trainer<span class="ansi-blue-fg">.</span>fit<span class="ansi-blue-fg">(</span>model<span class="ansi-blue-fg">,</span> train_loader<span class="ansi-blue-fg">,</span> valid_loader<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span>
+
+<span class="ansi-red-fg">NameError</span>: name 'GraphNets' is not defined
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+      </article>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+
+        <div class="related-information">
+              Copyright &#169; 2020, Arian Jamasb
+            |
+            Built with <a href="https://www.sphinx-doc.org/">Sphinx</a>
+              and
+              <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+              <a href="https://github.com/pradyunsg/furo">Furo theme</a>.
+            |
+            <a class="muted-link" href="../_sources/notebooks/pscb_baselines.nblink.txt"
+               rel="nofollow">
+              Show Source
+            </a>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">PSCDB - Baselines</a><ul>
+<li><a class="reference internal" href="#Load-dataset">Load dataset</a></li>
+<li><a class="reference internal" href="#Transformation-from-Raw-Structure-to-ML-ready-Datasets-Construction-with-Graphein">Transformation from Raw Structure to ML-ready Datasets Construction with Graphein</a></li>
+<li><a class="reference internal" href="#Convert-Nx-graphs-to-PyTorch-Geometric">Convert Nx graphs to PyTorch Geometric</a></li>
+<li><a class="reference internal" href="#Model-Configuration">Model Configuration</a></li>
+<li><a class="reference internal" href="#Construct-DataLoaders">Construct DataLoaders</a></li>
+<li><a class="reference internal" href="#Define-Model">Define Model</a></li>
+<li><a class="reference internal" href="#Train!">Train!</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/scripts/main.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    </body>
+</html>

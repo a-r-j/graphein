@@ -1,0 +1,1233 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    
+<meta property="og:title" content="Graphein Protein Structure Dataloaders" />
+  
+<meta property="og:type" content="website" />
+  
+<meta property="og:url" content="https://graphein.ai/notebooks/dataloader_tutorial.html" />
+  
+<meta property="og:description" content="PyTorch Geometric Datasets: API Reference Graphein provides three dataset classes for working with PyTorch Geometric:`ProteinGraphDataset<>`__ - For processing large datasets that can’t be kept in ..." />
+  
+<meta property="og:image" content="https://graphein.ai/_static/graphein.png" />
+  
+<meta property="og:image:alt" content="Graphein Protein Structure Dataloaders" />
+  <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="PSCDB - Protein Structural Change Database" href="../datasets/pscdb.html" /><link rel="prev" title="Datasets" href="../datasets.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>Graphein Protein Structure Dataloaders - Graphein 1.3.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Graphein 1.3.0</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.3.0</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../datasets.html">Datasets</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Graphein-Protein-Structure-Dataloaders">
+<h1>Graphein Protein Structure Dataloaders<a class="headerlink" href="#Graphein-Protein-Structure-Dataloaders" title="Permalink to this headline">#</a></h1>
+<div class="section" id="PyTorch-Geometric-Datasets">
+<h2>PyTorch Geometric Datasets<a class="headerlink" href="#PyTorch-Geometric-Datasets" title="Permalink to this headline">#</a></h2>
+<p><a class="reference external" href="https://graphein.ai/modules/graphein.ml.html#graphein.ml.datasets.torch_geometric_dataset">API Reference</a></p>
+<p>Graphein provides three dataset classes for working with <a class="reference external" href="https://pytorch-geometric.readthedocs.io/en/latest/">PyTorch Geometric</a>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">`ProteinGraphDataset</span></code> &lt;&gt;`__ - For processing large datasets that can’t be kept in memory</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">`InMemoryProteinGraphDataset</span></code> &lt;&gt;`__ - For smaller datasets that can be kept in memory</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">`ProteinGraphListDataset</span></code> &lt;&gt;`__ - For creating a dataset from a list of pre-computed PyTorch Geometric graphs.</p></li>
+</ul>
+<p>Both <code class="docutils literal notranslate"><span class="pre">ProteinGraphDataset</span></code> and <code class="docutils literal notranslate"><span class="pre">InMemoryGraphDataset</span></code> will take care of downloading structures from either the <a class="reference external" href="https://www.rcsb.org/">RCSB PDB</a>, <a class="reference external" href="https://alphafold.com/">EBI AlphaFold database</a>, or both! <code class="docutils literal notranslate"><span class="pre">ProteinGraphListDataset</span></code> is a lightweight alternative for creating a dataset from a collection of graphs you have pre-computed.</p>
+<p><a class="reference external" href="https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/dataloader_tutorial.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg"/></a></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install graphein if necessary</span>
+<span class="c1"># !pip install graphein</span>
+
+<span class="c1"># Install torch if necessary. See https://pytorch.org/get-started/locally/</span>
+<span class="c1"># pip install torch==1.11.0</span>
+
+<span class="c1"># Install torch geometric if necessary. See: https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html</span>
+<span class="c1"># pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.11.0+cpu.html</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="ProteinGraphDataset">
+<h3>ProteinGraphDataset<a class="headerlink" href="#ProteinGraphDataset" title="Permalink to this headline">#</a></h3>
+<p><a class="reference external" href="https://graphein.ai/modules/graphein.ml.html#graphein.ml.datasets.torch_geometric_dataset.ProteinGraphDataset">API Reference</a></p>
+<p><code class="docutils literal notranslate"><span class="pre">ProteinGraphDataset</span></code> will download structures from the PDB/AlphafoldDB, process the structures into graphs according to a <code class="docutils literal notranslate"><span class="pre">ProteinGraphConfig</span></code>.</p>
+<div class="section" id="Parameters">
+<h4>Parameters<a class="headerlink" href="#Parameters" title="Permalink to this headline">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ProteinGraphDataset</span><span class="p">(</span>
+        <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="c1"># Root directory where the dataset should be saved.</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="c1"># Name of the dataset. Will be saved to ``data_$name.pt``.</span>
+        <span class="n">pdb_codes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#  List of PDB codes to download and parse from the PDB.</span>
+        <span class="n">uniprot_ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># List of Uniprot IDs to download and parse from Alphafold Database</span>
+        <span class="n">graph_label_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># Dictionary mapping PDB/Uniprot IDs to graph-level labels.</span>
+        <span class="n">node_label_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># Dictionary mapping PDB/Uniprot IDs to node-level labels.</span>
+        <span class="n">chain_selection_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># Dictionary mapping PDB/Uniprot IDs to the desired chains in the PDB files</span>
+        <span class="n">graphein_config</span><span class="p">:</span> <span class="n">ProteinGraphConfig</span> <span class="o">=</span> <span class="n">ProteinGraphConfig</span><span class="p">(),</span>
+        <span class="c1"># Protein graph construction config</span>
+        <span class="n">graph_format_convertor</span><span class="p">:</span> <span class="n">GraphFormatConvertor</span> <span class="o">=</span> <span class="n">GraphFormatConvertor</span><span class="p">(</span>
+            <span class="n">src_format</span><span class="o">=</span><span class="s2">"nx"</span><span class="p">,</span> <span class="n">dst_format</span><span class="o">=</span><span class="s2">"pyg"</span>
+        <span class="p">),</span>
+        <span class="c1"># Conversion handler for graphs</span>
+        <span class="n">graph_transformation_funcs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># List of functions that consume a nx.Graph and return a nx.Graph. Applied to graphs after construction but before conversion to pyg</span>
+        <span class="n">transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># A function/transform that takes in a torch_geometric.data.Data object and returns a transformed version. The data object will be transformed before every access.</span>
+        <span class="n">pdb_transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># A function/transform that takes in a torch_geometric.data.Data object and returns a transformed version. The data object will be transformed before being saved to disk</span>
+        <span class="n">pre_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># A function that takes in a torch_geometric.data.Data object and returns a boolean value, indicating whether the data object should be included in the final dataset</span>
+        <span class="n">num_cores</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="c1"># Number of cores to use for multiprocessing of graph construction</span>
+        <span class="n">af_version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="c1">#  Version of AlphaFoldDB structures to use,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Directory-Structure">
+<h4>Directory Structure<a class="headerlink" href="#Directory-Structure" title="Permalink to this headline">#</a></h4>
+<p>Creating a <code class="docutils literal notranslate"><span class="pre">ProteinGraphDataset</span></code> will create two directories under <code class="docutils literal notranslate"><span class="pre">root</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">root/raw</span></code> - Contains raw PDB files</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">root/processed</span></code> - Contains processed graphs (in <code class="docutils literal notranslate"><span class="pre">pytorch_geometric.data.Data</span></code> format) saved as <code class="docutils literal notranslate"><span class="pre">$PDB.pt</span> <span class="pre">/</span> <span class="pre">$UNIPROT_ID.pt</span></code></p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">graphein.ml</span> <span class="kn">import</span> <span class="n">ProteinGraphDataset</span>
+<span class="kn">import</span> <span class="nn">graphein.protein</span> <span class="k">as</span> <span class="nn">gp</span>
+
+<span class="c1"># Create some labels</span>
+<span class="n">g_labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">([</span><span class="mi">5</span><span class="p">])</span>
+<span class="n">n_labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+
+<span class="n">g_lab_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"3eiy"</span><span class="p">:</span> <span class="n">g_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"4hhb"</span><span class="p">:</span> <span class="n">g_labels</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">"Q5VSL9"</span><span class="p">:</span> <span class="n">g_labels</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">"1lds"</span><span class="p">:</span> <span class="n">g_labels</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s2">"Q8W3K0"</span><span class="p">:</span> <span class="n">g_labels</span><span class="p">[</span><span class="mi">4</span><span class="p">]}</span>
+<span class="n">node_lab_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"3eiy"</span><span class="p">:</span> <span class="n">n_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"4hhb"</span><span class="p">:</span> <span class="n">n_labels</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">"Q5VSL9"</span><span class="p">:</span> <span class="n">n_labels</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">"1lds"</span><span class="p">:</span> <span class="n">n_labels</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s2">"Q8W3K0"</span><span class="p">:</span> <span class="n">n_labels</span><span class="p">[</span><span class="mi">4</span><span class="p">]}</span>
+
+<span class="c1"># Select some chains</span>
+<span class="n">chain_selection_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"4hhb"</span><span class="p">:</span> <span class="s2">"A"</span><span class="p">}</span>
+
+
+<span class="c1"># Create the dataset</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ProteinGraphDataset</span><span class="p">(</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="s2">"../graphein/ml/datasets/test"</span><span class="p">,</span>
+    <span class="n">pdb_codes</span><span class="o">=</span><span class="p">[</span><span class="s2">"3eiy"</span><span class="p">,</span> <span class="s2">"4hhb"</span><span class="p">,</span> <span class="s2">"1lds"</span><span class="p">],</span>
+    <span class="n">uniprot_ids</span><span class="o">=</span><span class="p">[</span><span class="s2">"Q5VSL9"</span><span class="p">,</span> <span class="s2">"Q8W3K0"</span><span class="p">],</span>
+    <span class="n">graph_label_map</span><span class="o">=</span><span class="n">g_lab_map</span><span class="p">,</span>
+    <span class="n">node_label_map</span><span class="o">=</span><span class="n">node_lab_map</span><span class="p">,</span>
+    <span class="n">chain_selection_map</span><span class="o">=</span><span class="n">chain_selection_map</span><span class="p">,</span>
+    <span class="n">graphein_config</span><span class="o">=</span><span class="n">gp</span><span class="o">.</span><span class="n">ProteinGraphConfig</span><span class="p">()</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a dataloader from dataset and inspect a batch</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.loader</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+
+<span class="n">dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop_last</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dl</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Graph labels: "</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">graph_y</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Node labels: "</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">node_y</span><span class="p">)</span>
+    <span class="k">break</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+DataBatch(edge_index=[2, 236], node_id=[2], coords=[2], name=[2], dist_mat=[2], num_nodes=238, graph_y=[2], node_y=[20], batch=[238], ptr=[3])
+Graph labels:  tensor([ 0.5660, -0.7161])
+Node labels:  tensor([-1.2430,  0.8221, -0.0296, -0.3522,  1.7685, -2.3006, -0.1209, -1.4377,
+        -1.2816, -0.7039, -0.8580, -0.5647, -1.6848, -1.5069, -2.8355, -0.4000,
+         0.3203,  0.1497, -1.0708,  0.3418])
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="InMemoryProteinGraphDataset">
+<h3>InMemoryProteinGraphDataset<a class="headerlink" href="#InMemoryProteinGraphDataset" title="Permalink to this headline">#</a></h3>
+<p><a class="reference external" href="https://graphein.ai/modules/graphein.ml.html#graphein.ml.datasets.torch_geometric_dataset.InMemoryProteinGraphDataset">API Reference</a></p>
+<div class="section" id="id1">
+<h4>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">InMemoryProteinGraphDataset</span><span class="p">(</span>
+        <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="c1"># Root directory where the dataset should be saved.</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="c1"># Name of the dataset. Will be saved to ``data_$name.pt``.</span>
+        <span class="n">pdb_codes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#  List of PDB codes to download and parse from the PDB.</span>
+        <span class="n">uniprot_ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># List of Uniprot IDs to download and parse from Alphafold Database</span>
+        <span class="n">graph_label_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># Dictionary mapping PDB/Uniprot IDs to graph-level labels.</span>
+        <span class="n">node_label_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># Dictionary mapping PDB/Uniprot IDs to node-level labels.</span>
+        <span class="n">chain_selection_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># Dictionary mapping PDB/Uniprot IDs to the desired chains in the PDB files</span>
+        <span class="n">graphein_config</span><span class="p">:</span> <span class="n">ProteinGraphConfig</span> <span class="o">=</span> <span class="n">ProteinGraphConfig</span><span class="p">(),</span>
+        <span class="c1"># Protein graph construction config</span>
+        <span class="n">graph_format_convertor</span><span class="p">:</span> <span class="n">GraphFormatConvertor</span> <span class="o">=</span> <span class="n">GraphFormatConvertor</span><span class="p">(</span>
+            <span class="n">src_format</span><span class="o">=</span><span class="s2">"nx"</span><span class="p">,</span> <span class="n">dst_format</span><span class="o">=</span><span class="s2">"pyg"</span>
+        <span class="p">),</span>
+        <span class="c1"># Conversion handler for graphs</span>
+        <span class="n">graph_transformation_funcs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># List of functions that consume a nx.Graph and return a nx.Graph. Applied to graphs after construction but before conversion to pyg</span>
+        <span class="n">transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># A function/transform that takes in a torch_geometric.data.Data object and returns a transformed version. The data object will be transformed before every access.</span>
+        <span class="n">pdb_transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># A function/transform that takes in a torch_geometric.data.Data object and returns a transformed version. The data object will be transformed before being saved to disk</span>
+        <span class="n">pre_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># A function that takes in a torch_geometric.data.Data object and returns a boolean value, indicating whether the data object should be included in the final dataset</span>
+        <span class="n">num_cores</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="c1"># Number of cores to use for multiprocessing of graph construction</span>
+        <span class="n">af_version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="c1">#  Version of AlphaFoldDB structures to use,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h4>Directory Structure<a class="headerlink" href="#id2" title="Permalink to this headline">#</a></h4>
+<p>Creating an <code class="docutils literal notranslate"><span class="pre">InMemoryProteinGraphDataset</span></code> will create two directories under <code class="docutils literal notranslate"><span class="pre">root</span></code>: * <code class="docutils literal notranslate"><span class="pre">root/raw</span></code> - Contains raw PDB files * <code class="docutils literal notranslate"><span class="pre">root/processed</span></code> - Contains processed datasets saved as <code class="docutils literal notranslate"><span class="pre">data_{name}.pt</span></code></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graphein.ml</span> <span class="kn">import</span> <span class="n">InMemoryProteinGraphDataset</span>
+
+<span class="n">g_lab_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"3eiy"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"4hhb"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"Q5VSL9"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"1lds"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">"2ll6"</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+<span class="n">node_lab_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"3eiy"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"4hhb"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"Q5VSL9"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"1lds"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">"2ll6"</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+<span class="n">chain_selection_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"4hhb"</span><span class="p">:</span> <span class="s2">"A"</span><span class="p">}</span>
+
+<span class="n">ds</span> <span class="o">=</span> <span class="n">InMemoryProteinGraphDataset</span><span class="p">(</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="s2">"../graphein/ml/datasets/test"</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"test"</span><span class="p">,</span>
+    <span class="n">pdb_codes</span><span class="o">=</span><span class="p">[</span><span class="s2">"3eiy"</span><span class="p">,</span> <span class="s2">"4hhb"</span><span class="p">,</span> <span class="s2">"1lds"</span><span class="p">,</span> <span class="s2">"2ll6"</span><span class="p">],</span>
+    <span class="n">uniprot_ids</span><span class="o">=</span><span class="p">[</span><span class="s2">"Q5VSL9"</span><span class="p">],</span>
+    <span class="n">graph_label_map</span><span class="o">=</span><span class="n">g_lab_map</span><span class="p">,</span>
+    <span class="n">node_label_map</span><span class="o">=</span><span class="n">node_lab_map</span><span class="p">,</span>
+    <span class="n">chain_selection_map</span><span class="o">=</span><span class="n">chain_selection_map</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Processing...
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+INFO:graphein.protein.graphs:Constructing graph for: ../graphein/ml/datasets/test/raw/4hhb.pdb. Chain selection: A
+INFO:graphein.protein.graphs:Constructing graph for: ../graphein/ml/datasets/test/raw/Q5VSL9.pdb. Chain selection: all
+INFO:graphein.protein.graphs:Constructing graph for: ../graphein/ml/datasets/test/raw/1lds.pdb. Chain selection: all
+INFO:graphein.protein.graphs:Constructing graph for: ../graphein/ml/datasets/test/raw/2ll6.pdb. Chain selection: all
+INFO:graphein.protein.graphs:Constructing graph for: ../graphein/ml/datasets/test/raw/3eiy.pdb. Chain selection: all
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 97 total nodes
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+DEBUG:graphein.protein.graphs:Detected 174 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 141 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 837 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 165 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+Done!
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a dataloader from dataset and inspect a batch</span>
+<span class="n">dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop_last</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dl</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">break</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+DataBatch(edge_index=[2, 236], node_id=[2], coords=[2], name=[2], dist_mat=[2], graph_y=[2], node_y=[2], num_nodes=238, batch=[238], ptr=[3])
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="ProteinGraphListDataset">
+<h3>ProteinGraphListDataset<a class="headerlink" href="#ProteinGraphListDataset" title="Permalink to this headline">#</a></h3>
+<p><a class="reference external" href="https://graphein.ai/modules/graphein.ml.html#graphein.ml.datasets.torch_geometric_dataset.ProteinGraphListDataset">API Reference</a></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ProteinGraphListDataset</span></code> class is a lightweight class for wrapping a list of pre-computed <code class="docutils literal notranslate"><span class="pre">pytorch_geometric.data.Data</span></code> graphs.</p>
+<div class="section" id="id3">
+<h4>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ProteinGraphListDataset</span><span class="p">(</span>
+    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>                              <span class="c1"># Root directory where the dataset is stored.</span>
+    <span class="n">data_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Data</span><span class="p">],</span>                  <span class="c1"># List of protein graphs as PyTorch Geometric Data objects.</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>                              <span class="c1"># Name of dataset. Data will be saved as ``data_{name}.pt``.</span>
+    <span class="n">transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>      <span class="c1"># A function/transform that takes in a torch_geometric.data.Data object and returns a transformed version. The data object will be transformed before every access.</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graphein.ml</span> <span class="kn">import</span> <span class="n">ProteinGraphListDataset</span><span class="p">,</span> <span class="n">GraphFormatConvertor</span>
+<span class="kn">import</span> <span class="nn">graphein.protein</span> <span class="k">as</span> <span class="nn">gp</span>
+
+<span class="c1"># Construct graphs</span>
+<span class="n">graphs</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">construct_graphs_mp</span><span class="p">(</span>
+    <span class="n">pdb_code_it</span><span class="o">=</span><span class="p">[</span><span class="s2">"3eiy"</span><span class="p">,</span> <span class="s2">"4hhb"</span><span class="p">,</span> <span class="s2">"1lds"</span><span class="p">,</span> <span class="s2">"2ll6"</span><span class="p">],</span>
+    <span class="n">return_dict</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+
+<span class="c1"># do some transformation</span>
+<span class="n">graphs</span> <span class="o">=</span> <span class="p">[</span><span class="n">gp</span><span class="o">.</span><span class="n">extract_subgraph_from_chains</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="p">[</span><span class="s2">"A"</span><span class="p">])</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">graphs</span><span class="p">]</span>
+
+<span class="c1"># Convert to PyG Data format</span>
+<span class="n">convertor</span> <span class="o">=</span> <span class="n">GraphFormatConvertor</span><span class="p">(</span><span class="n">src_format</span><span class="o">=</span><span class="s2">"nx"</span><span class="p">,</span> <span class="n">dst_format</span><span class="o">=</span><span class="s2">"pyg"</span><span class="p">)</span>
+<span class="n">graphs</span> <span class="o">=</span> <span class="p">[</span><span class="n">convertor</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">graphs</span><span class="p">]</span>
+
+<span class="c1"># Create dataset</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ProteinGraphListDataset</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s2">"."</span><span class="p">,</span> <span class="n">data_list</span><span class="o">=</span><span class="n">graphs</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"list_test"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+INFO:graphein.protein.graphs:Constructing graph for: 4hhb. Chain selection: all
+INFO:graphein.protein.graphs:Constructing graph for: 3eiy. Chain selection: all
+INFO:graphein.protein.graphs:Constructing graph for: 1lds. Chain selection: all
+INFO:graphein.protein.graphs:Constructing graph for: 2ll6. Chain selection: all
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 174 total nodes
+DEBUG:graphein.protein.graphs:Detected 97 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+174
+97
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 574 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+574
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 165 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+165
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+DEBUG:graphein.protein.subgraphs:Found 174 nodes in the chain subgraph.
+DEBUG:graphein.protein.subgraphs:Creating subgraph from nodes: ['A:VAL:107', 'A:SER:26', 'A:PHE:45', 'A:PRO:53', 'A:VAL:29', 'A:ALA:144', 'A:LEU:39', 'A:GLN:14', 'A:TYR:56', 'A:PRO:69', 'A:MET:117', 'A:ASP:98', 'A:SER:123', 'A:VAL:72', 'A:PRO:60', 'A:ILE:135', 'A:THR:48', 'A:ALA:33', 'A:PHE:78', 'A:ALA:108', 'A:ASN:55', 'A:ARG:87', 'A:GLU:21', 'A:THR:167', 'A:GLU:27', 'A:MET:96', 'A:ALA:119', 'A:VAL:74', 'A:TYR:31', 'A:LEU:63', 'A:VAL:114', 'A:ALA:36', 'A:ASP:168', 'A:GLY:83', 'A:PHE:173', 'A:GLN:25', 'A:TRP:156', 'A:PHE:16', 'A:ASP:71', 'A:LEU:94', 'A:ASP:112', 'A:LEU:12', 'A:GLY:65', 'A:LEU:81', 'A:PRO:23', 'A:VAL:102', 'A:ALA:8', 'A:LYS:136', 'A:GLU:140', 'A:ILE:22', 'A:LYS:35', 'A:ALA:82', 'A:GLU:165', 'A:PHE:139', 'A:LEU:80', 'A:LYS:152', 'A:GLY:38', 'A:GLN:61', 'A:SER:2', 'A:GLY:169', 'A:LEU:106', 'A:ASP:157', 'A:ASN:172', 'A:LYS:10', 'A:VAL:18', 'A:ARG:44', 'A:GLU:99', 'A:ASP:125', 'A:ILE:19', 'A:ILE:159', 'A:GLY:49', 'A:ARG:89', 'A:ILE:59', 'A:TYR:52', 'A:ALA:90', 'A:LYS:95', 'A:VAL:170', 'A:LEU:91', 'A:ASP:68', 'A:GLU:146', 'A:LYS:143', 'A:LYS:132', 'A:PRO:28', 'A:SER:84', 'A:LEU:40', 'A:PRO:77', 'A:GLY:92', 'A:GLY:67', 'A:LYS:30', 'A:LEU:121', 'A:VAL:41', 'A:ILE:124', 'A:VAL:54', 'A:ILE:166', 'A:ALA:171', 'A:GLY:101', 'A:GLY:155', 'A:VAL:85', 'A:LYS:174', 'A:ASN:17', 'A:ILE:20', 'A:ALA:162', 'A:ASP:15', 'A:VAL:86', 'A:MET:93', 'A:LYS:175', 'A:VAL:70', 'A:HIS:163', 'A:LYS:149', 'A:LEU:73', 'A:ALA:161', 'A:LEU:37', 'A:GLY:158', 'A:SER:64', 'A:PRO:128', 'A:ARG:51', 'A:ALA:24', 'A:LYS:105', 'A:LYS:147', 'A:SER:100', 'A:GLN:134', 'A:ILE:75', 'A:ASP:103', 'A:GLY:57', 'A:LEU:145', 'A:LYS:164', 'A:LYS:122', 'A:PHE:58', 'A:GLU:154', 'A:THR:97', 'A:ASP:126', 'A:LEU:131', 'A:ALA:129', 'A:ALA:104', 'A:VAL:109', 'A:THR:118', 'A:LYS:113', 'A:VAL:127', 'A:GLY:148', 'A:TYR:130', 'A:GLY:47', 'A:VAL:153', 'A:PRO:116', 'A:GLU:32', 'A:ASP:43', 'A:CYS:115', 'A:ASN:5', 'A:ASP:34', 'A:ASP:160', 'A:THR:62', 'A:ASN:120', 'A:THR:76', 'A:HIS:111', 'A:ASP:11', 'A:VAL:6', 'A:ASP:133', 'A:ASP:66', 'A:TYR:142', 'A:PRO:7', 'A:PRO:13', 'A:HIS:137', 'A:SER:4', 'A:PHE:3', 'A:MET:50', 'A:VAL:151', 'A:ILE:46', 'A:PRO:79', 'A:PHE:138', 'A:VAL:42', 'A:ALA:88', 'A:GLY:9', 'A:TRP:150', 'A:GLN:141', 'A:PRO:110'].
+DEBUG:graphein.protein.subgraphs:Found 141 nodes in the chain subgraph.
+DEBUG:graphein.protein.subgraphs:Creating subgraph from nodes: ['A:VAL:107', 'A:LEU:83', 'A:GLY:22', 'A:GLY:25', 'A:ALA:26', 'A:ALA:123', 'A:LEU:2', 'A:LEU:105', 'A:ALA:130', 'A:LYS:7', 'A:ALA:79', 'A:TYR:24', 'A:ASN:78', 'A:SER:131', 'A:TYR:42', 'A:LEU:100', 'A:LEU:101', 'A:SER:102', 'A:LYS:11', 'A:ALA:69', 'A:SER:35', 'A:HIS:50', 'A:HIS:58', 'A:TYR:140', 'A:HIS:20', 'A:ALA:71', 'A:LEU:136', 'A:PHE:43', 'A:PHE:46', 'A:LEU:66', 'A:VAL:121', 'A:MET:76', 'A:GLU:27', 'A:ALA:120', 'A:HIS:89', 'A:VAL:10', 'A:VAL:93', 'A:ARG:141', 'A:SER:3', 'A:SER:133', 'A:ASP:64', 'A:GLY:51', 'A:GLU:23', 'A:SER:81', 'A:GLN:54', 'A:PRO:95', 'A:THR:38', 'A:HIS:87', 'A:LYS:99', 'A:LYS:90', 'A:ASN:68', 'A:ALA:82', 'A:THR:39', 'A:LYS:139', 'A:THR:108', 'A:HIS:45', 'A:ASP:75', 'A:LEU:80', 'A:SER:124', 'A:VAL:17', 'A:LEU:86', 'A:ALA:13', 'A:LYS:127', 'A:ASP:85', 'A:THR:67', 'A:LEU:106', 'A:LYS:61', 'A:ALA:63', 'A:ASP:47', 'A:ALA:111', 'A:ALA:21', 'A:ALA:12', 'A:LEU:91', 'A:SER:138', 'A:GLU:116', 'A:LEU:48', 'A:GLU:30', 'A:SER:52', 'A:VAL:62', 'A:SER:84', 'A:PRO:77', 'A:GLY:59', 'A:PHE:98', 'A:ALA:19', 'A:ASN:9', 'A:HIS:103', 'A:ASP:6', 'A:ARG:92', 'A:LYS:60', 'A:GLY:18', 'A:PHE:36', 'A:PRO:44', 'A:PRO:4', 'A:ALA:28', 'A:LYS:40', 'A:VAL:96', 'A:THR:134', 'A:HIS:122', 'A:VAL:70', 'A:SER:49', 'A:PRO:119', 'A:THR:137', 'A:LYS:16', 'A:ASN:97', 'A:ARG:31', 'A:VAL:1', 'A:ALA:53', 'A:TRP:14', 'A:ALA:5', 'A:ALA:115', 'A:LEU:34', 'A:GLY:57', 'A:HIS:112', 'A:ALA:65', 'A:ASP:126', 'A:LEU:125', 'A:PRO:37', 'A:HIS:72', 'A:THR:118', 'A:CYS:104', 'A:ASP:94', 'A:THR:8', 'A:PHE:33', 'A:VAL:135', 'A:LYS:56', 'A:LEU:29', 'A:PRO:114', 'A:ASP:74', 'A:LEU:109', 'A:LEU:113', 'A:VAL:132', 'A:GLY:15', 'A:MET:32', 'A:VAL:55', 'A:PHE:128', 'A:ALA:88', 'A:ALA:110', 'A:PHE:117', 'A:VAL:73', 'A:THR:41', 'A:LEU:129'].
+DEBUG:graphein.protein.subgraphs:Found 97 nodes in the chain subgraph.
+DEBUG:graphein.protein.subgraphs:Creating subgraph from nodes: ['A:GLU:50', 'A:LEU:64', 'A:PHE:30', 'A:THR:4', 'A:ARG:81', 'A:LEU:39', 'A:ASN:83', 'A:ALA:15', 'A:VAL:9', 'A:ALA:79', 'A:PHE:22', 'A:ASP:96', 'A:ARG:45', 'A:TYR:78', 'A:SER:55', 'A:THR:86', 'A:ARG:12', 'A:LYS:48', 'A:SER:28', 'A:GLY:29', 'A:VAL:93', 'A:PRO:32', 'A:GLU:16', 'A:ILE:35', 'A:SER:57', 'A:SER:33', 'A:ASP:53', 'A:ILE:7', 'A:LYS:19', 'A:LEU:65', 'A:GLU:77', 'A:TRP:60', 'A:SER:20', 'A:TYR:63', 'A:PHE:70', 'A:TRP:95', 'A:HIS:13', 'A:ASP:38', 'A:LEU:54', 'A:PRO:5', 'A:TYR:10', 'A:LEU:87', 'A:THR:68', 'A:HIS:31', 'A:TYR:66', 'A:SER:11', 'A:CYS:25', 'A:SER:52', 'A:VAL:82', 'A:LYS:91', 'A:LEU:23', 'A:LEU:40', 'A:ARG:3', 'A:VAL:27', 'A:GLU:69', 'A:ASP:76', 'A:LYS:75', 'A:THR:73', 'A:PRO:90', 'A:GLY:43', 'A:PHE:56', 'A:VAL:85', 'A:GLY:18', 'A:GLU:44', 'A:ASN:17', 'A:VAL:37', 'A:SER:88', 'A:ASP:59', 'A:GLN:8', 'A:ASN:24', 'A:HIS:84', 'A:CYS:80', 'A:ILE:1', 'A:GLU:36', 'A:HIS:51', 'A:LYS:41', 'A:LYS:6', 'A:VAL:49', 'A:GLU:47', 'A:TYR:67', 'A:PHE:62', 'A:PRO:72', 'A:ASP:34', 'A:GLN:2', 'A:ASN:21', 'A:ILE:92', 'A:SER:61', 'A:MET:0', 'A:PRO:14', 'A:GLN:89', 'A:ILE:46', 'A:GLU:74', 'A:THR:71', 'A:LYS:94', 'A:LYS:58', 'A:ASN:42', 'A:TYR:26'].
+DEBUG:graphein.protein.subgraphs:Found 148 nodes in the chain subgraph.
+DEBUG:graphein.protein.subgraphs:Creating subgraph from nodes: ['A:THR:117', 'A:LEU:18', 'A:ALA:1', 'A:GLY:25', 'A:PHE:68', 'A:ASN:111', 'A:LEU:39', 'A:LEU:105', 'A:ALA:15', 'A:THR:26', 'A:ASP:129', 'A:VAL:91', 'A:ALA:147', 'A:GLU:82', 'A:PRO:43', 'A:ASN:53', 'A:MET:124', 'A:ALA:10', 'A:ASP:24', 'A:LYS:13', 'A:ALA:46', 'A:SER:38', 'A:GLN:143', 'A:THR:110', 'A:VAL:121', 'A:MET:76', 'A:ARG:90', 'A:ASP:2', 'A:LYS:115', 'A:GLU:45', 'A:ARG:74', 'A:PHE:16', 'A:GLY:33', 'A:THR:5', 'A:ASP:64', 'A:TYR:99', 'A:PHE:92', 'A:GLU:123', 'A:SER:81', 'A:GLN:49', 'A:GLU:140', 'A:MET:51', 'A:MET:36', 'A:ALA:103', 'A:SER:17', 'A:VAL:136', 'A:THR:29', 'A:ASP:56', 'A:ILE:27', 'A:ARG:86', 'A:ASP:122', 'A:PHE:12', 'A:THR:70', 'A:GLU:120', 'A:LEU:48', 'A:ILE:9', 'A:ALA:128', 'A:LEU:32', 'A:LYS:77', 'A:GLU:139', 'A:GLY:59', 'A:GLU:31', 'A:GLU:127', 'A:GLU:7', 'A:GLY:40', 'A:LYS:75', 'A:LYS:30', 'A:GLU:6', 'A:MET:145', 'A:ALA:57', 'A:ARG:106', 'A:ALA:73', 'A:PHE:141', 'A:GLY:98', 'A:GLY:113', 'A:THR:79', 'A:GLN:135', 'A:ASN:137', 'A:GLU:104', 'A:TYR:138', 'A:ARG:126', 'A:ASN:60', 'A:ASP:78', 'A:GLN:8', 'A:ASN:97', 'A:MET:144', 'A:GLU:114', 'A:GLU:84', 'A:VAL:35', 'A:ASP:131', 'A:PRO:66', 'A:ASP:58', 'A:MET:71', 'A:GLN:41', 'A:ASP:80', 'A:LEU:69', 'A:VAL:142', 'A:GLY:134', 'A:SER:101', 'A:ASP:20', 'A:GLN:3', 'A:THR:34', 'A:LYS:148', 'A:LEU:112', 'A:ASP:22', 'A:PHE:65', 'A:GLU:67', 'A:THR:146', 'A:MET:109', 'A:ILE:130', 'A:THR:44', 'A:MET:72', 'A:GLY:23', 'A:VAL:108', 'A:ILE:63', 'A:LYS:21', 'A:GLU:119', 'A:GLU:47', 'A:ILE:100', 'A:ARG:37', 'A:ASP:118', 'A:PHE:19', 'A:GLY:61', 'A:THR:62', 'A:GLY:132', 'A:LEU:4', 'A:GLU:87', 'A:ALA:102', 'A:ASP:133', 'A:HIS:107', 'A:ASP:95', 'A:GLY:96', 'A:GLU:54', 'A:GLU:83', 'A:ASP:50', 'A:THR:28', 'A:VAL:55', 'A:PHE:89', 'A:ASP:93', 'A:ILE:85', 'A:GLU:14', 'A:ALA:88', 'A:LYS:94', 'A:LEU:116', 'A:ILE:52', 'A:GLU:11', 'A:ASN:42', 'A:ILE:125'].
+Processing...
+Done!
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Data(edge_index=[2, 173], node_id=[174], coords=[1], name=[1], dist_mat=[1], num_nodes=174)
+Data(edge_index=[2, 140], node_id=[141], coords=[1], name=[1], dist_mat=[1], num_nodes=141)
+Data(edge_index=[2, 96], node_id=[97], coords=[1], name=[1], dist_mat=[1], num_nodes=97)
+Data(edge_index=[2, 147], node_id=[148], coords=[1], name=[1], dist_mat=[1], num_nodes=148)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a dataloader from dataset and inspect a few batches</span>
+<span class="n">dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop_last</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dl</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+DataBatch(edge_index=[2, 303], node_id=[2], coords=[2], name=[2], dist_mat=[2], graph_y=[2], node_y=[2], num_nodes=306, batch=[306], ptr=[3])
+DataBatch(edge_index=[2, 1009], node_id=[2], coords=[2], name=[2], dist_mat=[2], graph_y=[2], node_y=[2], num_nodes=1011, batch=[1011], ptr=[3])
+DataBatch(edge_index=[2, 96], node_id=[1], coords=[1], name=[1], dist_mat=[1], graph_y=[1], node_y=[1], num_nodes=97, batch=[97], ptr=[2])
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Transforms">
+<h3>Transforms<a class="headerlink" href="#Transforms" title="Permalink to this headline">#</a></h3>
+<p>We can supply various functions to <code class="docutils literal notranslate"><span class="pre">ProteinGraphDataset</span></code> and <code class="docutils literal notranslate"><span class="pre">InMemoryProteinGraphDataset</span></code> to alter the composition of the dataset.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pdb_transform</span></code> (<code class="docutils literal notranslate"><span class="pre">list(callable)</span></code>, optional) - A function that receives a list of paths to the downloaded structures. This provides an entry point to apply pre-processing from bioinformatics tools of your choosing</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">graph_transformation_funcs</span></code>: (<code class="docutils literal notranslate"><span class="pre">List[Callable]</span></code>, optional) List of functions that consume a <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code> and return a <code class="docutils literal notranslate"><span class="pre">nx.Graph</span></code>. Applied to graphs after construction but before conversion to <code class="docutils literal notranslate"><span class="pre">torch_geometric.data.Data</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transform</span></code> (<code class="docutils literal notranslate"><span class="pre">callable</span></code>, optional) – A function/transform that takes in a <code class="docutils literal notranslate"><span class="pre">torch_geometric.data.Data</span></code> object and returns a transformed version. The data object will be transformed before every access. (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pre_transform</span></code> (<code class="docutils literal notranslate"><span class="pre">callable</span></code>, optional) – A function/transform that takes in a torch_geometric.data.Data object and returns a transformed version. The data object will be transformed before being saved to disk. (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pre_filter</span></code> (<code class="docutils literal notranslate"><span class="pre">callable,</span></code> optional) – A function that takes in a <code class="docutils literal notranslate"><span class="pre">torch_geometric.data.Data</span></code> object and returns a boolean value, indicating whether the data object should be included in the final dataset. (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">Data</span>
+
+<span class="c1"># Create dummy transforms</span>
+<span class="k">def</span> <span class="nf">pdb_transform_fn</span><span class="p">(</span><span class="n">files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+    <span class="sd">"""Transforms raw pdbs prior to computing graphs."""</span>
+    <span class="k">return</span>
+
+<span class="k">def</span> <span class="nf">graph_transform_fn</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
+    <span class="sd">"""Transforms graphein nx.Graph prior to conversion to torch_geometric.data.Data."""</span>
+    <span class="k">return</span> <span class="n">graph</span>
+
+<span class="k">def</span> <span class="nf">transform_fn</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Data</span><span class="p">:</span>
+    <span class="sd">"""Transforms torch_geometric.data.Data prior to every access."""</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+<span class="k">def</span> <span class="nf">pre_transform_fn</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Data</span><span class="p">:</span>
+    <span class="sd">"""Transforms torch_geometric.data.Data prior to saving to disk."""</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+<span class="k">def</span> <span class="nf">pre_filter_fn</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">"""Takes in a torch_geometric.data.Data and returns True if the data should be included in the dataset."""</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graphein.ml.datasets.torch_geometric_dataset</span> <span class="kn">import</span> <span class="n">InMemoryProteinGraphDataset</span>
+
+<span class="n">g_lab_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"3eiy"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"4hhb"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"Q5VSL9"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"1lds"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">"2ll6"</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+<span class="n">node_lab_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"3eiy"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"4hhb"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"Q5VSL9"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"1lds"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">"2ll6"</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+<span class="n">chain_selection_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"4hhb"</span><span class="p">:</span> <span class="s2">"A"</span><span class="p">}</span>
+
+<span class="n">ds</span> <span class="o">=</span> <span class="n">InMemoryProteinGraphDataset</span><span class="p">(</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="s2">"../graphein/ml/datasets/test"</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"test"</span><span class="p">,</span>
+    <span class="n">pdb_codes</span><span class="o">=</span><span class="p">[</span><span class="s2">"3eiy"</span><span class="p">,</span> <span class="s2">"4hhb"</span><span class="p">,</span> <span class="s2">"1lds"</span><span class="p">,</span> <span class="s2">"2ll6"</span><span class="p">],</span>
+    <span class="n">uniprot_ids</span><span class="o">=</span><span class="p">[</span><span class="s2">"Q5VSL9"</span><span class="p">],</span>
+    <span class="n">graph_label_map</span><span class="o">=</span><span class="n">g_lab_map</span><span class="p">,</span>
+    <span class="n">node_label_map</span><span class="o">=</span><span class="n">node_lab_map</span><span class="p">,</span>
+    <span class="n">chain_selection_map</span><span class="o">=</span><span class="n">chain_selection_map</span><span class="p">,</span>
+    <span class="n">pdb_transform</span><span class="o">=</span><span class="p">[</span><span class="n">pdb_transform_fn</span><span class="p">],</span>
+    <span class="n">graph_transformation_funcs</span><span class="o">=</span><span class="p">[</span><span class="n">graph_transform_fn</span><span class="p">],</span>
+    <span class="n">transform</span><span class="o">=</span><span class="n">transform_fn</span><span class="p">,</span>
+    <span class="n">pre_transform</span><span class="o">=</span><span class="n">pre_transform_fn</span><span class="p">,</span>
+    <span class="n">pre_filter</span><span class="o">=</span><span class="n">pre_filter_fn</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Downloading PDB structure '3eiy'...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:graphein.protein.utils:Downloaded PDB file for: 3eiy
+ 25%|██▌       | 1/4 [00:01&lt;00:04,  1.52s/it]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Downloading PDB structure '4hhb'...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:graphein.protein.utils:Downloaded PDB file for: 4hhb
+ 50%|█████     | 2/4 [00:03&lt;00:03,  1.61s/it]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Downloading PDB structure '1lds'...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:graphein.protein.utils:Downloaded PDB file for: 1lds
+ 75%|███████▌  | 3/4 [00:04&lt;00:01,  1.51s/it]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Downloading PDB structure '2ll6'...
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:graphein.protein.utils:Downloaded PDB file for: 2ll6
+100%|██████████| 4/4 [00:06&lt;00:00,  1.66s/it]
+  0%|          | 0/1 [00:00&lt;?, ?it/s]INFO:graphein.protein.utils:Downloaded AlphaFold PDB file for: Q5VSL9
+100%|██████████| 1/1 [00:00&lt;00:00,  8.83it/s]
+Processing...
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+WARNING:graphein.protein.visualisation:To use the Graphein submodule graphein.protein.visualisation, you need to install: pytorch3d
+To do so, use the following command: conda install -c pytorch3d pytorch3d
+INFO:graphein.protein.graphs:Constructing graph for: ../graphein/ml/datasets/test/raw/Q5VSL9.pdb. Chain selection: all
+INFO:graphein.protein.graphs:Constructing graph for: ../graphein/ml/datasets/test/raw/1lds.pdb. Chain selection: all
+INFO:graphein.protein.graphs:Constructing graph for: ../graphein/ml/datasets/test/raw/3eiy.pdb. Chain selection: all
+INFO:graphein.protein.graphs:Constructing graph for: ../graphein/ml/datasets/test/raw/4hhb.pdb. Chain selection: A
+INFO:graphein.protein.graphs:Constructing graph for: ../graphein/ml/datasets/test/raw/2ll6.pdb. Chain selection: all
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 97 total nodes
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+DEBUG:graphein.protein.graphs:Detected 174 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 141 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 837 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+DEBUG:graphein.protein.graphs:Deprotonating protein. This removes H atoms from the pdb_df dataframe
+DEBUG:graphein.protein.graphs:Detected 165 total nodes
+DEBUG:graphein.protein.features.nodes.amino_acid:Reading meiler embeddings from: /Users/arianjamasb/github/graphein/graphein/protein/features/nodes/meiler_embeddings.csv
+Done!
+</pre></div></div>
+</div>
+</div>
+</div>
+</div>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../datasets/pscdb.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">PSCDB - Protein Structural Change Database</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../datasets.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Datasets</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Graphein Protein Structure Dataloaders</a><ul>
+<li><a class="reference internal" href="#PyTorch-Geometric-Datasets">PyTorch Geometric Datasets</a><ul>
+<li><a class="reference internal" href="#ProteinGraphDataset">ProteinGraphDataset</a><ul>
+<li><a class="reference internal" href="#Parameters">Parameters</a></li>
+<li><a class="reference internal" href="#Directory-Structure">Directory Structure</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#InMemoryProteinGraphDataset">InMemoryProteinGraphDataset</a><ul>
+<li><a class="reference internal" href="#id1">Parameters</a></li>
+<li><a class="reference internal" href="#id2">Directory Structure</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ProteinGraphListDataset">ProteinGraphListDataset</a><ul>
+<li><a class="reference internal" href="#id3">Parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Transforms">Transforms</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </body>
+</html>

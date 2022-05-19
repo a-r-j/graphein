@@ -1,0 +1,532 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKD1FQDEYH"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            
+            gtag('config', 'G-ZKD1FQDEYH');
+            
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+        <title>graphein.protein.config - Graphein 1.2.1</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style></head>
+  <body>
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">Graphein 1.2.1</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../_static/graphein.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Graphein 1.2.1</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/introduction.html">Graphein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../protein_notebooks.html">Protein</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/residue_graphs.html">Graphein - Residue Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/atom_graph_tutorial.html">Graphein - Atom Graph Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/alphafold_protein_graph_tutorial.html">Constructing Graphs from AlphaFold Protein Structure Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/higher_order_graphs.html">Secondary Structure Graphs &amp; Chain Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/subgraphing_tutorial.html">Constructing Subgraphs in Graphein</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/protein_mesh_tutorial.html">Creating Protein Meshes in Graphein &amp; 3D Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/protein_graph_analytics.html">Protein Graph Analytics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/interactive_plotly_example.html">Interactive Visualisation with Plotly</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../rna_notebooks.html">RNA Graphs</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/rna_graph_tutorial.html">Graphein RNA Graph Construction Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../ppi_notebooks.html">PPI Networks</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/ppi_tutorial.html">PPI Networks and Structural Interactomics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../grn_notebooks.html">Gene Regulatory Networks</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/grn_tutorial.html">Gene Regulatory Network Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Machine Learning</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/dataloader_tutorial.html">Graphein Protein Structure Dataloaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../datasets/pscdb.html">PSCDB - Protein Structural Change Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notebooks/pscdb_baselines.html">PSCDB - Baselines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../datasets/ppisp.html">PPISP - Protein Protein Interaction Structure Prediction</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.protein.html">graphein.protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.rna.html">graphein.rna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.ppi.html">graphein.ppi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.grn.html">graphein.grn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.ml.html">graphein.ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/graphein.utils.html">graphein.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/code_of_conduct.html">Contributor Covenant Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <h1>Source code for graphein.protein.config</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Base Config object for use with Protein Graph Construction."""</span>
+<span class="c1"># Graphein</span>
+<span class="c1"># Author: Arian Jamasb &lt;arian@jamasb.io&gt;</span>
+<span class="c1"># License: MIT</span>
+<span class="c1"># Project Website: https://github.com/a-r-j/graphein</span>
+<span class="c1"># Code Repository: https://github.com/a-r-j/graphein</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">deepdiff</span> <span class="kn">import</span> <span class="n">DeepDiff</span>
+<span class="kn">from</span> <span class="nn">deepdiff.operator</span> <span class="kn">import</span> <span class="n">BaseOperator</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span>
+
+<span class="kn">from</span> <span class="nn">graphein.protein.edges.distance</span> <span class="kn">import</span> <span class="n">add_peptide_bonds</span>
+<span class="kn">from</span> <span class="nn">graphein.protein.features.nodes.amino_acid</span> <span class="kn">import</span> <span class="n">meiler_embedding</span>
+
+
+<div class="viewcode-block" id="partial_functions_equal"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.config.partial_functions_equal">[docs]</a><span class="k">def</span> <span class="nf">partial_functions_equal</span><span class="p">(</span><span class="n">func1</span><span class="p">:</span> <span class="n">partial</span><span class="p">,</span> <span class="n">func2</span><span class="p">:</span> <span class="n">partial</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Determine whether two partial functions are equal.</span>
+
+<span class="sd">    :param func1: Partial function to check</span>
+<span class="sd">    :type func1: partial</span>
+<span class="sd">    :param func2: Partial function to check</span>
+<span class="sd">    :type func2: partial</span>
+<span class="sd">    :return: Whether the two functions are equal</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">func1</span><span class="p">,</span> <span class="n">partial</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func2</span><span class="p">,</span> <span class="n">partial</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="nb">all</span><span class="p">(</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">func1</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="o">==</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func2</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"func"</span><span class="p">,</span> <span class="s2">"args"</span><span class="p">,</span> <span class="s2">"keywords"</span><span class="p">]</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PartialMatchOperator"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.config.PartialMatchOperator">[docs]</a><span class="k">class</span> <span class="nc">PartialMatchOperator</span><span class="p">(</span><span class="n">BaseOperator</span><span class="p">):</span>
+    <span class="sd">"""Custom operator for deepdiff comparison. This operator compares whether the two partials are equal."""</span>
+
+    <span class="k">def</span> <span class="nf">give_up_diffing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">diff_instance</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">partial_functions_equal</span><span class="p">(</span><span class="n">level</span><span class="o">.</span><span class="n">t1</span><span class="p">,</span> <span class="n">level</span><span class="o">.</span><span class="n">t2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PathMatchOperator"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.config.PathMatchOperator">[docs]</a><span class="k">class</span> <span class="nc">PathMatchOperator</span><span class="p">(</span><span class="n">BaseOperator</span><span class="p">):</span>
+    <span class="sd">"""Custom operator for deepdiff comparison. This operator compares whether the two pathlib Paths are equal."""</span>
+
+    <span class="k">def</span> <span class="nf">give_up_diffing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">diff_instance</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">level</span><span class="o">.</span><span class="n">t1</span> <span class="o">==</span> <span class="n">level</span><span class="o">.</span><span class="n">t2</span></div>
+
+
+<span class="k">class</span> <span class="nc">DSSPConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">executable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"mkdssp"</span>
+
+
+<div class="viewcode-block" id="GetContactsConfig"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.config.GetContactsConfig">[docs]</a><span class="k">class</span> <span class="nc">GetContactsConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Config object for parameters relating to running ``GetContacts``.</span>
+<span class="sd">    ``GetContacts`` is an optional dependency from which intramolecular interactions can be computed and used as edges in the graph.</span>
+
+<span class="sd">    More information about ``GetContacts`` can be found at https://getcontacts.github.io/</span>
+
+<span class="sd">    :param get_contacts_path: Path to ``GetContacts`` installation</span>
+<span class="sd">    :type get_contacts_path: pathlib.Path</span>
+<span class="sd">    :param contacts_dir: Path to store output of ``GetContacts``</span>
+<span class="sd">    :type contacts_dir: pathlib.Path</span>
+<span class="sd">    :param pdb_dir: Path to PDB files to be used to compute intramolecular interactions.</span>
+<span class="sd">    :type pdb_dir: pathlib.Path</span>
+<span class="sd">    :param granularity: Specifies the node types of the graph, defaults to ``"CA"`` for alpha-carbons as nodes. Other options are ``"CB"`` (beta-carbon), ``"atom"`` for all-atom graphs, and ``"centroid"`` for nodes positioned as residue centroids.</span>
+<span class="sd">    :type granularity: str</span>
+<span class="sd">    """</span>
+
+    <span class="n">get_contacts_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span>
+        <span class="s2">"/Users/arianjamasb/github/getcontacts/"</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="n">contacts_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"../examples/contacts/"</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="n">pdb_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"../examples/pdbs/"</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="n">granularity</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"CA"</span></div>
+
+
+<span class="n">GraphAtoms</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span>
+    <span class="s2">"N"</span><span class="p">,</span>
+    <span class="s2">"CA"</span><span class="p">,</span>
+    <span class="s2">"C"</span><span class="p">,</span>
+    <span class="s2">"O"</span><span class="p">,</span>
+    <span class="s2">"CB"</span><span class="p">,</span>
+    <span class="s2">"OG"</span><span class="p">,</span>
+    <span class="s2">"CG"</span><span class="p">,</span>
+    <span class="s2">"CD1"</span><span class="p">,</span>
+    <span class="s2">"CD2"</span><span class="p">,</span>
+    <span class="s2">"CE1"</span><span class="p">,</span>
+    <span class="s2">"CE2"</span><span class="p">,</span>
+    <span class="s2">"CZ"</span><span class="p">,</span>
+    <span class="s2">"OD1"</span><span class="p">,</span>
+    <span class="s2">"ND2"</span><span class="p">,</span>
+    <span class="s2">"CG1"</span><span class="p">,</span>
+    <span class="s2">"CG2"</span><span class="p">,</span>
+    <span class="s2">"CD"</span><span class="p">,</span>
+    <span class="s2">"CE"</span><span class="p">,</span>
+    <span class="s2">"NZ"</span><span class="p">,</span>
+    <span class="s2">"OD2"</span><span class="p">,</span>
+    <span class="s2">"OE1"</span><span class="p">,</span>
+    <span class="s2">"NE2"</span><span class="p">,</span>
+    <span class="s2">"OE2"</span><span class="p">,</span>
+    <span class="s2">"OH"</span><span class="p">,</span>
+    <span class="s2">"NE"</span><span class="p">,</span>
+    <span class="s2">"NH1"</span><span class="p">,</span>
+    <span class="s2">"NH2"</span><span class="p">,</span>
+    <span class="s2">"OG1"</span><span class="p">,</span>
+    <span class="s2">"SD"</span><span class="p">,</span>
+    <span class="s2">"ND1"</span><span class="p">,</span>
+    <span class="s2">"SG"</span><span class="p">,</span>
+    <span class="s2">"NE1"</span><span class="p">,</span>
+    <span class="s2">"CE3"</span><span class="p">,</span>
+    <span class="s2">"CZ2"</span><span class="p">,</span>
+    <span class="s2">"CZ3"</span><span class="p">,</span>
+    <span class="s2">"CH2"</span><span class="p">,</span>
+    <span class="s2">"OXT"</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="sd">"""Allowable atom types for nodes in the graph."""</span>
+
+<span class="n">GranularityOpts</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"atom"</span><span class="p">,</span> <span class="s2">"centroids"</span><span class="p">]</span>
+<span class="sd">"""Allowable granularity options for nodes in the graph."""</span>
+
+
+<div class="viewcode-block" id="ProteinGraphConfig"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.config.ProteinGraphConfig">[docs]</a><span class="k">class</span> <span class="nc">ProteinGraphConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Config Object for Protein Structure Graph Construction.</span>
+
+<span class="sd">    If you encounter a problematic structure, perusing https://www.umass.edu/microbio/chime/pe_beta/pe/protexpl/badpdbs.htm may provide some additional insight.</span>
+<span class="sd">    PDBs are notoriously troublesome and this is an excellent overview.</span>
+
+<span class="sd">    :param granularity: Controls the granularity of the graph construction. ``"atom"`` builds an atomic-scale graph where</span>
+<span class="sd">        nodes are constituent atoms. Residue-level graphs can be build by specifying which constituent atom should</span>
+<span class="sd">        represent node positions (see :const:`~graphein.protein.config.GraphAtoms`). Additionally, ``"centroids"`` can be specified to</span>
+<span class="sd">        compute the centre of gravity for a given atom (Specified in :const:`~graphein.protein.config.GranularityOpts`).</span>
+<span class="sd">        Defaults to ``"CA"`` (alpha-Carbon).</span>
+<span class="sd">    :type granularity: str (Union[graphein.protein.config.GraphAtoms, graphein.protein.config.GranularityOpts])</span>
+<span class="sd">    :param keep_hets: Controls whether or not heteroatoms are removed from the PDB file. These are typically modified</span>
+<span class="sd">        residues, bound ligands, crystallographic adjuvants, ions or water molecules.</span>
+
+<span class="sd">        For more information, see: https://proteopedia.org/wiki/index.php/Hetero_atoms</span>
+<span class="sd">    :type keep_hets: bool</span>
+<span class="sd">    :param insertions: Controls whether or not insertions are allowed.</span>
+<span class="sd">    :type insertions: bool</span>
+<span class="sd">    :param pdb_dir: Specifies path to download protein structures into.</span>
+<span class="sd">    :type pdb_dir: pathlib.Path</span>
+<span class="sd">    :param verbose: Specifies verbosity of graph creation process.</span>
+<span class="sd">    :type verbose: bool</span>
+<span class="sd">    :param exclude_waters: Specifies whether or not water molecules are excluded from the structure</span>
+<span class="sd">    :type excluded_waters: bool</span>
+<span class="sd">    :param deprotonate: Specifies whether or not to remove ``H`` atoms from the graph.</span>
+<span class="sd">    :type deprotonate: bool</span>
+<span class="sd">    :param protein_df_processing_functions: List of functions that take a ``pd.DataFrame`` and return a ``pd.DataFrame``.</span>
+<span class="sd">        This allows users to define their own series of processing functions for the protein structure DataFrame and</span>
+<span class="sd">        override the default sequencing of processing steps provided by Graphein. We refer users to our low-level API</span>
+<span class="sd">        tutorial for more details.</span>
+<span class="sd">    :type protein_df_processing_functions: Optional[List[Callable]]</span>
+<span class="sd">    :param edge_construction_functions: List of functions that take an ``nx.Graph`` and return an ``nx.Graph`` with desired</span>
+<span class="sd">        edges added. Prepared edge constructions can be found in :ref:`graphein.protein.edges`</span>
+<span class="sd">    :type edge_construction_functions: List[Callable]</span>
+<span class="sd">    :param node_metadata_functions: List of functions that take an ``nx.Graph``</span>
+<span class="sd">    :type node_metadata_functions: List[Callable], optional</span>
+<span class="sd">    :param edge_metadata_functions: List of functions that take an</span>
+<span class="sd">    :type edge_metadata_functions: List[Callable], optional</span>
+<span class="sd">    :param graph_metadata_functions: List of functions that take an ``nx.Graph`` and return an ``nx.Graph`` with added</span>
+<span class="sd">        graph-level features and metadata.</span>
+<span class="sd">    :type graph_metadata_functions: List[Callable], optional</span>
+<span class="sd">    :param get_contacts_config: Config object containing parameters for running ``GetContacts`` for computing intramolecular</span>
+<span class="sd">        contact-based edges. Defaults to None.</span>
+<span class="sd">    :type get_contacts_config: GetContactsConfig, optional</span>
+<span class="sd">    :param dssp_config: Config Object containing reference to ``DSSP`` executable. Defaults to None.</span>
+<span class="sd">        **NB** DSSP must be installed. See installation instructions: https://graphein.ai/getting_started/installation.html#optional-dependencies</span>
+<span class="sd">    :type dssp_config: DSSPConfig, optional</span>
+<span class="sd">    """</span>
+
+    <span class="n">granularity</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">GraphAtoms</span><span class="p">,</span> <span class="n">GranularityOpts</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"CA"</span>
+    <span class="n">keep_hets</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">insertions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">pdb_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span>
+        <span class="s2">"../examples/pdbs/"</span>
+    <span class="p">)</span>  <span class="c1"># Also suggest to avoid hard-coding paths if possible!</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">exclude_waters</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">deprotonate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Graph construction functions</span>
+    <span class="n">protein_df_processing_functions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">edge_construction_functions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">add_peptide_bonds</span>
+    <span class="p">]</span>
+    <span class="n">node_metadata_functions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">meiler_embedding</span>
+    <span class="p">]</span>
+    <span class="n">edge_metadata_functions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">graph_metadata_functions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># External Dependency configs</span>
+    <span class="n">get_contacts_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GetContactsConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dssp_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DSSPConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">"""Overwrites the BaseModel __eq__ function in order to check more specific cases (like partial functions)."""</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">ProteinGraphConfig</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">DeepDiff</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span>
+                    <span class="n">other</span><span class="p">,</span>
+                    <span class="n">custom_operators</span><span class="o">=</span><span class="p">[</span>
+                        <span class="n">PartialMatchOperator</span><span class="p">(</span><span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="n">partial</span><span class="p">]),</span>
+                        <span class="n">PathMatchOperator</span><span class="p">(</span><span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="n">Path</span><span class="p">]),</span>
+                    <span class="p">],</span>
+                <span class="p">)</span>
+                <span class="o">==</span> <span class="p">{}</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span></div>
+
+
+<div class="viewcode-block" id="ProteinMeshConfig"><a class="viewcode-back" href="../../../modules/graphein.protein.html#graphein.protein.config.ProteinMeshConfig">[docs]</a><span class="k">class</span> <span class="nc">ProteinMeshConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Config object for parameters relating to Protein Mesh construction with ``PyMol``</span>
+
+<span class="sd">    **NB** PyMol must be installed. See: https://graphein.ai/getting_started/installation.html#optional-dependencies</span>
+
+<span class="sd">    :param pymol_command_line_options: List of CLI args for running PyMol.</span>
+<span class="sd">        See: https://pymolwiki.org/index.php/Command_Line_Options. Defaults to ``"-cKq"`` ()</span>
+<span class="sd">    :type pymol_command_line_options: str, optional</span>
+<span class="sd">    :param pymol_commands: List of Commands passed to PyMol in surface construction.</span>
+<span class="sd">    :type pymol_commands: List[str], optional</span>
+<span class="sd">    """</span>
+
+    <span class="n">pymol_command_line_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"-cKq"</span>
+    <span class="n">pymol_commands</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"show surface"</span><span class="p">]</span></div>
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Arian Jamasb
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/scripts/furo.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/tabs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>
