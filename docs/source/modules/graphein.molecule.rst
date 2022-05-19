@@ -48,6 +48,23 @@ Visualisation
 .. automodule:: graphein.molecule.visualisation
     :members:
 
+
+Utils
+------
+Utils
+^^^^^^
+.. automodule:: graphein.molecule.utils
+
+ZINC
+^^^^^
+.. automodule:: graphein.molecule.zinc
+    :members:
+
+ChEMBL
+^^^^^^^^
+.. automodule:: graphein.molecule.chembl
+    :members:
+
 Constants
 ----------
 .. automodule:: graphein.molecule.atoms
