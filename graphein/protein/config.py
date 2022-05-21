@@ -6,6 +6,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import os
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Union
@@ -42,9 +43,9 @@ class GetContactsConfig(BaseModel):
 
     get_contacts_path: Path = Path(
         "/Users/arianjamasb/github/getcontacts/"
-    ).resolve()
-    contacts_dir: Path = Path("../examples/contacts/").resolve()
-    pdb_dir: Path = Path("../examples/pdbs/").resolve()
+    ).resolve() #TODO: get rid of this absolute path
+    contacts_dir: Path = Path(os.path.join(os.path.dirname(__file__), "../examples/contacts/")).resolve()
+    pdb_dir: Path = Path(os.path.join(os.path.dirname(__file__), "../examples/pdbs/")).resolve()
     granularity: str = "CA"
 
 
@@ -148,7 +149,7 @@ class ProteinGraphConfig(BaseModel):
     keep_hets: bool = False
     insertions: bool = False
     pdb_dir: Path = Path(
-        "../examples/pdbs/"
+        os.path.join(os.path.dirname(__file__), "../examples/pdbs/")
     )  # Also suggest to avoid hard-coding paths if possible!
     verbose: bool = False
     exclude_waters: bool = True
