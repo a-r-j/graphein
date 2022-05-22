@@ -94,7 +94,7 @@ def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
+def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig], new_pdb_path: str = None) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein graph
 
@@ -102,12 +102,18 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     :param G: nx.Graph
     :param dssp_config: DSSPConfig object. Specifies which executable to run. Located in graphein.protein.config
     :type dssp_config: DSSPConfig, optional
+    :param new_pdb_path: specifies a new path the local pdb file in case it was moved.
+    :type dssp_config: DSSPConfig, optional
     :return: Protein graph with DSSP dataframe added
     :rtype: nx.Graph
     """
 
     config = G.graph["config"]
-    pdb_id = G.graph["pdb_id"]
+    pdb_code = G.graph["pdb_code"]
+    if new_pdb_path:
+        pdb_path = new_pdb_path
+    else:
+        pdb_path = G.graph["pdb_path"]
 
     # Extract DSSP executable
     executable = dssp_config.executable
@@ -117,11 +123,17 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
         executable
     ), "DSSP must be on PATH and marked as an executable"
 
-    # Check for existence of pdb file. If not, download it.
-    if not os.path.isfile(config.pdb_dir / (pdb_id + ".pdb")):
-        pdb_file = download_pdb(config, pdb_id)
+    if pdb_code:
+        # Check for existence of pdb file. If not, download it.
+        if not os.path.isfile(config.pdb_dir / (pdb_code + ".pdb")):
+            pdb_file = download_pdb(config, pdb_code)
+        else:
+            pdb_file = config.pdb_dir / (pdb_code + ".pdb")
     else:
-        pdb_file = config.pdb_dir / (pdb_id + ".pdb")
+        assert os.path.isfile(pdb_path), f"The PDB file could not be found under the path: " \
+                                                    f" {G.graph['pdb_path']}. If the file was moved, specify the new " \
+                                                    f" path using the parameter new_pdb_path"
+        pdb_file = pdb_path
 
     if config.verbose:
         print(f"Using DSSP executable '{executable}'")
