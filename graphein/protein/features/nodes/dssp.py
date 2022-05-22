@@ -94,7 +94,9 @@ def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig], new_pdb_path: str = None) -> nx.Graph:
+def add_dssp_df(
+    G: nx.Graph, dssp_config: Optional[DSSPConfig], new_pdb_path: str = None
+) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein graph
 
@@ -130,9 +132,11 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig], new_pdb_path: st
         else:
             pdb_file = config.pdb_dir / (pdb_code + ".pdb")
     else:
-        assert os.path.isfile(pdb_path), f"The PDB file could not be found under the path: " \
-                                                    f" {G.graph['pdb_path']}. If the file was moved, specify the new " \
-                                                    f" path using the parameter new_pdb_path"
+        assert os.path.isfile(pdb_path), (
+            f"The PDB file could not be found under the path: "
+            f" {G.graph['pdb_path']}. If the file was moved, specify the new "
+            f" path using the parameter new_pdb_path"
+        )
         pdb_file = pdb_path
 
     if config.verbose:

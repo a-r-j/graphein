@@ -70,8 +70,10 @@ def read_pdb_to_dataframe(
     :rtype: pd.DataFrame
     """
 
-    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), 'Either a PDB ID or a path to a local PDB file' \
-                                                                       ' must be specified to read a PDB'
+    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), (
+        "Either a PDB ID or a path to a local PDB file"
+        " must be specified to read a PDB"
+    )
 
     atomic_df = (
         PandasPdb().read_pdb(pdb_path)
@@ -365,18 +367,20 @@ def initialise_graph_with_metadata(
     :param granularity: Granularity of the graph (eg ``"atom"``, ``"CA"``, ``"CB"`` etc or ``"centroid"``).
         See: :const:`~graphein.protein.config.GRAPH_ATOMS` and :const:`~graphein.protein.config.GRANULARITY_OPTS`.
     :type granularity: str
-    :param name: given name for graph
-    :type name: str
+    :param name: specified given name for the graph. If None, the PDB code or the file name will be used to name the graph.
+    :type name: Optional[str], defaults to ``None``
     :param pdb_code: PDB ID / Accession code, if the PDB is available on the PDB database.
-    :type pdb_code: str
-    :param pdb_path: path to local PDB file.
-    :type pdb_path: str
+    :type pdb_code: Optional[str], defaults to ``None``
+    :param pdb_path: path to local PDB file, if constructing a graph from a local file.
+    :type pdb_path: Optional[str], defaults to ``None``
     :return: Returns initial protein structure graph with metadata.
     :rtype: nx.Graph
     """
 
-    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), 'Either a PDB ID or a path to a local PDB file' \
-                                                                   ' must be specified to read a PDB'
+    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), (
+        "Either a PDB ID or a path to a local PDB file"
+        " must be specified to read a PDB"
+    )
 
     # Get name for graph if no name was provided
     if not name:
@@ -542,10 +546,10 @@ def construct_graph(
     :type config: graphein.protein.config.ProteinGraphConfig, optional
     :param name: an optional given name for the graph. the PDB ID or PDB file name will be used if not specified.
     :type name: str, optional
-    :param pdb_path: Path to ``pdb_file`` to build graph from. Default is ``None``.
-    :type pdb_path: str, optional
-    :param pdb_code: 4-character PDB pdb ID / accession code  to build graph from. Default is ``None``.
-    :type pdb_code: str, optional
+    :param pdb_path: Path to ``pdb_file`` when constructing a graph from a local pdb file. Default is ``None``.
+    :type pdb_path: Optional[str], defaults to ``None``
+    :param pdb_code: A 4-character PDB ID / accession to be used to construct the graph, if available. Default is ``None``.
+    :type pdb_code: Optional[str], defaults to ``None``
     :param chain_selection: String of polypeptide chains to include in graph. E.g ``"ABDF"`` or ``"all"``. Default is ``"all"``.
     :type chain_selection: str
     :param df_processing_funcs: List of dataframe processing functions. Default is ``None``.
@@ -562,8 +566,10 @@ def construct_graph(
     :type: nx.Graph
     """
 
-    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), 'Either a PDB ID or a path to a local PDB file' \
-                                                                   ' must be specified to construct a graph'
+    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), (
+        "Either a PDB ID or a path to a local PDB file"
+        " must be specified to construct a graph"
+    )
 
     # If no config is provided, use default
     if config is None:
@@ -603,7 +609,10 @@ def construct_graph(
         granularity=config.granularity,
     )
     protein_df = process_dataframe(
-        raw_df, chain_selection=chain_selection, granularity=config.granularity, insertions=config.insertions
+        raw_df,
+        chain_selection=chain_selection,
+        granularity=config.granularity,
+        insertions=config.insertions,
     )
 
     # Initialise graph with metadata

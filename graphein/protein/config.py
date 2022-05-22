@@ -43,9 +43,13 @@ class GetContactsConfig(BaseModel):
 
     get_contacts_path: Path = Path(
         "/Users/arianjamasb/github/getcontacts/"
-    ).resolve() #TODO: get rid of this absolute path
-    contacts_dir: Path = Path(os.path.join(os.path.dirname(__file__), "../examples/contacts/")).resolve()
-    pdb_dir: Path = Path(os.path.join(os.path.dirname(__file__), "../examples/pdbs/")).resolve()
+    ).resolve()  # TODO: get rid of this absolute path
+    contacts_dir: Path = Path(
+        os.path.join(os.path.dirname(__file__), "../examples/contacts/")
+    ).resolve()
+    pdb_dir: Path = Path(
+        os.path.join(os.path.dirname(__file__), "../examples/pdbs/")
+    ).resolve()
     granularity: str = "CA"
 
 

@@ -154,12 +154,15 @@ def colour_edges(
         raise NotImplementedError(
             "Other edge colouring methods not implemented."
         )
-    
-    assert (0.0 <= set_alpha <= 1.0), f"Alpha value {set_alpha} must be between 0.0 and 1.0"
+
+    assert (
+        0.0 <= set_alpha <= 1.0
+    ), f"Alpha value {set_alpha} must be between 0.0 and 1.0"
     colors = [c[:3] + (set_alpha,) for c in colors]
     if return_as_rgba:
         return [
-            f"rgba{tuple(list(co.convert_to_RGB_255(c[:3])) + [c[3]])}" for c in colors
+            f"rgba{tuple(list(co.convert_to_RGB_255(c[:3])) + [c[3]])}"
+            for c in colors
         ]
     return colors
 
@@ -735,11 +738,16 @@ def asteroid_plot(
 
         if show_edges:
             edge_colors = colour_edges(
-                subgraph, colour_map=edge_colour_map, colour_by=colour_edges_by,
-                set_alpha=edge_alpha, return_as_rgba=True
+                subgraph,
+                colour_map=edge_colour_map,
+                colour_by=colour_edges_by,
+                set_alpha=edge_alpha,
+                return_as_rgba=True,
             )
-            show_legend_bools = [(True if x not in edge_colors[:i] else False)
-                           for i, x in enumerate(edge_colors)]
+            show_legend_bools = [
+                (True if x not in edge_colors[:i] else False)
+                for i, x in enumerate(edge_colors)
+            ]
             edge_trace = []
             for i, (u, v) in enumerate(subgraph.edges()):
                 x0, y0 = subgraph.nodes[u]["pos"]
@@ -812,12 +820,7 @@ def asteroid_plot(
                 width=width,
                 height=height,
                 titlefont_size=16,
-                legend=dict(
-                    yanchor="top",
-                    y=1,
-                    xanchor="left",
-                    x=1.10
-                ),
+                legend=dict(yanchor="top", y=1, xanchor="left", x=1.10),
                 showlegend=True if show_legend else False,
                 hovermode="closest",
                 margin=dict(b=20, l=5, r=5, t=40),
