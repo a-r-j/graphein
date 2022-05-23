@@ -102,35 +102,44 @@ def test_construct_graph_with_dssp():
 
     Uses uses both a pdb code (6REW) and a local pdb file to do so.
     """
-    dssp_config_functions = {"edge_construction_functions": [add_peptide_bonds,
-                                                                              add_aromatic_interactions,
-                                                                              add_hydrogen_bond_interactions,
-                                                                              add_disulfide_interactions,
-                                                                              add_ionic_interactions,
-                                                                              add_aromatic_sulphur_interactions,
-                                                                              add_cation_pi_interactions],
-                                              "graph_metadata_functions": [asa, rsa],
-                                              "node_metadata_functions": [meiler_embedding,partial(expasy_protein_scale, add_separate=True)],
-                                              "dssp_config": DSSPConfig()
-                                              }
+    dssp_config_functions = {
+        "edge_construction_functions": [
+            add_peptide_bonds,
+            add_aromatic_interactions,
+            add_hydrogen_bond_interactions,
+            add_disulfide_interactions,
+            add_ionic_interactions,
+            add_aromatic_sulphur_interactions,
+            add_cation_pi_interactions,
+        ],
+        "graph_metadata_functions": [asa, rsa],
+        "node_metadata_functions": [
+            meiler_embedding,
+            partial(expasy_protein_scale, add_separate=True),
+        ],
+        "dssp_config": DSSPConfig(),
+    }
 
     dssp_prot_config = ProteinGraphConfig(**dssp_config_functions)
 
-    g_pdb = construct_graph(config=dssp_prot_config, pdb_code="6rew")  # should download 6rew.pdb to pdb_dir
+    g_pdb = construct_graph(
+        config=dssp_prot_config, pdb_code="6rew"
+    )  # should download 6rew.pdb to pdb_dir
 
-    assert g_pdb.graph['pdb_code'] == "6rew"
-    assert g_pdb.graph['pdb_path'] is None
-    assert g_pdb.graph['name'] == g_pdb.graph['pdb_code']
-    assert len(g_pdb.graph['dssp_df']) == 1365
+    assert g_pdb.graph["pdb_code"] == "6rew"
+    assert g_pdb.graph["pdb_path"] is None
+    assert g_pdb.graph["name"] == g_pdb.graph["pdb_code"]
+    assert len(g_pdb.graph["dssp_df"]) == 1365
 
-
-    file_path = str(Path(__file__).parent / "test_data" / "alphafold_structure.pdb")
+    file_path = str(
+        Path(__file__).parent / "test_data" / "alphafold_structure.pdb"
+    )
     g_local = construct_graph(config=dssp_prot_config, pdb_path=file_path)
 
-    assert g_local.graph['pdb_code'] is None
-    assert g_local.graph['pdb_path'] == file_path
-    assert g_local.graph['name'] == "alphafold_structure"
-    assert len(g_local.graph['dssp_df']) == 382
+    assert g_local.graph["pdb_code"] is None
+    assert g_local.graph["pdb_path"] == file_path
+    assert g_local.graph["name"] == "alphafold_structure"
+    assert len(g_local.graph["dssp_df"]) == 382
 
 
 def test_construct_graphs_mp():

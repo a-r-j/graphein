@@ -25,3 +25,5 @@ Ryan Greenhalgh: [@rg314](https://github.com/rg314)
 Rico Meinl: [@ricomnl](https://github.com/ricomnl)
 
 Alex Morehead [@amorehead](https://github.com/amorehead)
+
+Aviv Korman [@avivko](https://github.com/avivko)
