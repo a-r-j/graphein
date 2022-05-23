@@ -152,9 +152,7 @@ class ProteinGraphConfig(BaseModel):
     granularity: Union[GraphAtoms, GranularityOpts] = "CA"
     keep_hets: bool = False
     insertions: bool = False
-    pdb_dir: Path = Path(
-        os.path.join(os.path.dirname(__file__), "../examples/pdbs/")
-    )  # Also suggest to avoid hard-coding paths if possible!
+    pdb_dir: Path = Path("/tmp/")  # Also suggest to avoid hard-coding paths if possible!
     verbose: bool = False
     exclude_waters: bool = True
     deprotonate: bool = False
