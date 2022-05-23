@@ -95,7 +95,8 @@ def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_dssp_df(
-    G: nx.Graph, dssp_config: Optional[DSSPConfig],
+    G: nx.Graph,
+    dssp_config: Optional[DSSPConfig],
 ) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein graph
@@ -108,11 +109,9 @@ def add_dssp_df(
     :rtype: nx.Graph
     """
 
-
     config = G.graph["config"]
     pdb_code = G.graph["pdb_code"]
     pdb_name = G.graph["name"]
-
 
     # Extract DSSP executable
     executable = dssp_config.executable
