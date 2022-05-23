@@ -119,7 +119,7 @@ class ProteinGraphConfig(BaseModel):
     :param insertions: Controls whether or not insertions are allowed.
     :type insertions: bool
     :param pdb_dir: Specifies path to download protein structures into.
-    :type pdb_dir: pathlib.Path
+    :type pdb_dir: pathlib.Path. Optional.
     :param verbose: Specifies verbosity of graph creation process.
     :type verbose: bool
     :param exclude_waters: Specifies whether or not water molecules are excluded from the structure
@@ -152,9 +152,7 @@ class ProteinGraphConfig(BaseModel):
     granularity: Union[GraphAtoms, GranularityOpts] = "CA"
     keep_hets: bool = False
     insertions: bool = False
-    pdb_dir: Path = Path(
-        "/tmp/"
-    )  # Also suggest to avoid hard-coding paths if possible!
+    pdb_dir: Optional[Path] = None
     verbose: bool = False
     exclude_waters: bool = True
     deprotonate: bool = False

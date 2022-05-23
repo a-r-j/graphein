@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 from typing import Any, Dict, Optional
+import tempfile
 
 import networkx as nx
 import pandas as pd
@@ -111,6 +112,7 @@ def add_dssp_df(
 
     config = G.graph["config"]
     pdb_code = G.graph["pdb_code"]
+    pdb_path = G.graph["pdb_path"]
     pdb_name = G.graph["name"]
 
     # Extract DSSP executable
@@ -121,21 +123,30 @@ def add_dssp_df(
         executable
     ), "DSSP must be on PATH and marked as an executable"
 
-    if pdb_code:
-        pdb_path = config.pdb_dir / (pdb_code + ".pdb")
+    pdb_file = None
+    if pdb_path:
+        if os.path.isfile(pdb_path):
+            pdb_file = pdb_path
     else:
-        pdb_path = G.graph["pdb_path"]
+        if config.pdb_dir:
+            if os.path.isfile(config.pdb_dir / (pdb_code + ".pdb")):
+                pdb_file = config.pdb_dir / (pdb_code + ".pdb")
 
-    # Check for existence of pdb file. If not, reconstructs it from raw df.
-    if not os.path.isfile(pdb_path):
-        pdb_path = config.pdb_dir / (pdb_name + ".pdb")
-        save_pdb_df_to_pdb(G.graph["raw_pdb_df"], pdb_path)
+    # Check for existence of pdb file. If not, reconstructs it from the raw df.
+    if pdb_file:
+        dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP=executable)
+    else:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            save_pdb_df_to_pdb(
+                G.graph["raw_pdb_df"], tmpdirname + f"/{pdb_name}.pdb"
+            )
+            dssp_dict = dssp_dict_from_pdb_file(
+                tmpdirname + f"/{pdb_name}.pdb", DSSP=executable
+            )
 
     if config.verbose:
         print(f"Using DSSP executable '{executable}'")
 
-    # Run DSSP
-    dssp_dict = dssp_dict_from_pdb_file(pdb_path, DSSP=executable)
     dssp_dict = parse_dssp_df(dssp_dict)
     dssp_dict = process_dssp_df(dssp_dict)
 

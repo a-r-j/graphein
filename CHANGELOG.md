@@ -1,5 +1,6 @@
 ### 1.5.0 - UNRELEASED
 
+* [Patch] - [#178](https://github.com/a-r-j/graphein/pull/178) Fixes [#171](https://github.com/a-r-j/graphein/pull/171) and optimizes `graphein.protein.features.nodes.dssp`. Contribution by @avivko.
 * [Feature] - [#170](https://github.com/a-r-j/graphein/pull/170) Adds support for viewing edges in `graphein.protein.visualisation.asteroid_plot`. Contribution by @avivko.
 * [Feature] - #163 Adds support for conformer generation for SMILE inputs to molecule graph construction.
 * [Feature] - #163 Adds support for molecule graph generation from an RDKit.Chem.Mol input.
