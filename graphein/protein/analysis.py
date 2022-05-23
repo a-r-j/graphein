@@ -275,6 +275,7 @@ def plot_graph_metric_property_correlation(
         labels={
             col: col.replace("_", " ") for col in dataf.columns
         },  # remove underscore
+        hover_name=dataf.index,
         color=colour_by,
         height=height,
         width=width,

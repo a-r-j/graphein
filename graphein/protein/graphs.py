@@ -69,8 +69,11 @@ def read_pdb_to_dataframe(
     :returns: ``pd.DataFrame`` containing protein structure
     :rtype: pd.DataFrame
     """
-    if pdb_code is None and pdb_path is None:
-        raise NameError("One of pdb_code or pdb_path must be specified!")
+
+    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), (
+        "Either a PDB ID or a path to a local PDB file"
+        " must be specified to read a PDB"
+    )
 
     atomic_df = (
         PandasPdb().read_pdb(pdb_path)
@@ -349,8 +352,10 @@ def select_chains(
 def initialise_graph_with_metadata(
     protein_df: pd.DataFrame,
     raw_pdb_df: pd.DataFrame,
-    pdb_id: str,
     granularity: str,
+    name: Optional[str] = None,
+    pdb_code: Optional[str] = None,
+    pdb_path: Optional[str] = None,
 ) -> nx.Graph:
     """
     Initializes the nx Graph object with initial metadata.
@@ -359,17 +364,35 @@ def initialise_graph_with_metadata(
     :type protein_df: pd.DataFrame
     :param raw_pdb_df: Unprocessed dataframe of protein structure for comparison and traceability downstream.
     :type raw_pdb_df: pd.DataFrame
-    :param pdb_id: PDB Accession code.
-    :type pdb_id: str
     :param granularity: Granularity of the graph (eg ``"atom"``, ``"CA"``, ``"CB"`` etc or ``"centroid"``).
         See: :const:`~graphein.protein.config.GRAPH_ATOMS` and :const:`~graphein.protein.config.GRANULARITY_OPTS`.
     :type granularity: str
+    :param name: specified given name for the graph. If None, the PDB code or the file name will be used to name the graph.
+    :type name: Optional[str], defaults to ``None``
+    :param pdb_code: PDB ID / Accession code, if the PDB is available on the PDB database.
+    :type pdb_code: Optional[str], defaults to ``None``
+    :param pdb_path: path to local PDB file, if constructing a graph from a local file.
+    :type pdb_path: Optional[str], defaults to ``None``
     :return: Returns initial protein structure graph with metadata.
     :rtype: nx.Graph
     """
+
+    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), (
+        "Either a PDB ID or a path to a local PDB file"
+        " must be specified to read a PDB"
+    )
+
+    # Get name for graph if no name was provided
+    if not name:
+        if pdb_path:
+            name = get_protein_name_from_filename(pdb_path)
+        else:
+            name = pdb_code
+
     G = nx.Graph(
-        name=pdb_id,
-        pdb_id=pdb_id,
+        name=name,
+        pdb_code=pdb_code,
+        pdb_path=pdb_path,
         chain_ids=list(protein_df["chain_id"].unique()),
         pdb_df=protein_df,
         raw_pdb_df=raw_pdb_df,
@@ -501,6 +524,7 @@ def compute_edges(
 
 def construct_graph(
     config: Optional[ProteinGraphConfig] = None,
+    name: Optional[str] = None,
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
@@ -520,10 +544,12 @@ def construct_graph(
 
     :param config: :class:`~graphein.protein.config.ProteinGraphConfig` object. If None, defaults to config in ``graphein.protein.config``.
     :type config: graphein.protein.config.ProteinGraphConfig, optional
-    :param pdb_path: Path to ``pdb_file`` to build graph from. Default is ``None``.
-    :type pdb_path: str, optional
-    :param pdb_code: 4-character PDB accession pdb_code to build graph from. Default is ``None``.
-    :type pdb_code: str, optional
+    :param name: an optional given name for the graph. the PDB ID or PDB file name will be used if not specified.
+    :type name: str, optional
+    :param pdb_path: Path to ``pdb_file`` when constructing a graph from a local pdb file. Default is ``None``.
+    :type pdb_path: Optional[str], defaults to ``None``
+    :param pdb_code: A 4-character PDB ID / accession to be used to construct the graph, if available. Default is ``None``.
+    :type pdb_code: Optional[str], defaults to ``None``
     :param chain_selection: String of polypeptide chains to include in graph. E.g ``"ABDF"`` or ``"all"``. Default is ``"all"``.
     :type chain_selection: str
     :param df_processing_funcs: List of dataframe processing functions. Default is ``None``.
@@ -540,13 +566,14 @@ def construct_graph(
     :type: nx.Graph
     """
 
+    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), (
+        "Either a PDB ID or a path to a local PDB file"
+        " must be specified to construct a graph"
+    )
+
     # If no config is provided, use default
     if config is None:
         config = ProteinGraphConfig()
-
-    # Get name from pdb_file is no pdb_code is provided
-    if pdb_path and (pdb_code is None):
-        pdb_code = get_protein_name_from_filename(pdb_path)
 
     # If config params are provided, overwrite them
     config.protein_df_processing_functions = (
@@ -582,14 +609,19 @@ def construct_graph(
         granularity=config.granularity,
     )
     protein_df = process_dataframe(
-        raw_df, chain_selection=chain_selection, granularity=config.granularity, insertions=config.insertions
+        raw_df,
+        chain_selection=chain_selection,
+        granularity=config.granularity,
+        insertions=config.insertions,
     )
 
     # Initialise graph with metadata
     g = initialise_graph_with_metadata(
         protein_df=protein_df,
         raw_pdb_df=raw_df.df["ATOM"],
-        pdb_id=pdb_code,
+        name=name,
+        pdb_code=pdb_code,
+        pdb_path=pdb_path,
         granularity=config.granularity,
     )
     # Add nodes to graph
