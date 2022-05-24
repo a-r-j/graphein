@@ -7,6 +7,7 @@ import logging
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import os
+import tempfile
 from functools import lru_cache
 from pathlib import Path
 from shutil import which
@@ -67,7 +68,7 @@ def download_pdb(config, pdb_code: str) -> Path:
     """
     pdb_code = pdb_code.lower()
     if not config.pdb_dir:
-        config.pdb_dir = Path("/tmp/")
+        config.pdb_dir = Path(tempfile.TemporaryDirectory().name)
 
     # Initialise class and download pdb file
     pdbl = PDBList()

@@ -6,6 +6,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import os
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Union
@@ -42,9 +43,13 @@ class GetContactsConfig(BaseModel):
 
     get_contacts_path: Path = Path(
         "/Users/arianjamasb/github/getcontacts/"
+    ).resolve()  # TODO: get rid of this absolute path
+    contacts_dir: Path = Path(
+        os.path.join(os.path.dirname(__file__), "../examples/contacts/")
     ).resolve()
-    contacts_dir: Path = Path("../examples/contacts/").resolve()
-    pdb_dir: Path = Path("../examples/pdbs/").resolve()
+    pdb_dir: Path = Path(
+        os.path.join(os.path.dirname(__file__), "../examples/pdbs/")
+    ).resolve()
     granularity: str = "CA"
 
 
@@ -114,7 +119,7 @@ class ProteinGraphConfig(BaseModel):
     :param insertions: Controls whether or not insertions are allowed.
     :type insertions: bool
     :param pdb_dir: Specifies path to download protein structures into.
-    :type pdb_dir: pathlib.Path
+    :type pdb_dir: pathlib.Path. Optional.
     :param verbose: Specifies verbosity of graph creation process.
     :type verbose: bool
     :param exclude_waters: Specifies whether or not water molecules are excluded from the structure
@@ -147,9 +152,7 @@ class ProteinGraphConfig(BaseModel):
     granularity: Union[GraphAtoms, GranularityOpts] = "CA"
     keep_hets: bool = False
     insertions: bool = False
-    pdb_dir: Path = Path(
-        "../examples/pdbs/"
-    )  # Also suggest to avoid hard-coding paths if possible!
+    pdb_dir: Optional[Path] = None
     verbose: bool = False
     exclude_waters: bool = True
     deprotonate: bool = False
