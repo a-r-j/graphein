@@ -1025,3 +1025,42 @@ def compute_secondary_structure_graph(
     if return_weighted_graph:
         return compute_weighted_graph_from_multigraph(h)
     return h
+
+
+def compute_line_graph(g: nx.Graph, repopulate_data: bool = True) -> nx.Graph:
+    """Computes the line graph of a graph.
+
+    The line graph of a graph G has a node for each edge in G and an edge
+    joining those nodes if the two edges in G share a common node. For directed
+    graphs, nodes are adjacent exactly when the edges they represent form a
+    directed path of length two.
+
+    The nodes of the line graph are 2-tuples of nodes in the original graph (or
+    3-tuples for multigraphs, with the key of the edge as the third element).
+
+    :param g: Graph to compute the line graph of.
+    :type g: nx.Graph
+    :param repopulate_data: Whether or not to map node and edge data to edges
+        and nodes of the line graph, defaults to True
+    :type repopulate_data: bool, optional
+    :return: Line graph of g.
+    :rtype: nx.Graph
+    """
+    l_g = nx.generators.line_graph(g)
+    l_g.graph = g.graph
+
+    if repopulate_data:
+        source_edge_data = {(u, v): d for u, v, d in g.edges(data=True)}
+        nx.set_node_attributes(l_g, source_edge_data)
+
+        node_list = {}
+        for u, v, d in l_g.edges(data=True):
+            node_union = u + v
+            for n in node_union:
+                if node_union.count(n) > 1:
+                    node_list[(u, v)] = n
+                    break
+
+        source_node_data = {k: g.nodes[v] for k, v in node_list.items()}
+        nx.set_edge_attributes(l_g, source_node_data)
+    return l_g
