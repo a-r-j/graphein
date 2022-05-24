@@ -11,6 +11,7 @@
 * [Feature] - #165 adds support for distance window-based edges for protein graphs.
 * [Feature] - #165 adds support for transformer-like positional encoding of protein sequences.
 * [Feature] - #165 adds support for plddt-like colouring of AF2 graphs
+* [Patch] - [#178](https://github.com/a-r-j/graphein/pull/178) Fixes [#171](https://github.com/a-r-j/graphein/pull/171) and optimizes `graphein.protein.features.nodes.dssp`. Contribution by @avivko.
 * [Feature] - [#170](https://github.com/a-r-j/graphein/pull/170) Adds support for viewing edges in `graphein.protein.visualisation.asteroid_plot`. Contribution by @avivko.
 
 #### Molecules

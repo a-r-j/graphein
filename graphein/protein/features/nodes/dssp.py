@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import os
 from typing import Any, Dict, Optional
+import tempfile
 
 import networkx as nx
 import pandas as pd
 from Bio.Data.IUPACData import protein_letters_1to3
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 
-from graphein.protein.utils import download_pdb, is_tool
+from graphein.protein.utils import is_tool, save_pdb_df_to_pdb
 
 DSSP_COLS = [
     "chain",
@@ -94,7 +95,10 @@ def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
+def add_dssp_df(
+    G: nx.Graph,
+    dssp_config: Optional[DSSPConfig],
+) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein graph
 
@@ -107,7 +111,9 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     """
 
     config = G.graph["config"]
-    pdb_id = G.graph["pdb_id"]
+    pdb_code = G.graph["pdb_code"]
+    pdb_path = G.graph["pdb_path"]
+    pdb_name = G.graph["name"]
 
     # Extract DSSP executable
     executable = dssp_config.executable
@@ -117,17 +123,30 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
         executable
     ), "DSSP must be on PATH and marked as an executable"
 
-    # Check for existence of pdb file. If not, download it.
-    if not os.path.isfile(config.pdb_dir / pdb_id):
-        pdb_file = download_pdb(config, pdb_id)
+    pdb_file = None
+    if pdb_path:
+        if os.path.isfile(pdb_path):
+            pdb_file = pdb_path
     else:
-        pdb_file = config.pdb_dir + pdb_id + ".pdb"
+        if config.pdb_dir:
+            if os.path.isfile(config.pdb_dir / (pdb_code + ".pdb")):
+                pdb_file = config.pdb_dir / (pdb_code + ".pdb")
+
+    # Check for existence of pdb file. If not, reconstructs it from the raw df.
+    if pdb_file:
+        dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP=executable)
+    else:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            save_pdb_df_to_pdb(
+                G.graph["raw_pdb_df"], tmpdirname + f"/{pdb_name}.pdb"
+            )
+            dssp_dict = dssp_dict_from_pdb_file(
+                tmpdirname + f"/{pdb_name}.pdb", DSSP=executable
+            )
 
     if config.verbose:
         print(f"Using DSSP executable '{executable}'")
 
-    # Run DSSP
-    dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP=executable)
     dssp_dict = parse_dssp_df(dssp_dict)
     dssp_dict = process_dssp_df(dssp_dict)
 
