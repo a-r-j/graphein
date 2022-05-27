@@ -420,14 +420,9 @@ def initialise_graph_with_metadata(
     :rtype: nx.Graph
     """
 
-    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), (
-        "Either a PDB ID or a path to a local PDB file"
-        " must be specified to read a PDB"
-    )
-
     # Get name for graph if no name was provided
-    if not name:
-        if pdb_path:
+    if name is None:
+        if pdb_path is not None:
             name = get_protein_name_from_filename(pdb_path)
         else:
             name = pdb_code
@@ -621,10 +616,11 @@ def construct_graph(
     :rtype: nx.Graph
     """
 
-    assert (pdb_code and not pdb_path) or (not pdb_code and pdb_path), (
-        "Either a PDB ID or a path to a local PDB file"
-        " must be specified to construct a graph"
-    )
+    if pdb_code is None and pdb_path is None and uniprot_id is None:
+        raise ValueError(
+            "Either a PDB ID, UniProt ID or a path to a local PDB file"
+            " must be specified to construct a graph"
+        )
 
     # If no config is provided, use default
     if config is None:
@@ -632,8 +628,9 @@ def construct_graph(
     with Progress(transient=True) as progress:
         task1 = progress.add_task("Reading PDB file...", total=1)
         # Get name from pdb_file is no pdb_code is provided
-        if pdb_path and (pdb_code is None and uniprot_id is None):
-            pdb_code = get_protein_name_from_filename(pdb_path)
+        # if pdb_path and (pdb_code is None and uniprot_id is None):
+        #    pdb_code = get_protein_name_from_filename(pdb_path)
+        #    pdb_code = pdb_code if len(pdb_code) == 4 else None
         progress.advance(task1)
 
         # If config params are provided, overwrite them
@@ -676,7 +673,7 @@ def construct_graph(
             raw_df,
             chain_selection=chain_selection,
             granularity=config.granularity,
-            insertions=config.insertions
+            insertions=config.insertions,
         )
         progress.advance(task2)
 
@@ -708,7 +705,7 @@ def construct_graph(
             get_contacts_config=None,
         )
         progress.advance(task4)
-        
+
     # Annotate additional graph metadata
     if config.graph_metadata_functions is not None:
         g = annotate_graph_metadata(g, config.graph_metadata_functions)
