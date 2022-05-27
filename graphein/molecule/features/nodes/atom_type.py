@@ -66,6 +66,11 @@ def degree(n: str, d: Dict[str, Any]) -> int:
     d["degree"] = degree
     return degree
 
+def degree_one_hot(n: str, d, allowable_set: List[int]):
+    deg = degree(n, d)
+    deg = onek_encoding_unk(deg, allowable_set)
+    d["degree"] = deg
+    return deg
 
 def total_degree(n: str, d: Dict[str, Any]) -> int:
     """Adds the total degree of the atom to the node data.
