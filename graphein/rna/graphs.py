@@ -94,6 +94,7 @@ def validate_dotbracket(db: str):
 
 def construct_rna_graph_3d(
     config: Optional[RNAGraphConfig] = None,
+    name: Optional[str] = None,
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
@@ -182,7 +183,9 @@ def construct_rna_graph_3d(
     g = gp.initialise_graph_with_metadata(
         protein_df=protein_df,
         raw_pdb_df=raw_df.df["ATOM"],
-        pdb_id=pdb_code,
+        name=name,
+        pdb_code=pdb_code,
+        pdb_path=pdb_path,
         granularity=config.granularity,
     )
     # Add nodes to graph
@@ -215,6 +218,7 @@ def construct_rna_graph_3d(
 def construct_rna_graph_2d(
     dotbracket: Optional[str],
     sequence: Optional[str],
+    name: Optional[str] = None,
     bprna_id: Optional[str] = None,
     edge_construction_funcs: Optional[List[Callable]] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
@@ -245,7 +249,7 @@ def construct_rna_graph_2d(
     :return: nx.Graph of RNA secondary structure
     :rtype: nx.Graph
     """
-    G = nx.Graph()
+    G = nx.Graph(name=name)
 
     if bprna_id is not None:
         if config is None:
@@ -312,6 +316,7 @@ def construct_graph(
     sequence: Optional[str] = None,
     bprna_id: Optional[str] = None,
     use_nussinov: bool = False,
+    name: Optional[str] = None,
     config: Optional[RNAGraphConfig] = None,
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
@@ -327,6 +332,7 @@ def construct_graph(
 
         return construct_rna_graph_3d(
             config=config,
+            name=name,
             pdb_path=pdb_path,
             pdb_code=pdb_code,
             chain_selection=chain_selection,
@@ -342,6 +348,7 @@ def construct_graph(
         return construct_rna_graph_2d(
             dotbracket=dotbracket,
             sequence=sequence,
+            name=name,
             bprna_id=bprna_id,
             use_nussinov=use_nussinov,
             edge_construction_funcs=edge_construction_funcs,
