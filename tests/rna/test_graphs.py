@@ -79,7 +79,8 @@ def test_pdb_rna_graph():
         assert "bond_length" in d.keys()
 
     assert "name" in g.graph.keys()
-    assert "pdb_id" in g.graph.keys()
+    assert "pdb_code" in g.graph.keys()
+    assert "pdb_path" in g.graph.keys()
     assert "chain_ids" in g.graph.keys()
     assert "pdb_df" in g.graph.keys()
     assert "raw_pdb_df" in g.graph.keys()
@@ -107,7 +108,8 @@ def test_construct_graph():
         assert "bond_length" in d.keys()
 
     assert "name" in g.graph.keys()
-    assert "pdb_id" in g.graph.keys()
+    assert "pdb_code" in g.graph.keys()
+    assert "pdb_path" in g.graph.keys()
     assert "chain_ids" in g.graph.keys()
     assert "pdb_df" in g.graph.keys()
     assert "raw_pdb_df" in g.graph.keys()
