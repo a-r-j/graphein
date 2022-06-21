@@ -67,9 +67,10 @@ def extract_subgraph_from_node_list(
         if recompute_distmat:
             if not filter_dataframe:
                 log.warning("Recomputing distmat without filtering dataframe.")
-            g.graph["distmat"] = compute_distmat(g.graph["pdb_df"])
+            g.graph["dist_mat"] = compute_distmat(g.graph["pdb_df"])
         # Reset numbering for edge funcs
         g.graph["pdb_df"] = g.graph["pdb_df"].reset_index(drop=True)
+
     if return_node_list:
         return node_list
 
