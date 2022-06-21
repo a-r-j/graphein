@@ -5,7 +5,7 @@ deepdiff
 loguru
 matplotlib>=3.4.3
 multipledispatch
-networkx==2.8.1
+networkx
 numpy
 pandas
 plotly
