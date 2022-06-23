@@ -77,15 +77,13 @@ def colour_nodes(
     colour_map: matplotlib.colors.ListedColormap = plt.cm.plasma,
 ) -> List[Tuple[float, float, float, float]]:
     """
-    Computes node colours based on ``"degree"``, ``"seq_position"``,
-    ``"chain"``, ``"plddt"`` (for AF2 structures) or node attributes.
+    Computes node colours based on ``"degree"``, ``"seq_position"`` or node attributes.
 
     :param G: Graph to compute node colours for
     :type G: nx.Graph
     :param colour_map:  Colourmap to use.
     :type colour_map: matplotlib.colors.ListedColormap
-    :param colour_by: Manner in which to colour nodes. If not ``"degree"``, ``"seq_position"``,
-        ``"chain"``, ``"plddt"`` this must correspond to a node feature.
+    :param colour_by: Manner in which to colour nodes. If not ``"degree"`` or ``"seq_position"``, this must correspond to a node feature.
     :type colour_by: str
     :return: List of node colours
     :rtype: List[Tuple[float, float, float, float]]
@@ -96,7 +94,7 @@ def colour_nodes(
     # Define color range proportional to number of edges adjacent to a single node
     if colour_by == "degree":
         # Get max number of edges connected to a single node
-        edge_max = max(G.degree[i] for i in G.nodes())
+        edge_max = max([G.degree[i] for i in G.nodes()])
         colors = [colour_map(G.degree[i] / edge_max) for i in G.nodes()]
     elif colour_by == "seq_position":
         colors = [colour_map(i / n) for i in range(n)]
@@ -106,23 +104,12 @@ def colour_nodes(
             zip(chains, list(colour_map(1 / len(chains), 1, len(chains))))
         )
         colors = [chain_colours[d["chain_id"]] for n, d in G.nodes(data=True)]
-    elif colour_by == "plddt":
-        colors = []
-        for _, d in G.nodes(data=True):
-            if d["b_factor"] > 90:
-                colors.append((27 / 256, 86 / 256, 206 / 256, 1))
-            elif d["b_factor"] > 70:
-                colors.append((126 / 256, 202 / 256, 239 / 256, 1))
-            elif d["b_factor"] > 50:
-                colors.append((250 / 256, 218 / 256, 77 / 256, 1))
-            else:
-                colors.append((239 / 256, 131 / 256, 83 / 256, 1))
     else:
         node_types = set(nx.get_node_attributes(G, colour_by).values())
         mapping = dict(zip(sorted(node_types), count()))
         colors = [
             colour_map(mapping[d[colour_by]] / len(node_types))
-            for _, d in G.nodes(data=True)
+            for n, d in G.nodes(data=True)
         ]
 
     return colors
@@ -131,7 +118,7 @@ def colour_nodes(
 def colour_edges(
     G: nx.Graph,
     colour_map: matplotlib.colors.ListedColormap,
-    colour_by: str = "kind",
+    colour_by: Optional[str] = "kind",
     set_alpha: float = 1.0,
     return_as_rgba: bool = False,
 ) -> List[Tuple[float, float, float, float]] or List[str]:
@@ -143,7 +130,7 @@ def colour_edges(
     :param colour_map: Colourmap to use.
     :type colour_map: matplotlib.colors.ListedColormap
     :param colour_by: Edge attribute to colour by. Currently only ``"kind"`` is supported.
-    :type colour_by: str
+    :type colour_by: Optional[str]
     :param set_alpha: Sets a given alpha value between 0.0 and 1.0 for all the edge colours.
     :type set_alpha: float
     :param return_as_rgba: Returns a list of rgba strings instead of tuples.
@@ -152,9 +139,9 @@ def colour_edges(
     :rtype: List[Tuple[float, float, float, float]] or List[str]
     """
     if colour_by == "kind":
-        edge_types = set(
+        edge_types = {
             frozenset(a) for a in nx.get_edge_attributes(G, "kind").values()
-        )
+        }
         mapping = dict(zip(sorted(edge_types), count()))
         colors = [
             colour_map(
@@ -163,10 +150,15 @@ def colour_edges(
             )
             for i in G.edges()
         ]
+    elif colour_by is None:
+        colors = [(0.0, 0.0, 0.0, 1.0) for _ in G.edges()]
     else:
-        raise NotImplementedError(
-            "Other edge colouring methods not implemented."
-        )
+        edge_types = set(nx.get_edge_attributes(G, colour_by).values())
+        mapping = dict(zip(sorted(edge_types), count()))
+        colors = [
+            colour_map(mapping[d[colour_by]] / len(edge_types))
+            for _, _, d in G.edges(data=True)
+        ]
 
     assert (
         0.0 <= set_alpha <= 1.0
@@ -186,12 +178,12 @@ def plotly_protein_structure_graph(
     figsize: Tuple[int, int] = (620, 650),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
-    node_size_multiplier: float = 1.0,
+    node_size_multiplier: float = 20.0,
     label_node_ids: bool = True,
     node_colour_map=plt.cm.plasma,
     edge_color_map=plt.cm.plasma,
     colour_nodes_by: str = "degree",
-    colour_edges_by: str = "kind",
+    colour_edges_by: Optional[str] = "kind",
 ) -> go.Figure:
     """
     Plots protein structure graph using plotly.
@@ -215,9 +207,9 @@ def plotly_protein_structure_graph(
     :param edge_color_map: colour map to use for edges. Defaults to ``plt.cm.plasma``.
     :type edge_color_map: plt.cm
     :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``, ``"seq_position"`` or a node feature.
-    :type colour_edges_by: str
-    :param colour_edges_by: Specifies how to colour edges. Currently only ``"kind"`` is supported.
     :type colour_nodes_by: str
+    :param colour_edges_by: Specifies how to colour edges. Currently only ``"kind"`` or ``None`` are supported.
+    :type colour_edges_by: Optional[str]
     :returns: Plotly Graph Objects plot
     :rtype: go.Figure
     """
@@ -731,7 +723,8 @@ def asteroid_plot(
     """
     assert node_id in g.nodes(), f"Node {node_id} not in graph"
 
-    nodes: Dict[int, List[str]] = {0: [node_id]}
+    nodes: Dict[int, List[str]] = {}
+    nodes[0] = [node_id]
     node_list: List[str] = [node_id]
     # Iterate over the number of hops and extract nodes in each shell
     for i in range(1, k):
@@ -828,7 +821,7 @@ def asteroid_plot(
         fig = go.Figure(
             data=data,
             layout=go.Layout(
-                title=title or f'Asteroid Plot - {g.graph["name"]}',
+                title=title if title else f'Asteroid Plot - {g.graph["name"]}',
                 width=width,
                 height=height,
                 titlefont_size=16,
@@ -844,7 +837,7 @@ def asteroid_plot(
                 ),
             ),
         )
-
+        return fig
     else:
         nx.draw_shell(subgraph, nlist=shells, with_labels=show_labels)
 

@@ -17,6 +17,7 @@ import torch
 from graphein.utils.utils import import_message
 
 try:
+    import torch_geometric
     from torch_geometric.data import Data
 except ImportError:
     import_message(
@@ -81,7 +82,7 @@ class GraphFormatConvertor:
     :param src_format: The type of graph you'd like to convert from. Supported formats are available in :const:`~graphein.ml.conversion.SUPPORTED_FORMATS`
     :type src_format: Literal["nx", "pyg", "dgl", "jraph"]
     :param dst_format: The type of graph format you'd like to convert to. Supported formats are available in:
-        :const:`~graphein.ml.conversion.SUPPORTED_FORMATS`
+        ``graphein.ml.conversion.SUPPORTED_FORMATS``
     :type dst_format:  Literal["nx", "pyg", "dgl", "jraph"]
     :param verbose: Select from ``"gnn"``, ``"default"``, ``"all_info"`` to determine how much information is preserved (features)
         as some are unsupported by various downstream frameworks
@@ -289,16 +290,6 @@ class GraphFormatConvertor:
         if "edge_index" in self.columns:
             data["edge_index"] = edge_index.view(2, -1)
 
-        # Try converting everything to tensor
-        # for k, v in data.items():
-        #    try:
-        #        val = torch.tensor(v)
-        #        if len(val.shape) > 1:
-        #            val = val.squeeze(0)
-        #        data[k] = val
-        #    except Exception:
-        #        data[k] = v
-
         data = Data.from_dict(data)
         data.num_nodes = G.number_of_nodes()
         return data
@@ -361,11 +352,21 @@ class GraphFormatConvertor:
         for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
             for key, value in feat_dict.items():
                 if str(key) in self.columns:
-                    node_features[str(key)] = (
+                    # node_features[str(key)] = (
+                    #    [value]
+                    #    if i == 0
+                    #    else node_features[str(key)] + [value]
+                    # )
+                    feat = (
                         [value]
                         if i == 0
                         else node_features[str(key)] + [value]
                     )
+                    try:
+                        feat = torch.tensor(feat)
+                        node_features[str(key)] = feat
+                    except TypeError:
+                        node_features[str(key)] = feat
 
         # Add edge features
         edge_features = {}
@@ -431,19 +432,3 @@ def convert_nx_to_pyg_data(G: nx.Graph) -> Data:
     data.num_nodes = G.number_of_nodes()
 
     return data
-
-
-if __name__ == "__main__":
-    from graphein.protein.config import ProteinGraphConfig
-    from graphein.protein.graphs import construct_graph
-
-    g = construct_graph(pdb_code="3eiy", config=ProteinGraphConfig())
-    assert type(g) is nx.Graph
-
-    # print(SUPPORTED_FORMATS)
-
-    convertor = GraphFormatConvertor(
-        src_format="nx", dst_format="pyg", verbose="gnn"
-    )
-    pyg = convertor(g)
-    assert type(pyg) is torch_geometric.data.Data
