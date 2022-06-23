@@ -329,7 +329,7 @@ def test_sequence_features():
 def test_insertion_handling():
     configs = {
         "granularity": "CA",
-        "keep_hets": False,
+        "keep_hets": [],
         "insertions": False,
         "verbose": False,
         "node_metadata_functions": [meiler_embedding, expasy_protein_scale],

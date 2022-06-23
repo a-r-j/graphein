@@ -10,14 +10,8 @@ import logging
 from typing import Callable, List, Optional
 
 import networkx as nx
+import pandas as pd
 
-# from graphein.protein.graphs import (
-#    add_nodes_to_graph,
-#    get_protein_name_from_filename,
-#    initialise_graph_with_metadata,
-#    process_dataframe,
-#    read_pdb_to_dataframe,
-# )
 import graphein.protein.graphs as gp
 from graphein.rna.config import BpRNAConfig, RNAGraphConfig
 from graphein.rna.constants import (
@@ -98,6 +92,7 @@ def construct_rna_graph_3d(
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
+    model_index: int = 1,
     rna_df_processing_funcs: Optional[List[Callable]] = None,
     edge_construction_funcs: Optional[List[Callable]] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
@@ -120,6 +115,8 @@ def construct_rna_graph_3d(
     :type pdb_code: str, optional
     :param chain_selection: String of nucleotide chains to include in graph. E.g ``"ABDF"`` or ``"all"``. Default is ``"all"``.
     :type chain_selection: str
+    :param model_index: Index of model to use in the case of structural ensembles. Default is ``1``.
+    :type model_index: int
     :param df_processing_funcs: List of dataframe processing functions. Default is ``None``.
     :type df_processing_funcs: List[Callable], optional
     :param edge_construction_funcs: List of edge construction functions. Default is ``None``.
@@ -172,17 +169,29 @@ def construct_rna_graph_3d(
     raw_df = gp.read_pdb_to_dataframe(
         pdb_path,
         pdb_code,
-        verbose=config.verbose,
-        granularity=config.granularity,
+        model_index=model_index,
+    )
+    raw_df.df["ATOM"] = gp.label_node_id(
+        raw_df.df["ATOM"], granularity=config.granularity
+    )
+    raw_df.df["HETATM"] = gp.label_node_id(
+        raw_df.df["HETATM"], granularity=config.granularity
+    )
+    raw_df = gp.sort_dataframe(
+        pd.concat([raw_df.df["ATOM"], raw_df.df["HETATM"]])
     )
     protein_df = gp.process_dataframe(
-        raw_df, chain_selection=chain_selection, granularity=config.granularity
+        raw_df,
+        chain_selection=chain_selection,
+        granularity=config.granularity,
+        insertions=config.insertions,
+        keep_hets=config.keep_hets,
     )
 
     # Initialise graph with metadata
     g = gp.initialise_graph_with_metadata(
         protein_df=protein_df,
-        raw_pdb_df=raw_df.df["ATOM"],
+        raw_pdb_df=raw_df,
         name=name,
         pdb_code=pdb_code,
         pdb_path=pdb_path,

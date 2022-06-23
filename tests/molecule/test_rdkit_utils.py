@@ -72,4 +72,4 @@ def test_get_morgan_fp_np():
 def test_get_qed_score():
     qed = u.get_qed_score(TEST_GRAPH)
     assert isinstance(qed, float), f"QED is not a float ({type(qed)})"
-    assert qed == 0.7166041254699328, f"QED is not correct ({qed})"
+    np.testing.assert_almost_equal(qed, 0.7166041254699328)

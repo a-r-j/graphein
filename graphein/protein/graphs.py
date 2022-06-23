@@ -71,8 +71,6 @@ def read_pdb_to_dataframe(
     pdb_code: Optional[str] = None,
     uniprot_id: Optional[str] = None,
     model_index: int = 1,
-    verbose: bool = False,
-    granularity: str = "CA",
 ) -> pd.DataFrame:
     """
     Reads PDB file to ``PandasPDB`` object.
@@ -114,31 +112,28 @@ def read_pdb_to_dataframe(
     if len(atomic_df.df["ATOM"]) == 0:
         raise ValueError(f"No model found for index: {model_index}")
 
-    # Assign Node IDs to dataframes
-    atomic_df.df["ATOM"]["node_id"] = (
-        atomic_df.df["ATOM"]["chain_id"].apply(str)
+    return atomic_df
+
+
+def label_node_id(df: pd.DataFrame, granularity: str) -> pd.DataFrame:
+    df["node_id"] = (
+        df["chain_id"].apply(str)
         + ":"
-        + atomic_df.df["ATOM"]["residue_name"]
+        + df["residue_name"]
         + ":"
-        + atomic_df.df["ATOM"]["residue_number"].apply(str)
+        + df["residue_number"].apply(str)
     )
     if granularity == "atom":
-        atomic_df.df["ATOM"]["node_id"] = (
-            atomic_df.df["ATOM"]["node_id"]
-            + ":"
-            + atomic_df.df["ATOM"]["atom_name"]
-        )
+        df["node_id"] = df["node_id"] + ":" + df["atom_name"]
     elif granularity in {"rna_atom", "rna_centroid"}:
-        atomic_df.df["ATOM"]["node_id"] = (
-            atomic_df.df["ATOM"]["node_id"]
+        df["node_id"] = (
+            df["node_id"]
             + ":"
-            + atomic_df.df["ATOM"]["atom_number"].apply(str)
+            + df["atom_number"].apply(str)
             + ":"
-            + atomic_df.df["ATOM"]["atom_name"]
+            + df["atom_name"]
         )
-    if verbose:
-        print(atomic_df)
-    return atomic_df
+    return df
 
 
 def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
@@ -234,7 +229,7 @@ def filter_hetatms(
     :type df: pd.DataFrame
     :param keep_hets: List of hetero atom names to keep.
     :returns: Protein structure dataframe with heteroatoms removed
-    :rtype pd.DataFrame
+    :rtype: pd.DataFrame
     """
     return [df.loc[df["residue_name"] == hetatm] for hetatm in keep_hets]
 
@@ -283,8 +278,18 @@ def process_dataframe(
     :rtype: pd.DataFrame
     """
     # TODO: Need to properly define what "granularity" is supposed to do.
-    atoms = protein_df.df["ATOM"]
-    hetatms = protein_df.df["HETATM"]
+    atoms = filter_dataframe(
+        protein_df,
+        by_column="record_name",
+        list_of_values=["ATOM"],
+        boolean=True,
+    )
+    hetatms = filter_dataframe(
+        protein_df,
+        by_column="record_name",
+        list_of_values=["HETATM"],
+        boolean=True,
+    )
 
     # This block enables processing via a list of supplied functions operating on the atom and hetatom dataframes
     # If these are provided, the dataframe returned will be computed only from these and the default workflow
@@ -299,6 +304,10 @@ def process_dataframe(
         for func in hetatom_df_processing_funcs:
             hetatms = func(hetatms)
         return pd.concat([atoms, hetatms])
+
+    if keep_hets:
+        hetatms_to_keep = filter_hetatms(hetatms, keep_hets)
+        atoms = pd.concat([atoms] + hetatms_to_keep)
 
     # Deprotonate structure by removing H atoms
     if deprotonate:
@@ -316,10 +325,6 @@ def process_dataframe(
 
     protein_df = atoms
 
-    if keep_hets:
-        hetatms_to_keep = filter_hetatms(atoms, keep_hets)
-        protein_df = pd.concat([atoms, hetatms_to_keep])
-
     # Remove alt_loc residues
     if not insertions:
         protein_df = remove_insertions(protein_df)
@@ -331,7 +336,23 @@ def process_dataframe(
 
     log.debug(f"Detected {len(protein_df)} total nodes")
 
+    # Sort dataframe to place HETATMs
+    protein_df = sort_dataframe(protein_df)
+
     return protein_df
+
+
+def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """Sorts a protein dataframe by chain->residue number->atom number
+
+    This is useful for distributing hetatms/modified residues through the DF.
+
+    :param df: Protein dataframe to sort.
+    :type df: pd.DataFrame
+    :return: Sorted protein dataframe.
+    :rtype: pd.DataFrame
+    """
+    return df.sort_values(by=["chain_id", "residue_number", "atom_number"])
 
 
 def assign_node_id_to_dataframe(
@@ -556,7 +577,7 @@ def compute_edges(
     # This control flow prevents unnecessary computation of the distance matrices
     if "config" in G.graph:
         if G.graph["config"].granularity == "atom":
-            G.graph["atomic_dist_mat"] = compute_distmat(G.graph["raw_pdb_df"])
+            G.graph["atomic_dist_mat"] = compute_distmat(G.graph["pdb_df"])
         else:
             G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
 
@@ -665,15 +686,23 @@ def construct_graph(
             pdb_code,
             uniprot_id,
             model_index=model_index,
-            verbose=config.verbose,
-            granularity=config.granularity,
         )
         task2 = progress.add_task("Processing PDB dataframe...", total=1)
+        raw_df.df["ATOM"] = label_node_id(
+            raw_df.df["ATOM"], granularity=config.granularity
+        )
+        raw_df.df["HETATM"] = label_node_id(
+            raw_df.df["HETATM"], granularity=config.granularity
+        )
+        raw_df = sort_dataframe(
+            pd.concat([raw_df.df["ATOM"], raw_df.df["HETATM"]])
+        )
         protein_df = process_dataframe(
             raw_df,
             chain_selection=chain_selection,
             granularity=config.granularity,
             insertions=config.insertions,
+            keep_hets=config.keep_hets,
         )
         progress.advance(task2)
 
@@ -681,7 +710,7 @@ def construct_graph(
         # Initialise graph with metadata
         g = initialise_graph_with_metadata(
             protein_df=protein_df,
-            raw_pdb_df=raw_df.df["ATOM"],
+            raw_pdb_df=raw_df,
             name=name,
             pdb_code=pdb_code,
             pdb_path=pdb_path,
@@ -719,7 +748,7 @@ def construct_graph(
 
 def _mp_graph_constructor(
     args: Tuple[str, str, int], source: str, config: ProteinGraphConfig
-) -> nx.Graph:
+) -> Union[nx.Graph, None]:
     """
     Protein graph constructor for use in multiprocessing several protein structure graphs.
 
@@ -729,8 +758,8 @@ def _mp_graph_constructor(
     :type use_pdb_code: bool
     :param config: Protein structure graph construction config (see: :class:`graphein.protein.config.ProteinGraphConfig`).
     :type config: ProteinGraphConfig
-    :return: Protein structure graph
-    :rtype: nx.Graph
+    :return: Protein structure graph or ``None`` if an error is encountered.
+    :rtype: Union[nx.Graph, None]
     """
     log.info(
         f"Constructing graph for: {args[0]}. Chain selection: {args[1]}. Model index: {args[2]}"
