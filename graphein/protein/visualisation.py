@@ -94,7 +94,7 @@ def colour_nodes(
     # Define color range proportional to number of edges adjacent to a single node
     if colour_by == "degree":
         # Get max number of edges connected to a single node
-        edge_max = max([G.degree[i] for i in G.nodes()])
+        edge_max = max(G.degree[i] for i in G.nodes())
         colors = [colour_map(G.degree[i] / edge_max) for i in G.nodes()]
     elif colour_by == "seq_position":
         colors = [colour_map(i / n) for i in range(n)]
@@ -104,6 +104,20 @@ def colour_nodes(
             zip(chains, list(colour_map(1 / len(chains), 1, len(chains))))
         )
         colors = [chain_colours[d["chain_id"]] for n, d in G.nodes(data=True)]
+    elif colour_by == "plddt":
+        levels: List[str] = ["Very High", "Confident", "Low", "Very Low"]
+        mapping = dict(zip(sorted(levels), count()))
+        colors = []
+        for _, d in G.nodes(data=True):
+            if d["b_factor"] > 90:
+                colors.append((27 / 256, 86 / 256, 206 / 256, 1))
+            elif d["b_factor"] > 70:
+                colors.append((126 / 256, 202 / 256, 239 / 256, 1))
+            elif d["b_factor"] > 50:
+                colors.append((250 / 256, 218 / 256, 77 / 256, 1))
+            else:
+                colors.append((239 / 256, 131 / 256, 83 / 256, 1))
+        # colors = [colour_map(mapping[c] / len(levels)) for c in colors]
     else:
         node_types = set(nx.get_node_attributes(G, colour_by).values())
         mapping = dict(zip(sorted(node_types), count()))
@@ -723,8 +737,7 @@ def asteroid_plot(
     """
     assert node_id in g.nodes(), f"Node {node_id} not in graph"
 
-    nodes: Dict[int, List[str]] = {}
-    nodes[0] = [node_id]
+    nodes: Dict[int, List[str]] = {0: [node_id]}
     node_list: List[str] = [node_id]
     # Iterate over the number of hops and extract nodes in each shell
     for i in range(1, k):
