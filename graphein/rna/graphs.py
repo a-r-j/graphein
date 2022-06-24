@@ -171,15 +171,17 @@ def construct_rna_graph_3d(
         pdb_code,
         model_index=model_index,
     )
-    raw_df.df["ATOM"] = gp.label_node_id(
-        raw_df.df["ATOM"], granularity=config.granularity
-    )
-    raw_df.df["HETATM"] = gp.label_node_id(
-        raw_df.df["HETATM"], granularity=config.granularity
-    )
-    raw_df = gp.sort_dataframe(
-        pd.concat([raw_df.df["ATOM"], raw_df.df["HETATM"]])
-    )
+
+    # raw_df.df["ATOM"] = gp.label_node_id(
+    #    raw_df.df["ATOM"], granularity=config.granularity
+    # )
+    # raw_df.df["HETATM"] = gp.label_node_id(
+    #    raw_df.df["HETATM"], granularity=config.granularity
+    # )
+    # raw_df = gp.sort_dataframe(
+    #    pd.concat([raw_df.df["ATOM"], raw_df.df["HETATM"]])
+    # )
+    raw_df = gp.sort_dataframe(raw_df)
     protein_df = gp.process_dataframe(
         raw_df,
         chain_selection=chain_selection,

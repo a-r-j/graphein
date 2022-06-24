@@ -112,7 +112,7 @@ def read_pdb_to_dataframe(
     if len(atomic_df.df["ATOM"]) == 0:
         raise ValueError(f"No model found for index: {model_index}")
 
-    return atomic_df
+    return pd.concat([atomic_df.df["ATOM"], atomic_df.df["HETATM"]])
 
 
 def label_node_id(df: pd.DataFrame, granularity: str) -> pd.DataFrame:
@@ -277,6 +277,7 @@ def process_dataframe(
         other graph construction functions.
     :rtype: pd.DataFrame
     """
+    protein_df = label_node_id(protein_df, granularity=granularity)
     # TODO: Need to properly define what "granularity" is supposed to do.
     atoms = filter_dataframe(
         protein_df,
@@ -688,15 +689,14 @@ def construct_graph(
             model_index=model_index,
         )
         task2 = progress.add_task("Processing PDB dataframe...", total=1)
-        raw_df.df["ATOM"] = label_node_id(
-            raw_df.df["ATOM"], granularity=config.granularity
-        )
-        raw_df.df["HETATM"] = label_node_id(
-            raw_df.df["HETATM"], granularity=config.granularity
-        )
-        raw_df = sort_dataframe(
-            pd.concat([raw_df.df["ATOM"], raw_df.df["HETATM"]])
-        )
+        # raw_df = label_node_id(raw_df, granularity=config.granularity)
+        # raw_df.df["ATOM"] = label_node_id(
+        #    raw_df.df["ATOM"], granularity=config.granularity
+        # )
+        # raw_df.df["HETATM"] = label_node_id(
+        #    raw_df.df["HETATM"], granularity=config.granularity
+        # )
+        raw_df = sort_dataframe(raw_df)
         protein_df = process_dataframe(
             raw_df,
             chain_selection=chain_selection,

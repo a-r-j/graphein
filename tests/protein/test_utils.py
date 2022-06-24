@@ -22,7 +22,7 @@ def test_save_graph_to_pdb():
 
     save_graph_to_pdb(g, "/tmp/test_graph.pdb", hetatms=False)
 
-    a = read_pdb_to_dataframe("/tmp/test_graph.pdb").df["ATOM"]
+    a = read_pdb_to_dataframe("/tmp/test_graph.pdb")
     # Check file exists
     assert os.path.isfile("/tmp/test_graph.pdb")
 
@@ -42,7 +42,7 @@ def test_save_pdb_df_to_pdb():
     g = construct_graph(pdb_code="4hhb")
 
     save_pdb_df_to_pdb(g.graph["pdb_df"], "/tmp/test_pdb.pdb", hetatms=False)
-    a = read_pdb_to_dataframe("/tmp/test_pdb.pdb").df["ATOM"]
+    a = read_pdb_to_dataframe("/tmp/test_pdb.pdb")
     # Check file exists
     assert os.path.isfile("/tmp/test_graph.pdb")
 
@@ -64,7 +64,7 @@ def test_save_rgroup_df_to_pdb():
     g = construct_graph(pdb_code="4hhb")
 
     save_rgroup_df_to_pdb(g, "/tmp/test_rgroup.pdb", hetatms=False)
-    a = read_pdb_to_dataframe("/tmp/test_rgroup.pdb").df["ATOM"]
+    a = read_pdb_to_dataframe("/tmp/test_rgroup.pdb")
     # Check file exists
     assert os.path.isfile("/tmp/test_rgroup.pdb")
 
