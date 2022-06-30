@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
+from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
 
 from graphein.protein.config import (
@@ -24,7 +25,10 @@ from graphein.protein.config import (
     GetContactsConfig,
     ProteinGraphConfig,
 )
-from graphein.protein.edges.distance import compute_distmat
+from graphein.protein.edges.distance import (
+    add_distance_to_edges,
+    compute_distmat,
+)
 from graphein.protein.resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 from graphein.protein.subgraphs import extract_subgraph_from_chains
 from graphein.protein.utils import (
@@ -34,6 +38,7 @@ from graphein.protein.utils import (
     get_protein_name_from_filename,
     three_to_one_with_mods,
 )
+from graphein.rna.constants import RNA_ATOMS
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
@@ -41,15 +46,31 @@ from graphein.utils.utils import (
     compute_edges,
 )
 
-logging.basicConfig(level="DEBUG")
+# logging.basicConfig(level="DEBUG")
 log = logging.getLogger(__name__)
+
+
+def subset_structure_to_rna(
+    df: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Return a subset of atomic dataframe that contains only certain atom names relevant for RNA structures.
+
+    :param df: Protein Structure dataframe to subset
+    :type df: pd.DataFrame
+    :returns: Subsetted protein structure dataframe
+    :rtype: pd.DataFrame
+    """
+    return filter_dataframe(
+        df, by_column="atom_name", list_of_values=RNA_ATOMS, boolean=True
+    )
 
 
 def read_pdb_to_dataframe(
     pdb_path: Optional[str] = None,
     pdb_code: Optional[str] = None,
-    verbose: bool = False,
-    granularity: str = "CA",
+    uniprot_id: Optional[str] = None,
+    model_index: int = 1,
 ) -> pd.DataFrame:
     """
     Reads PDB file to ``PandasPDB`` object.
@@ -57,10 +78,14 @@ def read_pdb_to_dataframe(
     Returns ``atomic_df``, which is a dataframe enumerating all atoms and their cartesian coordinates in 3D space. Also
     contains associated metadata from the PDB file.
 
-    :param pdb_path: path to PDB file. Defaults to None.
+    :param pdb_path: path to PDB file. Defaults to ``None``.
     :type pdb_path: str, optional
-    :param pdb_code: 4-character PDB accession. Defaults to None.
+    :param pdb_code: 4-character PDB accession. Defaults to ``None``.
     :type pdb_code: str, optional
+    :param uniprot_id: UniProt ID to build graph from AlphaFoldDB. Defaults to ``None``.
+    :type uniprot_id: str, optional
+    :param model_index: Index of model to read. Only relevant for structures containing ensembles. Defaults to ``1``.
+    :type model_index: int, optional
     :param verbose: print dataframe?
     :type verbose: bool
     :param granularity: Specifies granularity of dataframe. See :class:`~graphein.protein.config.ProteinGraphConfig` for further
@@ -69,32 +94,46 @@ def read_pdb_to_dataframe(
     :returns: ``pd.DataFrame`` containing protein structure
     :rtype: pd.DataFrame
     """
-    if pdb_code is None and pdb_path is None:
-        raise NameError("One of pdb_code or pdb_path must be specified!")
+    if pdb_code is None and pdb_path is None and uniprot_id is None:
+        raise NameError(
+            "One of pdb_code, pdb_path or uniprot_id must be specified!"
+        )
 
-    atomic_df = (
-        PandasPdb().read_pdb(pdb_path)
-        if pdb_path is not None
-        else PandasPdb().fetch_pdb(pdb_code)
-    )
+    if pdb_path is not None:
+        atomic_df = PandasPdb().read_pdb(pdb_path)
+    elif uniprot_id is not None:
+        atomic_df = PandasPdb().fetch_pdb(
+            uniprot_id=uniprot_id, source="alphafold2-v2"
+        )
+    else:
+        atomic_df = PandasPdb().fetch_pdb(pdb_code)
 
-    # Assign Node IDs to dataframes
-    atomic_df.df["ATOM"]["node_id"] = (
-        atomic_df.df["ATOM"]["chain_id"].apply(str)
+    atomic_df = atomic_df.get_model(model_index)
+    if len(atomic_df.df["ATOM"]) == 0:
+        raise ValueError(f"No model found for index: {model_index}")
+
+    return pd.concat([atomic_df.df["ATOM"], atomic_df.df["HETATM"]])
+
+
+def label_node_id(df: pd.DataFrame, granularity: str) -> pd.DataFrame:
+    df["node_id"] = (
+        df["chain_id"].apply(str)
         + ":"
-        + atomic_df.df["ATOM"]["residue_name"]
+        + df["residue_name"]
         + ":"
-        + atomic_df.df["ATOM"]["residue_number"].apply(str)
+        + df["residue_number"].apply(str)
     )
     if granularity == "atom":
-        atomic_df.df["ATOM"]["node_id"] = (
-            atomic_df.df["ATOM"]["node_id"]
+        df["node_id"] = df["node_id"] + ":" + df["atom_name"]
+    elif granularity in {"rna_atom", "rna_centroid"}:
+        df["node_id"] = (
+            df["node_id"]
             + ":"
-            + atomic_df.df["ATOM"]["atom_name"]
+            + df["atom_number"].apply(str)
+            + ":"
+            + df["atom_name"]
         )
-    if verbose:
-        print(atomic_df)
-    return atomic_df
+    return df
 
 
 def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
@@ -190,7 +229,7 @@ def filter_hetatms(
     :type df: pd.DataFrame
     :param keep_hets: List of hetero atom names to keep.
     :returns: Protein structure dataframe with heteroatoms removed
-    :rtype pd.DataFrame
+    :rtype: pd.DataFrame
     """
     return [df.loc[df["residue_name"] == hetatm] for hetatm in keep_hets]
 
@@ -238,9 +277,20 @@ def process_dataframe(
         other graph construction functions.
     :rtype: pd.DataFrame
     """
+    protein_df = label_node_id(protein_df, granularity=granularity)
     # TODO: Need to properly define what "granularity" is supposed to do.
-    atoms = protein_df.df["ATOM"]
-    hetatms = protein_df.df["HETATM"]
+    atoms = filter_dataframe(
+        protein_df,
+        by_column="record_name",
+        list_of_values=["ATOM"],
+        boolean=True,
+    )
+    hetatms = filter_dataframe(
+        protein_df,
+        by_column="record_name",
+        list_of_values=["HETATM"],
+        boolean=True,
+    )
 
     # This block enables processing via a list of supplied functions operating on the atom and hetatom dataframes
     # If these are provided, the dataframe returned will be computed only from these and the default workflow
@@ -256,6 +306,10 @@ def process_dataframe(
             hetatms = func(hetatms)
         return pd.concat([atoms, hetatms])
 
+    if keep_hets:
+        hetatms_to_keep = filter_hetatms(hetatms, keep_hets)
+        atoms = pd.concat([atoms] + hetatms_to_keep)
+
     # Deprotonate structure by removing H atoms
     if deprotonate:
         atoms = deprotonate_structure(atoms)
@@ -263,16 +317,14 @@ def process_dataframe(
     # Restrict DF to desired granularity
     if granularity == "atom":
         pass
-    elif granularity == "centroids":
+    elif granularity in {"centroids", "rna_centroid"}:
         atoms = convert_structure_to_centroids(atoms)
+    elif granularity == "rna_atom":
+        atoms = subset_structure_to_rna(atoms)
     else:
         atoms = subset_structure_to_atom_type(atoms, granularity)
 
     protein_df = atoms
-
-    if keep_hets:
-        hetatms_to_keep = filter_hetatms(atoms, keep_hets)
-        protein_df = pd.concat([atoms, hetatms_to_keep])
 
     # Remove alt_loc residues
     if not insertions:
@@ -285,7 +337,23 @@ def process_dataframe(
 
     log.debug(f"Detected {len(protein_df)} total nodes")
 
+    # Sort dataframe to place HETATMs
+    protein_df = sort_dataframe(protein_df)
+
     return protein_df
+
+
+def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """Sorts a protein dataframe by chain->residue number->atom number
+
+    This is useful for distributing hetatms/modified residues through the DF.
+
+    :param df: Protein dataframe to sort.
+    :type df: pd.DataFrame
+    :return: Sorted protein dataframe.
+    :rtype: pd.DataFrame
+    """
+    return df.sort_values(by=["chain_id", "residue_number", "atom_number"])
 
 
 def assign_node_id_to_dataframe(
@@ -311,7 +379,7 @@ def assign_node_id_to_dataframe(
         + ":"
         + protein_df["residue_number"].apply(str)
     )
-    if granularity == "atom":
+    if granularity in {"atom", "rna_atom"}:
         protein_df[
             "node_id"
         ] = f'{protein_df["node_id"]}:{protein_df["atom_name"]}'
@@ -349,8 +417,10 @@ def select_chains(
 def initialise_graph_with_metadata(
     protein_df: pd.DataFrame,
     raw_pdb_df: pd.DataFrame,
-    pdb_id: str,
     granularity: str,
+    name: Optional[str] = None,
+    pdb_code: Optional[str] = None,
+    pdb_path: Optional[str] = None,
 ) -> nx.Graph:
     """
     Initializes the nx Graph object with initial metadata.
@@ -359,17 +429,30 @@ def initialise_graph_with_metadata(
     :type protein_df: pd.DataFrame
     :param raw_pdb_df: Unprocessed dataframe of protein structure for comparison and traceability downstream.
     :type raw_pdb_df: pd.DataFrame
-    :param pdb_id: PDB Accession code.
-    :type pdb_id: str
     :param granularity: Granularity of the graph (eg ``"atom"``, ``"CA"``, ``"CB"`` etc or ``"centroid"``).
         See: :const:`~graphein.protein.config.GRAPH_ATOMS` and :const:`~graphein.protein.config.GRANULARITY_OPTS`.
     :type granularity: str
+    :param name: specified given name for the graph. If None, the PDB code or the file name will be used to name the graph.
+    :type name: Optional[str], defaults to ``None``
+    :param pdb_code: PDB ID / Accession code, if the PDB is available on the PDB database.
+    :type pdb_code: Optional[str], defaults to ``None``
+    :param pdb_path: path to local PDB file, if constructing a graph from a local file.
+    :type pdb_path: Optional[str], defaults to ``None``
     :return: Returns initial protein structure graph with metadata.
     :rtype: nx.Graph
     """
+
+    # Get name for graph if no name was provided
+    if name is None:
+        if pdb_path is not None:
+            name = get_protein_name_from_filename(pdb_path)
+        else:
+            name = pdb_code
+
     G = nx.Graph(
-        name=pdb_id,
-        pdb_id=pdb_id,
+        name=name,
+        pdb_code=pdb_code,
+        pdb_path=pdb_path,
         chain_ids=list(protein_df["chain_id"].unique()),
         pdb_df=protein_df,
         raw_pdb_df=raw_pdb_df,
@@ -382,11 +465,17 @@ def initialise_graph_with_metadata(
 
     # Add Sequences to graph metadata
     for c in G.graph["chain_ids"]:
-        G.graph[f"sequence_{c}"] = (
-            protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
-            .apply(three_to_one_with_mods)
-            .str.cat()
-        )
+        if granularity == "rna_atom":
+            sequence = protein_df.loc[protein_df["chain_id"] == c][
+                "residue_name"
+            ].str.cat()
+        else:
+            sequence = (
+                protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
+                .apply(three_to_one_with_mods)
+                .str.cat()
+            )
+        G.graph[f"sequence_{c}"] = sequence
     return G
 
 
@@ -489,21 +578,24 @@ def compute_edges(
     # This control flow prevents unnecessary computation of the distance matrices
     if "config" in G.graph:
         if G.graph["config"].granularity == "atom":
-            G.graph["atomic_dist_mat"] = compute_distmat(G.graph["raw_pdb_df"])
+            G.graph["atomic_dist_mat"] = compute_distmat(G.graph["pdb_df"])
         else:
             G.graph["dist_mat"] = compute_distmat(G.graph["pdb_df"])
 
     for func in funcs:
         func(G)
 
-    return G
+    return add_distance_to_edges(G)
 
 
 def construct_graph(
     config: Optional[ProteinGraphConfig] = None,
+    name: Optional[str] = None,
     pdb_path: Optional[str] = None,
+    uniprot_id: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
+    model_index: int = 1,
     df_processing_funcs: Optional[List[Callable]] = None,
     edge_construction_funcs: Optional[List[Callable]] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
@@ -520,12 +612,18 @@ def construct_graph(
 
     :param config: :class:`~graphein.protein.config.ProteinGraphConfig` object. If None, defaults to config in ``graphein.protein.config``.
     :type config: graphein.protein.config.ProteinGraphConfig, optional
-    :param pdb_path: Path to ``pdb_file`` to build graph from. Default is ``None``.
-    :type pdb_path: str, optional
-    :param pdb_code: 4-character PDB accession pdb_code to build graph from. Default is ``None``.
-    :type pdb_code: str, optional
+    :param name: an optional given name for the graph. the PDB ID or PDB file name will be used if not specified.
+    :type name: str, optional
+    :param pdb_path: Path to ``pdb_file`` when constructing a graph from a local pdb file. Default is ``None``.
+    :type pdb_path: Optional[str], defaults to ``None``
+    :param pdb_code: A 4-character PDB ID / accession to be used to construct the graph, if available. Default is ``None``.
+    :type pdb_code: Optional[str], defaults to ``None``
+    :param uniprot_id: UniProt accession ID to build graph from AlphaFold2DB. Default is ``None``.
+    :type uniprot_id: str, optional
     :param chain_selection: String of polypeptide chains to include in graph. E.g ``"ABDF"`` or ``"all"``. Default is ``"all"``.
     :type chain_selection: str
+    :param model_index: Index of model to use in the case of structural ensembles. Default is ``1``.
+    :type model_index: int
     :param df_processing_funcs: List of dataframe processing functions. Default is ``None``.
     :type df_processing_funcs: List[Callable], optional
     :param edge_construction_funcs: List of edge construction functions. Default is ``None``.
@@ -537,77 +635,105 @@ def construct_graph(
     :param graph_annotation_funcs: List of graph annotation function. Default is ``None``.
     :type graph_annotation_funcs: List[Callable]
     :return: Protein Structure Graph
-    :type: nx.Graph
+    :rtype: nx.Graph
     """
+
+    if pdb_code is None and pdb_path is None and uniprot_id is None:
+        raise ValueError(
+            "Either a PDB ID, UniProt ID or a path to a local PDB file"
+            " must be specified to construct a graph"
+        )
 
     # If no config is provided, use default
     if config is None:
         config = ProteinGraphConfig()
+    with Progress(transient=True) as progress:
+        task1 = progress.add_task("Reading PDB file...", total=1)
+        # Get name from pdb_file is no pdb_code is provided
+        # if pdb_path and (pdb_code is None and uniprot_id is None):
+        #    pdb_code = get_protein_name_from_filename(pdb_path)
+        #    pdb_code = pdb_code if len(pdb_code) == 4 else None
+        progress.advance(task1)
 
-    # Get name from pdb_file is no pdb_code is provided
-    if pdb_path and (pdb_code is None):
-        pdb_code = get_protein_name_from_filename(pdb_path)
+        # If config params are provided, overwrite them
+        config.protein_df_processing_functions = (
+            df_processing_funcs
+            if config.protein_df_processing_functions is None
+            else config.protein_df_processing_functions
+        )
+        config.edge_construction_functions = (
+            edge_construction_funcs
+            if config.edge_construction_functions is None
+            else config.edge_construction_functions
+        )
+        config.node_metadata_functions = (
+            node_annotation_funcs
+            if config.node_metadata_functions is None
+            else config.node_metadata_functions
+        )
+        config.graph_metadata_functions = (
+            graph_annotation_funcs
+            if config.graph_metadata_functions is None
+            else config.graph_metadata_functions
+        )
+        config.edge_metadata_functions = (
+            edge_annotation_funcs
+            if config.edge_metadata_functions is None
+            else config.edge_metadata_functions
+        )
 
-    # If config params are provided, overwrite them
-    config.protein_df_processing_functions = (
-        df_processing_funcs
-        if config.protein_df_processing_functions is None
-        else config.protein_df_processing_functions
-    )
-    config.edge_construction_functions = (
-        edge_construction_funcs
-        if config.edge_construction_functions is None
-        else config.edge_construction_functions
-    )
-    config.node_metadata_functions = (
-        node_annotation_funcs
-        if config.node_metadata_functions is None
-        else config.node_metadata_functions
-    )
-    config.graph_metadata_functions = (
-        graph_annotation_funcs
-        if config.graph_metadata_functions is None
-        else config.graph_metadata_functions
-    )
-    config.edge_metadata_functions = (
-        edge_annotation_funcs
-        if config.edge_metadata_functions is None
-        else config.edge_metadata_functions
-    )
+        raw_df = read_pdb_to_dataframe(
+            pdb_path,
+            pdb_code,
+            uniprot_id,
+            model_index=model_index,
+        )
+        task2 = progress.add_task("Processing PDB dataframe...", total=1)
+        # raw_df = label_node_id(raw_df, granularity=config.granularity)
+        # raw_df.df["ATOM"] = label_node_id(
+        #    raw_df.df["ATOM"], granularity=config.granularity
+        # )
+        # raw_df.df["HETATM"] = label_node_id(
+        #    raw_df.df["HETATM"], granularity=config.granularity
+        # )
+        raw_df = sort_dataframe(raw_df)
+        protein_df = process_dataframe(
+            raw_df,
+            chain_selection=chain_selection,
+            granularity=config.granularity,
+            insertions=config.insertions,
+            keep_hets=config.keep_hets,
+        )
+        progress.advance(task2)
 
-    raw_df = read_pdb_to_dataframe(
-        pdb_path,
-        pdb_code,
-        verbose=config.verbose,
-        granularity=config.granularity,
-    )
-    protein_df = process_dataframe(
-        raw_df, chain_selection=chain_selection, granularity=config.granularity
-    )
+        task3 = progress.add_task("Initializing graph...", total=1)
+        # Initialise graph with metadata
+        g = initialise_graph_with_metadata(
+            protein_df=protein_df,
+            raw_pdb_df=raw_df,
+            name=name,
+            pdb_code=pdb_code,
+            pdb_path=pdb_path,
+            granularity=config.granularity,
+        )
+        # Add nodes to graph
+        g = add_nodes_to_graph(g)
 
-    # Initialise graph with metadata
-    g = initialise_graph_with_metadata(
-        protein_df=protein_df,
-        raw_pdb_df=raw_df.df["ATOM"],
-        pdb_id=pdb_code,
-        granularity=config.granularity,
-    )
-    # Add nodes to graph
-    g = add_nodes_to_graph(g)
+        # Add config to graph
+        g.graph["config"] = config
 
-    # Add config to graph
-    g.graph["config"] = config
-
-    # Annotate additional node metadata
-    if config.node_metadata_functions is not None:
-        g = annotate_node_metadata(g, config.node_metadata_functions)
-
-    # Compute graph edges
-    g = compute_edges(
-        g,
-        funcs=config.edge_construction_functions,
-        get_contacts_config=None,
-    )
+        # Annotate additional node metadata
+        if config.node_metadata_functions is not None:
+            g = annotate_node_metadata(g, config.node_metadata_functions)
+        progress.advance(task3)
+        task4 = progress.add_task("Constructing edges...", total=1)
+        # Compute graph edges
+        g = compute_edges(
+            g,
+            funcs=config.edge_construction_functions,
+            get_contacts_config=None,
+        )
+        progress.advance(task4)
 
     # Annotate additional graph metadata
     if config.graph_metadata_functions is not None:
@@ -621,28 +747,39 @@ def construct_graph(
 
 
 def _mp_graph_constructor(
-    args: Tuple[str, str], use_pdb_code: bool, config: ProteinGraphConfig
-) -> nx.Graph:
+    args: Tuple[str, str, int], source: str, config: ProteinGraphConfig
+) -> Union[nx.Graph, None]:
     """
     Protein graph constructor for use in multiprocessing several protein structure graphs.
 
-    :param args: Tuple of pdb code/path and the chain selection for that PDB
+    :param args: Tuple of pdb code/path and the chain selection for that PDB.
     :type args: Tuple[str, str]
-    :param use_pdb_code: Whether or not we are using pdb codes or paths
+    :param use_pdb_code: Whether we are using ``"pdb_code"``s, ``pdb_path``s or ``"uniprot_id"``s.
     :type use_pdb_code: bool
-    :param config: Protein structure graph construction config
+    :param config: Protein structure graph construction config (see: :class:`graphein.protein.config.ProteinGraphConfig`).
     :type config: ProteinGraphConfig
-    :return: Protein structure graph
-    :rtype: nx.Graph
+    :return: Protein structure graph or ``None`` if an error is encountered.
+    :rtype: Union[nx.Graph, None]
     """
-    log.info(f"Constructing graph for: {args[0]}. Chain selection: {args[1]}")
+    log.info(
+        f"Constructing graph for: {args[0]}. Chain selection: {args[1]}. Model index: {args[2]}"
+    )
     func = partial(construct_graph, config=config)
     try:
-        return (
-            func(pdb_code=args[0], chain_selection=args[1])
-            if use_pdb_code
-            else func(pdb_path=args[0], chain_selection=args[1])
-        )
+        if source == "pdb_code":
+            return func(
+                pdb_code=args[0], chain_selection=args[1], model_index=args[2]
+            )
+        elif source == "pdb_path":
+            return func(
+                pdb_path=args[0], chain_selection=args[1], model_index=args[2]
+            )
+        elif source == "uniprot_id":
+            return func(
+                uniprot_id=args[0],
+                chain_selection=args[1],
+                model_index=args[2],
+            )
 
     except Exception as ex:
         log.info(
@@ -655,7 +792,9 @@ def _mp_graph_constructor(
 def construct_graphs_mp(
     pdb_code_it: Optional[List[str]] = None,
     pdb_path_it: Optional[List[str]] = None,
-    chain_selections: Optional[list[str]] = None,
+    uniprot_id_it: Optional[List[str]] = None,
+    chain_selections: Optional[List[str]] = None,
+    model_indices: Optional[List[str]] = None,
     config: ProteinGraphConfig = ProteinGraphConfig(),
     num_cores: int = 16,
     return_dict: bool = True,
@@ -670,6 +809,8 @@ def construct_graphs_mp(
     :type pdb_path_it: Optional[List[str]], defaults to ``None``
     :param chain_selections: List of chains to select from the protein structures (e.g. ``["ABC", "A", "L", "CD"...]``)
     :type chain_selections: Optional[List[str]], defaults to ``None``
+    :param model_indices: List of model indices to use for protein graph construction. Only relevant for structures containing ensembles of models.
+    :type model_indices: Optional[List[str]], defaults to ``None``
     :param config: ProteinGraphConfig to use.
     :type config: graphein.protein.config.ProteinGraphConfig, defaults to default config params
     :param num_cores: Number of cores to use for multiprocessing. The more the merrier
@@ -683,27 +824,35 @@ def construct_graphs_mp(
     """
     assert (
         pdb_code_it is not None or pdb_path_it is not None
-    ), "Iterable of pdb codes OR pdb paths required."
+    ), "Iterable of pdb codes, pdb paths or uniprot IDs required."
 
     if pdb_code_it is not None:
         pdbs = pdb_code_it
-        use_pdb_code = True
+        source = "pdb_code"
 
     if pdb_path_it is not None:
         pdbs = pdb_path_it
-        use_pdb_code = False
+        source = "pdb_path"
+
+    if uniprot_id_it is not None:
+        pdbs = uniprot_id_it
+        source = "uniprot_id"
 
     if chain_selections is None:
         chain_selections = ["all"] * len(pdbs)
 
-    constructor = partial(
-        _mp_graph_constructor, use_pdb_code=use_pdb_code, config=config
-    )
+    if model_indices is None:
+        model_indices = [1] * len(pdbs)
+
+    constructor = partial(_mp_graph_constructor, source=source, config=config)
 
     graphs = list(
         process_map(
             constructor,
-            [(pdb, chain_selections[i]) for i, pdb in enumerate(pdbs)],
+            [
+                (pdb, chain_selections[i], model_indices[i])
+                for i, pdb in enumerate(pdbs)
+            ],
             max_workers=num_cores,
         )
     )
@@ -934,3 +1083,42 @@ def compute_secondary_structure_graph(
     if return_weighted_graph:
         return compute_weighted_graph_from_multigraph(h)
     return h
+
+
+def compute_line_graph(g: nx.Graph, repopulate_data: bool = True) -> nx.Graph:
+    """Computes the line graph of a graph.
+
+    The line graph of a graph G has a node for each edge in G and an edge
+    joining those nodes if the two edges in G share a common node. For directed
+    graphs, nodes are adjacent exactly when the edges they represent form a
+    directed path of length two.
+
+    The nodes of the line graph are 2-tuples of nodes in the original graph (or
+    3-tuples for multigraphs, with the key of the edge as the third element).
+
+    :param g: Graph to compute the line graph of.
+    :type g: nx.Graph
+    :param repopulate_data: Whether or not to map node and edge data to edges
+        and nodes of the line graph, defaults to True
+    :type repopulate_data: bool, optional
+    :return: Line graph of g.
+    :rtype: nx.Graph
+    """
+    l_g = nx.generators.line_graph(g)
+    l_g.graph = g.graph
+
+    if repopulate_data:
+        source_edge_data = {(u, v): d for u, v, d in g.edges(data=True)}
+        nx.set_node_attributes(l_g, source_edge_data)
+
+        node_list = {}
+        for u, v, d in l_g.edges(data=True):
+            node_union = u + v
+            for n in node_union:
+                if node_union.count(n) > 1:
+                    node_list[(u, v)] = n
+                    break
+
+        source_node_data = {k: g.nodes[v] for k, v in node_list.items()}
+        nx.set_edge_attributes(l_g, source_node_data)
+    return l_g

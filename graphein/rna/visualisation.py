@@ -13,6 +13,9 @@ from typing import Dict, List
 
 import networkx as nx
 
+from graphein.protein.visualisation import (
+    plotly_protein_structure_graph as plotly_rna_structure_graph,
+)
 from graphein.rna.graphs import RNA_BASE_COLORS
 
 log = logging.getLogger(__name__)

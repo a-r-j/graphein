@@ -4,7 +4,11 @@ import networkx as nx
 from pandas.testing import assert_frame_equal
 
 from graphein.protein.config import ProteinGraphConfig
-from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
+from graphein.protein.graphs import (
+    construct_graph,
+    filter_dataframe,
+    read_pdb_to_dataframe,
+)
 from graphein.protein.utils import (
     download_pdb,
     save_graph_to_pdb,
@@ -16,9 +20,9 @@ from graphein.protein.utils import (
 def test_save_graph_to_pdb():
     g = construct_graph(pdb_code="4hhb")
 
-    save_graph_to_pdb(g, "/tmp/test_graph.pdb")
+    save_graph_to_pdb(g, "/tmp/test_graph.pdb", hetatms=False)
 
-    a = read_pdb_to_dataframe("/tmp/test_graph.pdb").df["ATOM"]
+    a = read_pdb_to_dataframe("/tmp/test_graph.pdb")
     # Check file exists
     assert os.path.isfile("/tmp/test_graph.pdb")
 
@@ -26,7 +30,7 @@ def test_save_graph_to_pdb():
     # We drop the line_idx columns as these will be renumbered
     assert_frame_equal(
         a.drop(["line_idx"], axis=1),
-        g.graph["pdb_df"].drop(["line_idx"], axis=1),
+        g.graph["pdb_df"].drop(["line_idx", "node_id"], axis=1),
     )
     h = construct_graph(pdb_path="/tmp/test_graph.pdb")
 
@@ -37,15 +41,15 @@ def test_save_graph_to_pdb():
 def test_save_pdb_df_to_pdb():
     g = construct_graph(pdb_code="4hhb")
 
-    save_pdb_df_to_pdb(g.graph["pdb_df"], "/tmp/test_pdb.pdb")
-    a = read_pdb_to_dataframe("/tmp/test_pdb.pdb").df["ATOM"]
+    save_pdb_df_to_pdb(g.graph["pdb_df"], "/tmp/test_pdb.pdb", hetatms=False)
+    a = read_pdb_to_dataframe("/tmp/test_pdb.pdb")
     # Check file exists
     assert os.path.isfile("/tmp/test_graph.pdb")
 
     # We drop the line_idx columns as these will be renumbered
     assert_frame_equal(
         a.drop(["line_idx"], axis=1),
-        g.graph["pdb_df"].drop(["line_idx"], axis=1),
+        g.graph["pdb_df"].drop(["line_idx", "node_id"], axis=1),
     )
 
     # Now check for raw, unprocessed DF
@@ -59,15 +63,17 @@ def test_save_pdb_df_to_pdb():
 def test_save_rgroup_df_to_pdb():
     g = construct_graph(pdb_code="4hhb")
 
-    save_rgroup_df_to_pdb(g, "/tmp/test_rgroup.pdb")
-    a = read_pdb_to_dataframe("/tmp/test_rgroup.pdb").df["ATOM"]
+    save_rgroup_df_to_pdb(g, "/tmp/test_rgroup.pdb", hetatms=False)
+    a = read_pdb_to_dataframe("/tmp/test_rgroup.pdb")
     # Check file exists
     assert os.path.isfile("/tmp/test_rgroup.pdb")
 
     # We drop the line_idx columns as these will be renumbered
     assert_frame_equal(
         a.drop(["line_idx"], axis=1),
-        g.graph["rgroup_df"].drop(["line_idx"], axis=1),
+        filter_dataframe(
+            g.graph["rgroup_df"], "record_name", ["HETATM"], False
+        ).drop(["line_idx", "node_id"], axis=1),
     )
 
 

@@ -7,14 +7,15 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from typing import Any, Dict, Optional
 
 import networkx as nx
 import pandas as pd
-from Bio.Data.IUPACData import protein_letters_1to3
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 
-from graphein.protein.utils import download_pdb, is_tool
+from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_TO_1_3
+from graphein.protein.utils import is_tool, save_pdb_df_to_pdb
 
 DSSP_COLS = [
     "chain",
@@ -35,17 +36,19 @@ DSSP_COLS = [
     "O_NH_2_relidx",
     "O_NH_2_energy",
 ]
+"""Columns in DSSP Output."""
 
 DSSP_SS = ["H", "B", "E", "G", "I", "T", "S"]
+"""Secondary structure types detected by ``DSSP``"""
 
 
 def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
     """
-    Parse DSSP output to DataFrame
+    Parse ``DSSP`` output to DataFrame.
 
-    :param dssp: Dictionary containing DSSP output
+    :param dssp: Dictionary containing ``DSSP`` output
     :type dssp: Dict[str, Any]
-    :return: pd.Dataframe containing parsed DSSP output
+    :return: pd.DataFrame containing parsed ``DSSP`` output
     :rtype: pd.DataFrame
     """
     appender = []
@@ -64,39 +67,12 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
     return pd.DataFrame.from_records(appender, columns=DSSP_COLS)
 
 
-def process_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
+def add_dssp_df(
+    G: nx.Graph,
+    dssp_config: Optional[DSSPConfig],
+) -> nx.Graph:
     """
-    Processes a DSSP DataFrame to make indexes align with node IDs
-
-    :param df: pd.DataFrame containing the parsed output from DSSP.
-    :type df: pd.DataFrame
-    :return: pd.DataFrame with node IDs
-    :rtype: pd.DataFrame
-    """
-
-    # Convert 1 letter aa code to 3 letter
-    amino_acids = df["aa"].tolist()
-
-    for i, amino_acid in enumerate(amino_acids):
-        amino_acids[i] = protein_letters_1to3[amino_acid].upper()
-    df["aa"] = amino_acids
-
-    # Construct node IDs
-    node_ids = []
-
-    for i, row in df.iterrows():
-        node_id = row["chain"] + ":" + row["aa"] + ":" + str(row["resnum"])
-        node_ids.append(node_id)
-    df["node_id"] = node_ids
-
-    df.set_index("node_id", inplace=True)
-
-    return df
-
-
-def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
-    """
-    Construct DSSP dataframe and add as graph level variable to protein graph
+    Construct DSSP dataframe and add as graph level variable to protein graph.
 
     :param G: Input protein graph
     :param G: nx.Graph
@@ -107,7 +83,9 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
     """
 
     config = G.graph["config"]
-    pdb_id = G.graph["pdb_id"]
+    pdb_code = G.graph["pdb_code"]
+    pdb_path = G.graph["pdb_path"]
+    pdb_name = G.graph["name"]
 
     # Extract DSSP executable
     executable = dssp_config.executable
@@ -117,19 +95,55 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
         executable
     ), "DSSP must be on PATH and marked as an executable"
 
-    # Check for existence of pdb file. If not, download it.
-    if not os.path.isfile(config.pdb_dir / pdb_id):
-        pdb_file = download_pdb(config, pdb_id)
+    pdb_file = None
+    if pdb_path:
+        if os.path.isfile(pdb_path):
+            pdb_file = pdb_path
     else:
-        pdb_file = config.pdb_dir + pdb_id + ".pdb"
+        if config.pdb_dir:
+            if os.path.isfile(config.pdb_dir / (pdb_code + ".pdb")):
+                pdb_file = config.pdb_dir / (pdb_code + ".pdb")
+
+    # Check for existence of pdb file. If not, reconstructs it from the raw df.
+    if pdb_file:
+        dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP=executable)
+    else:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            save_pdb_df_to_pdb(
+                G.graph["raw_pdb_df"], tmpdirname + f"/{pdb_name}.pdb"
+            )
+            dssp_dict = dssp_dict_from_pdb_file(
+                tmpdirname + f"/{pdb_name}.pdb", DSSP=executable
+            )
 
     if config.verbose:
         print(f"Using DSSP executable '{executable}'")
 
-    # Run DSSP
-    dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP=executable)
     dssp_dict = parse_dssp_df(dssp_dict)
-    dssp_dict = process_dssp_df(dssp_dict)
+    # Convert 1 letter aa code to 3 letter
+    dssp_dict["aa"] = dssp_dict["aa"].map(STANDARD_AMINO_ACID_MAPPING_TO_1_3)
+
+    # Resolve UNKs
+    dssp_dict.loc[dssp_dict["aa"] == "UNK", "aa"] = (
+        G.graph["pdb_df"]
+        .loc[
+            G.graph["pdb_df"].residue_number.isin(
+                dssp_dict.loc[dssp_dict["aa"] == "UNK"]["resnum"]
+            )
+        ]["residue_name"]
+        .values
+    )
+
+    # Construct node IDs
+    dssp_dict["node_id"] = (
+        dssp_dict["chain"]
+        + ":"
+        + dssp_dict["aa"]
+        + ":"
+        + dssp_dict["resnum"].astype(str)
+    )
+
+    dssp_dict.set_index("node_id", inplace=True)
 
     if config.verbose:
         print(dssp_dict)
@@ -142,31 +156,31 @@ def add_dssp_df(G: nx.Graph, dssp_config: Optional[DSSPConfig]) -> nx.Graph:
 
 def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
     """
-    Adds add_dssp_feature specified amino acid feature as calculated
+    Adds specified amino acid feature as calculated
     by DSSP to every node in a protein graph
-    :param G: Protein structure graph to add dssp feature to
-    :param feature: string specifying name of DSSP feature to add:
-    "chain",
-    "resnum",
-    "icode",
-    "aa",
-    "ss",
-    "asa",
-    "phi",
-    "psi",
-    "dssp_index",
-    "NH_O_1_relidx",
-    "NH_O_1_energy",
-    "O_NH_1_relidx",
-    "O_NH_1_energy",
-    "NH_O_2_relidx",
-    "NH_O_2_energy",
-    "O_NH_2_relidx",
-    "O_NH_2_energy",
 
-    These names parse_dssp_df accessible in the DSSP_COLS list
-    :param G: Protein Graph to add features to
+    :param G: Protein structure graph to add dssp feature to
     :type G: nx.Graph
+    :param feature: string specifying name of DSSP feature to add:
+        ``"chain"``,
+        ``"resnum"``,
+        ``"icode"``,
+        ``"aa"``,
+        ``"ss"``,
+        ``"asa"``,
+        ``"phi"``,
+        ``"psi"``,
+        ``"dssp_index"``,
+        ``"NH_O_1_relidx"``,
+        ``"NH_O_1_energy"``,
+        ``"O_NH_1_relidx"``,
+        ``"O_NH_1_energy"``,
+        ``"NH_O_2_relidx"``,
+        ``"NH_O_2_energy"``,
+        ``"O_NH_2_relidx"``,
+        ``"O_NH_2_energy"``,
+        These names are accessible in the DSSP_COLS list
+    :type feature: str
     :return: Protein structure graph with DSSP feature added to nodes
     :rtype: nx.Graph
     """

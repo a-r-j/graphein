@@ -1,4 +1,6 @@
+import bioservices
 import networkx as nx
+import pytest
 
 from graphein.ppi.config import PPIGraphConfig
 from graphein.ppi.edges import add_biogrid_edges, add_string_edges
@@ -17,7 +19,19 @@ PROTEIN_LIST = [
 ]
 
 
+@pytest.mark.skip("not a test")
+def hgnc_available():
+    try:
+        a = bioservices.HGNC()
+        return True
+    except TypeError:
+        return False
+
+
+HGNC_AVAILABLE = hgnc_available()
+
 # Test Graph Construction
+@pytest.mark.skipif(not HGNC_AVAILABLE, reason="HGNC not available")
 def test_construct_graph():
     config = PPIGraphConfig()
 

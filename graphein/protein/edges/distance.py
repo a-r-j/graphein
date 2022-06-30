@@ -6,6 +6,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import itertools
 import logging
 from itertools import combinations
 from typing import Dict, List, Optional, Tuple, Union
@@ -14,8 +15,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from scipy.spatial import Delaunay
-from scipy.spatial.distance import euclidean, pdist, rogerstanimoto, squareform
-from sklearn.metrics import pairwise_distances
+from scipy.spatial.distance import pdist, squareform
 from sklearn.neighbors import kneighbors_graph
 
 from graphein.protein.resi_atoms import (
@@ -40,16 +40,25 @@ log = logging.getLogger(__name__)
 
 def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Compute pairwise euclidean distances between every atom.
+    Compute pairwise Euclidean distances between every atom.
 
-    Design choice: passed in a DataFrame to enable easier testing on
+    Design choice: passed in a ``pd.DataFrame`` to enable easier testing on
     dummy data.
 
-    :param pdb_df: pd.Dataframe containing protein structure. Must contain columns ["x_coord", "y_coord", "z_coord"]
+    :param pdb_df: Dataframe containing protein structure. Must contain columns ``["x_coord", "y_coord", "z_coord"]``.
     :type pdb_df: pd.DataFrame
-    :return: pd.Dataframe of euclidean distance matrix
+    :raises: ValueError if ``pdb_df`` does not contain the required columns.
+    :return: pd.Dataframe of Euclidean distance matrix.
     :rtype: pd.DataFrame
     """
+    if (
+        not pd.Series(["x_coord", "y_coord", "z_coord"])
+        .isin(pdb_df.columns)
+        .all()
+    ):
+        raise ValueError(
+            "Dataframe must contain columns ['x_coord', 'y_coord', 'z_coord']"
+        )
     eucl_dists = pdist(
         pdb_df[["x_coord", "y_coord", "z_coord"]], metric="euclidean"
     )
@@ -60,6 +69,29 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     return eucl_dists
 
 
+def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
+    """Adds Euclidean distance between nodes in an edge as an edge attribute.
+
+    :param G: Graph to add distances to.
+    :type G: nx.Graph
+    :return: Graph with added distances.
+    :rtype: nx.Graph
+    """
+    if "atomic_dist_mat" in G.graph.keys():
+        dist_mat = G.graph["atomic_dist_mat"]
+    elif "dist_mat" in G.graph.keys():
+        dist_mat = G.graph["dist_mat"]
+    else:
+        dist_mat = compute_distmat(G.graph["pdb_df"])
+        G.graph["dist_mat"] = dist_mat
+
+    mat = np.where(nx.to_numpy_matrix(G), dist_mat, 0)
+    node_map = {n: i for i, n in enumerate(G.nodes)}
+    for u, v, d in G.edges(data=True):
+        d["distance"] = mat[node_map[u], node_map[v]]
+    return G
+
+
 def add_sequence_distance_edges(
     G: nx.Graph, d: int, name: str = "sequence_edge"
 ) -> nx.Graph:
@@ -68,15 +100,14 @@ def add_sequence_distance_edges(
 
     Eg. if ``d=6`` then we join: nodes ``(1,7), (2,8), (3,9)..`` based on their sequence number.
 
-    :param G: networkx protein graph.
+    :param G: Networkx protein graph.
     :type G: nx.Graph
     :param d: Sequence separation to add edges on.
     :param name: Name of the edge type. Defaults to ``"sequence_edge"``.
     :type name: str
-    :return G: networkx protein graph with added peptide bonds.
+    :return G: Networkx protein graph with added peptide bonds.
     :rtype: nx.Graph
     """
-    print(len(G))
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
 
@@ -125,9 +156,9 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
     """
     Adds peptide backbone as edges to residues in each chain.
 
-    :param G: networkx protein graph.
+    :param G: Networkx protein graph.
     :type G: nx.Graph
-    :return G: networkx protein graph with added peptide bonds.
+    :return G: Networkx protein graph with added peptide bonds.
     :rtype: nx.Graph
     """
     return add_sequence_distance_edges(G, d=1, name="peptide_bond")
@@ -393,8 +424,16 @@ def add_cation_pi_interactions(
                 G.add_edge(resi1, resi2, kind={"cation_pi"})
 
 
-def get_interacting_atoms(angstroms: float, distmat: pd.DataFrame):
-    """Find the atoms that are within a particular radius of one another."""
+def get_interacting_atoms(
+    angstroms: float, distmat: pd.DataFrame
+) -> np.ndarray:
+    """Find the atoms that are within a particular radius of one another.
+
+    :param angstroms: The radius in angstroms.
+    :type angstroms: float
+    :param distmat: The distance matrix.
+    :type distmat: pd.DataFrame
+    """
     return np.where(distmat <= angstroms)
 
 
@@ -506,6 +545,76 @@ def add_distance_threshold(
     log.info(
         f"Added {count} distance edges. ({len(list(interacting_nodes)) - count} removed by LIN)"
     )
+
+
+def add_distance_window(
+    G: nx.Graph, min: float, max: float, long_interaction_threshold: int = -1
+):
+    """
+    Adds edges to any nodes within a given window of distances of each other. Long interaction threshold is used
+    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+
+    :param G: Protein Structure graph to add distance edges to
+    :type G: nx.Graph
+    :param min: Minimum distance in angstroms required for an edge.
+    :type min: float
+    :param max: Maximum distance in angstroms allowed for an edge.
+    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :type long_interaction_threshold: int
+    :return: Graph with distance-based edges added
+    """
+    pdb_df = filter_dataframe(
+        G.graph["pdb_df"], "node_id", list(G.nodes()), True
+    )
+    dist_mat = compute_distmat(pdb_df)
+    # Nodes less than the minimum distance
+    less_than_min = get_interacting_atoms(min, distmat=dist_mat)
+    less_than_min = list(zip(less_than_min[0], less_than_min[1]))
+
+    interacting_nodes = get_interacting_atoms(max, distmat=dist_mat)
+    interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
+    interacting_nodes = [
+        i for i in interacting_nodes if i not in less_than_min
+    ]
+
+    log.info(f"Found: {len(interacting_nodes)} distance edges")
+    count = 0
+    for a1, a2 in interacting_nodes:
+        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
+        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
+        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
+        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
+        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
+        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
+
+        condition_1 = n1_chain == n2_chain
+        condition_2 = (
+            abs(n1_position - n2_position) < long_interaction_threshold
+        )
+
+        if not (condition_1 and condition_2):
+            count += 1
+            if G.has_edge(n1, n2):
+                G.edges[n1, n2]["kind"].add(f"distance_window_{min}_{max}")
+            else:
+                G.add_edge(n1, n2, kind={f"distance_window_{min}_{max}"})
+    log.info(
+        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count} removed by LIN)"
+    )
+
+
+def add_fully_connected_edges(G: nx.Graph):
+    """
+    Adds fully connected edges to nodes.
+
+    :param G: Protein structure graph to add fully connected edges to.
+    :type G: nx.Graph
+    """
+    for n1, n2 in itertools.product(G.nodes(), G.nodes()):
+        if G.has_edge(n1, n2):
+            G.edges[n1, n2]["kind"].add("fully_connected")
+        else:
+            G.add_edge(n1, n2, kind={"fully_connected"})
 
 
 def add_k_nn_edges(

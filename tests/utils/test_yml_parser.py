@@ -21,7 +21,7 @@ DATA_PATH = Path(__file__).resolve().parent
 
 protein_graph_config = {
     "granularity": "CA",
-    "keep_hets": False,
+    "keep_hets": [],
     "insertions": False,
     "verbose": False,
     "node_metadata_functions": [meiler_embedding, expasy_protein_scale],

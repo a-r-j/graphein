@@ -7,6 +7,7 @@ import logging
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import os
+import tempfile
 from functools import lru_cache
 from pathlib import Path
 from shutil import which
@@ -14,7 +15,6 @@ from typing import Any, Dict, List, Tuple, Union
 from urllib.request import urlopen
 
 import networkx as nx
-import numpy as np
 import pandas as pd
 import wget
 from Bio.PDB import PDBList
@@ -68,7 +68,7 @@ def download_pdb(config, pdb_code: str) -> Path:
     """
     pdb_code = pdb_code.lower()
     if not config.pdb_dir:
-        config.pdb_dir = Path("/tmp/")
+        config.pdb_dir = Path(tempfile.TemporaryDirectory().name)
 
     # Initialise class and download pdb file
     pdbl = PDBList()
@@ -246,7 +246,13 @@ def three_to_one_with_mods(res: str) -> str:
     return RESI_THREE_TO_1[res]
 
 
-def save_graph_to_pdb(g: nx.Graph, path: str, gz: bool = False):
+def save_graph_to_pdb(
+    g: nx.Graph,
+    path: str,
+    gz: bool = False,
+    atoms: bool = True,
+    hetatms: bool = True,
+):
     """Saves processed ``pdb_df`` (``g.graph["pdb_df"]``) dataframe to a PDB file.
 
     N.B. PDBs do not contain connectivity information.
@@ -261,12 +267,27 @@ def save_graph_to_pdb(g: nx.Graph, path: str, gz: bool = False):
     :type gz: bool
     """
     ppd = PandasPdb()
-    ppd.df["ATOM"] = g.graph["pdb_df"]
+    atom_df = filter_dataframe(
+        g.graph["pdb_df"], "record_name", ["ATOM"], boolean=True
+    )
+    hetatm_df = filter_dataframe(
+        g.graph["pdb_df"], "record_name", ["HETATM"], boolean=True
+    )
+    if atoms:
+        ppd.df["ATOM"] = atom_df
+    if hetatms:
+        ppd.df["HETATM"] = hetatm_df
     ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
     log.info(f"Successfully saved graph to {path}")
 
 
-def save_pdb_df_to_pdb(df: pd.DataFrame, path: str, gz: bool = False):
+def save_pdb_df_to_pdb(
+    df: pd.DataFrame,
+    path: str,
+    gz: bool = False,
+    atoms: bool = True,
+    hetatms: bool = True,
+):
     """Saves pdb dataframe to a PDB file.
 
     :param g: Dataframe to save as PDB
@@ -276,13 +297,24 @@ def save_pdb_df_to_pdb(df: pd.DataFrame, path: str, gz: bool = False):
     :param gz: Whether to gzip the file. Defaults to ``False``.
     :type gz: bool
     """
+    atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
+    hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
     ppd = PandasPdb()
-    ppd.df["ATOM"] = df
-    ppd.to_pdb(path=path, records=None, gz=False, append_newline=True)
+    if atoms:
+        ppd.df["ATOM"] = atom_df
+    if hetatms:
+        ppd.df["HETATM"] = hetatm_df
+    ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
     log.info(f"Successfully saved PDB dataframe to {path}")
 
 
-def save_rgroup_df_to_pdb(g: nx.Graph, path: str, gz: bool = False):
+def save_rgroup_df_to_pdb(
+    g: nx.Graph,
+    path: str,
+    gz: bool = False,
+    atoms: bool = True,
+    hetatms: bool = True,
+):
     """Saves R-group (``g.graph["rgroup_df"]``) dataframe to a PDB file.
 
     N.B. PDBs do not contain connectivity information.
@@ -297,13 +329,22 @@ def save_rgroup_df_to_pdb(g: nx.Graph, path: str, gz: bool = False):
     :type gz: bool
     """
     ppd = PandasPdb()
-    ppd.df["ATOM"] = g.graph["rgroup_df"]
+    atom_df = filter_dataframe(
+        g.graph["rgroup_df"], "record_name", ["ATOM"], boolean=True
+    )
+    hetatm_df = filter_dataframe(
+        g.graph["rgroup_df"], "record_name", ["HETATM"], boolean=True
+    )
+    if atoms:
+        ppd.df["ATOM"] = atom_df
+    if hetatms:
+        ppd.df["HETATM"] = hetatm_df
     ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
     log.info(f"Successfully saved rgroup data to {path}")
 
 
 def is_tool(name: str) -> bool:
-    """Checks whether ``name`` is on PATH and is marked as an executable.
+    """Checks whether ``name`` is on ``PATH`` and is marked as an executable.
 
     Source: https://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
 

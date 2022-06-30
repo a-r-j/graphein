@@ -1,17 +1,17 @@
 !ProteinGraphConfig
-  granularity: "CA"
-  keep_hets: False
-  insertions: False
-  verbose: False
-  node_metadata_functions:
-    - !func:graphein.protein.features.nodes.amino_acid.meiler_embedding
-    - !func:graphein.protein.features.nodes.amino_acid.expasy_protein_scale
-  edge_construction_functions:
-    - !func:graphein.protein.edges.distance.add_peptide_bonds
-    - !func:graphein.protein.edges.distance.add_distance_threshold
-      long_interaction_threshold: 5
-      threshold: 10.
-  get_contacts_config: !GetContactsConfig
-      contacts_dir: "../examples/contacts/"
-      pdb_dir: "../examples/contacts/"
-  dssp_config: !DSSPConfig
+granularity: "CA"
+keep_hets: []
+insertions: False
+verbose: False
+node_metadata_functions:
+  - !func:graphein.protein.features.nodes.amino_acid.meiler_embedding
+  - !func:graphein.protein.features.nodes.amino_acid.expasy_protein_scale
+edge_construction_functions:
+  - !func:graphein.protein.edges.distance.add_peptide_bonds
+  - !func:graphein.protein.edges.distance.add_distance_threshold
+    long_interaction_threshold: 5
+    threshold: 10.
+get_contacts_config: !GetContactsConfig
+  contacts_dir: "../examples/contacts/"
+  pdb_dir: "../examples/contacts/"
+dssp_config: !DSSPConfig

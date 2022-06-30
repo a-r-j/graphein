@@ -46,6 +46,7 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
    :caption: Machine Learning
 
    datasets
+   ml_examples
 
 .. toctree::
    :glob:

@@ -2,7 +2,9 @@
 Module that defines a setup function and publishes the package to PyPI.
 Use the command `python setup.py upload`.
 """
+
 import codecs
+import contextlib
 import io
 import os
 import re
@@ -87,7 +89,7 @@ EXTRA_REQUIRES = {
 }
 # Add all requires
 all_requires = []
-for k, v in EXTRA_REQUIRES.items():
+for v in EXTRA_REQUIRES.values():
     all_requires.extend(v)
 EXTRA_REQUIRES["all"] = set(all_requires)
 
@@ -113,12 +115,9 @@ class UploadCommand(Command):
 
     def run(self):
         """Publish package to PyPI."""
-        try:
+        with contextlib.suppress(OSError):
             self.status("Removing previous builds…")
             rmtree(os.path.join(HERE, "dist"))
-        except OSError:
-            pass
-
         self.status("Building Source and Wheel (universal) distribution…")
         os.system(
             "{0} setup.py sdist bdist_wheel --universal".format(sys.executable)
@@ -136,7 +135,7 @@ class UploadCommand(Command):
 
 setup(
     name="graphein",
-    version="1.4.0",
+    version="1.5.0rc1",
     # versioneer.get_version(),
     # cmdclass=versioneer.get_cmdclass(),
     description="Protein & Interactomic Graph Construction for Machine Learning",
