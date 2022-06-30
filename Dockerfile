@@ -8,6 +8,10 @@ RUN apt-get update \
 RUN apt-get update && apt-get install -y iputils-ping && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install BLAST
+RUN apt-get update && apt-get install -y ncbi-blast+ && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV CONDA_ALWAYS_YES=true
 
 

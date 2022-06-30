@@ -7,17 +7,15 @@
 from __future__ import annotations
 
 import importlib.util
-import logging
 import os
 import time
 from typing import List, NamedTuple, Optional, Tuple
 
+from loguru import logger as log
+
 from graphein.protein.config import ProteinMeshConfig
 from graphein.utils.pymol import MolViewer
 from graphein.utils.utils import import_message
-
-log = logging.getLogger(__name__)
-
 
 try:
     from pytorch3d.structures import Meshes

@@ -29,7 +29,7 @@ copyright = "2022, Arian Jamasb"
 author = "Arian Jamasb"
 
 # The full version, including alpha/beta/rc tags
-release = "1.4.0"
+release = "1.5.0rc1"
 
 
 # -- General configuration ---------------------------------------------------
@@ -71,8 +71,12 @@ intersphinx_mapping = {
     "xarray": ("https://xarray.pydata.org/en/stable/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
+    "sklearn": ("https://scikit-learn.org/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
     "Sphinx": ("https://www.sphinx-doc.org/en/stable/", None),
+    "networkx": ("https://networkx.github.io/documentation/stable/", None),
+    "nx": ("https://networkx.github.io/documentation/stable/", None),
+    "torch": ("https://pytorch.org/docs/master/", None),
 }
 
 mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"

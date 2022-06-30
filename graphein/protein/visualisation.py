@@ -14,8 +14,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import plotly.express as px
 import plotly.colors as co
+import plotly.express as px
 import plotly.graph_objects as go
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
@@ -94,7 +94,7 @@ def colour_nodes(
     # Define color range proportional to number of edges adjacent to a single node
     if colour_by == "degree":
         # Get max number of edges connected to a single node
-        edge_max = max([G.degree[i] for i in G.nodes()])
+        edge_max = max(G.degree[i] for i in G.nodes())
         colors = [colour_map(G.degree[i] / edge_max) for i in G.nodes()]
     elif colour_by == "seq_position":
         colors = [colour_map(i / n) for i in range(n)]
@@ -104,6 +104,20 @@ def colour_nodes(
             zip(chains, list(colour_map(1 / len(chains), 1, len(chains))))
         )
         colors = [chain_colours[d["chain_id"]] for n, d in G.nodes(data=True)]
+    elif colour_by == "plddt":
+        levels: List[str] = ["Very High", "Confident", "Low", "Very Low"]
+        mapping = dict(zip(sorted(levels), count()))
+        colors = []
+        for _, d in G.nodes(data=True):
+            if d["b_factor"] > 90:
+                colors.append((27 / 256, 86 / 256, 206 / 256, 1))
+            elif d["b_factor"] > 70:
+                colors.append((126 / 256, 202 / 256, 239 / 256, 1))
+            elif d["b_factor"] > 50:
+                colors.append((250 / 256, 218 / 256, 77 / 256, 1))
+            else:
+                colors.append((239 / 256, 131 / 256, 83 / 256, 1))
+        # colors = [colour_map(mapping[c] / len(levels)) for c in colors]
     else:
         node_types = set(nx.get_node_attributes(G, colour_by).values())
         mapping = dict(zip(sorted(node_types), count()))
@@ -118,7 +132,7 @@ def colour_nodes(
 def colour_edges(
     G: nx.Graph,
     colour_map: matplotlib.colors.ListedColormap,
-    colour_by: str = "kind",
+    colour_by: Optional[str] = "kind",
     set_alpha: float = 1.0,
     return_as_rgba: bool = False,
 ) -> List[Tuple[float, float, float, float]] or List[str]:
@@ -130,7 +144,7 @@ def colour_edges(
     :param colour_map: Colourmap to use.
     :type colour_map: matplotlib.colors.ListedColormap
     :param colour_by: Edge attribute to colour by. Currently only ``"kind"`` is supported.
-    :type colour_by: str
+    :type colour_by: Optional[str]
     :param set_alpha: Sets a given alpha value between 0.0 and 1.0 for all the edge colours.
     :type set_alpha: float
     :param return_as_rgba: Returns a list of rgba strings instead of tuples.
@@ -139,9 +153,9 @@ def colour_edges(
     :rtype: List[Tuple[float, float, float, float]] or List[str]
     """
     if colour_by == "kind":
-        edge_types = set(
+        edge_types = {
             frozenset(a) for a in nx.get_edge_attributes(G, "kind").values()
-        )
+        }
         mapping = dict(zip(sorted(edge_types), count()))
         colors = [
             colour_map(
@@ -150,10 +164,15 @@ def colour_edges(
             )
             for i in G.edges()
         ]
+    elif colour_by is None:
+        colors = [(0.0, 0.0, 0.0, 1.0) for _ in G.edges()]
     else:
-        raise NotImplementedError(
-            "Other edge colouring methods not implemented."
-        )
+        edge_types = set(nx.get_edge_attributes(G, colour_by).values())
+        mapping = dict(zip(sorted(edge_types), count()))
+        colors = [
+            colour_map(mapping[d[colour_by]] / len(edge_types))
+            for _, _, d in G.edges(data=True)
+        ]
 
     assert (
         0.0 <= set_alpha <= 1.0
@@ -178,7 +197,7 @@ def plotly_protein_structure_graph(
     node_colour_map=plt.cm.plasma,
     edge_color_map=plt.cm.plasma,
     colour_nodes_by: str = "degree",
-    colour_edges_by: str = "kind",
+    colour_edges_by: Optional[str] = "kind",
 ) -> go.Figure:
     """
     Plots protein structure graph using plotly.
@@ -202,9 +221,9 @@ def plotly_protein_structure_graph(
     :param edge_color_map: colour map to use for edges. Defaults to ``plt.cm.plasma``.
     :type edge_color_map: plt.cm
     :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``, ``"seq_position"`` or a node feature.
-    :type colour_edges_by: str
-    :param colour_edges_by: Specifies how to colour edges. Currently only ``"kind"`` is supported.
     :type colour_nodes_by: str
+    :param colour_edges_by: Specifies how to colour edges. Currently only ``"kind"`` or ``None`` are supported.
+    :type colour_edges_by: Optional[str]
     :returns: Plotly Graph Objects plot
     :rtype: go.Figure
     """
@@ -718,8 +737,7 @@ def asteroid_plot(
     """
     assert node_id in g.nodes(), f"Node {node_id} not in graph"
 
-    nodes: Dict[int, List[str]] = {}
-    nodes[0] = [node_id]
+    nodes: Dict[int, List[str]] = {0: [node_id]}
     node_list: List[str] = [node_id]
     # Iterate over the number of hops and extract nodes in each shell
     for i in range(1, k):
@@ -949,55 +967,3 @@ def plot_chord_diagram(
         show=show,
         **kwargs,
     )
-
-
-if __name__ == "__main__":
-    # TODO: Move the block here into tests.
-    from graphein.protein.config import ProteinGraphConfig
-    from graphein.protein.edges.atomic import (
-        add_atomic_edges,
-        add_bond_order,
-        add_ring_status,
-    )
-    from graphein.protein.features.nodes.amino_acid import (
-        expasy_protein_scale,
-        meiler_embedding,
-    )
-    from graphein.protein.graphs import construct_graph
-
-    # Test Point cloud plotting
-    # v, f, a = create_mesh(pdb_code="3eiy")
-    # m = convert_verts_and_face_to_mesh(v, f)
-    # plot_pointcloud(m, "Test")
-    # TEST PROTEIN STRUCTURE GRAPH PLOTTING
-    configs = {
-        "granularity": "atom",
-        "keep_hets": False,
-        "deprotonate": True,
-        "insertions": False,
-        "verbose": False,
-    }
-
-    config = ProteinGraphConfig(**configs)
-    config.edge_construction_functions = [
-        add_atomic_edges,
-        add_ring_status,
-        add_bond_order,
-    ]
-
-    config.node_metadata_functions = [meiler_embedding, expasy_protein_scale]
-
-    g = construct_graph(
-        config=config, pdb_path="../examples/pdbs/3eiy.pdb", pdb_code="3eiy"
-    )
-
-    p = plotly_protein_structure_graph(
-        g,
-        30,
-        (1000, 2000),
-        colour_nodes_by="element_symbol",
-        colour_edges_by="kind",
-        label_node_ids=False,
-    )
-
-    p.show()

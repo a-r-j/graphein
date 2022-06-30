@@ -20,6 +20,14 @@ from graphein.rna.constants import (
 log = logging.getLogger(__name__)
 
 
+BASEPAIRING_EDGE_FUNCS = [
+    "add_phosphodiester_bonds",
+    "add_base_pairing_interactions",
+    "add_pseudoknots",
+    "add_base_pairing_interactions",
+]
+
+
 def check_base_pairing_type(base_1: str, base_2: str) -> str:
     """
     Checks type and validity of base pairing interactions.

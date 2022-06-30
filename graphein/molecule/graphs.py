@@ -16,7 +16,6 @@ import networkx as nx
 import numpy as np
 from tqdm.contrib.concurrent import process_map, thread_map
 
-from graphein.molecule.edges.atomic import add_atom_bonds
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
@@ -25,7 +24,11 @@ from graphein.utils.utils import (
     import_message,
 )
 
+from .chembl import get_smiles_from_chembl
 from .config import MoleculeGraphConfig
+from .edges.atomic import add_atom_bonds
+from .utils import compute_fragments
+from .zinc import get_smiles_from_zinc
 
 log = logging.getLogger(__name__)
 
@@ -130,13 +133,16 @@ def construct_graph(
     mol: Optional[rdkit.Mol] = None,
     path: Optional[str] = None,
     smiles: Optional[str] = None,
+    zinc_id: Optional[str] = None,
+    chembl_id: Optional[str] = None,
+    generate_conformer: Optional[bool] = False,
     edge_construction_funcs: Optional[str] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
     node_annotation_funcs: Optional[List[Callable]] = None,
     graph_annotation_funcs: Optional[List[Callable]] = None,
 ) -> nx.Graph:
     """
-    Constructs protein structure graph from a ``sdf_path``, ``mol2_path``, ``smiles`` or RDKit Mol.
+    Constructs molecular structure graph from a ``sdf_path``, ``mol2_path``, ``smiles`` or RDKit Mol.
 
     Users can provide a :class:`~graphein.molecule.config.MoleculeGraphConfig`
     object to specify construction parameters.
@@ -151,6 +157,12 @@ def construct_graph(
     :type path: str
     :param smiles: smiles string to build graph from. Default is ``None``.
     :type smiles: str, optional
+    :param zinc_id: Zinc ID to build graph from. Default is ``None``.
+    :type zinc_id: str, optional
+    :param chembl_id: ChEMBL ID to build graph from. Default is ``None``.
+    :type chembl_id: str, optional
+    :param generate_conformer: Whether to generate a conformer for the molecule. Defaults to ``False``.
+    :type generate_conformer: bool, optional
     :param edge_construction_funcs: List of edge construction functions. Default is ``None``.
     :type edge_construction_funcs: List[Callable], optional
     :param edge_annotation_funcs: List of edge annotation functions. Default is ``None``.
@@ -184,15 +196,21 @@ def construct_graph(
     )
     config.edge_construction_functions = (
         edge_construction_funcs
-        if config.edge_construction_functions is None
+        if edge_construction_funcs is not None
         else config.edge_construction_functions
     )
+
+    if zinc_id is not None:
+        smiles = get_smiles_from_zinc(zinc_id)
+
+    if chembl_id is not None:
+        smiles = get_smiles_from_chembl(chembl_id)
 
     coords = None
     if smiles is not None:
         name = smiles
         rdmol = Chem.MolFromSmiles(smiles)
-        if config.generate_conformer:
+        if config.generate_conformer or generate_conformer:
             rdmol = generate_3d(mol=rdmol, recompute_graph=False)
             coords = [
                 list(rdmol.GetConformer(0).GetAtomPosition(idx))
@@ -225,7 +243,7 @@ def construct_graph(
                 smiles = f.readlines()[0]
             name = smiles
             rdmol = Chem.MolFromSmiles(smiles)
-            if config.generate_conformer:
+            if config.generate_conformer or generate_conformer:
                 rdmol = generate_3d(mol=rdmol, recompute_graph=False)
                 coords = [
                     list(rdmol.GetConformer(0).GetAtomPosition(idx))
@@ -292,6 +310,28 @@ def construct_graph(
     return g
 
 
+def compute_fragment_graphs(
+    g: Union[nx.Graph, Chem.Mol], config: Optional[MoleculeGraphConfig] = None
+) -> List[nx.Graph]:
+    """Computes graphs for each fragment in a molecule.
+
+    :param g: Input graph or molecule to fragment.
+    :type g: Union[nx.Graph, Chem.Mol]
+    :param config: Molecular graph construction config.
+        See: :class:`graphein.molecule.config`. Defaults to ``None``.
+    :type config: Optional[MoleculeGraphConfig], optional
+    :return: List of fragment graphs.
+    :rtype: List[nx.Graph]
+    """
+    if config is None:
+        try:
+            config = g.graph["config"]
+        except KeyError:
+            config = MoleculeGraphConfig()
+    fragments = compute_fragments(g)
+    return [construct_graph(mol=m, config=config) for m in fragments]
+
+
 def _mp_graph_constructor(
     input: Union[str, Chem.Mol],
     config: MoleculeGraphConfig,
@@ -310,9 +350,9 @@ def _mp_graph_constructor(
     :type use_file: bool
     :param use_smiles: Whether or not we are using SMILES strings
     :type use_smiles: bool
-    :param config: Protein structure graph construction config
-    :type config: ProteinGraphConfig
-    :return: Protein structure graph
+    :param config: Molecule structure graph construction config
+    :type config: MoleculeGraphConfig
+    :return: Molecule structure graph
     :rtype: nx.Graph
     """
     # log.info(f"Constructing graph for: {args[0]}. Chain selection: {args[1]}")
@@ -341,9 +381,9 @@ def construct_graphs_mp(
     return_dict: bool = True,
 ) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:
     """
-    Constructs protein graphs for a list of pdb codes or pdb paths using multiprocessing.
+    Constructs molecular graphs for a list of smiles or paths using multiprocessing.
 
-    :param pdb_code_it: List of pdb codes to use for protein graph construction
+    :param pdb_code_it: List of pdb codes to use for molecule graph construction
     :type pdb_code_it: Optional[List[str]], defaults to None
     :param pdb_path_it: List of paths to PDB files to use for protein graph construction
     :type pdb_path_it: Optional[List[str]], defaults to None

@@ -1,14 +1,48 @@
 ### 1.5.0 - UNRELEASED
 
-* [Patch] - [#178](https://github.com/a-r-j/graphein/pull/178) Fixes [#171](https://github.com/a-r-j/graphein/pull/171) and optimizes `graphein.protein.features.nodes.dssp`. Contribution by @avivko.
+#### Protein
+
+* [Feature] - #165 adds support for direct AF2 graph construction.
+* [Feature] - #165 adds support for selecting model indices from PDB files.
+* [Feature] - #165 adds support for extracting interface subgraphs from complexes.
+* [Feature] - #165 adds support for computing the radius of gyration of a structure.
+* [Feature] - #165 adds support for adding distances to protein edges.
+* [Feature] - #165 adds support for fully connected edges in protein graphs.
+* [Feature] - #165 adds support for distance window-based edges for protein graphs.
+* [Feature] - #165 adds support for transformer-like positional encoding of protein sequences.
+* [Feature] - #165 adds support for plddt-like colouring of AF2 graphs
+* [Feature] - #165 adds support for plotting PyG Data object (e.g. for logging to WandB).
 * [Feature] - [#170](https://github.com/a-r-j/graphein/pull/170) Adds support for viewing edges in `graphein.protein.visualisation.asteroid_plot`. Contribution by @avivko.
-* [Feature] - #163 Adds support for conformer generation for SMILE inputs to molecule graph construction.
+* [Patch] - [#178](https://github.com/a-r-j/graphein/pull/178) Fixes [#171](https://github.com/a-r-j/graphein/pull/171) and optimizes `graphein.protein.features.nodes.dssp`. Contribution by @avivko.
+* [Patch] - [#174](https://github.com/a-r-j/graphein/pull/174) prevents insertions always being removed. Resolves [#173](https://github.com/a-r-j/graphein/issues/173). Contribution by @OliverT1.
+* [Patch] - #165 Refactors HETATM selections.
+
+#### Molecules
+
+* [Feature] - #165 adds additional graph-level molecule features.
+* [Feature] - #165 adds support for generating conformers (and 3D graphs) from SMILES inputs
 * [Feature] - #163 Adds support for molecule graph generation from an RDKit.Chem.Mol input.
 * [Feature] - #163 Adds support for multiprocess molecule graph construction.
+
+#### RNA
+
+* [Feature] - #165 adds support for 3D RNA graph construction.
+* [Feature] - #165 adds support for generating RNA SS from sequence using the Nussinov Algorithm.
+
+#### Changes
+
 * [Patch] - #163 uses tqdm.contrib.process_map insteap of multiprocessing.Pool.map to provide progress bars in multiprocessing.
+* [Fix] - #165 makes returned subgraphs editable objects rather than views
+* [Fix] - #165 fixes global logging set to "debug".
+* [Fix] - #165 uses rich progress for protein graph construction.
+* [Fix] - #165 sets saner default for node size in 3d plotly plots
+* [Dependency] - #165 Changes CLI to use rich-click instead of click for prettier formatting.
+* [Package] - #165 Adds support for logging with loguru and rich
+* [Package] - Pin BioPandas version to 0.4.1 to support additional parsing features.
 
 #### Breaking Changes
 
+* #165 adds RNA SS edges into graphein.protein.edges.base_pairing
 * #163 changes separate filetype input paths to `graphein.molecule.graphs.construct_graph`. Interface is simplified to simply `path="some/path.extension"` instead of separate inputs like `mol2_path=...` and `sdf_path=...`.
 
 ### 1.4.0 - UNRELEASED

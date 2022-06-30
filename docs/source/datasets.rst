@@ -2,6 +2,7 @@
 Datasets
 ==============
 
+.. include:: dataset_readme.rst
 
 
 Summaries
