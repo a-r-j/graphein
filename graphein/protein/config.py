@@ -115,7 +115,7 @@ class ProteinGraphConfig(BaseModel):
         residues, bound ligands, crystallographic adjuvants, ions or water molecules.
 
         For more information, see: https://proteopedia.org/wiki/index.php/Hetero_atoms
-    :type keep_hets: bool
+    :type keep_hets: List[str]
     :param insertions: Controls whether or not insertions are allowed.
     :type insertions: bool
     :param pdb_dir: Specifies path to download protein structures into.
@@ -150,7 +150,7 @@ class ProteinGraphConfig(BaseModel):
     """
 
     granularity: Union[GraphAtoms, GranularityOpts] = "CA"
-    keep_hets: bool = False
+    keep_hets: List[str] = []
     insertions: bool = False
     pdb_dir: Optional[Path] = None
     verbose: bool = False

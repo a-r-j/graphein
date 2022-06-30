@@ -1,8 +1,8 @@
 """Command line interface for graphein."""
 import pathlib
 
-import click
 import networkx as nx
+import rich_click as click
 
 from graphein import __version__
 from graphein.protein.graphs import construct_graph
@@ -37,14 +37,11 @@ from graphein.utils.config_parser import parse_config
 )
 def main(config_path, pdb_path, output_path):
     """Build the graphs and save them in output dir."""
-    config = None
-    if config_path:
-        config = parse_config(path=config_path)
-
+    config = parse_config(path=config_path) if config_path else None
     if pdb_path.is_file():
         pdb_paths = [pdb_path]
     elif pdb_path.is_dir():
-        pdb_paths = [pdb for pdb in pdb_path.glob("*.pdb")]
+        pdb_paths = list(pdb_path.glob("*.pdb"))
     else:
         raise NotImplementedError(
             "Given PDB path needs to point to either a pdb file or a directory with pdb files."

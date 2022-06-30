@@ -60,9 +60,9 @@ def test_add_beta_carbon_vector():
         else:
             # Check the vector is pointing in the correct direction
             cb_true = np.array(
-                raw_pdb[raw_pdb["node_id"] == n][raw_pdb["atom_name"] == "CB"][
-                    ["x_coord", "y_coord", "z_coord"]
-                ]
+                raw_pdb.loc[
+                    (raw_pdb.node_id == n) & (raw_pdb.atom_name == "CB")
+                ][["x_coord", "y_coord", "z_coord"]]
             ).T.squeeze()
             np.testing.assert_almost_equal(
                 cb_true, d["coords"] + d["c_beta_vector"]

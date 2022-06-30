@@ -17,6 +17,7 @@ import torch
 from graphein.utils.utils import import_message
 
 try:
+    import torch_geometric
     from torch_geometric.data import Data
 except ImportError:
     import_message(
@@ -351,11 +352,21 @@ class GraphFormatConvertor:
         for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
             for key, value in feat_dict.items():
                 if str(key) in self.columns:
-                    node_features[str(key)] = (
+                    # node_features[str(key)] = (
+                    #    [value]
+                    #    if i == 0
+                    #    else node_features[str(key)] + [value]
+                    # )
+                    feat = (
                         [value]
                         if i == 0
                         else node_features[str(key)] + [value]
                     )
+                    try:
+                        feat = torch.tensor(feat)
+                        node_features[str(key)] = feat
+                    except TypeError:
+                        node_features[str(key)] = feat
 
         # Add edge features
         edge_features = {}
@@ -421,19 +432,3 @@ def convert_nx_to_pyg_data(G: nx.Graph) -> Data:
     data.num_nodes = G.number_of_nodes()
 
     return data
-
-
-if __name__ == "__main__":
-    from graphein.protein.config import ProteinGraphConfig
-    from graphein.protein.graphs import construct_graph
-
-    g = construct_graph(pdb_code="3eiy", config=ProteinGraphConfig())
-    assert type(g) is nx.Graph
-
-    # print(SUPPORTED_FORMATS)
-
-    convertor = GraphFormatConvertor(
-        src_format="nx", dst_format="pyg", verbose="gnn"
-    )
-    pyg = convertor(g)
-    assert type(pyg) is torch_geometric.data.Data

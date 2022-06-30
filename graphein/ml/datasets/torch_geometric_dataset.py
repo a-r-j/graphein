@@ -6,6 +6,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import logging as log
 import os
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
@@ -206,6 +207,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
 
         # Apply transformations to raw PDB files.
         if self.pdb_transform is not None:
+            print("Transforming PDB files...")
             self.transform_pdbs()
 
         if self.chain_selection_map:
@@ -219,6 +221,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             chain_selections = None
 
         # Create graph objects
+        print("Constructing Graphs...")
         graphs = construct_graphs_mp(
             pdb_path_it=structure_files,
             config=self.config,
@@ -228,32 +231,45 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         )
         # Transform graphs
         if self.graph_transformation_funcs is not None:
+            print("Transforming Nx Graphs...")
             for func in self.graph_transformation_funcs:
                 graphs = {k: func(v) for k, v in graphs.items()}
 
         # Convert to PyTorch Geometric Data
+        print("Converting Graphs...")
         graphs = {k: self.graph_format_convertor(v) for k, v in graphs.items()}
         graphs = dict(zip(self.structures, graphs.values()))
 
         # Assign labels
         if self.graph_label_map:
+            print("Assigning graph Labels...")
             for k, v in self.graph_label_map.items():
-                graphs[k].graph_y = v
+                try:
+                    graphs[k].graph_y = v
+                except KeyError:
+                    print(f"{k} not found in graphs. Skipping.")
         if self.node_label_map:
+            print("Assigning node Labels...")
             for k, v in self.node_label_map.items():
-                graphs[k].node_y = v
-
+                try:
+                    graphs[k].node_y = v
+                except KeyError:
+                    print(f"{k} not found in graphs. Skipping.")
         data_list = list(graphs.values())
         del graphs
 
         if self.pre_filter is not None:
+            print("Pre-filtering Data...")
             data_list = [g for g in data_list if self.pre_filter(g)]
 
         if self.pre_transform is not None:
+            print("Pre-transforming data...")
             data_list = [self.pre_transform(data) for data in data_list]
 
+        print("Saving Data...")
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
+        print("Done!")
 
 
 class ProteinGraphDataset(Dataset):

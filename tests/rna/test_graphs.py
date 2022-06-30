@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import networkx as nx
 import pytest
 from hypothesis import given
 from hypothesis.strategies import text
@@ -10,7 +13,7 @@ from graphein.rna.edges import (
 from graphein.rna.graphs import (
     RNA_BASES,
     SUPPORTED_DOTBRACKET_NOTATION,
-    construct_rna_graph,
+    construct_graph,
 )
 
 TEST_SEQUENCE = "UUGGAGUACACAACCUGUACACUCUUUC"
@@ -18,7 +21,7 @@ TEST_DOTBRACKET = "..(((((..(((...)))..)))))..."
 
 
 def test_construct_rna_graph():
-    g = construct_rna_graph(
+    g = construct_graph(
         dotbracket=TEST_DOTBRACKET,
         sequence=TEST_SEQUENCE,
         edge_construction_funcs=[
@@ -27,7 +30,7 @@ def test_construct_rna_graph():
         ],
     )
 
-    h = construct_rna_graph(
+    h = construct_graph(
         dotbracket=TEST_DOTBRACKET,
         sequence=TEST_SEQUENCE,
         edge_construction_funcs=[add_all_dotbracket_edges],
@@ -56,3 +59,58 @@ def test_construct_rna_graph():
 
     assert phosphodiesters == len(TEST_SEQUENCE) - 1
     assert bp == TEST_DOTBRACKET.count("(")
+
+
+def test_pdb_rna_graph():
+    g = construct_graph(pdb_code="2jyf")
+    assert isinstance(g, nx.Graph)
+
+    for n, d in g.nodes(data=True):
+        assert isinstance(n, str)
+        assert "coords" in d.keys()
+        assert "chain_id" in d.keys()
+        assert "residue_name" in d.keys()
+        assert "residue_number" in d.keys()
+        assert "atom_type" in d.keys()
+        assert "b_factor" in d.keys()
+
+    for _, _, d in g.edges(data=True):
+        assert "kind" in d.keys()
+        assert "bond_length" in d.keys()
+
+    assert "name" in g.graph.keys()
+    assert "pdb_code" in g.graph.keys()
+    assert "pdb_path" in g.graph.keys()
+    assert "chain_ids" in g.graph.keys()
+    assert "pdb_df" in g.graph.keys()
+    assert "raw_pdb_df" in g.graph.keys()
+    assert "coords" in g.graph.keys()
+
+
+def test_construct_graph():
+    """Example-based test that graph construction works correctly.
+    Uses 4hhb PDB file as an example test case.
+    """
+    file_path = Path(__file__).parent / "test_data/2jyf.pdb"
+    g = construct_graph(pdb_path=str(file_path))
+
+    for n, d in g.nodes(data=True):
+        assert isinstance(n, str)
+        assert "coords" in d.keys()
+        assert "chain_id" in d.keys()
+        assert "residue_name" in d.keys()
+        assert "residue_number" in d.keys()
+        assert "atom_type" in d.keys()
+        assert "b_factor" in d.keys()
+
+    for _, _, d in g.edges(data=True):
+        assert "kind" in d.keys()
+        assert "bond_length" in d.keys()
+
+    assert "name" in g.graph.keys()
+    assert "pdb_code" in g.graph.keys()
+    assert "pdb_path" in g.graph.keys()
+    assert "chain_ids" in g.graph.keys()
+    assert "pdb_df" in g.graph.keys()
+    assert "raw_pdb_df" in g.graph.keys()
+    assert "coords" in g.graph.keys()
