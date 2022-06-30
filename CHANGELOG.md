@@ -11,8 +11,11 @@
 * [Feature] - #165 adds support for distance window-based edges for protein graphs.
 * [Feature] - #165 adds support for transformer-like positional encoding of protein sequences.
 * [Feature] - #165 adds support for plddt-like colouring of AF2 graphs
-* [Patch] - [#178](https://github.com/a-r-j/graphein/pull/178) Fixes [#171](https://github.com/a-r-j/graphein/pull/171) and optimizes `graphein.protein.features.nodes.dssp`. Contribution by @avivko.
+* [Feature] - #165 adds support for plotting PyG Data object (e.g. for logging to WandB).
 * [Feature] - [#170](https://github.com/a-r-j/graphein/pull/170) Adds support for viewing edges in `graphein.protein.visualisation.asteroid_plot`. Contribution by @avivko.
+* [Patch] - [#178](https://github.com/a-r-j/graphein/pull/178) Fixes [#171](https://github.com/a-r-j/graphein/pull/171) and optimizes `graphein.protein.features.nodes.dssp`. Contribution by @avivko.
+* [Patch] - [#174](https://github.com/a-r-j/graphein/pull/174) prevents insertions always being removed. Resolves [#173](https://github.com/a-r-j/graphein/issues/173). Contribution by @OliverT1.
+* [Patch] - #165 Refactors HETATM selections.
 
 #### Molecules
 
@@ -35,6 +38,7 @@
 * [Fix] - #165 sets saner default for node size in 3d plotly plots
 * [Dependency] - #165 Changes CLI to use rich-click instead of click for prettier formatting.
 * [Package] - #165 Adds support for logging with loguru and rich
+* [Package] - Pin BioPandas version to 0.4.1 to support additional parsing features.
 
 #### Breaking Changes
 
