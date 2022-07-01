@@ -10,3 +10,7 @@ try:
     )
 except (ImportError, NameError):
     pass
+try:
+    from .visualisation import *
+except (ImportError, NameError):
+    pass
