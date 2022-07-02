@@ -24,7 +24,7 @@ def config_constructor(
 
     :param loader: Given yaml loader
     :param type: yaml.FullLoader
-    :param loader: A mapping node
+    :param node: A mapping node
     :param type: yaml.nodes.MappingNode
     """
     arg_map = loader.construct_mapping(node, deep=True) if node.value else {}
@@ -42,7 +42,7 @@ def function_constructor(
     :param type: yaml.FullLoader
     :param tag_suffix: The name after the !func: tag
     :param type: str
-    :param loader: A mapping node if function parameters are given, a scalar node if not
+    :param node: A mapping node if function parameters are given, a scalar node if not
     :param type: Union[yaml.nodes.MappingNode, yaml.nodes.ScalarNode]
     """
     arg_map = None
