@@ -1,6 +1,6 @@
 biopandas>=0.4.1
 biopython
-bioservices
+bioservices>=1.10.0
 deepdiff
 loguru
 matplotlib>=3.4.3
@@ -15,7 +15,7 @@ rich-click
 seaborn
 pyyaml>=5.1,<6.*
 scikit-learn
-scipy
+scipy 
 tqdm
 typing_extensions
 wget
