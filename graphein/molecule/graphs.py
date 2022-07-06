@@ -10,11 +10,11 @@ from __future__ import annotations
 import logging
 import traceback
 from functools import partial
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Union
 
 import networkx as nx
 import numpy as np
-from tqdm.contrib.concurrent import process_map, thread_map
+from tqdm.contrib.concurrent import thread_map
 
 from graphein.utils.utils import (
     annotate_edge_metadata,
@@ -23,17 +23,10 @@ from graphein.utils.utils import (
     compute_edges,
     import_message,
 )
-from graphein.utils.junction_tree.jt_utils import (
-    get_mol,
-    get_smiles,
-    tree_decomp, 
-    get_clique_mol,
-)
 
 from .chembl import get_smiles_from_chembl
 from .config import MoleculeGraphConfig
-from .edges.atomic import add_atom_bonds
-from .utils import compute_fragments
+from .utils import compute_fragments, get_clique_mol, get_smiles, tree_decomp
 from .zinc import get_smiles_from_zinc
 
 log = logging.getLogger(__name__)
@@ -141,6 +134,7 @@ def construct_graph(
     smiles: Optional[str] = None,
     zinc_id: Optional[str] = None,
     chembl_id: Optional[str] = None,
+    junction_tree: bool = False,
     generate_conformer: Optional[bool] = False,
     edge_construction_funcs: Optional[str] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
@@ -167,6 +161,8 @@ def construct_graph(
     :type zinc_id: str, optional
     :param chembl_id: ChEMBL ID to build graph from. Default is ``None``.
     :type chembl_id: str, optional
+    :param junction_tree: boolean to indicate whether to use a junction tree or not. Default is ``False``.
+    :type junction_tree: bool
     :param generate_conformer: Whether to generate a conformer for the molecule. Defaults to ``False``.
     :type generate_conformer: bool, optional
     :param edge_construction_funcs: List of edge construction functions. Default is ``None``.
@@ -267,30 +263,21 @@ def construct_graph(
     if config.add_hs:
         rdmol = Chem.AddHs(rdmol)
 
-    if coords is None:
-        # If no coords are provided, add edges by bonds
-        config.edge_construction_functions = [add_atom_bonds]
-        g = initialise_graph_with_metadata(
-            name=name,
-            rdmol=rdmol,
-            coords=None,
-        )
-    else:
-        # If config params are provided, overwrite them
-        config.edge_construction_functions = (
-            edge_construction_funcs
-            if config.edge_construction_functions is None
-            else config.edge_construction_functions
-        )
-
-        g = initialise_graph_with_metadata(
-            name=name,
-            rdmol=rdmol,
-            coords=np.asarray(coords),
-        )
+    # If no coords are provided, add edges by bonds
+    #config.edge_construction_functions = [add_atom_bonds]
+    g = initialise_graph_with_metadata(
+        name=name,
+        rdmol=rdmol,
+        coords=coords,
+    )
 
     # Add nodes to graph
-    g = add_nodes_to_graph(g)
+    if junction_tree:
+        jt = construct_junction_tree(rdmol)
+        jt.graph = g.graph
+        g = jt
+    else:
+        g = add_nodes_to_graph(g)
 
     # Add config to graph
     g.graph["config"] = config
@@ -315,39 +302,36 @@ def construct_graph(
 
     return g
 
+
 def construct_junction_tree(
-    smiles: Optional[str] = None,
+    mol=Chem.Mol
 ) -> nx.Graph:
     """
     Constructs molecule structure junction tree graph from a ``smiles``.
 
-    :param smiles: smiles string to build graph from. Default is ``None``.
-    :type smiles: str, optional
+    :param mol: smiles string to build graph from. Default is ``None``.
+    :type mol: str, optional # TODO docstring
     :return: Molecule Structure Junction Tree Graph
     :type: nx.Graph
     """
-
-    mol = get_mol(smiles)
-
-    g = nx.Graph(
-        name=smiles, smiles=smiles
-    )
+    g = nx.Graph()
 
     cliques, edges = tree_decomp(mol)
-        
+    clique_map = {}
     for i, c in enumerate(cliques):
         cmol = get_clique_mol(mol, c)
-        g.add_node(
-            f"{get_smiles(cmol)}:{str(i)}",
-        )
+        id = f"{get_smiles(cmol)}:{str(i)}"
+        g.add_node(id)
+        clique_map[i] = id
 
     for n1, n2 in edges:
+        n1, n2 = clique_map[n1], clique_map[n2]
         if g.has_edge(n1, n2):
             g.edges[n1, n2]["kind"].add("junction_tree")
         else:
             g.add_edge(n1, n2, kind={"junction_tree"})
-
     return g
+
 
 def compute_fragment_graphs(
     g: Union[nx.Graph, Chem.Mol], config: Optional[MoleculeGraphConfig] = None

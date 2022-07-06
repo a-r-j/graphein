@@ -209,7 +209,7 @@ def copy_edit_mol(mol: rdkit.Chem.rdchem.Mol) -> rdkit.Chem.rdchem.Mol:
     """
     new_mol = Chem.RWMol(Chem.MolFromSmiles(""))
     for atom in mol.GetAtoms():
-        new_atom = copy_atom(atom)
+        new_atom = copy_rdmol_atom(atom)
         new_mol.AddAtom(new_atom)
     for bond in mol.GetBonds():
         a1 = bond.GetBeginAtom().GetIdx()
