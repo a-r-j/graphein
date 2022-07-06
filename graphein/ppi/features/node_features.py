@@ -48,7 +48,7 @@ def add_sequence_to_nodes(n: str, d: Dict[str, Any]):
     # Todo mapping with bioservices to support other protein IDs?
 
     for id in d["uniprot_ids"]:
-        d[f"sequence_{id}"] = u.get_fasta_sequence(id)
+        d[f"sequence_{id}"] = u.search(id, columns="sequence").split("\n")[1]
 
 
 if __name__ == "__main__":
