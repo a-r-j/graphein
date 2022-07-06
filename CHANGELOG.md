@@ -1,4 +1,10 @@
-### 1.5.0 - UNRELEASED
+### 1.5.0
+
+#### Changes
+
+* #187 updates sequence retrieval due to UniProt API changes.
+
+### 1.5.0
 
 #### Protein
 
