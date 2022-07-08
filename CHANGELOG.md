@@ -2,7 +2,8 @@
 
 #### Changes
 
-* #187 updates sequence retrieval due to UniProt API changes.
+* [Feature] - [#186](https://github.com/a-r-j/graphein/pull/186) adds support for scaling node sizes in plots by a computed feature. Contribution by @cimranm
+* [Patch] - [#187](https://github.com/a-r-j/graphein/pull/187) updates sequence retrieval due to UniProt API changes.
 
 ### 1.5.0
 
