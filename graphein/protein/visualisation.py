@@ -244,7 +244,7 @@ def plotly_protein_structure_graph(
     )
 
     # Get node size 
-    def node_scale_by(G, feature):
+    def node_scale_by(G: nx.Graph, feature: str):
         if feature == 'degree':
             return lambda k : node_size_min + node_size_multiplier * G.degree[k]
         elif feature == 'rsa':
