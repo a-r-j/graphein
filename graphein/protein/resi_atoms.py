@@ -167,6 +167,8 @@ BOND_TYPES: List[str] = [
     "cation_pi",
     "backbone",
     "delaunay",
+    "vdw",
+    "salt_bridge",
 ]
 """List of supported bond types."""
 
@@ -788,6 +790,39 @@ PI_RESIS: List[str] = ["PHE", "TYR", "TRP"]
 
 SULPHUR_RESIS: List[str] = ["MET", "CYS"]
 """Residues containing sulphur atoms."""
+
+SALT_BRIDGE_ANIONS: List[str] = ["ASP", "GLU"]
+"""List of anionic residues that can form salt bridges."""
+
+SALT_BRIDGE_CATIONS: List[str] = ["LYS", "ARG"]
+"""List of cationic residues that can form salt bridges."""
+
+SALT_BRIDGE_RESIDUES: List[str] = SALT_BRIDGE_ANIONS + SALT_BRIDGE_CATIONS
+"""List of residues that can form salt bridges."""
+
+
+SALT_BRIDGE_ATOMS: List[str] = ["OD1", "OD2", "OE1", "OE2", "NZ", "NH1", "NH2"]
+"""List of atoms that can form salt bridges."""
+
+VDW_RADII: Dict[str, float] = {
+    "H": 1.2,  # 1.09
+    "C": 1.7,
+    "N": 1.55,
+    "O": 1.52,
+    "F": 1.47,
+    "P": 1.8,
+    "S": 1.8,
+    "Cl": 1.75,
+    "Cu": 1.4,
+}
+"""van der Waals radii of the most common atoms. Taken from:
+
+> Bondi, A. (1964). "van der Waals Volumes and Radii".
+> J. Phys. Chem. 68 (3): 441–451.
+
+https://pubs.acs.org/doi/10.1021/j100785a001
+"""
+
 
 ISOELECTRIC_POINTS: Dict[str, float] = {
     "ALA": 6.11,

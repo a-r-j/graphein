@@ -32,6 +32,11 @@ from graphein.protein.resi_atoms import (
     NEG_AA,
     PI_RESIS,
     POS_AA,
+    SALT_BRIDGE_ANIONS,
+    SALT_BRIDGE_ATOMS,
+    SALT_BRIDGE_CATIONS,
+    SALT_BRIDGE_RESIDUES,
+    VDW_RADII,
 )
 from graphein.protein.utils import filter_dataframe
 
@@ -424,6 +429,96 @@ def add_cation_pi_interactions(
                 G.add_edge(resi1, resi2, kind={"cation_pi"})
 
 
+def add_vdw_interactions(
+    g: nx.Graph, threshold: float = 0.5, remove_intraresidue: bool = False
+):
+    """Criterion: Any non-H atoms within the sum of
+    their VdW Radii (:const:`~graphein.protein.resi_atoms.VDW_RADII`) +
+    threshold (default: ``0.5``) Angstroms of each other.
+
+    :param g: Graph to add van der Waals interactions to.
+    :type g: nx.Graph
+    :param threshold: Threshold distance for van der Waals interactions.
+        Default: ``0.5`` Angstroms.
+    :type threshold: float
+    :param remove_intraresidue: Whether to remove intra-residue interactions.
+    :type remove_intraresidue: bool
+    """
+    df = g.graph["raw_pdb_df"]
+    df = filter_dataframe(df, "atom_name", ["H"], boolean=False)
+    df = filter_dataframe(df, "node_id", list(g.nodes()), boolean=True)
+    dist_mat = compute_distmat(df)
+
+    radii = df["element_symbol"].map(VDW_RADII).values
+    radii = np.expand_dims(radii, axis=1)
+    radii = radii + radii.T
+
+    dist_mat = dist_mat - radii
+    interacting_atoms = get_interacting_atoms(threshold, dist_mat)
+    add_interacting_resis(g, interacting_atoms, df, ["vdw"])
+
+    if remove_intraresidue:
+        for u, v in get_edges_by_bond_type(g, "vdw"):
+            u_id = "".join(u.split(":")[:-1])
+            v_id = "".join(v.split(":")[:-1])
+            if u_id == v_id:
+                g.edges[u, v]["kind"].remove("vdw")
+                if len(g.edges[u, v]["kind"]) == 0:
+                    g.remove_edge(u, v)
+
+
+def add_salt_bridges(
+    G: nx.Graph,
+    rgroup_df: Optional[pd.DataFrame] = None,
+    threshold: float = 4.0,
+):
+    """Compute salt bridge interactions.
+
+    Criterion: Anion-Cation residue atom pairs within threshold (``4.0``)
+    Angstroms of each other.
+
+    Anions: ASP/OD1+OD2, GLU/OE1+OE2
+    Cations: LYS/NZ, ARG/NH1+NH2
+
+    :param G: Graph to add salt bridge interactions to.
+    :type G: nx.Graph
+    :param rgroup_df: R group dataframe, defaults to ``None``.
+    :type rgroup_df: Optional[pd.DataFrame]
+    :param threshold: Distance threshold, defaults to ``4.0`` Angstroms.
+    :type threshold: float, optional
+    """
+    if rgroup_df is None:
+        rgroup_df = G.graph["rgroup_df"]
+    salt_bridge_df = filter_dataframe(
+        rgroup_df, "residue_name", SALT_BRIDGE_RESIDUES, boolean=True
+    )
+    salt_bridge_df = filter_dataframe(
+        salt_bridge_df, "atom_name", SALT_BRIDGE_ATOMS, boolean=True
+    )
+    distmat = compute_distmat(salt_bridge_df)
+    interacting_atoms = get_interacting_atoms(threshold, distmat)
+    add_interacting_resis(
+        G, interacting_atoms, salt_bridge_df, ["salt_bridge"]
+    )
+
+    for r1, r2 in get_edges_by_bond_type(G, "salt_bridge"):
+        condition1 = (
+            G.nodes[r1]["residue_name"] in SALT_BRIDGE_ANIONS
+            and G.nodes[r2]["residue_name"] in SALT_BRIDGE_CATIONS
+        )
+
+        condition2 = (
+            G.nodes[r2]["residue_name"] in SALT_BRIDGE_ANIONS
+            and G.nodes[r1]["residue_name"] in SALT_BRIDGE_CATIONS
+        )
+
+        is_ionic = condition1 or condition2
+        if not is_ionic:
+            G.edges[r1, r2]["kind"].remove("salt_bridge")
+            if len(G.edges[r1, r2]["kind"]) == 0:
+                G.remove_edge(r1, r2)
+
+
 def get_interacting_atoms(
     angstroms: float, distmat: pd.DataFrame
 ) -> np.ndarray:
@@ -730,7 +825,7 @@ def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
 
 def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Return aromatic ring centrods.
+    Return aromatic ring centroids.
 
     A helper function for add_aromatic_interactions.
 
