@@ -184,7 +184,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             to_download = [
                 pdb
                 for pdb in set(self.pdb_codes)
-                if not os.path.exists(self.raw_dir / f"{pdb}.pdb")
+                if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
             ]
             download_pdb_multiprocessing(
                 to_download,
@@ -195,7 +195,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             self.bad_pdbs = self.bad_pdbs + [
                 pdb
                 for pdb in set(self.pdb_codes)
-                if not os.path.exists(self.raw_dir / f"{pdb}.pdb")
+                if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
             ]
         if self.uniprot_ids:
             [
@@ -431,7 +431,7 @@ class ProteinGraphDataset(Dataset):
             to_download = [
                 pdb
                 for pdb in set(self.pdb_codes)
-                if not os.path.exists(self.raw_dir / f"{pdb}.pdb")
+                if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
             ]
             download_pdb_multiprocessing(
                 to_download,
@@ -442,7 +442,7 @@ class ProteinGraphDataset(Dataset):
             self.bad_pdbs = self.bad_pdbs + [
                 pdb
                 for pdb in set(self.pdb_codes)
-                if not os.path.exists(self.raw_dir / f"{pdb}.pdb")
+                if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
             ]
         if self.uniprot_ids:
             [
