@@ -17,7 +17,11 @@ from tqdm import tqdm
 from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.graphs import construct_graphs_mp
-from graphein.protein.utils import download_alphafold_structure, download_pdb
+from graphein.protein.utils import (
+    download_alphafold_structure,
+    download_pdb,
+    download_pdb_multiprocessing,
+)
 from graphein.utils.utils import import_message
 
 try:
@@ -138,6 +142,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         elif self.uniprot_ids:
             self.structures = uniprot_ids
         self.af_version = af_version
+        self.bad_pdbs: List[
+            str
+        ] = []  # list of pdb codes that failed to download
 
         # Labels & Chains
         self.graph_label_map = graph_label_map
@@ -173,7 +180,23 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         """Download the PDB files from RCSB or Alphafold."""
         self.config.pdb_dir = Path(self.raw_dir)
         if self.pdb_codes:
-            [download_pdb(self.config, pdb) for pdb in tqdm(self.pdb_codes)]
+            # Only download PDBs that are not already downloaded
+            to_download = [
+                pdb
+                for pdb in set(self.pdb_codes)
+                if not os.path.exists(self.raw_dir / f"{pdb}.pdb")
+            ]
+            download_pdb_multiprocessing(
+                to_download,
+                self.raw_dir,
+                max_workers=self.num_cores,
+                strict=False,
+            )
+            self.bad_pdbs = self.bad_pdbs + [
+                pdb
+                for pdb in set(self.pdb_codes)
+                if not os.path.exists(self.raw_dir / f"{pdb}.pdb")
+            ]
         if self.uniprot_ids:
             [
                 download_alphafold_structure(
@@ -404,7 +427,23 @@ class ProteinGraphDataset(Dataset):
         """Download the PDB files from RCSB or Alphafold."""
         self.config.pdb_dir = Path(self.raw_dir)
         if self.pdb_codes:
-            [download_pdb(self.config, pdb) for pdb in tqdm(self.pdb_codes)]
+            # Only download undownloaded PDBs
+            to_download = [
+                pdb
+                for pdb in set(self.pdb_codes)
+                if not os.path.exists(self.raw_dir / f"{pdb}.pdb")
+            ]
+            download_pdb_multiprocessing(
+                to_download,
+                self.raw_dir,
+                max_workers=self.num_cores,
+                strict=False,
+            )
+            self.bad_pdbs = self.bad_pdbs + [
+                pdb
+                for pdb in set(self.pdb_codes)
+                if not os.path.exists(self.raw_dir / f"{pdb}.pdb")
+            ]
         if self.uniprot_ids:
             [
                 download_alphafold_structure(
