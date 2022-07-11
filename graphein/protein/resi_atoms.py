@@ -169,6 +169,8 @@ BOND_TYPES: List[str] = [
     "delaunay",
     "vdw",
     "salt_bridge",
+    "proximal",
+    "bb_carbonyl_carbonyl",
 ]
 """List of supported bond types."""
 
@@ -767,14 +769,25 @@ NEG_AA: List[str] = ["GLU", "ASP"]
 """Negatively charged amino acids."""
 
 AA_RING_ATOMS: Dict[str, List[str]] = {
-    "HIS": ["CG", "CD", "CE", "ND", "NE"],
-    "PHE": ["CG", "CD", "CE", "CZ"],
-    "TRP": ["CD", "CE", "CH", "CZ"],
-    "TYR": ["CG", "CD", "CE", "CZ"],
+    # "HIS": ["CG", "CD", "CE", "ND", "NE"],
+    "HIS": ["CG", "CD", "CE", "ND", "NE", "CD2", "ND1", "CE1", "NE2"],
+    # "PHE": ["CG", "CD", "CE", "CZ"],
+    "PHE": ["CG", "CD", "CE", "CZ", "CD1", "CD2", "CE1", "CE2"],
+    # "TRP": ["CD", "CE", "CH", "CZ"],
+    "TRP": ["CD2", "CE2", "CE3", "CZ2", "CZ3", "CH2"],
+    # "TYR": ["CG", "CD", "CE", "CZ"],
+    "TYR": ["CG", "CD", "CE", "CZ", "CD1", "CD2", "CE1", "CE2"],
 }
 """
 Dictionary mapping amino acid 3-letter codes to lists of atoms that are part of rings.
 """
+
+RING_NORMAL_ATOMS: Dict[str, List[str]] = {
+    "PHE": ["CG", "CE1", "CE2"],
+    "TRP": ["CD2", "CZ2", "CZ3"],
+    "TYR": ["CG", "CE1", "CE2"],
+}
+"""Dictionary of atoms used to compute ring normals for each residue."""
 
 AROMATIC_RESIS: List[str] = ["PHE", "TRP", "HIS", "TYR"]
 """List of aromatic residues."""
@@ -799,7 +812,6 @@ SALT_BRIDGE_CATIONS: List[str] = ["LYS", "ARG"]
 
 SALT_BRIDGE_RESIDUES: List[str] = SALT_BRIDGE_ANIONS + SALT_BRIDGE_CATIONS
 """List of residues that can form salt bridges."""
-
 
 SALT_BRIDGE_ATOMS: List[str] = ["OD1", "OD2", "OE1", "OE2", "NZ", "NH1", "NH2"]
 """List of atoms that can form salt bridges."""
