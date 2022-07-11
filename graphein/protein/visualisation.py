@@ -6,7 +6,6 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-import re
 import logging
 import re
 from itertools import count
