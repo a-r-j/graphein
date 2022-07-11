@@ -168,6 +168,7 @@ BOND_TYPES: List[str] = [
     "backbone",
     "delaunay",
     "vdw",
+    "vdw_clash",
     "salt_bridge",
     "proximal",
     "bb_carbonyl_carbonyl",
