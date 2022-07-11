@@ -17,6 +17,7 @@
 
 * [#189](https://github.com/a-r-j/graphein/pull/189/) refactors PDB download util. Now returns path to download file, does not accept a config object but instead receives the output directory path directly.
 
+
 ### 1.5.0
 
 #### Protein

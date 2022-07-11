@@ -6,6 +6,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import re
 import logging
 import re
 from itertools import count
@@ -252,6 +253,7 @@ def plotly_protein_structure_graph(
                 lambda k: node_size_min
                 + node_size_multiplier * G.nodes(data=True)[k]["rsa"]
             )
+
         # Meiler embedding dimension
         p = re.compile("meiler-([1-7])")
         dim = p.search(feature).group(1)
