@@ -398,6 +398,7 @@ class ProteinGraphDataset(Dataset):
         self.graph_label_map = graph_label_map
         self.node_label_map = node_label_map
         self.chain_selection_map = chain_selection_map
+        self.bad_pdbs: List[str] = []
 
         # Configs
         self.config = graphein_config
