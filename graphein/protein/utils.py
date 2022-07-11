@@ -143,7 +143,7 @@ def download_pdb(
             log.info(
                 "{pdb_code} is deprecated. Downloading {new_pdb} instead."
             )
-            download_pdb(new_pdb, out_dir, overwrite=overwrite)
+            return download_pdb(new_pdb, out_dir, overwrite=overwrite)
         except KeyError:
             log.warning(
                 f"PDB {pdb_code} not found. Possibly too large; large structures are only provided as mmCIF files."
