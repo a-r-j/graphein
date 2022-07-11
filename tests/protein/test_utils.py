@@ -80,7 +80,7 @@ def test_save_rgroup_df_to_pdb():
 
 
 def test_download_obsolete_structure():
-    fp = download_pdb(pdb_code="116L")
+    fp = download_pdb(pdb_code="116L", check_obsolete=True)
     assert os.path.exists(fp)
     assert str(fp).endswith("216l.pdb")
 
