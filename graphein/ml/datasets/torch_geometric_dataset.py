@@ -498,7 +498,7 @@ class ProteinGraphDataset(Dataset):
                     self.chain_selection_map[pdb]
                     if pdb in self.chain_selection_map.keys()
                     else "all"
-                    for pdb in self.structures
+                    for pdb in chunk
                 ]
             else:
                 chain_selections = None
