@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from itertools import count
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -193,6 +194,7 @@ def plotly_protein_structure_graph(
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
     node_size_multiplier: float = 20.0,
+    node_size_feature: str = "degree",
     label_node_ids: bool = True,
     node_colour_map=plt.cm.plasma,
     edge_color_map=plt.cm.plasma,
@@ -214,6 +216,8 @@ def plotly_protein_structure_graph(
     :type node_size_min: float
     :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree. Defaults to ``20.0``.
     :type node_size_multiplier: float
+    :param node_size_feature: Which feature to scale the node size by. Defaults to ``degree``.
+    :type node_size_feature: str
     :param label_node_ids: bool indicating whether or not to plot ``node_id`` labels. Defaults to ``True``.
     :type label_node_ids: bool
     :param node_colour_map: colour map to use for nodes. Defaults to ``plt.cm.plasma``.
@@ -239,6 +243,28 @@ def plotly_protein_structure_graph(
         G, colour_map=edge_color_map, colour_by=colour_edges_by
     )
 
+    # Get node size
+    def node_scale_by(G: nx.Graph, feature: str):
+        if feature == "degree":
+            return lambda k: node_size_min + node_size_multiplier * G.degree[k]
+        elif feature == "rsa":
+            return (
+                lambda k: node_size_min
+                + node_size_multiplier * G.nodes(data=True)[k]["rsa"]
+            )
+
+        # Meiler embedding dimension
+        p = re.compile("meiler-([1-7])")
+        dim = p.search(feature).group(1)
+        if dim:
+            return lambda k: node_size_min + node_size_multiplier * max(
+                0, G.nodes(data=True)[k]["meiler"][f"dim_{dim}"]
+            )  # Meiler values may be negative
+        else:
+            raise ValueError(f"Cannot size nodes by feature '{feature}'")
+
+    get_node_size = node_scale_by(G, node_size_feature)
+
     # 3D network plot
     x_nodes = []
     y_nodes = []
@@ -251,7 +277,7 @@ def plotly_protein_structure_graph(
         x_nodes.append(value[0])
         y_nodes.append(value[1])
         z_nodes.append(value[2])
-        node_sizes.append(node_size_min + node_size_multiplier * G.degree[key])
+        node_sizes.append(get_node_size(key))
 
         if label_node_ids:
             node_labels.append(list(G.nodes())[i])
