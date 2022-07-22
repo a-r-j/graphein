@@ -123,6 +123,7 @@ def label_node_id(df: pd.DataFrame, granularity: str) -> pd.DataFrame:
         + ":"
         + df["residue_number"].apply(str)
     )
+    df["residue_id"] = df["node_id"]
     if granularity == "atom":
         df["node_id"] = df["node_id"] + ":" + df["atom_name"]
     elif granularity in {"rna_atom", "rna_centroid"}:

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 import logging
+import re
 from itertools import count
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -243,21 +244,27 @@ def plotly_protein_structure_graph(
         G, colour_map=edge_color_map, colour_by=colour_edges_by
     )
 
-    # Get node size 
+    # Get node size
     def node_scale_by(G: nx.Graph, feature: str):
-        if feature == 'degree':
-            return lambda k : node_size_min + node_size_multiplier * G.degree[k]
-        elif feature == 'rsa':
-            return lambda k : node_size_min + node_size_multiplier * G.nodes(data=True)[k]['rsa']
+        if feature == "degree":
+            return lambda k: node_size_min + node_size_multiplier * G.degree[k]
+        elif feature == "rsa":
+            return (
+                lambda k: node_size_min
+                + node_size_multiplier * G.nodes(data=True)[k]["rsa"]
+            )
+
         # Meiler embedding dimension
         p = re.compile("meiler-([1-7])")
         dim = p.search(feature).group(1)
         if dim:
-            return lambda k : node_size_min + node_size_multiplier * max(0, G.nodes(data=True)[k]['meiler'][f'dim_{dim}']) # Meiler values may be negative
+            return lambda k: node_size_min + node_size_multiplier * max(
+                0, G.nodes(data=True)[k]["meiler"][f"dim_{dim}"]
+            )  # Meiler values may be negative
         else:
-            raise ValueError(f"Cannot size nodes by feature '{feature}'")   
+            raise ValueError(f"Cannot size nodes by feature '{feature}'")
 
-    get_node_size = node_scale_by(G, node_size_feature)   
+    get_node_size = node_scale_by(G, node_size_feature)
 
     # 3D network plot
     x_nodes = []

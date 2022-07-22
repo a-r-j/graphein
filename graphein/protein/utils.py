@@ -1,4 +1,6 @@
 """Provides utility functions for use across Graphein."""
+from __future__ import annotations
+
 import logging
 
 # Graphein
@@ -8,17 +10,18 @@ import logging
 # Code Repository: https://github.com/a-r-j/graphein
 import os
 import tempfile
-from functools import lru_cache
+from functools import lru_cache, partial
 from pathlib import Path
 from shutil import which
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
+from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import networkx as nx
 import pandas as pd
 import wget
-from Bio.PDB import PDBList
 from biopandas.pdb import PandasPdb
+from tqdm.contrib.concurrent import process_map
 
 from .resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 
@@ -26,7 +29,10 @@ log = logging.getLogger(__name__)
 
 
 class ProteinGraphConfigurationError(Exception):
-    """Exception when an invalid Graph configuration if provided to a downstream function or method."""
+    """
+    Exception when an invalid Graph configuration if provided to a downstream
+    function or method.
+    """
 
     def __init__(self, message: str):
         self.message = message
@@ -54,7 +60,49 @@ def get_obsolete_mapping() -> Dict[str, str]:
     return obs_dict
 
 
-def download_pdb(config, pdb_code: str) -> Path:
+def download_pdb_multiprocessing(
+    pdb_codes: List[str],
+    out_dir: Union[str, Path],
+    overwrite: bool = False,
+    strict: bool = False,
+    max_workers: int = 16,
+    chunksize: int = 32,
+) -> List[Path]:
+    """Downloads PDB structures in parallel.
+
+    :param pdb_codes: List of PDB codes to download.
+    :type pdb_codes: List[str]
+    :param out_dir: Path to directory to download PDB structures to.
+    :type out_dir: Union[str, Path]
+    :param overwrite: Whether to overwrite existing files, defaults to
+        ``False``.
+    :type overwrite: bool
+    :param strict: Whether to check for successful download of each file,
+        defaults to ``False``.
+    :type strict: bool
+    :param max_workers: Number of workers to uses, defaults to 16
+    :type max_workers: int
+    :param chunksize: Chunk to split list into for each worker, defaults to 32
+    :type chunksize: int
+    :return: List of Paths to downloaded PDB files.
+    :rtype: List[Path]
+    """
+    out_dir: Path = Path(out_dir)
+    func = partial(
+        download_pdb, out_dir=out_dir, overwrite=overwrite, strict=strict
+    )
+    return process_map(
+        func, pdb_codes, max_workers=max_workers, chunksize=chunksize
+    )
+
+
+def download_pdb(
+    pdb_code: str,
+    out_dir: Optional[Union[str, Path]] = None,
+    check_obsolete: bool = False,
+    overwrite: bool = False,
+    strict: bool = True,
+) -> Path:
     """
     Download PDB structure from PDB.
 
@@ -63,49 +111,66 @@ def download_pdb(config, pdb_code: str) -> Path:
 
     :param pdb_code: 4 character PDB accession code.
     :type pdb_code: str
+    :param out_dir: Path to directory to download PDB structure to. If ``None``,
+        will download to a temporary directory.
+    :type out_dir: Optional[Union[str, Path]]
+    :param check_obsolete: Whether to check for obsolete PDB codes,
+        defaults to ``False``. If an obsolete PDB code is found, the updated PDB
+        is downloaded.
+    :type check_obsolete: bool
+    :param overwrite: If ``True``, will overwrite existing files.
+    :type overwrite: bool
+    :param strict: If ``True``, will raise an exception if the PDB file is not
+        found.
+    :type strict: bool
     :return: returns filepath to downloaded structure.
-    :rtype: str
+    :rtype: Path
     """
     pdb_code = pdb_code.lower()
-    if not config.pdb_dir:
-        config.pdb_dir = Path(tempfile.TemporaryDirectory().name)
 
-    # Initialise class and download pdb file
-    pdbl = PDBList()
-    pdbl.retrieve_pdb_file(
-        pdb_code, pdir=config.pdb_dir, overwrite=True, file_format="pdb"
-    )
-    # If file not downloaded, check for obsolescence
-    if not os.path.exists(config.pdb_dir / f"pdb{pdb_code}.ent"):
+    # Make output directory if it doesn't exist or set it to tempdir if None
+    if out_dir is not None:
+        out_dir = Path(out_dir)
+    else:
+        out_dir = Path(tempfile.TemporaryDirectory().name)
+
+    os.makedirs(Path(out_dir), exist_ok=True)
+
+    if check_obsolete:
         obs_map = get_obsolete_mapping()
         try:
             new_pdb = obs_map[pdb_code.lower()].lower()
             log.info(
-                f"PDB file {pdb_code} not found. It is likely obsolete. \
-                     Trying its replacement: {new_pdb} instead."
+                "{pdb_code} is deprecated. Downloading {new_pdb} instead."
             )
-            pdb_code = new_pdb
-            pdbl.retrieve_pdb_file(
-                pdb_code,
-                pdir=config.pdb_dir,
-                overwrite=True,
-                file_format="pdb",
-            )
+            return download_pdb(new_pdb, out_dir, overwrite=overwrite)
         except KeyError:
-            log.error(
-                f"PDB file {pdb_code} not found and no replacement \
-                      structure found in obsolete lookup."
+            log.warning(
+                f"PDB {pdb_code} not found. Possibly too large; large structures are only provided as mmCIF files."
             )
-    # Rename file to .pdb from .ent
-    os.rename(
-        config.pdb_dir / f"pdb{pdb_code}.ent",
-        config.pdb_dir / f"{pdb_code}.pdb",
-    )
+            return
 
-    # Assert file has been downloaded
-    assert any(pdb_code in s for s in os.listdir(config.pdb_dir))
-    log.info(f"Downloaded PDB file for: {pdb_code}")
-    return config.pdb_dir / f"{pdb_code}.pdb"
+    # Check if PDB already exists
+    if os.path.exists(out_dir / f"{pdb_code}.pdb") and not overwrite:
+        log.info(f"{pdb_code} already exists: {out_dir / f'{pdb_code}.pdb'}")
+        return out_dir / f"{pdb_code}.pdb"
+
+    # Download
+    try:
+        wget.download(
+            f"https://files.rcsb.org/download/{pdb_code}.pdb",
+            out=str(out_dir / f"{pdb_code}.pdb"),
+        )
+    except HTTPError:
+        log.info(f"PDB {pdb_code} not found.")
+
+    # Check file exists
+    if strict:
+        assert os.path.exists(
+            out_dir / f"{pdb_code}.pdb"
+        ), "{pdb_code} download failed. Not found in {out_dir}"
+    log.info("{pdb_code} downloaded to {out_dir}")
+    return out_dir / f"{pdb_code}.pdb"
 
 
 def get_protein_name_from_filename(pdb_path: str) -> str:
@@ -129,21 +194,22 @@ def filter_dataframe(
     boolean: bool,
 ) -> pd.DataFrame:
     """
-    Filter function for dataframe.
+    Filter function for DataFrame.
 
-    Filters the dataframe such that the ``by_column`` values have to be
+    Filters the DataFrame such that the ``by_column`` values have to be
     in the ``list_of_values`` list if ``boolean == True``, or not in the list
     if ``boolean == False``.
 
     :param dataframe: pd.DataFrame to filter.
     :type dataframe: pd.DataFrame
-    :param by_column: str denoting column of dataframe to filter.
+    :param by_column: str denoting column of DataFrame to filter.
     :type by_column: str
     :param list_of_values: List of values to filter with.
     :type list_of_values: List[Any]
-    :param boolean: indicates whether to keep or exclude matching ``list_of_values``. ``True`` -> in list, ``False`` -> not in list.
+    :param boolean: indicates whether to keep or exclude matching
+        ``list_of_values``. ``True`` -> in list, ``False`` -> not in list.
     :type boolean: bool
-    :returns: Filtered dataframe.
+    :returns: Filtered DataFrame.
     :rtype: pd.DataFrame
     """
     df = dataframe.copy()
@@ -158,7 +224,7 @@ def compute_rgroup_dataframe(pdb_df: pd.DataFrame) -> pd.DataFrame:
 
     :param pdb_df: DataFrame to compute R group dataframe from.
     :type pdb_df: pd.DataFrame
-    :returns: Dataframe containing R-groups only (backbone atoms removed).
+    :returns: DataFrame containing R-groups only (backbone atoms removed).
     :rtype: pd.DataFrame
     """
     return filter_dataframe(pdb_df, "atom_name", BACKBONE_ATOMS, False)
@@ -182,13 +248,17 @@ def download_alphafold_structure(
     :type version: int
     :param out_dir: string specifying desired output location. Default is pwd.
     :type out_dir: str
-    :param rename: boolean specifying whether to rename the output file to ``$uniprot_id.pdb``. Default is ``True``.
+    :param rename: boolean specifying whether to rename the output file to
+        ``$uniprot_id.pdb``. Default is ``True``.
     :type rename: bool
-    :param pdb: boolean specifying whether to download the PDB file. Default is ``True``.
+    :param pdb: boolean specifying whether to download the PDB file. Default is
+        ``True``.
     :type pdb: bool
-    :param mmcif: Bool specifying whether to download MMCiF or PDB. Default is false (downloads pdb)
+    :param mmcif: Bool specifying whether to download MMCiF or PDB. Default is
+        ``False`` (downloads pdb).
     :type mmcif: bool
-    :param retrieve_aligned_score: Bool specifying whether or not to download score alignment json.
+    :param retrieve_aligned_score: Bool specifying whether or not to download
+        score alignment json.
     :type retrieve_aligned_score: bool
     :return: path to output. Tuple if several outputs specified.
     :rtype: Union[str, Tuple[str, str]]
@@ -253,11 +323,12 @@ def save_graph_to_pdb(
     atoms: bool = True,
     hetatms: bool = True,
 ):
-    """Saves processed ``pdb_df`` (``g.graph["pdb_df"]``) dataframe to a PDB file.
+    """Saves processed ``pdb_df`` (``g.graph["pdb_df"]``) dataframe to a PDB
+    file.
 
-    N.B. PDBs do not contain connectivity information.
-    This only captures the nodes in the graph.
-    Connectivity is filled in according to standard rules by visualisation programs.
+    N.B. PDBs do not contain connectivity information. This only captures the
+    nodes in the graph. Connectivity is filled in according to standard rules by
+    visualisation programs.
 
     :param g: Protein graph to save dataframe from.
     :type g: nx.Graph
@@ -290,7 +361,7 @@ def save_pdb_df_to_pdb(
 ):
     """Saves pdb dataframe to a PDB file.
 
-    :param g: Dataframe to save as PDB
+    :param g: DataFrame to save as PDB
     :type g: pd.DataFrame
     :param path: Path to save PDB file to.
     :type path: str
@@ -319,7 +390,8 @@ def save_rgroup_df_to_pdb(
 
     N.B. PDBs do not contain connectivity information.
     This only captures the atoms in the r groups.
-    Connectivity is filled in according to standard rules by visualisation programs.
+    Connectivity is filled in according to standard rules by visualisation
+    programs.
 
     :param g: Protein graph to save R group dataframe from.
     :type g: nx.Graph

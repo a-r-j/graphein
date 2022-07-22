@@ -11,9 +11,13 @@ from pathlib import Path
 
 import pytest
 
+import graphein.protein as gp
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
+    add_salt_bridges,
     add_sequence_distance_edges,
+    add_vdw_clashes,
+    add_vdw_interactions,
     get_edges_by_bond_type,
     get_ring_atoms,
     get_ring_centroids,
@@ -28,7 +32,10 @@ from graphein.protein.resi_atoms import (
     PI_RESIS,
     POS_AA,
     RESI_NAMES,
+    SALT_BRIDGE_ANIONS,
+    SALT_BRIDGE_CATIONS,
     SULPHUR_RESIS,
+    VDW_RADII,
 )
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "test_data" / "4hhb.pdb"
@@ -193,3 +200,115 @@ def test_add_sequence_distance_edges():
         G = construct_graph(pdb_path=str(file_path), config=config)
         for u, v in G.edges():
             assert abs(int(u.split(":")[-1]) - int(v.split(":")[-1])) == d
+
+
+def test_salt_bridge_interactions():
+    """
+    Test to ensure salt bridges are only between anionic and cationic residues.
+    Also checks distances are correct on atom graphs.
+    """
+    g = construct_graph(
+        pdb_code="216L",
+        config=ProteinGraphConfig(
+            edge_construction_functions=[add_salt_bridges]
+        ),
+    )
+    for u, v, d in g.edges(data=True):
+        assert "salt_bridge" in d["kind"]
+        res1 = g.nodes[u]["residue_name"]
+        res2 = g.nodes[v]["residue_name"]
+
+        assert (
+            res1 in SALT_BRIDGE_CATIONS and res2 in SALT_BRIDGE_ANIONS
+        ) or (
+            res1 in SALT_BRIDGE_ANIONS and res2 in SALT_BRIDGE_CATIONS
+        ), "Salt bridge not between cations and anions"
+
+    # Test distances on atom graphs
+    g = construct_graph(
+        pdb_code="216L",
+        config=ProteinGraphConfig(
+            edge_construction_functions=[add_salt_bridges], granularity="atom"
+        ),
+    )
+    for u, v, d in g.edges(data=True):
+        assert "salt_bridge" in d["kind"]
+        res1 = g.nodes[u]["residue_name"]
+        res2 = g.nodes[v]["residue_name"]
+
+        assert (
+            res1 in SALT_BRIDGE_CATIONS and res2 in SALT_BRIDGE_ANIONS
+        ) or (
+            res1 in SALT_BRIDGE_ANIONS and res2 in SALT_BRIDGE_CATIONS
+        ), "Salt bridge not between cations and anions"
+        assert d["distance"] < 4.0, "Salt bridge distance is too long"
+
+
+def test_vdw_interactions():
+    """
+    Test to ensure vdw interactions are identified and are of correct length in
+    atomic graphs.
+    """
+    g = construct_graph(
+        pdb_code="216L",
+        config=ProteinGraphConfig(
+            edge_construction_functions=[add_vdw_interactions]
+        ),
+    )
+    for u, v, d in g.edges(data=True):
+        assert "vdw" in d["kind"], "Edge not vdw"
+
+    # Test distances on atom graphs
+    g = construct_graph(
+        pdb_code="216L",
+        config=ProteinGraphConfig(
+            edge_construction_functions=[add_vdw_interactions],
+            granularity="atom",
+        ),
+    )
+    for u, v, d in g.edges(data=True):
+        assert "vdw" in d["kind"]
+        res1 = g.nodes[u]["element_symbol"]
+        res2 = g.nodes[v]["element_symbol"]
+        rad1 = VDW_RADII[res1]
+        rad2 = VDW_RADII[res2]
+
+        assert res1 != "H" and res2 != "H", "Hydrogen in vdw interaction"
+        assert (
+            d["distance"] < 0.5 + rad1 + rad2
+        ), f"Vdw distance is too long: {d['distance']}"
+
+
+def test_vdw_clashes():
+    """
+    Test to ensure vdw clashes are identified and are of correct length in
+    atomic graphs.
+    """
+    g = construct_graph(
+        pdb_code="216L",
+        config=ProteinGraphConfig(
+            edge_construction_functions=[add_vdw_clashes]
+        ),
+    )
+    for u, v, d in g.edges(data=True):
+        assert "vdw_clash" in d["kind"], "Edge not vdw_clash"
+
+    # Test distances on atom graphs
+    g = gp.construct_graph(
+        pdb_code="216L",
+        config=gp.ProteinGraphConfig(
+            edge_construction_functions=[add_vdw_clashes],
+            granularity="atom",
+        ),
+    )
+    for u, v, d in g.edges(data=True):
+        assert "vdw_clash" in d["kind"]
+        res1 = g.nodes[u]["element_symbol"]
+        res2 = g.nodes[v]["element_symbol"]
+        rad1 = VDW_RADII[res1]
+        rad2 = VDW_RADII[res2]
+
+        assert res1 != "H" and res2 != "H", "Hydrogen in vdw clash interaction"
+        assert (
+            d["distance"] < rad1 + rad2
+        ), f"Vdw clash distance is too long: {d['distance']}"

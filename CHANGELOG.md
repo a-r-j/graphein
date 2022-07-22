@@ -1,9 +1,25 @@
 ### 1.5.1
+* [Feature] - [#197](https://github.com/a-r-j/graphein/pull/197/) adds support for sizing and colouring nodes in asteroid plots
 
-#### Changes
+
+#### Protein
 
 * [Feature] - [#186](https://github.com/a-r-j/graphein/pull/186) adds support for scaling node sizes in plots by a computed feature. Contribution by @cimranm
+* [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) adds support for parallelised download from the PDB.
+* [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) adds support for: van der waals interactions, vdw clashes, pi-stacking interactions, t_stacking interactions, backbone carbonyl-carbonyl interactions, salt bridges
+* [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) adds a `residue_id` column to PDB dfs to enable easier accounting in atom graphs.
+* [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) refactors torch geometric datasets to use parallelised download for faster dataset preparation.
+
+
+#### Bugfixes
+
 * [Patch] - [#187](https://github.com/a-r-j/graphein/pull/187) updates sequence retrieval due to UniProt API changes.
+* [Patch] - [#189](https://github.com/a-r-j/graphein/pull/189) fixes bug where chains and PDB identifiers were not properly aligned in `ml.ProteinGraphDataset`.
+
+#### Breaking Changes
+
+* [#189](https://github.com/a-r-j/graphein/pull/189/) refactors PDB download util. Now returns path to download file, does not accept a config object but instead receives the output directory path directly.
+
 
 ### 1.5.0
 
