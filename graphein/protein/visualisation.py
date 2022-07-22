@@ -708,6 +708,7 @@ def asteroid_plot(
     node_id: str,
     k: int = 2,
     colour_nodes_by: str = "shell",  # residue_name
+    size_nodes_by: str = "degree",
     colour_edges_by: str = "kind",
     edge_colour_map: plt.cm.Colormap = plt.cm.plasma,
     edge_alpha: float = 1.0,
@@ -718,6 +719,7 @@ def asteroid_plot(
     use_plotly: bool = True,
     show_edges: bool = False,
     show_legend: bool = True,
+    node_size_min: float = 20,
     node_size_multiplier: float = 10,
 ) -> Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]:
     """Plots a k-hop subgraph around a node as concentric shells.
@@ -732,6 +734,8 @@ def asteroid_plot(
     :type k: int
     :param colour_nodes_by: Colour the nodes by this attribute. Currently only ``"shell"`` is supported.
     :type colour_nodes_by: str
+    :param size_nodes_by: Size the nodes by an attribute. 
+    :type size_nodes_by: str
     :param colour_edges_by: Colour the edges by this attribute. Currently only ``"kind"`` is supported.
     :type colour_edges_by: str
     :param edge_colour_map: Colour map for edges. Defaults to ``plt.cm.plasma``.
@@ -750,8 +754,10 @@ def asteroid_plot(
     :type show_edges: bool
     :param show_legend: Whether to show the legend of the edges. Fefaults to `True``.
     :type show_legend: bool
+    :param node_size_min: Specifies node minimum size. Defaults to ``20.0``.
+    :type node_size_min: float
     :param node_size_multiplier: Multiplier for the size of the nodes. Defaults to ``10``.
-    :type node_size_multiplier: float.
+    :type node_size_multiplier: float
     :returns: Plotly figure or matplotlib figure.
     :rtpye: Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]
     """
@@ -811,9 +817,16 @@ def asteroid_plot(
             node_x.append(x)
             node_y.append(y)
 
-        degrees = [
-            subgraph.degree(n) * node_size_multiplier for n in subgraph.nodes()
-        ]
+        def node_size_function(g: nx.Graph, feature: str):
+            if feature == 'degree':
+                return lambda k : g.degree(k)
+            elif feature == 'rsa':
+                return lambda k : g.nodes(data=True)[k]['rsa']
+            else:
+                raise NotImplementedError(f"Size by {size_nodes_by} not implemented.")
+        
+        node_size = node_size_function(subgraph, size_nodes_by)
+        node_sizes = [node_size_min + node_size(n) * node_size_multiplier for n in subgraph.nodes()]
 
         if colour_nodes_by == "shell":
             node_colours = []
@@ -821,11 +834,44 @@ def asteroid_plot(
                 for k, v in nodes.items():
                     if n in v:
                         node_colours.append(k)
+        elif colour_nodes_by == "hydrophobicity":
+
+            """
+            TODO Does a function like this already exist somewhere?
+            """
+            def hydrophobicity_of_residue(res: str, mapping: str = 'a'):
+                hmap = { 
+                    "ILE" : 4.5,
+                    "VAL" : 4.2,
+                    "LEU" : 3.8,
+                    "PHE" : 2.8,
+                    "CYS" : 2.5,
+                    "MET" : 1.9,
+                    "ALA" : 1.8,
+                    "GLY" : -0.4,
+                    "THR" : -0.7,
+                    "SER" : -0.8,
+                    "TRP" : -0.9,
+                    "TYR" : -1.3,
+                    "PRO" : -1.6,
+                    "HIS" : -3.2,
+                    "GLU" : -3.5,
+                    "GLN" : -3.5,
+                    "ASP" : -3.5,
+                    "ASN" : -3.5,
+                    "LYS" : -3.9,
+                    "ARG" : -4.5,
+                }
+                return hmap[res]
+
+            node_colours = []
+            for n in subgraph.nodes():
+                for k, v in nodes.items():
+                    if n in v:
+                        node_colours.append(hydrophobicity_of_residue(n.split(':')[1]))
         else:
-            raise NotImplementedError(
-                f"Colour by {colour_nodes_by} not implemented."
-            )
-            # TODO colour by AA type
+            raise NotImplementedError(f"Colour by {colour_nodes_by} not implemented.")
+    
         node_trace = go.Scatter(
             x=node_x,
             y=node_y,
@@ -835,13 +881,13 @@ def asteroid_plot(
             textposition="bottom center",
             showlegend=False,
             marker=dict(
-                colorscale="YlGnBu",
+                colorscale="viridis",
                 reversescale=True,
                 color=node_colours,
-                size=degrees,
+                size=node_sizes,
                 colorbar=dict(
                     thickness=15,
-                    title="Shell",
+                    title=str.capitalize(colour_nodes_by),
                     tickvals=list(range(k)),
                     xanchor="left",
                     titleside="right",
