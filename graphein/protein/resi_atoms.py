@@ -167,6 +167,11 @@ BOND_TYPES: List[str] = [
     "cation_pi",
     "backbone",
     "delaunay",
+    "vdw",
+    "vdw_clash",
+    "salt_bridge",
+    "proximal",
+    "bb_carbonyl_carbonyl",
 ]
 """List of supported bond types."""
 
@@ -765,14 +770,25 @@ NEG_AA: List[str] = ["GLU", "ASP"]
 """Negatively charged amino acids."""
 
 AA_RING_ATOMS: Dict[str, List[str]] = {
-    "HIS": ["CG", "CD", "CE", "ND", "NE"],
-    "PHE": ["CG", "CD", "CE", "CZ"],
-    "TRP": ["CD", "CE", "CH", "CZ"],
-    "TYR": ["CG", "CD", "CE", "CZ"],
+    # "HIS": ["CG", "CD", "CE", "ND", "NE"],
+    "HIS": ["CG", "CD", "CE", "ND", "NE", "CD2", "ND1", "CE1", "NE2"],
+    # "PHE": ["CG", "CD", "CE", "CZ"],
+    "PHE": ["CG", "CD", "CE", "CZ", "CD1", "CD2", "CE1", "CE2"],
+    # "TRP": ["CD", "CE", "CH", "CZ"],
+    "TRP": ["CD2", "CE2", "CE3", "CZ2", "CZ3", "CH2"],
+    # "TYR": ["CG", "CD", "CE", "CZ"],
+    "TYR": ["CG", "CD", "CE", "CZ", "CD1", "CD2", "CE1", "CE2"],
 }
 """
 Dictionary mapping amino acid 3-letter codes to lists of atoms that are part of rings.
 """
+
+RING_NORMAL_ATOMS: Dict[str, List[str]] = {
+    "PHE": ["CG", "CE1", "CE2"],
+    "TRP": ["CD2", "CZ2", "CZ3"],
+    "TYR": ["CG", "CE1", "CE2"],
+}
+"""Dictionary of atoms used to compute ring normals for each residue."""
 
 AROMATIC_RESIS: List[str] = ["PHE", "TRP", "HIS", "TYR"]
 """List of aromatic residues."""
@@ -788,6 +804,37 @@ PI_RESIS: List[str] = ["PHE", "TYR", "TRP"]
 
 SULPHUR_RESIS: List[str] = ["MET", "CYS"]
 """Residues containing sulphur atoms."""
+
+SALT_BRIDGE_ANIONS: List[str] = ["ASP", "GLU"]
+"""List of anionic residues that can form salt bridges."""
+
+SALT_BRIDGE_CATIONS: List[str] = ["LYS", "ARG"]
+"""List of cationic residues that can form salt bridges."""
+
+SALT_BRIDGE_RESIDUES: List[str] = SALT_BRIDGE_ANIONS + SALT_BRIDGE_CATIONS
+"""List of residues that can form salt bridges."""
+
+SALT_BRIDGE_ATOMS: List[str] = ["OD1", "OD2", "OE1", "OE2", "NZ", "NH1", "NH2"]
+"""List of atoms that can form salt bridges."""
+
+VDW_RADII: Dict[str, float] = {
+    "H": 1.2,  # 1.09
+    "C": 1.7,
+    "N": 1.55,
+    "O": 1.52,
+    "F": 1.47,
+    "P": 1.8,
+    "S": 1.8,
+    "Cl": 1.75,
+    "Cu": 1.4,
+}
+"""van der Waals radii of the most common atoms. Taken from:
+
+> Bondi, A. (1964). "van der Waals Volumes and Radii".
+> J. Phys. Chem. 68 (3): 441–451.
+
+https://pubs.acs.org/doi/10.1021/j100785a001
+"""
 
 HYDROPHOBICITY_SCALES: Dict[str, Dict[str, float]] = {
     "kd": { # kdHydrophobicity (a) 

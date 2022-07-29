@@ -138,7 +138,7 @@ def run_get_contacts(
             log.debug(
                 f"No pdb file found for {config.pdb_dir / pdb_id}. Downloading..."
             )
-            pdb_file = download_pdb(config, pdb_id)
+            pdb_file = download_pdb(pdb_code=pdb_id, out_dir=config.pdb_dir)
         else:
             pdb_file = config.pdb_dir + pdb_id + ".pdb"
 

@@ -32,6 +32,13 @@ from graphein.protein.resi_atoms import (
     NEG_AA,
     PI_RESIS,
     POS_AA,
+    RING_NORMAL_ATOMS,
+    SALT_BRIDGE_ANIONS,
+    SALT_BRIDGE_ATOMS,
+    SALT_BRIDGE_CATIONS,
+    SALT_BRIDGE_RESIDUES,
+    SULPHUR_RESIS,
+    VDW_RADII,
 )
 from graphein.protein.utils import filter_dataframe
 
@@ -45,7 +52,8 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     Design choice: passed in a ``pd.DataFrame`` to enable easier testing on
     dummy data.
 
-    :param pdb_df: Dataframe containing protein structure. Must contain columns ``["x_coord", "y_coord", "z_coord"]``.
+    :param pdb_df: Dataframe containing protein structure. Must contain columns
+        ``["x_coord", "y_coord", "z_coord"]``.
     :type pdb_df: pd.DataFrame
     :raises: ValueError if ``pdb_df`` does not contain the required columns.
     :return: pd.Dataframe of Euclidean distance matrix.
@@ -98,7 +106,8 @@ def add_sequence_distance_edges(
     """
     Adds edges based on sequence distance to residues in each chain.
 
-    Eg. if ``d=6`` then we join: nodes ``(1,7), (2,8), (3,9)..`` based on their sequence number.
+    Eg. if ``d=6`` then we join: nodes ``(1,7), (2,8), (3,9)..``
+    based on their sequence number.
 
     :param G: Networkx protein graph.
     :type G: nx.Graph
@@ -171,7 +180,8 @@ def add_hydrophobic_interactions(
     Find all hydrophobic interactions.
 
     Performs searches between the following residues:
-    ``[ALA, VAL, LEU, ILE, MET, PHE, TRP, PRO, TYR]`` (:const:`~graphein.protein.resi_atoms.HYDROPHOBIC_RESIS`).
+    ``[ALA, VAL, LEU, ILE, MET, PHE, TRP, PRO, TYR]``
+    (:const:`~graphein.protein.resi_atoms.HYDROPHOBIC_RESIS`).
 
     Criteria: R-group residues are within 5A distance.
 
@@ -199,13 +209,16 @@ def add_disulfide_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
     """
-    Find all disulfide interactions between CYS residues (:const:`~graphein.protein.resi_atoms.DISULFIDE_RESIS`, :const:`~graphein.protein.resi_atoms.DISULFIDE_ATOMS`).
+    Find all disulfide interactions between CYS residues
+    (:const:`~graphein.protein.resi_atoms.DISULFIDE_RESIS`,
+    :const:`~graphein.protein.resi_atoms.DISULFIDE_ATOMS`).
 
     Criteria: sulfur atom pairs are within 2.2A of each other.
 
     :param G: networkx protein graph
     :type G: nx.Graph
-    :param rgroup_df: pd.DataFrame containing rgroup data, defaults to None, which retrieves the df from the provided nx graph.
+    :param rgroup_df: pd.DataFrame containing rgroup data, defaults to ``None``,
+        which retrieves the df from the provided nx graph.
     :type rgroup_df: pd.DataFrame, optional
     """
     # Check for existence of at least two Cysteine residues
@@ -275,8 +288,17 @@ def add_ionic_interactions(
     """
     Find all ionic interactions.
 
-    Criteria: ``[ARG, LYS, HIS, ASP, and GLU]`` (:const:`~graphein.protein.resi_atoms.IONIC_RESIS`) residues are within 6A.
-    We also check for opposing charges (:const:`~graphein.protein.resi_atoms.POS_AA`, :const:`~graphein.protein.resi_atoms.NEG_AA`)
+    Criteria: ``[ARG, LYS, HIS, ASP, and GLU]``
+    (:const:`~graphein.protein.resi_atoms.IONIC_RESIS`) residues are within 6A.
+
+    We also check for opposing charges
+    (:const:`~graphein.protein.resi_atoms.POS_AA`,
+    :const:`~graphein.protein.resi_atoms.NEG_AA`).
+
+    :param G: nx.Graph to add ionic interactions to.
+    :type G: nx.Graph
+    :param rgroup_df: Optional dataframe of R-group atoms. Default is ``None``.
+    :type rgroup_df: Optional[pd.DataFrame]
     """
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
@@ -311,7 +333,8 @@ def add_aromatic_interactions(
     Find all aromatic-aromatic interaction.
 
     Criteria: phenyl ring centroids separated between 4.5A to 7A.
-    Phenyl rings are present on ``PHE, TRP, HIS, TYR`` (:const:`~graphein.protein.resi_atoms.AROMATIC_RESIS`).
+    Phenyl rings are present on ``PHE, TRP, HIS, TYR``
+    (:const:`~graphein.protein.resi_atoms.AROMATIC_RESIS`).
     Phenyl ring atoms on these amino acids are defined by the following
     atoms:
     - PHE: CG, CD, CE, CZ
@@ -363,12 +386,20 @@ def add_aromatic_interactions(
 def add_aromatic_sulphur_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
-    """Find all aromatic-sulphur interactions."""
+    """Find all aromatic-sulphur interactions.
+
+    Criteria: Sulphur containing residue () within 5.3 Angstroms of an aromatic
+    residue ().
+
+    :param G: The graph to add the aromatic-sulphur interactions to.
+    :type G: nx.Graph
+    :param rgroup_df: The rgroup dataframe. If ``None`` (default), the graph's
+        rgroup dataframe is used.
+    :type rgroup_df: Optional[pd.DataFrame].
+    """
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
-    RESIDUES = ["MET", "CYS", "PHE", "TYR", "TRP"]
-    SULPHUR_RESIS = ["MET", "CYS"]
-    AROMATIC_RESIS = ["PHE", "TYR", "TRP"]
+    RESIDUES = SULPHUR_RESIS + PI_RESIS
 
     aromatic_sulphur_df = filter_dataframe(
         rgroup_df, "residue_name", RESIDUES, True
@@ -384,8 +415,8 @@ def add_aromatic_sulphur_interactions(
         resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
         resi2 = aromatic_sulphur_df.loc[a2, "node_id"]
 
-        condition1 = resi1 in SULPHUR_RESIS and resi2 in AROMATIC_RESIS
-        condition2 = resi1 in AROMATIC_RESIS and resi2 in SULPHUR_RESIS
+        condition1 = resi1 in SULPHUR_RESIS and resi2 in PI_RESIS
+        condition2 = resi1 in PI_RESIS and resi2 in SULPHUR_RESIS
 
         if (condition1 or condition2) and resi1 != resi2:
             if G.has_edge(resi1, resi2):
@@ -397,7 +428,17 @@ def add_aromatic_sulphur_interactions(
 def add_cation_pi_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
-    """Add cation-pi interactions."""
+    """Add cation-pi interactions.
+
+    Criteria:
+        # Todo
+
+    :param G: Graph to add cation-pi interactions to.
+    :type G: nx.Graph
+    :param rgroup_df: Dataframe containing rgroup information. Defaults to
+        ``None``.
+    :type rgroup_df: Optional[pd.DataFrame].
+    """
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
     cation_pi_df = filter_dataframe(
@@ -422,6 +463,311 @@ def add_cation_pi_interactions(
                 G.edges[resi1, resi2]["kind"].add("cation_pi")
             else:
                 G.add_edge(resi1, resi2, kind={"cation_pi"})
+
+
+def add_vdw_interactions(
+    g: nx.Graph,
+    threshold: float = 0.5,
+    remove_intraresidue: bool = False,
+    name: str = "vdw",
+):
+    """Criterion: Any non-H atoms within the sum of
+    their VdW Radii (:const:`~graphein.protein.resi_atoms.VDW_RADII`) +
+    threshold (default: ``0.5``) Angstroms of each other.
+
+    :param g: Graph to add van der Waals interactions to.
+    :type g: nx.Graph
+    :param threshold: Threshold distance for van der Waals interactions.
+        Default: ``0.5`` Angstroms.
+    :type threshold: float
+    :param remove_intraresidue: Whether to remove intra-residue interactions.
+    :type remove_intraresidue: bool
+    """
+    df = g.graph["raw_pdb_df"]
+    df = filter_dataframe(df, "atom_name", ["H"], boolean=False)
+    df = filter_dataframe(df, "node_id", list(g.nodes()), boolean=True)
+    dist_mat = compute_distmat(df)
+
+    radii = df["element_symbol"].map(VDW_RADII).values
+    radii = np.expand_dims(radii, axis=1)
+    radii = radii + radii.T
+
+    dist_mat = dist_mat - radii
+    interacting_atoms = get_interacting_atoms(threshold, dist_mat)
+    add_interacting_resis(g, interacting_atoms, df, [name])
+
+    if remove_intraresidue:
+        for u, v in get_edges_by_bond_type(g, name):
+            u_id = "".join(u.split(":")[:-1])
+            v_id = "".join(v.split(":")[:-1])
+            if u_id == v_id:
+                g.edges[u, v]["kind"].remove(name)
+                if len(g.edges[u, v]["kind"]) == 0:
+                    g.remove_edge(u, v)
+
+
+def add_vdw_clashes(
+    g: nx.Graph, threshold: float = 0.0, remove_intraresidue: bool = False
+):
+    """Adds van der Waals clashes to graph.
+
+    These are atoms that are within the sum of their VdW Radii
+    (:const:`~graphein.protein.resi_atoms.VDW_RADII`).
+
+    :param g: Graph to add van der Waals clashes to.
+    :type g: nx.Graph
+    :param threshold: Threshold, defaults to ``0.0``.
+    :type threshold: float
+    :param remove_intraresidue: Whether to remove clashes within a residue,
+        defaults to ``False``.
+    :type remove_intraresidue: bool
+    """
+    add_vdw_interactions(
+        g,
+        threshold=threshold,
+        remove_intraresidue=remove_intraresidue,
+        name="vdw_clash",
+    )
+
+
+def add_pi_stacking_interactions(
+    G: nx.Graph,
+    pdb_df: Optional[pd.DataFrame] = None,
+    centroid_distance: float = 7.0,
+):
+    """Adds Pi-stacking interactions to graph.
+
+    Criteria:
+        - aromatic ring centroids within 7.0 (default) Angstroms. (|A1A2| < 7.0)
+        - Angle between ring normal vectors < 30° (∠(n1, n2) < 30°)
+        - Angle between ring normal vectors and centroid vector < 45°
+            (∠(n1, A1A2) < 45°), (∠(n2, A1A2) < 45°)
+
+    :param G: _description_
+    :type G: nx.Graph
+    :param pdb_df: _description_, defaults to None
+    :type pdb_df: Optional[pd.DataFrame], optional
+    """
+    if pdb_df is None:
+        pdb_df = G.graph["raw_pdb_df"]
+    dfs = []
+    # Compute centroids and normal for each ring
+    for resi in PI_RESIS:
+        resi_rings_df = get_ring_atoms(pdb_df, resi)
+        resi_rings_df = filter_dataframe(
+            resi_rings_df, "node_id", list(G.nodes()), True
+        )
+        resi_centroid_df = get_ring_centroids(resi_rings_df)
+        resi_normals = get_ring_normals(resi_rings_df)
+        resi_centroid_df = pd.merge(
+            resi_centroid_df, resi_normals, on="node_id"
+        )
+        dfs.append(resi_centroid_df)
+    aromatic_df = (
+        pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
+    )
+    distmat = compute_distmat(aromatic_df)
+    distmat.set_index(aromatic_df["node_id"], inplace=True)
+    distmat.columns = aromatic_df["node_id"]
+    distmat = distmat[distmat <= centroid_distance].fillna(0)
+    indices = np.where(distmat > 0)
+
+    interacting_resis = [
+        (distmat.index[r], distmat.index[c])
+        for r, c in zip(indices[0], indices[1])
+    ]
+    # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
+    for n1, n2 in interacting_resis:
+        assert G.nodes[n1]["residue_name"] in PI_RESIS
+        assert G.nodes[n2]["residue_name"] in PI_RESIS
+
+        n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
+            ["x_coord", "y_coord", "z_coord"]
+        ].values[0]
+        n2_centroid = aromatic_df.loc[aromatic_df["node_id"] == n2][
+            ["x_coord", "y_coord", "z_coord"]
+        ].values[0]
+
+        n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][0].values[0]
+        n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][0].values[0]
+
+        centroid_vector = n2_centroid - n1_centroid
+
+        norm_angle = compute_angle(n1_normal, n2_normal)
+        n1_centroid_angle = compute_angle(n1_normal, centroid_vector)
+        n2_centroid_angle = compute_angle(n2_normal, centroid_vector)
+
+        if (
+            norm_angle >= 30
+            or n1_centroid_angle >= 45
+            or n2_centroid_angle >= 45
+        ):
+            continue
+        if G.has_edge(n1, n2):
+            G.edges[n1, n2]["kind"].add("pi_stacking")
+        else:
+            G.add_edge(n1, n2, kind={"pi_stacking"})
+
+
+def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
+    if pdb_df is None:
+        pdb_df = G.graph["raw_pdb_df"]
+    dfs = []
+    # Compute centroids and normal for each ring
+    for resi in PI_RESIS:
+        resi_rings_df = get_ring_atoms(pdb_df, resi)
+        resi_rings_df = filter_dataframe(
+            resi_rings_df, "node_id", list(G.nodes()), True
+        )
+        resi_centroid_df = get_ring_centroids(resi_rings_df)
+        resi_normals = get_ring_normals(resi_rings_df)
+        resi_centroid_df = pd.merge(
+            resi_centroid_df, resi_normals, on="node_id"
+        )
+        dfs.append(resi_centroid_df)
+    aromatic_df = (
+        pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
+    )
+    distmat = compute_distmat(aromatic_df)
+    distmat.set_index(aromatic_df["node_id"], inplace=True)
+    distmat.columns = aromatic_df["node_id"]
+    distmat = distmat[distmat <= 7].fillna(0)
+    indices = np.where(distmat > 0)
+
+    interacting_resis = [
+        (distmat.index[r], distmat.index[c])
+        for r, c in zip(indices[0], indices[1])
+    ]
+    # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
+    for n1, n2 in interacting_resis:
+        assert G.nodes[n1]["residue_name"] in PI_RESIS
+        assert G.nodes[n2]["residue_name"] in PI_RESIS
+
+        n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
+            ["x_coord", "y_coord", "z_coord"]
+        ].values[0]
+        n2_centroid = aromatic_df.loc[aromatic_df["node_id"] == n2][
+            ["x_coord", "y_coord", "z_coord"]
+        ].values[0]
+
+        n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][0].values[0]
+        n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][0].values[0]
+
+        centroid_vector = n2_centroid - n1_centroid
+
+        norm_angle = compute_angle(n1_normal, n2_normal)
+        n1_centroid_angle = compute_angle(n1_normal, centroid_vector)
+        n2_centroid_angle = compute_angle(n2_normal, centroid_vector)
+
+        if (
+            norm_angle >= 90
+            or norm_angle <= 60
+            or n1_centroid_angle >= 45
+            or n2_centroid_angle >= 45
+        ):
+            continue
+        if G.has_edge(n1, n2):
+            G.edges[n1, n2]["kind"].add("t_stacking")
+        else:
+            G.add_edge(n1, n2, kind={"t_stacking"})
+
+
+def add_backbone_carbonyl_carbonyl_interactions(
+    G: nx.Graph, threshold: float = 3.2
+):
+    """Adds backbone-carbonyl-carbonyl interactions.
+
+    Default is to consider C═O···C═O interactions below 3.2 Angstroms
+    (sum of O+C vdw radii).
+
+    Source:
+    > Rahim, A., Saha, P., Jha, K.K. et al. Reciprocal carbonyl–carbonyl
+    > interactions in small molecules and proteins. Nat Commun 8, 78 (2017).
+    > https://doi.org/10.1038/s41467-017-00081-x
+
+    :param G: Protein graph to add edges to.
+    :type G: nx.Graph
+    :param threshold: Threshold below which to consider an interaction,
+        defaults to 3.2 Angstroms.
+    :type threshold: float, optional
+    """
+    df = G.graph["raw_pdb_df"]
+    df = filter_dataframe(df, "node_id", list(G.nodes()), boolean=True)
+    df = filter_dataframe(df, "atom_name", ["C", "O"], boolean=True)
+    distmat = compute_distmat(df)
+    interacting_atoms = get_interacting_atoms(threshold, distmat)
+
+    # Filter out O-O and C-C edges
+    atom_1 = df.iloc[interacting_atoms[0]]["atom_name"]
+    atom_2 = df.iloc[interacting_atoms[1]]["atom_name"]
+    diff_atoms = atom_1.values != atom_2.values
+    interacting_atoms = (
+        interacting_atoms[0][diff_atoms],
+        interacting_atoms[1][diff_atoms],
+    )
+
+    # Filter out O-C edges on the same residue
+    atom_1 = df.iloc[interacting_atoms[0]]["residue_id"]
+    atom_2 = df.iloc[interacting_atoms[1]]["residue_id"]
+    diff_atoms = atom_1.values != atom_2.values
+    interacting_atoms = (
+        interacting_atoms[0][diff_atoms],
+        interacting_atoms[1][diff_atoms],
+    )
+
+    add_interacting_resis(G, interacting_atoms, df, ["bb_carbonyl_carbonyl"])
+
+
+def add_salt_bridges(
+    G: nx.Graph,
+    rgroup_df: Optional[pd.DataFrame] = None,
+    threshold: float = 4.0,
+):
+    """Compute salt bridge interactions.
+
+    Criterion: Anion-Cation residue atom pairs within threshold (``4.0``)
+    Angstroms of each other.
+
+    Anions: ASP/OD1+OD2, GLU/OE1+OE2
+    Cations: LYS/NZ, ARG/NH1+NH2
+
+    :param G: Graph to add salt bridge interactions to.
+    :type G: nx.Graph
+    :param rgroup_df: R group dataframe, defaults to ``None``.
+    :type rgroup_df: Optional[pd.DataFrame]
+    :param threshold: Distance threshold, defaults to ``4.0`` Angstroms.
+    :type threshold: float, optional
+    """
+    if rgroup_df is None:
+        rgroup_df = G.graph["rgroup_df"]
+    salt_bridge_df = filter_dataframe(
+        rgroup_df, "residue_name", SALT_BRIDGE_RESIDUES, boolean=True
+    )
+    salt_bridge_df = filter_dataframe(
+        salt_bridge_df, "atom_name", SALT_BRIDGE_ATOMS, boolean=True
+    )
+    distmat = compute_distmat(salt_bridge_df)
+    interacting_atoms = get_interacting_atoms(threshold, distmat)
+    add_interacting_resis(
+        G, interacting_atoms, salt_bridge_df, ["salt_bridge"]
+    )
+
+    for r1, r2 in get_edges_by_bond_type(G, "salt_bridge"):
+        condition1 = (
+            G.nodes[r1]["residue_name"] in SALT_BRIDGE_ANIONS
+            and G.nodes[r2]["residue_name"] in SALT_BRIDGE_CATIONS
+        )
+
+        condition2 = (
+            G.nodes[r2]["residue_name"] in SALT_BRIDGE_ANIONS
+            and G.nodes[r1]["residue_name"] in SALT_BRIDGE_CATIONS
+        )
+
+        is_ionic = condition1 or condition2
+        if not is_ionic:
+            G.edges[r1, r2]["kind"].remove("salt_bridge")
+            if len(G.edges[r1, r2]["kind"]) == 0:
+                G.remove_edge(r1, r2)
 
 
 def get_interacting_atoms(
@@ -461,9 +807,11 @@ def add_delaunay_triangulation(
 
     :param G: The networkx graph to add the triangulation to.
     :type G: nx.Graph
-    :param allowable_nodes: The nodes to include in the triangulation. If ``None`` (default), no filtering is done.
-        This parameter is used to filter out nodes that are not desired in the triangulation.
-        Eg if you wanted to construct a delaunay triangulation of the CA atoms of an atomic graph.
+    :param allowable_nodes: The nodes to include in the triangulation.
+        If ``None`` (default), no filtering is done. This parameter is used to
+        filter out nodes that are not desired in the triangulation. Eg if you
+        wanted to construct a delaunay triangulation of the CA atoms of an
+        atomic graph.
     :type allowable_nodes: List[str], optional
     """
     if allowable_nodes is None:
@@ -503,12 +851,14 @@ def add_distance_threshold(
     G: nx.Graph, long_interaction_threshold: int, threshold: float = 5.0
 ):
     """
-    Adds edges to any nodes within a given distance of each other. Long interaction threshold is used
-    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+    Adds edges to any nodes within a given distance of each other.
+    Long interaction threshold is used to specify minimum separation in sequence
+    to add an edge between networkx nodes within the distance threshold
 
     :param G: Protein Structure graph to add distance edges to
     :type G: nx.Graph
-    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :param long_interaction_threshold: minimum distance in sequence for two
+        nodes to be connected
     :type long_interaction_threshold: int
     :param threshold: Distance in angstroms, below which two nodes are connected
     :type threshold: float
@@ -551,15 +901,18 @@ def add_distance_window(
     G: nx.Graph, min: float, max: float, long_interaction_threshold: int = -1
 ):
     """
-    Adds edges to any nodes within a given window of distances of each other. Long interaction threshold is used
-    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+    Adds edges to any nodes within a given window of distances of each other.
+    Long interaction threshold is used
+    to specify minimum separation in sequence to add an edge between networkx
+    nodes within the distance threshold
 
     :param G: Protein Structure graph to add distance edges to
     :type G: nx.Graph
     :param min: Minimum distance in angstroms required for an edge.
     :type min: float
     :param max: Maximum distance in angstroms allowed for an edge.
-    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :param long_interaction_threshold: minimum distance in sequence for two
+        nodes to be connected
     :type long_interaction_threshold: int
     :return: Graph with distance-based edges added
     """
@@ -627,27 +980,35 @@ def add_k_nn_edges(
     include_self: Union[bool, str] = False,
 ):
     """
-    Adds edges to nodes based on K nearest neighbours. Long interaction threshold is used
-    to specify minimum separation in sequence to add an edge between networkx nodes within the distance threshold
+    Adds edges to nodes based on K nearest neighbours. Long interaction
+    threshold is used to specify minimum separation in sequence to add an edge
+    between networkx nodes within the distance threshold
 
     :param G: Protein Structure graph to add distance edges to
     :type G: nx.Graph
-    :param long_interaction_threshold: minimum distance in sequence for two nodes to be connected
+    :param long_interaction_threshold: minimum distance in sequence for two
+        nodes to be connected
     :type long_interaction_threshold: int
     :param k: Number of neighbors for each sample.
     :type k: int
-    :param mode: Type of returned matrix: ``"connectivity"`` will return the connectivity matrix with ones and zeros,
-        and ``"distance"`` will return the distances between neighbors according to the given metric.
+    :param mode: Type of returned matrix: ``"connectivity"`` will return the
+        connectivity matrix with ones and zeros, and ``"distance"`` will return
+        the distances between neighbors according to the given metric.
     :type mode: str
-    :param metric: The distance metric used to calculate the k-Neighbors for each sample point.
-        The DistanceMetric class gives a list of available metrics.
-        The default distance is ``"euclidean"`` (``"minkowski"`` metric with the ``p`` param equal to ``2``).
+    :param metric: The distance metric used to calculate the k-Neighbors for
+        each sample point. The ``DistanceMetric`` class gives a list of
+        available metrics. The default distance is ``"euclidean"``
+        (``"minkowski"`` metric with the ``p`` param equal to ``2``).
     :type metric: str
-    :param p: Power parameter for the Minkowski metric. When ``p = 1``, this is equivalent to using ``manhattan_distance`` (l1),
-        and ``euclidean_distance`` (l2) for ``p = 2``. For arbitrary ``p``, ``minkowski_distance`` (l_p) is used. Default is ``2`` (euclidean).
+    :param p: Power parameter for the Minkowski metric. When ``p = 1``, this is
+        equivalent to using ``manhattan_distance`` (l1), and
+        ``euclidean_distance`` (l2) for ``p = 2``. For arbitrary ``p``,
+        ``minkowski_distance`` (l_p) is used. Default is ``2`` (euclidean).
     :type p: int
-    :param include_self: Whether or not to mark each sample as the first nearest neighbor to itself.
-        If ``"auto"``, then ``True`` is used for ``mode="connectivity"`` and ``False`` for ``mode="distance"``. Default is ``False``.
+    :param include_self: Whether or not to mark each sample as the first nearest
+        neighbor to itself. If ``"auto"``, then ``True`` is used for
+        ``mode="connectivity"`` and ``False`` for ``mode="distance"``.
+        Default is ``False``.
     :type include_self: Union[bool, str]
     :return: Graph with knn-based edges added
     :rtype: nx.Graph
@@ -730,7 +1091,7 @@ def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
 
 def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Return aromatic ring centrods.
+    Return aromatic ring centroids.
 
     A helper function for add_aromatic_interactions.
 
@@ -754,6 +1115,52 @@ def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
         .mean()[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )
+
+
+def compute_ring_normal(ring_df: pd.DataFrame) -> np.ndarray:
+    """Compute the normal vector of a ring.
+
+    :param ring_df: Dataframe of atoms in the ring.
+    :type ring_df: pd.DataFrame
+    :return: Normal vector of the ring.
+    :rtype: np.ndarray
+    """
+    res_name = ring_df["residue_name"].iloc[0]
+    atoms = RING_NORMAL_ATOMS[res_name]
+    coords = ring_df.loc[ring_df["atom_name"].isin(atoms)][
+        ["x_coord", "y_coord", "z_coord"]
+    ].values
+    pos1, pos2, pos3 = coords[0], coords[1], coords[2]
+    return np.cross(pos2 - pos1, pos3 - pos1)
+
+
+def get_ring_normals(ring_df: pd.DataFrame) -> pd.DataFrame:
+    """Compute the normal vector of each ring.
+
+    :param ring_df: Dataframe of atoms in the rings.
+    :type ring_df: pd.DataFrame
+    :return: Normal vector of the rings.
+    :rtype: pd.DataFrame
+    """
+    return ring_df.groupby("node_id").apply(compute_ring_normal).reset_index()
+
+
+def compute_angle(
+    v1: np.ndarray, v2: np.ndarray, return_degrees: bool = True
+) -> float:
+    """Computes angle between two vectors.
+
+    :param v1: First vector
+    :type v1: np.ndarray
+    :param v2: Second vector
+    :type v2: np.ndarray
+    :param return_degrees: Whether to return angle in degrees or radians
+    :type return_degrees: bool
+    """
+    angle = np.arccos(
+        np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+    )
+    return 180 * angle / np.pi if return_degrees else angle
 
 
 def get_edges_by_bond_type(
