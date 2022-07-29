@@ -5,12 +5,13 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
+from optparse import Option
 
 import re
 import logging
 import re
 from itertools import count
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -24,7 +25,9 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.utils import import_message
-from graphein.protein.resi_atoms import HYDROPHOBICITY_SCALES
+from protein.resi_atoms import HYDROPHOBICITY_SCALES
+
+#### TODO: change to graphein.protein.resi_atoms
 
 log = logging.getLogger(__name__)
 
@@ -48,6 +51,111 @@ except ImportError:
         pip_install=True,
     )
 
+
+"""
+TODO: Functino that gets ``min`` and ``max`` values in a graph for a given feature so that we can scale / offset to > 0
+
+TODO: should feature `distance` actually contain the site itself i.e. in the string?
+"""
+def _node_feature_func(
+    g: nx.Graph, 
+    feature: str, 
+    focal_node: Optional[str] = None,
+    focal_point: Optional[tuple] = None,
+    no_negatives: bool = False,
+) -> Callable:
+    """
+    Maps a feature as described by a string to a function that can be applied on nodes from a graph. 
+
+    :param g: Protein graph.
+    :type g: nx.Graph
+    :param feature: Name of feature to extract.
+    :type feature: str
+    :param focal_node: A specific node within ``g`` to use in feature calculation; e.g. when calculating ``distance`` to a given site. 
+    :type focal_node: Optional[str]
+    :param focal_point: Use specific coordinates instead of a node within the graph. 
+    :type focal_point: tuple
+    :param no_negatives: Take the max of ``0`` and the feature's value. Defaults to ``False``.
+    :type no_negatives: bool
+
+    :return: Function that returns a value for a given node ID.
+    :rtype: Callable
+
+    TODO is there a way to wrap a lambda with another function i.e. max(0, f) for `no_negatives` ?
+    TODO some features do not require the graph to be supplied e.g. hydrophobicity mapping from residue 3-letter code.  Handle this?
+    """
+    if feature == "degree": 
+        return lambda k: g.degree[k]
+
+    if feature in ["seq-position", "seq_position"]:
+        return lambda k: int(k.split(':')[-1])
+
+    elif feature == "rsa":
+        return lambda k: g.nodes(data=True)[k]["rsa"]
+
+    elif feature in ["bfac", "bfactor", "b_factor", "b-factor"]:
+        return lambda k: g.nodes(data=True)[k]["b_factor"]
+
+    elif feature == "distance": # Euclidean distance to a specific node / coordinate 
+        def get_coords(g: nx.Graph, node: str) -> np.ndarray:
+                return np.array(g.nodes()[node]["coords"])
+
+        if focal_node:
+            assert focal_node in g.nodes()
+            return lambda k: np.linalg.norm(get_coords(g, k) - get_coords(g, focal_node))
+        elif focal_point:
+            assert len(focal_point) == 3
+            return lambda k: np.linalg.norm(get_coords(g, k) - np.array(focal_point))
+        else: 
+            raise ValueError(f"Node feature 'distance' requires one of `focal_node` or `focal_point`.")
+
+    # Meiler embedding dimension
+    p = re.compile("meiler-?([0-9])")
+    match = p.search(feature)
+    if match:
+        dim = match.group(1)
+        if int(dim) in range(1,8):
+            if no_negatives:    return lambda k: max(0, g.nodes(data=True)[k]["meiler"][f"dim_{dim}"])
+            else:               return lambda k:        g.nodes(data=True)[k]["meiler"][f"dim_{dim}"]
+        else:
+            raise ValueError(f"Meiler embeddings have dimensions 1-7, received {dim}.")
+    
+    # Hydrophobicity
+    p = re.compile("([a-z]{2})?-?(hydrophobicity)")   # e.g.  "kd-hydrophobicity", "tthydrophobicity", "hydrophobicity"
+    match = p.search(feature)
+    if match and match.group(2):
+
+        # TODO: check if nodes actually have 'hydrophobicity' already; if they do, then use this.  if not, then map to kd.
+        scale: str = match.group(1) if match.group(1) else "kd" # use 'kdhydrophobicity' as default if no scale specified
+        try: hydrophob: Dict[str, float] = HYDROPHOBICITY_SCALES[scale]
+        except: raise KeyError(f"'{scale}' not a valid hydrophobicity scale.")
+        return lambda k: hydrophob[k.split(':')[1]]
+
+    else:
+        raise NotImplementedError(f"Feature '{feature}' not implemented.")
+
+
+def _node_size_func(
+    g: nx.Graph, 
+    feature: str, 
+    min: float, 
+    multiplier: float
+) -> Callable:
+    """
+    Returns a function that can be use to generate node sizes for plotting.
+
+    :param g: Protein graph 
+    :type g: nx.Graph
+    :param feature: Name of feature to scale node sizes by. 
+    :type feature: str
+    :param min: Number to offset size with. 
+    :type min: float
+    :param multiplier: Number to scale feature values by.
+    :type multiplier: float
+    """
+    get_feature = _node_feature_func(g=g, feature=feature, no_negatives=True)
+    return lambda k: min + multiplier * get_feature(k)
+   
 
 def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:
     """
@@ -245,27 +353,7 @@ def plotly_protein_structure_graph(
         G, colour_map=edge_color_map, colour_by=colour_edges_by
     )
 
-    # Get node size
-    def node_scale_by(G: nx.Graph, feature: str):
-        if feature == "degree":
-            return lambda k: node_size_min + node_size_multiplier * G.degree[k]
-        elif feature == "rsa":
-            return (
-                lambda k: node_size_min
-                + node_size_multiplier * G.nodes(data=True)[k]["rsa"]
-            )
-
-        # Meiler embedding dimension
-        p = re.compile("meiler-([1-7])")
-        dim = p.search(feature).group(1)
-        if dim:
-            return lambda k: node_size_min + node_size_multiplier * max(
-                0, G.nodes(data=True)[k]["meiler"][f"dim_{dim}"]
-            )  # Meiler values may be negative
-        else:
-            raise ValueError(f"Cannot size nodes by feature '{feature}'")
-
-    get_node_size = node_scale_by(G, node_size_feature)
+    size_by = _node_size_func(G, node_size_feature, min=node_size_min, multiplier=node_size_multiplier)
 
     # 3D network plot
     x_nodes = []
@@ -279,7 +367,7 @@ def plotly_protein_structure_graph(
         x_nodes.append(value[0])
         y_nodes.append(value[1])
         z_nodes.append(value[2])
-        node_sizes.append(get_node_size(key))
+        node_sizes.append(size_by(key))
 
         if label_node_ids:
             node_labels.append(list(G.nodes())[i])
@@ -824,42 +912,25 @@ def asteroid_plot(
             x, y = subgraph.nodes[node]["pos"]
             node_x.append(x)
             node_y.append(y)
-
-        def node_size_function(g: nx.Graph, feature: str):
-            if feature == 'degree':
-                return lambda k : g.degree(k)
-            elif feature == 'rsa':
-                return lambda k : g.nodes(data=True)[k]['rsa']
-            else:
-                raise NotImplementedError(f"Size by {size_nodes_by} not implemented.")
-        
-        node_size = node_size_function(subgraph, size_nodes_by)
-        node_sizes = [node_size_min + node_size(n) * node_size_multiplier for n in subgraph.nodes()]
+   
+        size_by = _node_size_func(subgraph, size_nodes_by, min=node_size_min, multiplier=node_size_multiplier)
+        node_sizes = [size_by(n) for n in subgraph.nodes()]
 
         colour_nodes_by = colour_nodes_by.lower()
+        node_colours = []
         if colour_nodes_by == "shell":
-            node_colours = []
             for n in subgraph.nodes():
                 for k, v in nodes.items():
                     if n in v:
                         node_colours.append(k)
-        
-        # Hydrophobicity
-        p = re.compile("([a-z]{2})?-?(hydrophobicity)")   # e.g.  "kd-hydrophobicity", "tthydrophobicity", "hydrophobicity"
-        match = p.search(colour_nodes_by)
-        if match and match.group(2):
-            scale: str = match.group(1) if match.group(1) else "kd" # use 'kdhydrophobicity' as default if no scale specified
-            try: hydrophob: Dict[str, float] = HYDROPHOBICITY_SCALES[scale]
-            except: raise KeyError(f"'{scale}' not a valid hydrophobicity scale.")
-
-            node_colours = []
-            for n in subgraph.nodes():
-                for k, v in nodes.items():
-                    if n in v:
-                        node_colours.append(hydrophob[n.split(':')[1]])
         else:
-            raise NotImplementedError(f"Colour by {colour_nodes_by} not implemented.")
-    
+            try: get_feature = _node_feature_func(g=subgraph, feature=colour_nodes_by, no_negatives=False)
+            except: raise NotImplementedError(f"Colour by {colour_nodes_by} not implemented.")
+            
+            for n, d in subgraph.nodes(data=True):
+                node_colours.append(get_feature(n))
+                print(f"value: {get_feature(n)}")
+
         node_trace = go.Scatter(
             x=node_x,
             y=node_y,
