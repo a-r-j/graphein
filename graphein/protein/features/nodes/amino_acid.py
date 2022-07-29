@@ -18,6 +18,7 @@ from graphein.protein.resi_atoms import (
     HYDROGEN_BOND_ACCEPTORS,
     HYDROGEN_BOND_DONORS,
     RESI_THREE_TO_1,
+    HYDROPHOBICITY_SCALES
 )
 from graphein.utils.utils import onek_encoding_unk
 
@@ -248,3 +249,46 @@ def hydrogen_bond_acceptor(
     if not sum_features:
         features = np.array(features > 0).astype(int)
     d["hbond_acceptors"] = features
+
+
+
+"""
+TODO: add a similar 'load in' function from .csv as above?
+or stick to hydrophobicity as dict?
+
+TODO: make vector of all hydrophobicity scales instead of one chosen scale?
+
+TODO: sum features bool?
+"""
+def hydrophobicity(
+    n: str, 
+    d: Dict[str, any],
+    mapping: str = "kd",
+    return_array: bool = True,
+
+) -> None:
+    """
+    :param n: node ID
+    :type n: str
+    :param d: dict of node attributes
+    :type d: Dict[str, any]
+    
+    :param mapping: which hydrophobicity scale to use.
+    :type mapping: str
+    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise returns a ``pd.Series``. Default is ``True``.
+    :type return_array: bool
+    """
+    assert mapping in HYDROPHOBICITY_SCALES.keys()
+    hydr = HYDROPHOBICITY_SCALES[mapping]
+
+    amino_acid = d["residue_name"]
+    try:
+        features = hydr[amino_acid]
+    except:
+        features = pd.Series(np.zeros(1))
+
+    if return_array:
+        features = np.array(features)
+
+    d["hydrophobicity"] = features
+    return features
