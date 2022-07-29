@@ -24,6 +24,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.utils import import_message
+from graphein.protein.resi_atoms import HYDROPHOBICITY_SCALES
 
 log = logging.getLogger(__name__)
 
@@ -835,47 +836,27 @@ def asteroid_plot(
         node_size = node_size_function(subgraph, size_nodes_by)
         node_sizes = [node_size_min + node_size(n) * node_size_multiplier for n in subgraph.nodes()]
 
+        colour_nodes_by = colour_nodes_by.lower()
         if colour_nodes_by == "shell":
             node_colours = []
             for n in subgraph.nodes():
                 for k, v in nodes.items():
                     if n in v:
                         node_colours.append(k)
-        elif colour_nodes_by == "hydrophobicity":
-
-            """
-            TODO Does a function like this already exist somewhere?
-            """
-            def hydrophobicity_of_residue(res: str, mapping: str = 'a'):
-                hmap = { 
-                    "ILE" : 4.5,
-                    "VAL" : 4.2,
-                    "LEU" : 3.8,
-                    "PHE" : 2.8,
-                    "CYS" : 2.5,
-                    "MET" : 1.9,
-                    "ALA" : 1.8,
-                    "GLY" : -0.4,
-                    "THR" : -0.7,
-                    "SER" : -0.8,
-                    "TRP" : -0.9,
-                    "TYR" : -1.3,
-                    "PRO" : -1.6,
-                    "HIS" : -3.2,
-                    "GLU" : -3.5,
-                    "GLN" : -3.5,
-                    "ASP" : -3.5,
-                    "ASN" : -3.5,
-                    "LYS" : -3.9,
-                    "ARG" : -4.5,
-                }
-                return hmap[res]
+        
+        # Hydrophobicity
+        p = re.compile("([a-z]{2})?-?(hydrophobicity)")   # e.g.  "kd-hydrophobicity", "tthydrophobicity", "hydrophobicity"
+        match = p.search(colour_nodes_by)
+        if match and match.group(2):
+            scale: str = match.group(1) if match.group(1) else "kd" # use 'kdhydrophobicity' as default if no scale specified
+            try: hydrophob: Dict[str, float] = HYDROPHOBICITY_SCALES[scale]
+            except: raise KeyError(f"'{scale}' not a valid hydrophobicity scale.")
 
             node_colours = []
             for n in subgraph.nodes():
                 for k, v in nodes.items():
                     if n in v:
-                        node_colours.append(hydrophobicity_of_residue(n.split(':')[1]))
+                        node_colours.append(hydrophob[n.split(':')[1]])
         else:
             raise NotImplementedError(f"Colour by {colour_nodes_by} not implemented.")
     
