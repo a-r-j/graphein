@@ -25,9 +25,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.utils import import_message
-from protein.resi_atoms import HYDROPHOBICITY_SCALES
-
-#### TODO: change to graphein.protein.resi_atoms
+from graphein.protein.resi_atoms import HYDROPHOBICITY_SCALES
 
 log = logging.getLogger(__name__)
 
