@@ -405,7 +405,7 @@ def get_edge_attribute_names(g: nx.Graph) -> List[str]:
     :returns: List of edge attribute names
     :rtype: List[str]
     """
-    return list(set(np.array([list(g.edges[u][v].keys()) for u, v in g.edges()]).flatten()))
+    return list(set(np.array([list(g.edges[u, v].keys()) for u, v in g.edges()]).flatten()))
 
 
 def get_graph_attribute_names(g: nx.Graph) -> List[str]:
