@@ -8,7 +8,7 @@
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Literal
 
 import numpy as np
 import pandas as pd
@@ -18,7 +18,8 @@ from graphein.protein.resi_atoms import (
     HYDROGEN_BOND_ACCEPTORS,
     HYDROGEN_BOND_DONORS,
     RESI_THREE_TO_1,
-    HYDROPHOBICITY_SCALES
+    HYDROPHOBICITY_SCALES,
+    HYDROPHOBICITY_TYPES
 )
 from graphein.utils.utils import onek_encoding_unk
 
@@ -251,34 +252,29 @@ def hydrogen_bond_acceptor(
     d["hbond_acceptors"] = features
 
 
-
-"""
-TODO: add a similar 'load in' function from .csv as above?
-or stick to hydrophobicity as dict?
-
-TODO: make vector of all hydrophobicity scales instead of one chosen scale?
-
-TODO: sum features bool?
-"""
 def hydrophobicity(
     n: str, 
     d: Dict[str, any],
-    mapping: str = "kd",
+    mapping: HYDROPHOBICITY_TYPE = "kd",
     return_array: bool = True,
-
-) -> None:
+) -> Union[np.ndarray, pd.Series]:
     """
-    :param n: node ID
+    Adds hydrophobicity values for each residue to graph nodes. 
+    See :const:`~graphein.protein.resi_atoms.HYDROPHOBICITY_SCALES` for 
+    values and available scales.
+
+    :param n: Node ID. Unused - kept to maintain consistent function signature.
     :type n: str
-    :param d: dict of node attributes
+    :param d: Dictionary of node attributes.
     :type d: Dict[str, any]
-    
-    :param mapping: which hydrophobicity scale to use.
-    :type mapping: str
-    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise returns a ``pd.Series``. Default is ``True``.
+    :param mapping: Which hydrophobicity scale to use. See 
+        :const:`~graphein.protein.resi_atoms.HYDROPHOBICITY_TYPE` for supported types.
+    :type mapping: graphien.protein.resi_atoms.HYDROPHOBICITY_TYPE
+    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise returns 
+        a ``pd.Series``. Default is ``True``.
     :type return_array: bool
     """
-    assert mapping in HYDROPHOBICITY_SCALES.keys()
+    assert mapping in HYDROPHOBICITY_SCALES.keys(), f"Unsupported mapping: {mapping}. Supported mappings: {HYDROPHOBICITY_SCALES.keys()}"
     hydr = HYDROPHOBICITY_SCALES[mapping]
 
     amino_acid = d["residue_name"]
@@ -290,5 +286,5 @@ def hydrophobicity(
     if return_array:
         features = np.array(features)
 
-    d["hydrophobicity"] = features
+    d[f"hydrophobicity_{mapping}"] = features
     return features

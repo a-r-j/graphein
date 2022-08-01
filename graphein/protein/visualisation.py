@@ -5,7 +5,6 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
-from optparse import Option
 
 import re
 import logging
@@ -52,7 +51,6 @@ except ImportError:
 
 """
 TODO: Functino that gets ``min`` and ``max`` values in a graph for a given feature so that we can scale / offset to > 0
-
 TODO: should feature `distance` actually contain the site itself i.e. in the string?
 """
 def _node_feature_func(
@@ -75,29 +73,22 @@ def _node_feature_func(
     :type focal_point: tuple
     :param no_negatives: Take the max of ``0`` and the feature's value. Defaults to ``False``.
     :type no_negatives: bool
-
     :return: Function that returns a value for a given node ID.
     :rtype: Callable
 
     TODO is there a way to wrap a lambda with another function i.e. max(0, f) for `no_negatives` ?
-    TODO some features do not require the graph to be supplied e.g. hydrophobicity mapping from residue 3-letter code.  Handle this?
     """
     if feature == "degree": 
         return lambda k: g.degree[k]
-
-    if feature in ["seq-position", "seq_position"]:
-        return lambda k: int(k.split(':')[-1])
-
+    elif feature in ["seq-position", "seq_position"]:
+        return lambda k: g.nodes(data=True)[k]["residue_number"]
     elif feature == "rsa":
         return lambda k: g.nodes(data=True)[k]["rsa"]
-
     elif feature in ["bfac", "bfactor", "b_factor", "b-factor"]:
         return lambda k: g.nodes(data=True)[k]["b_factor"]
-
     elif feature == "distance": # Euclidean distance to a specific node / coordinate 
         def get_coords(g: nx.Graph, node: str) -> np.ndarray:
                 return np.array(g.nodes()[node]["coords"])
-
         if focal_node:
             assert focal_node in g.nodes()
             return lambda k: np.linalg.norm(get_coords(g, k) - get_coords(g, focal_node))
@@ -122,13 +113,11 @@ def _node_feature_func(
     p = re.compile("([a-z]{2})?-?(hydrophobicity)")   # e.g.  "kd-hydrophobicity", "tthydrophobicity", "hydrophobicity"
     match = p.search(feature)
     if match and match.group(2):
-
         # TODO: check if nodes actually have 'hydrophobicity' already; if they do, then use this.  if not, then map to kd.
         scale: str = match.group(1) if match.group(1) else "kd" # use 'kdhydrophobicity' as default if no scale specified
         try: hydrophob: Dict[str, float] = HYDROPHOBICITY_SCALES[scale]
         except: raise KeyError(f"'{scale}' not a valid hydrophobicity scale.")
         return lambda k: hydrophob[k.split(':')[1]]
-
     else:
         raise NotImplementedError(f"Feature '{feature}' not implemented.")
 
@@ -927,7 +916,6 @@ def asteroid_plot(
             
             for n, d in subgraph.nodes(data=True):
                 node_colours.append(get_feature(n))
-                print(f"value: {get_feature(n)}")
 
         node_trace = go.Scatter(
             x=node_x,

@@ -14,7 +14,7 @@ We also include mappings of covalent radii and bond lengths for the amino acids 
 # Code Repository: https://github.com/a-r-j/graphein
 
 
-from typing import Dict, List
+from typing import Dict, List, Literal
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -835,6 +835,9 @@ VDW_RADII: Dict[str, float] = {
 
 https://pubs.acs.org/doi/10.1021/j100785a001
 """
+
+HYDROPHOBICITY_TYPE = Literal["kd", "ww", "hh", "mf", "tt"]
+"""Supported hydrophobicity types. See :const:`~graphein.protein.resi_atoms.HYDROPHOBICITY_SCALES` for further details."""
 
 HYDROPHOBICITY_SCALES: Dict[str, Dict[str, float]] = {
     "kd": { # kdHydrophobicity (a) 
