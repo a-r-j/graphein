@@ -459,7 +459,7 @@ class ProteinGraphDataset(Dataset):
             assert len(self.structures) == len(
                 self.node_label_map
             ), "Number of proteins and node labels must match"
-        if hasattr(self, "chain_selection_map")
+        if hasattr(self, "chain_selection_map"):
             assert len(self.structures) == len(
                 self.chain_selection_map
             ), "Number of proteins and chain selections must match"
