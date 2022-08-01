@@ -416,7 +416,7 @@ class ProteinGraphDataset(Dataset):
         else:
             self.graph_label_map = None
         self.validate_input()
-        self.bad_pdbs: List[str] = [] 
+        self.bad_pdbs: List[str] = []
 
         # Configs
         self.config = graphein_config
