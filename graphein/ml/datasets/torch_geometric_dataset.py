@@ -451,15 +451,15 @@ class ProteinGraphDataset(Dataset):
             return [f"{pdb}.pt" for pdb in self.structures]
 
     def validate_input(self):
-        if self.graph_label_map is not None:
+        if hasattr(self, "graph_label_map"):
             assert len(self.structures) == len(
                 self.graph_label_map
             ), "Number of proteins and graph labels must match"
-        if self.node_label_map is not None:
+        if hasattr(self, "node_label_map"):
             assert len(self.structures) == len(
                 self.node_label_map
             ), "Number of proteins and node labels must match"
-        if self.chain_selection_map is not None:
+        if hasattr(self, "chain_selection_map")
             assert len(self.structures) == len(
                 self.chain_selection_map
             ), "Number of proteins and chain selections must match"
