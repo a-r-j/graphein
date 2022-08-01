@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging as log
 import os
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, Generator, List, Optional
 
 import networkx as nx
 from tqdm import tqdm
@@ -414,9 +414,9 @@ class ProteinGraphDataset(Dataset):
         if chain_selections is not None:
             self.chain_selection_map = dict(enumerate(chain_selections))
         else:
-            self.graph_label_map = None
+            self.chain_selection_map = None
         self.validate_input()
-        self.bad_pdbs: List[str] = [] 
+        self.bad_pdbs: List[str] = []
 
         # Configs
         self.config = graphein_config
@@ -451,23 +451,26 @@ class ProteinGraphDataset(Dataset):
             return [f"{pdb}.pt" for pdb in self.structures]
 
     def validate_input(self):
-        assert len(self.structures) == len(
-            self.graph_label_map
-        ), "Number of proteins and graph labels must match"
-        assert len(self.structures) == len(
-            self.node_label_map
-        ), "Number of proteins and node labels must match"
-        assert len(self.structures) == len(
-            self.chain_selection_map
-        ), "Number of proteins and chain selections must match"
-        assert len(
-            {
-                f"{pdb}_{chain}"
-                for pdb, chain in zip(
-                    self.structures, self.chain_selection_map
-                )
-            }
-        ) == len(self.structures), "Duplicate protein/chain combinations"
+        if self.graph_label_map is not None:
+            assert len(self.structures) == len(
+                self.graph_label_map
+            ), "Number of proteins and graph labels must match"
+        if self.node_label_map is not None:
+            assert len(self.structures) == len(
+                self.node_label_map
+            ), "Number of proteins and node labels must match"
+        if self.chain_selection_map is not None:
+            assert len(self.structures) == len(
+                self.chain_selection_map
+            ), "Number of proteins and chain selections must match"
+            assert len(
+                {
+                    f"{pdb}_{chain}"
+                    for pdb, chain in zip(
+                        self.structures, self.chain_selection_map
+                    )
+                }
+            ) == len(self.structures), "Duplicate protein/chain combinations"
 
     def download(self):
         """Download the PDB files from RCSB or Alphafold."""
@@ -530,7 +533,7 @@ class ProteinGraphDataset(Dataset):
         # Chunk dataset for parallel processing
         chunk_size = 128
 
-        def divide_chunks(l: List[str], n: int = 2) -> List[List[str]]:
+        def divide_chunks(l: List[str], n: int = 2) -> Generator:
             for i in range(0, len(l), n):
                 yield l[i : i + n]
 
@@ -584,12 +587,16 @@ class ProteinGraphDataset(Dataset):
                 data_list = [self.pre_transform(data) for data in data_list]
 
             for i, (pdb, chain) in enumerate(zip(pdbs, chain_selections)):
-
-                torch.save(
-                    data_list[i],
-                    os.path.join(self.processed_dir, f"{pdb}_{chain}.pt"),
-                )
-            idx += 1
+                if self.chain_selection_map is None:
+                    torch.save(
+                        data_list[i],
+                        os.path.join(self.processed_dir, f"{pdb}.pt"),
+                    )
+                else:
+                    torch.save(
+                        data_list[i],
+                        os.path.join(self.processed_dir, f"{pdb}_{chain}.pt"),
+                    )
 
     def get(self, idx: int):
         """

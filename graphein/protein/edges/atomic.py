@@ -134,7 +134,7 @@ def add_atomic_edges(G: nx.Graph, tolerance: float = 0.56) -> nx.Graph:
             continue
 
         # Check atoms are in the same chain
-        if not (chain_1 and chain_2):
+        if chain_1 != chain_2:
             continue
 
         if G.has_edge(node_1, node_2):
