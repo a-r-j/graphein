@@ -12,11 +12,14 @@
 
 * [Patch] - [#187](https://github.com/a-r-j/graphein/pull/187) updates sequence retrieval due to UniProt API changes.
 * [Patch] - [#189](https://github.com/a-r-j/graphein/pull/189) fixes bug where chains and PDB identifiers were not properly aligned in `ml.ProteinGraphDataset`.
+* [Patch] - [#201](https://github.com/a-r-j/graphein/pull/201) Adds missing `MSE` to `graphein.protein.resi_atoms.RESI_NAMES`, `graphein.protein.resi_atoms.RESI_THREE_TO_1`. [#200](https://github.com/a-r-j/graphein/issues/200)
+* [Patch] - [#201](https://github.com/a-r-j/graphein/pull/201) Fixes bug where check for same-chain always evaluates as False. [#199](https://github.com/a-r-j/graphein/issues/199)
+* [Patch] - [#201](https://github.com/a-r-j/graphein/pull/201) Fixes bug where deprotonation would only remove hydrogens based on `atom_name` rather than `element_symbol`. [#198](https://github.com/a-r-j/graphein/issues/198)
+* [Patch] - [#201](https://github.com/a-r-j/graphein/pull/201) Fixes bug in ProteinGraphDataset input validation.
 
 #### Breaking Changes
 
 * [#189](https://github.com/a-r-j/graphein/pull/189/) refactors PDB download util. Now returns path to download file, does not accept a config object but instead receives the output directory path directly.
-
 
 ### 1.5.0
 
