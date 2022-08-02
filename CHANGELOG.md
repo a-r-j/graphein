@@ -1,6 +1,6 @@
 ### 1.5.1
 * [Feature] - [#197](https://github.com/a-r-j/graphein/pull/197/) adds support for sizing and colouring nodes in asteroid plots
-
+* [Feature] - [#197](https://github.com/a-r-j/graphein/pull/197/) adds utilities for retrieving a list of graph/node/edge attribute names in `graphein.utils.utils`.
 
 #### Protein
 
