@@ -40,6 +40,7 @@ except ImportError:
         package="pytorch_lightning",
         pip_install=True,
     )
+    log.warning(message)
 
 
 class ProteinsXBase(pl.LightningDataModule, abc.ABC):
