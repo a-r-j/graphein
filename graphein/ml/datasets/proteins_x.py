@@ -15,11 +15,15 @@ from loguru import logger as log
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from .torch_geometric_dataset import ProteinGraphDataset
 from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.utils import get_obsolete_mapping
 from graphein.utils.utils import import_message
+
+try:
+    from .torch_geometric_dataset import ProteinGraphDataset
+except ImportError or NameError:
+    pass
 
 try:
     from torch_geometric.data import DataLoader
