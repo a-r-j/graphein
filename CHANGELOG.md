@@ -1,4 +1,10 @@
-### 1.5.1
+### 1.5.2 - UNRELEASED
+
+#### Protein
+
+* [Feature] - [#204](https://github.com/a-r-j/graphein/pull/204) adds Pytorch Lightning DataModules for four built in datasets: `PROTEINS_LIGANDS`, `PROTEINS_NUCLEIC`, `PROTEINS_NUCLEOTIDES`, `PROTEINS_METAL`.
+
+### 1.5.1 - 02/08/2022
 
 #### Protein
 
@@ -16,7 +22,6 @@
 #### Breaking Changes
 
 * [#189](https://github.com/a-r-j/graphein/pull/189/) refactors PDB download util. Now returns path to download file, does not accept a config object but instead receives the output directory path directly.
-
 
 ### 1.5.0
 
