@@ -22,7 +22,7 @@ from graphein.utils.utils import import_message
 
 try:
     from .torch_geometric_dataset import ProteinGraphDataset
-except ImportError or NameError:
+except (ImportError, NameError):
     pass
 
 try:
