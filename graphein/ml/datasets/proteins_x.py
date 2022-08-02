@@ -15,7 +15,7 @@ from loguru import logger as log
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from graphein.ml import ProteinGraphDataset
+from .torch_geometric_dataset import ProteinGraphDataset
 from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.utils import get_obsolete_mapping
