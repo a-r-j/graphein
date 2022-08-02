@@ -151,7 +151,7 @@ class ProteinsXBase(pl.LightningDataModule, abc.ABC):
         self.num_cores = num_cores
 
     @abc.abstractmethod
-    def load_data():
+    def load_data(self):
         """Loads dataset from disk."""
         ...
 
