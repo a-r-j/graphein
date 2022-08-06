@@ -13,7 +13,6 @@ from pprint import pprint
 from shutil import rmtree
 from typing import List
 
-import versioneer
 from setuptools import Command, find_packages, setup
 
 VERSION = None
@@ -136,8 +135,6 @@ class UploadCommand(Command):
 setup(
     name="graphein",
     version="1.5.0",
-    # versioneer.get_version(),
-    # cmdclass=versioneer.get_cmdclass(),
     description="Protein & Interactomic Graph Construction for Machine Learning",
     long_description=long_description,
     long_description_content_type="text/markdown",
