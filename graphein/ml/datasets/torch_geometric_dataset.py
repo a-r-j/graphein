@@ -414,7 +414,7 @@ class ProteinGraphDataset(Dataset):
         if chain_selections is not None:
             self.chain_selection_map = dict(enumerate(chain_selections))
         else:
-            self.graph_label_map = None
+            self.chain_selection_map = None
         self.validate_input()
         self.bad_pdbs: List[str] = []
 
@@ -451,23 +451,27 @@ class ProteinGraphDataset(Dataset):
             return [f"{pdb}.pt" for pdb in self.structures]
 
     def validate_input(self):
-        assert len(self.structures) == len(
-            self.graph_label_map
-        ), "Number of proteins and graph labels must match"
-        assert len(self.structures) == len(
-            self.node_label_map
-        ), "Number of proteins and node labels must match"
-        assert len(self.structures) == len(
-            self.chain_selection_map
-        ), "Number of proteins and chain selections must match"
-        assert len(
-            {
-                f"{pdb}_{chain}"
-                for pdb, chain in zip(
-                    self.structures, self.chain_selection_map
-                )
-            }
-        ) == len(self.structures), "Duplicate protein/chain combinations"
+        if self.graph_label_map is not None:
+            assert len(self.structures) == len(
+                self.graph_label_map
+            ), "Number of proteins and graph labels must match"
+        if self.node_label_map is not None:
+            assert len(self.structures) == len(
+                self.node_label_map
+            ), "Number of proteins and node labels must match"
+
+        if self.chain_selection_map is not None:
+            assert len(self.structures) == len(
+                self.chain_selection_map
+            ), "Number of proteins and chain selections must match"
+            assert len(
+                {
+                    f"{pdb}_{chain}"
+                    for pdb, chain in zip(
+                        self.structures, self.chain_selection_map
+                    )
+                }
+            ) == len(self.structures), "Duplicate protein/chain combinations"
 
     def download(self):
         """Download the PDB files from RCSB or Alphafold."""
