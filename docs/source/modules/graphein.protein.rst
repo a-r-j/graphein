@@ -46,6 +46,11 @@ Graph
 ^^^^^
 .. automodule:: graphein.protein.features.graph.structure
     :members:
+.. automodule:: graphein.protein.features.graph.dynamics
+    :members:
+.. automodule:: graphein.protein.features.graph.csm
+    :members:
+
 
 Sequence
 ^^^^^^^^^
@@ -91,6 +96,8 @@ Visualisation
 Utils
 -----
 .. automodule:: graphein.protein.utils
+    :members:
+.. automodule:: graphein.protein.alphafold_utils
     :members:
 
 Constants
