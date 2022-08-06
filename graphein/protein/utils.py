@@ -457,7 +457,7 @@ def tidy_up_and_update_pdb_file(pdb_filepath: str):
     os.remove(tmp_pdb_filepath)
 
 
-@lru_cache
+@lru_cache()
 def load_af2_metadata(path: Optional[str] = None) -> pd.DataFrame:
     """
     Download the download_metadata.json file from the AlphaFoldDB FTP server:
