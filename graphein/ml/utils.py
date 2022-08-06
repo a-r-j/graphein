@@ -5,6 +5,8 @@
 
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+from __future__ import annotations
+
 from typing import Any, List
 
 import networkx as nx
