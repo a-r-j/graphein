@@ -1,4 +1,5 @@
 """Protein graph construction module."""
+from .alphafold_utils import *
 from .config import *
 from .edges import *
 from .features import *
