@@ -149,7 +149,7 @@ def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
         "Deprotonating protein. This removes H atoms from the pdb_df dataframe"
     )
     return filter_dataframe(
-        df, by_column="atom_name", list_of_values=["H"], boolean=False
+        df, by_column="element_symbol", list_of_values=["H"], boolean=False
     )
 
 

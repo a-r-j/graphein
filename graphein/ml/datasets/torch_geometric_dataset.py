@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging as log
 import os
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, Generator, List, Optional
 
 import networkx as nx
 from tqdm import tqdm
@@ -459,7 +459,6 @@ class ProteinGraphDataset(Dataset):
             assert len(self.structures) == len(
                 self.node_label_map
             ), "Number of proteins and node labels must match"
-
         if self.chain_selection_map is not None:
             assert len(self.structures) == len(
                 self.chain_selection_map
@@ -534,7 +533,7 @@ class ProteinGraphDataset(Dataset):
         # Chunk dataset for parallel processing
         chunk_size = 128
 
-        def divide_chunks(l: List[str], n: int = 2) -> List[List[str]]:
+        def divide_chunks(l: List[str], n: int = 2) -> Generator:
             for i in range(0, len(l), n):
                 yield l[i : i + n]
 
@@ -588,12 +587,16 @@ class ProteinGraphDataset(Dataset):
                 data_list = [self.pre_transform(data) for data in data_list]
 
             for i, (pdb, chain) in enumerate(zip(pdbs, chain_selections)):
-
-                torch.save(
-                    data_list[i],
-                    os.path.join(self.processed_dir, f"{pdb}_{chain}.pt"),
-                )
-            idx += 1
+                if self.chain_selection_map is None:
+                    torch.save(
+                        data_list[i],
+                        os.path.join(self.processed_dir, f"{pdb}.pt"),
+                    )
+                else:
+                    torch.save(
+                        data_list[i],
+                        os.path.join(self.processed_dir, f"{pdb}_{chain}.pt"),
+                    )
 
     def get(self, idx: int):
         """
