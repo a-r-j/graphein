@@ -299,6 +299,7 @@ class ProteinGraphDataset(Dataset):
     def __init__(
         self,
         root,
+        pdb_paths:Optional[Union[List[str], str]] =None,
         pdb_codes: Optional[List[str]] = None,
         uniprot_ids: Optional[List[str]] = None,
         # graph_label_map: Optional[Dict[str, int]] = None,
@@ -388,14 +389,22 @@ class ProteinGraphDataset(Dataset):
             if uniprot_ids is not None
             else None
         )
+        self.pdb_paths = pdb_paths
+        if self.pdb_paths is None:
+            if self.pdb_codes and self.uniprot_ids:
+                self.structures = self.pdb_codes + self.uniprot_ids
+            elif self.pdb_codes:
+                self.structures = pdb_codes
+            elif self.uniprot_ids:
+                self.structures = uniprot_ids
+        # Use local saved pdb_files instead of download or move them to self.root/raw dir
+        else:
+            if isinstance(self.pdb_paths, list):
+                self.structures = [os.path.splitext(os.path.split(pdb_path)[-1])[0] for pdb_path in self.pdb_paths]
+                self.pdb_path, _ = os.path.split(self.pdb_paths[0])
+                print(self.structures)
+                print(self.pdb_path)
 
-        if self.pdb_codes and self.uniprot_ids:
-            self.structures = self.pdb_codes + self.uniprot_ids
-        elif self.pdb_codes:
-            self.structures = pdb_codes
-        elif self.uniprot_ids:
-            self.structures = uniprot_ids
-        self.af_version = af_version
 
         # Labels & Chains
 
@@ -449,6 +458,12 @@ class ProteinGraphDataset(Dataset):
             ]
         else:
             return [f"{pdb}.pt" for pdb in self.structures]
+    @property
+    def raw_dir(self) -> str:
+        if self.pdb_paths is not None:
+            return self.pdb_path  # replace raw dir with user local pdb_path
+        else:
+            return os.path.join(self.root, 'raw')
 
     def validate_input(self):
         if self.graph_label_map is not None:
@@ -554,6 +569,7 @@ class ProteinGraphDataset(Dataset):
 
             # Create graph objects
             file_names = [f"{self.raw_dir}/{pdb}.pdb" for pdb in pdbs]
+
             graphs = construct_graphs_mp(
                 pdb_path_it=file_names,
                 config=self.config,
