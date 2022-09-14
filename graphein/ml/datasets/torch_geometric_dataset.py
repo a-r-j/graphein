@@ -41,6 +41,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self,
         root: str,
         name: str,
+        pdb_paths:Optional[List[str]] =None,
         pdb_codes: Optional[List[str]] = None,
         uniprot_ids: Optional[List[str]] = None,
         graph_label_map: Optional[Dict[str, torch.Tensor]] = None,
@@ -72,6 +73,8 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         :type root: str
         :param name: Name of the dataset. Will be saved to ``data_$name.pt``.
         :type name: str
+        :param pdb_paths:List of full path of pdb files to load. Defaults to None
+        :type pdb_paths:Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
             Defaults to None.
         :type pdb_codes: Optional[List[str]], optional
@@ -135,6 +138,20 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             else None
         )
 
+        self.pdb_paths = pdb_paths
+        if self.pdb_paths is None:
+            if self.pdb_codes and self.uniprot_ids:
+                self.structures = self.pdb_codes + self.uniprot_ids
+            elif self.pdb_codes:
+                self.structures = pdb_codes
+            elif self.uniprot_ids:
+                self.structures = uniprot_ids
+        # Use local saved pdb_files instead of download or move them to self.root/raw dir
+        else:
+            if isinstance(self.pdb_paths, list):
+                self.structures = [os.path.splitext(os.path.split(pdb_path)[-1])[0] for pdb_path in self.pdb_paths]
+                self.pdb_path, _ = os.path.split(self.pdb_paths[0])
+
         if self.pdb_codes and self.uniprot_ids:
             self.structures = self.pdb_codes + self.uniprot_ids
         elif self.pdb_codes:
@@ -175,6 +192,12 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
     def processed_file_names(self) -> List[str]:
         """Name of the processed file."""
         return [f"data_{self.name}.pt"]
+    @property
+    def raw_dir(self) -> str:
+        if self.pdb_paths is not None:
+            return self.pdb_path  # replace raw dir with user local pdb_path
+        else:
+            return os.path.join(self.root, 'raw')
 
     def download(self):
         """Download the PDB files from RCSB or Alphafold."""
@@ -299,7 +322,7 @@ class ProteinGraphDataset(Dataset):
     def __init__(
         self,
         root,
-        pdb_paths:Optional[Union[List[str], str]] =None,
+        pdb_paths:Optional[List[str]] =None,
         pdb_codes: Optional[List[str]] = None,
         uniprot_ids: Optional[List[str]] = None,
         # graph_label_map: Optional[Dict[str, int]] = None,
@@ -328,6 +351,8 @@ class ProteinGraphDataset(Dataset):
 
         :param root: Root directory where the dataset should be saved.
         :type root: str
+        :param pdb_paths:List of full path of pdb files to load. Defaults to None
+        :type pdb_paths:Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
             Defaults to ``None``.
         :type pdb_codes: Optional[List[str]], optional
@@ -402,9 +427,6 @@ class ProteinGraphDataset(Dataset):
             if isinstance(self.pdb_paths, list):
                 self.structures = [os.path.splitext(os.path.split(pdb_path)[-1])[0] for pdb_path in self.pdb_paths]
                 self.pdb_path, _ = os.path.split(self.pdb_paths[0])
-                print(self.structures)
-                print(self.pdb_path)
-
 
         # Labels & Chains
 
