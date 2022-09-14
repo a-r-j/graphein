@@ -73,8 +73,8 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         :type root: str
         :param name: Name of the dataset. Will be saved to ``data_$name.pt``.
         :type name: str
-        :param pdb_paths:List of full path of pdb files to load. Defaults to None
-        :type pdb_paths:Optional[List[str]], optional
+        :param pdb_paths: List of full path of pdb files to load. Defaults to ``None``.
+        :type pdb_paths: Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
             Defaults to None.
         :type pdb_codes: Optional[List[str]], optional
@@ -325,7 +325,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
 class ProteinGraphDataset(Dataset):
     def __init__(
         self,
-        root,
+        root: str,
         pdb_paths: Optional[List[str]] = None,
         pdb_codes: Optional[List[str]] = None,
         uniprot_ids: Optional[List[str]] = None,
@@ -355,8 +355,8 @@ class ProteinGraphDataset(Dataset):
 
         :param root: Root directory where the dataset should be saved.
         :type root: str
-        :param pdb_paths:List of full path of pdb files to load. Defaults to None
-        :type pdb_paths:Optional[List[str]], optional
+        :param pdb_paths: List of full path of pdb files to load. Defaults to ``None``.
+        :type pdb_paths: Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
             Defaults to ``None``.
         :type pdb_codes: Optional[List[str]], optional
