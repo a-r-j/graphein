@@ -1,3 +1,8 @@
+### 1.5.2
+
+* [Bugfix] - [#206](https://github.com/a-r-j/graphein/pull/206) Fixes `KeyError` when using `graphein.protein.edges.distance.node_coords`
+
+
 ### 1.5.1
 
 #### Protein
