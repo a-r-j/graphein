@@ -42,9 +42,12 @@ RUN conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 RUN conda install -c pytorch3d pytorch3d
 RUN conda install -c dglteam dgl
 RUN conda install -c salilab dssp
-
 RUN conda install -c conda-forge ipywidgets
-# RUN jupyter nbextension enable --py widgetsnbextension
+
+# or conda install; may be it will work; or just comment `jupyter nbextension enable --py widgetsnbextension`
+RUN pip install jupyter_contrib_nbextensions 
+
+RUN jupyter nbextension enable --py widgetsnbextension
 
 RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace('.',''))") \
     && export TORCH=$(python -c "import torch; print(torch.__version__)") \
