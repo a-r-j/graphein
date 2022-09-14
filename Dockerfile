@@ -44,7 +44,7 @@ RUN conda install -c dglteam dgl
 RUN conda install -c salilab dssp
 
 RUN conda install -c conda-forge ipywidgets
-RUN jupyter nbextension enable --py widgetsnbextension
+# RUN jupyter nbextension enable --py widgetsnbextension
 
 RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace('.',''))") \
     && export TORCH=$(python -c "import torch; print(torch.__version__)") \
