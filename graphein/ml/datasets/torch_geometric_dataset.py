@@ -177,6 +177,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self.graph_transformation_funcs = graph_transformation_funcs
         self.pdb_transform = pdb_transform
         self.num_cores = num_cores
+        self.af_version = af_version
         super().__init__(
             root,
             transform=transform,
@@ -462,6 +463,7 @@ class ProteinGraphDataset(Dataset):
         self.num_cores = num_cores
         self.pdb_transform = pdb_transform
         self.graph_transformation_funcs = graph_transformation_funcs
+        self.af_version = af_version
         super().__init__(
             root,
             transform=transform,
