@@ -1,22 +1,20 @@
-### local_dataset
+### 1.5.2
 
-* changes: support for loading local pdb files by ``ProteinGraphDataset`` and ``InMemoryProteinGraphDataset``.
+### GRN
+* [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) - Resolves SSL issues with RegNetwork.
 
-
-* `python -m py.test tests/`, a part result of testing is as below:
-![](https://tva1.sinaimg.cn/large/e6c9d24egy1h6664wn7zsj21qs0d444h.jpg)
-* Also, some documentation are added into `dataloader_tutorial`
 
 #### ML
-
-* [Feature] add support for loading local pdb files to both ``ProteinGraphDataset`` and ``InMemoryProteinGraphDataset``
-
+* [Feature] - [#208](https://github.com/a-r-j/graphein/pull/208) support for loading local pdb files by ``ProteinGraphDataset`` and ``InMemoryProteinGraphDataset``.
 >by adding a params:`pdb_paths` and set the `self.raw_dir` to the root path(`self.pdb_path`) of pdb_paths list (the root path should be only one, pdb files should be under the same folder).
 >
 >it will works from loading pdb files from the `self.pdb_path` instead of loading from self.raw. 
 > If desire to download from af2 or pdb, just set `pdb_paths` to `None` and it goes back to the former version.
 
-If this change would be accepted, i'll try to make the downloading and loadoing from local could work together.
+#### CI
+* [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) explicitly installs `jupyter_contrib_nbextensions` in Docker.
+
+
 ### 1.5.1
 
 #### Protein
