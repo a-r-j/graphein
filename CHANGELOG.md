@@ -1,9 +1,9 @@
-### 1.5.2
+### 1.5.2 - UNRELEASED
 
-### Protein
+#### Protein
 * [Bugfix] - [#206](https://github.com/a-r-j/graphein/pull/206) Fixes `KeyError` when using `graphein.protein.edges.distance.node_coords`
 
-### GRN
+#### GRN
 * [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) - Resolves SSL issues with RegNetwork.
 
 #### ML
@@ -15,6 +15,7 @@
 
 #### CI
 * [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) explicitly installs `jupyter_contrib_nbextensions` in Docker.
+
 
 ### 1.5.1
 
