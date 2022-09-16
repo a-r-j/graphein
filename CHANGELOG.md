@@ -1,8 +1,10 @@
 ### 1.5.2
 
+### Protein
+* [Bugfix] - [#206](https://github.com/a-r-j/graphein/pull/206) Fixes `KeyError` when using `graphein.protein.edges.distance.node_coords`
+
 ### GRN
 * [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) - Resolves SSL issues with RegNetwork.
-
 
 #### ML
 * [Feature] - [#208](https://github.com/a-r-j/graphein/pull/208) support for loading local pdb files by ``ProteinGraphDataset`` and ``InMemoryProteinGraphDataset``.
@@ -13,7 +15,6 @@
 
 #### CI
 * [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) explicitly installs `jupyter_contrib_nbextensions` in Docker.
-
 
 ### 1.5.1
 
