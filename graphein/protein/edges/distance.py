@@ -239,7 +239,7 @@ def add_disulfide_interactions(
     )
     # Ensure only residues in the graph are kept
     disulfide_df = filter_dataframe(
-        disulfide_df, "node_id", list(g.nodes), True
+        disulfide_df, "node_id", list(G.nodes), True
     )
     distmat = compute_distmat(disulfide_df)
     interacting_atoms = get_interacting_atoms(2.2, distmat)
