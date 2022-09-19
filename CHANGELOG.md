@@ -1,10 +1,34 @@
-### 1.5.2 - UNRELEASED
+### 1.5.3 - UNRELEASED
 
 #### Protein
 
 * [Feature] - [#204](https://github.com/a-r-j/graphein/pull/204) adds Pytorch Lightning DataModules for four built in datasets: `PROTEINS_LIGANDS`, `PROTEINS_NUCLEIC`, `PROTEINS_NUCLEOTIDES`, `PROTEINS_METAL`.
 
-### 1.5.1 - 02/08/2022
+### 1.5.2 - 19/9/2022
+
+#### Protein
+
+* [Bugfix] - [#206](https://github.com/a-r-j/graphein/pull/206) Fixes `KeyError` when using `graphein.protein.edges.distance.node_coords`
+* [Bugfix] - Includes missing data files in `MANIFEST.in` #205
+
+#### GRN
+
+* [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) - Resolves SSL issues with RegNetwork.
+
+#### ML
+
+* [Feature] - [#208](https://github.com/a-r-j/graphein/pull/208) support for loading local pdb files by ``ProteinGraphDataset`` and ``InMemoryProteinGraphDataset``.
+
+>by adding a params:`pdb_paths` and set the `self.raw_dir` to the root path(`self.pdb_path`) of pdb_paths list (the root path should be only one, pdb files should be under the same folder).
+>
+> it allows loading pdb files from the `self.pdb_path` instead of loading from `self.raw`.
+> If you wish to download from af2 or pdb, just set `pdb_paths` to `None` and it goes back to the former version.
+
+#### CI
+
+* [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) explicitly installs `jupyter_contrib_nbextensions` in Docker.
+
+### 1.5.1
 
 #### Protein
 

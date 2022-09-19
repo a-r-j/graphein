@@ -134,7 +134,9 @@ class UploadCommand(Command):
 
 setup(
     name="graphein",
-    version="1.5.1",
+    version="1.5.2",
+    # versioneer.get_version(),
+    # cmdclass=versioneer.get_cmdclass(),
     description="Protein & Interactomic Graph Construction for Machine Learning",
     long_description=long_description,
     long_description_content_type="text/markdown",

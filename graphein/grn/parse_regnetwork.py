@@ -8,6 +8,7 @@ import functools
 # Code Repository: https://github.com/a-r-j/graphein
 import logging
 import os
+import ssl
 import zipfile
 from pathlib import Path
 from typing import Callable, List, Optional
@@ -41,10 +42,10 @@ def _download_RegNetwork(
             "RegNetwork is not available. Please check your internet connection or verify at: http://www.regnetworkweb.org"
         )
 
-    mouse_url = "http://regnetworkweb.org/download/mouse.zip"
+    mouse_url = "https://regnetworkweb.org/download/mouse.zip"
 
     if network_type == "human":
-        human_url = "http://www.regnetworkweb.org/download/human.zip"
+        human_url = "https://regnetworkweb.org/download/human.zip"
         url = human_url
     elif network_type == "mouse":
         url = mouse_url
@@ -66,8 +67,12 @@ def _download_RegNetwork(
     # Download data and unzip
     if not os.path.exists(file):
         log.info("Downloading RegNetwork ...")
+        # switch ssl context for unverified download
+        default_https_context = ssl._create_default_https_context
+        ssl._create_default_https_context = ssl._create_unverified_context
         wget.download(url, compressed_file)
-
+        # switch ssl context back to default
+        ssl._create_default_https_context = default_https_context
         with zipfile.ZipFile(compressed_file, "r") as zip_ref:
             zip_ref.extractall(out_dir)
 
@@ -80,7 +85,7 @@ def _download_RegNetwork_regtypes(root_dir: Optional[Path] = None) -> str:
 
     :param root_dir: Path object specifying the location to download RegNetwork to
     """
-    url = "http://www.regnetworkweb.org/download/RegulatoryDirections.zip"
+    url = "https://regnetworkweb.org/download/RegulatoryDirections.zip"
 
     if root_dir is None:
         root_dir = Path(__file__).parent.parent.parent / "datasets"
@@ -94,7 +99,12 @@ def _download_RegNetwork_regtypes(root_dir: Optional[Path] = None) -> str:
     # Download data and unzip
     if not os.path.exists(file):
         log.info("Downloading RegNetwork reg types ...")
+        # switch ssl context for unverified download
+        default_https_context = ssl._create_default_https_context
+        ssl._create_default_https_context = ssl._create_unverified_context
         wget.download(url, compressed_file)
+        # switch ssl context back to default
+        ssl._create_default_https_context = default_https_context
 
         with zipfile.ZipFile(compressed_file, "r") as zip_ref:
             zip_ref.extractall(out_dir)
