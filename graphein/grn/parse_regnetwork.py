@@ -8,13 +8,13 @@ import functools
 # Code Repository: https://github.com/a-r-j/graphein
 import logging
 import os
+import ssl
 import zipfile
 from pathlib import Path
 from typing import Callable, List, Optional
 
 import pandas as pd
 import wget
-import ssl
 
 from graphein.utils.utils import filter_dataframe, ping
 

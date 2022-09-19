@@ -50,10 +50,10 @@ jobs:
       #  uses: actions/setup-python@v2
       #  with:
       #python-version: ${{ matrix.python-version }}
-      - name: Setup conda environment
-        run: conda env create -n graphein-dev python=${{ matrix.python-version }}
-      - name: Activate Conda Environment
-        run: source activate graphein-dev
+      #- name: Setup conda environment
+      #  run: conda env create -n graphein-dev python=${{ matrix.python-version }}
+      #- name: Activate Conda Environment
+      #  run: source activate graphein-dev
       - name: Install DSSP
         run: conda install -c salilab dssp
       - name: Install PyTorch
