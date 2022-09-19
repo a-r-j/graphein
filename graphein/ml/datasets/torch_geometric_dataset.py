@@ -41,12 +41,12 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self,
         root: str,
         name: str,
-        pdb_paths: Optional[List[str]] = None,
-        pdb_codes: Optional[List[str]] = None,
-        uniprot_ids: Optional[List[str]] = None,
-        graph_label_map: Optional[Dict[str, torch.Tensor]] = None,
-        node_label_map: Optional[Dict[str, torch.Tensor]] = None,
-        chain_selection_map: Optional[Dict[str, List[str]]] = None,
+        pdb_paths: Optional[List[str]] = [],
+        pdb_codes: Optional[List[str]] = [],
+        uniprot_ids: Optional[List[str]] = [],
+        graph_labels: Optional[List[torch.Tensor]] = None,
+        node_labels: Optional[List[torch.Tensor]] = None,
+        chain_selections: Optional[List[str]] = None,
         graphein_config: ProteinGraphConfig = ProteinGraphConfig(),
         graph_format_convertor: GraphFormatConvertor = GraphFormatConvertor(
             src_format="nx", dst_format="pyg"
@@ -73,13 +73,13 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         :type root: str
         :param name: Name of the dataset. Will be saved to ``data_$name.pt``.
         :type name: str
-        :param pdb_paths: List of full path of pdb files to load. Defaults to ``None``.
+        :param pdb_paths: List of full path of pdb files to load. Defaults to ``List``.
         :type pdb_paths: Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
-            Defaults to None.
+            Defaults to List.
         :type pdb_codes: Optional[List[str]], optional
         :param uniprot_ids: List of Uniprot IDs to download and parse from
-            Alphafold Database. Defaults to ``None``.
+            Alphafold Database. Defaults to ``List``.
         :type uniprot_ids: Optional[List[str]], optional
         :param graph_label_map: Dictionary mapping PDB/Uniprot IDs to
             graph-level labels. Defaults to ``None``.
@@ -130,46 +130,47 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self.pdb_codes = (
             [pdb.lower() for pdb in pdb_codes]
             if pdb_codes is not None
-            else None
+            else []
         )
         self.uniprot_ids = (
             [up.upper() for up in uniprot_ids]
             if uniprot_ids is not None
-            else None
+            else []
         )
-
         self.pdb_paths = pdb_paths
-        if self.pdb_paths is None:
-            if self.pdb_codes and self.uniprot_ids:
-                self.structures = self.pdb_codes + self.uniprot_ids
-            elif self.pdb_codes:
-                self.structures = pdb_codes
-            elif self.uniprot_ids:
-                self.structures = uniprot_ids
-        # Use local saved pdb_files instead of download or move them to self.root/raw dir
-        else:
-            if isinstance(self.pdb_paths, list):
-                self.structures = [
+        #  make sure root path is unique
+        if self.pdb_paths:
+            #  add pdb_paths' name into self.structure
+            self.pdb_paths_name = [
                     os.path.splitext(os.path.split(pdb_path)[-1])[0]
                     for pdb_path in self.pdb_paths
                 ]
-                self.pdb_path, _ = os.path.split(self.pdb_paths[0])
+            #  if root pdb_path is not unique raise error since we will save all pdb into this root pdb_path and take it as the self.raw_dir
+            if len(set([os.path.split(pdb_path)[0] for pdb_path in pdb_paths])) != 1:
+                raise ValueError("pdb_paths should have only one root path not so much!")
+        else:
+            self.pdb_paths_name = []
 
-        if self.pdb_codes and self.uniprot_ids:
-            self.structures = self.pdb_codes + self.uniprot_ids
-        elif self.pdb_codes:
-            self.structures = pdb_codes
-        elif self.uniprot_ids:
-            self.structures = uniprot_ids
-        self.af_version = af_version
+        self.structures = list(set(self.pdb_codes + self.uniprot_ids + self.pdb_paths_name))  # remove some pdb_codes is in pdb_path and loaded repeately
+
+        # Labels & Chains
+        if graph_labels is not None:
+            self.graph_label_map = dict(enumerate(graph_labels))
+        else:
+            self.graph_label_map = None
+
+        if node_labels is not None:
+            self.node_label_map = dict(enumerate(node_labels))
+        else:
+            self.node_label_map = None
+        if chain_selections is not None:
+            self.chain_selection_map = dict(enumerate(chain_selections))
+        else:
+            self.chain_selection_map = None
+        self.validate_input()
         self.bad_pdbs: List[
             str
         ] = []  # list of pdb codes that failed to download
-
-        # Labels & Chains
-        self.graph_label_map = graph_label_map
-        self.node_label_map = node_label_map
-        self.chain_selection_map = chain_selection_map
 
         # Configs
         self.config = graphein_config
@@ -178,6 +179,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self.pdb_transform = pdb_transform
         self.num_cores = num_cores
         self.af_version = af_version
+
         super().__init__(
             root,
             transform=transform,
@@ -200,9 +202,33 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
     @property
     def raw_dir(self) -> str:
         if self.pdb_paths is not None:
-            return self.pdb_path  # replace raw dir with user local pdb_path
+            #  replace raw dir with user local pdb_path; so pdb_paths should be located in the same place
+            self.pdb_path, _ = os.path.split(self.pdb_paths[0])
+            return self.pdb_path  
         else:
             return os.path.join(self.root, "raw")
+
+    def validate_input(self):
+        if self.graph_label_map is not None:
+            assert len(self.structures) == len(
+                self.graph_label_map
+            ), "Number of proteins and graph labels must match"
+        if self.node_label_map is not None:
+            assert len(self.structures) == len(
+                self.node_label_map
+            ), "Number of proteins and node labels must match"
+        if self.chain_selection_map is not None:
+            assert len(self.structures) == len(
+                self.chain_selection_map
+            ), "Number of proteins and chain selections must match"
+            assert len(
+                {
+                    f"{pdb}_{chain}"
+                    for pdb, chain in zip(
+                        self.structures, self.chain_selection_map
+                    )
+                }
+            ) == len(self.structures), "Duplicate protein/chain combinations"
 
     def download(self):
         """Download the PDB files from RCSB or Alphafold."""
@@ -225,6 +251,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
                 for pdb in set(self.pdb_codes)
                 if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
             ]
+        print("downloading uniprotids")
         if self.uniprot_ids:
             [
                 download_alphafold_structure(
@@ -237,6 +264,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             ]
 
     def __len__(self) -> int:
+        """Returns length of data set (number of structures)."""
         return len(self.structures)
 
     def transform_pdbs(self):
@@ -327,15 +355,12 @@ class ProteinGraphDataset(Dataset):
     def __init__(
         self,
         root: str,
-        pdb_paths: Optional[List[str]] = None,
-        pdb_codes: Optional[List[str]] = None,
-        uniprot_ids: Optional[List[str]] = None,
-        # graph_label_map: Optional[Dict[str, int]] = None,
+        pdb_paths: Optional[List[str]] = [],
+        pdb_codes: Optional[List[str]] = [],
+        uniprot_ids: Optional[List[str]] = [],
         graph_labels: Optional[List[torch.Tensor]] = None,
         node_labels: Optional[List[torch.Tensor]] = None,
         chain_selections: Optional[List[str]] = None,
-        # node_label_map: Optional[Dict[str, int]] = None,
-        # chain_selection_map: Optional[Dict[str, List[str]]] = None,
         graphein_config: ProteinGraphConfig = ProteinGraphConfig(),
         graph_format_convertor: GraphFormatConvertor = GraphFormatConvertor(
             src_format="nx", dst_format="pyg"
@@ -356,22 +381,20 @@ class ProteinGraphDataset(Dataset):
 
         :param root: Root directory where the dataset should be saved.
         :type root: str
-        :param pdb_paths: List of full path of pdb files to load. Defaults to ``None``.
+        :param pdb_paths: List of full path of pdb files to load. Defaults to ``List``.
         :type pdb_paths: Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
-            Defaults to ``None``.
+            Defaults to ``List``.
         :type pdb_codes: Optional[List[str]], optional
         :param uniprot_ids: List of Uniprot IDs to download and parse from
-            Alphafold Database. Defaults to ``None``.
+            Alphafold Database. Defaults to ``List``.
         :type uniprot_ids: Optional[List[str]], optional
-        :param graph_label_map: Dictionary mapping PDB/Uniprot IDs to
-            graph-level labels. Defaults to ``None``.
-        :type graph_label_map: Optional[Dict[str, Tensor]], optional
-        :param node_label_map: Dictionary mapping PDB/Uniprot IDs to node-level
-            labels. Defaults to ``None``.
-        :type node_label_map: Optional[Dict[str, torch.Tensor]], optional
-        :param chain_selection_map: Dictionary mapping, defaults to ``None``.
-        :type chain_selection_map: Optional[Dict[str, List[str]]], optional
+        :param graph_labels: List mapping to self.structures by index to graph-level labels. Defaults to ``None``.
+        :type graph_labels: Optional[List[torch.Tensor]], optional
+        :param node_labels: List mapping to self.structures by index to node-level labels. Defaults to ``None``.
+        :type node_labels: Optional[List[torch.Tensor]], optional
+        :param chain_selections: List mapping to self.structures by index to chain selection, defaults to ``None``.
+        :type chain_selections: Optional[List[str]], optional
         :param graphein_config: Protein graph construction config, defaults to
             ``ProteinGraphConfig()``.
         :type graphein_config: ProteinGraphConfig, optional
@@ -412,34 +435,32 @@ class ProteinGraphDataset(Dataset):
         self.pdb_codes = (
             [pdb.lower() for pdb in pdb_codes]
             if pdb_codes is not None
-            else None
+            else []
         )
         self.uniprot_ids = (
             [up.upper() for up in uniprot_ids]
             if uniprot_ids is not None
-            else None
+            else []
         )
         self.pdb_paths = pdb_paths
-        if self.pdb_paths is None:
-            if self.pdb_codes and self.uniprot_ids:
-                self.structures = self.pdb_codes + self.uniprot_ids
-            elif self.pdb_codes:
-                self.structures = pdb_codes
-            elif self.uniprot_ids:
-                self.structures = uniprot_ids
-        # Use local saved pdb_files instead of download or move them to self.root/raw dir
-        else:
-            if isinstance(self.pdb_paths, list):
-                self.structures = [
+        #  make sure root path is unique
+        if self.pdb_paths:
+            #  add pdb_paths' name into self.structure
+            self.pdb_paths_name = [
                     os.path.splitext(os.path.split(pdb_path)[-1])[0]
                     for pdb_path in self.pdb_paths
                 ]
-                self.pdb_path, _ = os.path.split(self.pdb_paths[0])
+            #  if root pdb_path is not unique raise error since we will save all pdb into this root pdb_path and take it as the self.raw_dir
+            if len(set([os.path.split(pdb_path)[0] for pdb_path in pdb_paths])) != 1:
+                raise ValueError("pdb_paths should have only one root path not so much!")
+        else:
+            self.pdb_paths_name = []
 
-        # Labels & Chains
-
+        self.structures = list(set(self.pdb_codes + self.uniprot_ids + self.pdb_paths_name))  # remove some pdb_codes is in pdb_path and loaded repeately
+    
         self.examples: Dict[int, str] = dict(enumerate(self.structures))
 
+        # Labels & Chains
         if graph_labels is not None:
             self.graph_label_map = dict(enumerate(graph_labels))
         else:
@@ -460,9 +481,9 @@ class ProteinGraphDataset(Dataset):
         # Configs
         self.config = graphein_config
         self.graph_format_convertor = graph_format_convertor
-        self.num_cores = num_cores
-        self.pdb_transform = pdb_transform
         self.graph_transformation_funcs = graph_transformation_funcs
+        self.pdb_transform = pdb_transform
+        self.num_cores = num_cores
         self.af_version = af_version
         super().__init__(
             root,
@@ -492,8 +513,10 @@ class ProteinGraphDataset(Dataset):
 
     @property
     def raw_dir(self) -> str:
-        if self.pdb_paths is not None:
-            return self.pdb_path  # replace raw dir with user local pdb_path
+        if self.pdb_paths:
+            #  replace raw dir with user local pdb_path; so pdb_paths should be located in the same place
+            self.pdb_path, _ = os.path.split(self.pdb_paths[0])
+            return self.pdb_path  
         else:
             return os.path.join(self.root, "raw")
 
@@ -610,7 +633,6 @@ class ProteinGraphDataset(Dataset):
             )
             if self.graph_transformation_funcs is not None:
                 graphs = [self.transform_graphein_graphs(g) for g in graphs]
-
             # Convert to PyTorch Geometric Data
             graphs = [self.graph_format_convertor(g) for g in graphs]
 
