@@ -1,0 +1,80 @@
+species_name	depth_m	temperature_C	pressure_MPa	reference
+Anoxybater fermentas				10.1016/B978-0-12-818322-9.00008-3
+Caldithrix abyssi	3000	60		10.1099/ijs.0.02390-0 
+Carnobacterium sp. AT12	2550	2	20	10.1016/B978-0-12-818322-9.00008-3
+Carnobacterium sp. AT7	2500	cold	15	https://doi.org/10.1016/j.tim.2010.06.006
+Colwellia hadalensis		10	90	10.1016/B978-0-12-818322-9.00008-3
+Colwellia hadaliensis	7410	10	85	https://doi.org/10.1016/j.tim.2010.06.006
+Colwellia marinimaniae		6	120	10.1016/B978-0-12-818322-9.00008-3
+Colwellia piezophila	6278	10	60	https://link.springer.com/referencework/10.1007%2F978-4-431-53898-1
+Colwellia sp. KT27	9856			10.1016/j.copbio.2015.02.013
+Colwellia sp. MT41		8	103	https://doi.org/10.1016/j.tim.2010.06.006
+Cryptococcus liquefaciens N6	6500			 https://doi.org/10.1271/bbb.70.296
+Demacoccus abyssi		28	40	https://doi.org/10.1016/j.tim.2010.06.006
+Dermacoccus abyssi	10898	28	40	10.1016/B978-0-12-818322-9.00008-3
+Desulfovibrio hydrothermalis	2600	35	48	10.1099/ijs.0.02323-0 
+Desulfovibrio piezophilus	1693	30	10	10.1016/B978-0-12-818322-9.00008-3
+Desulfovibrio profundus		25	12.5	https://doi.org/10.1016/j.tim.2010.06.006
+Geobacillus sp. HTA-462	10897	55-75	30	10.1111/j.1574-6968.1997.tb10440.x, 10.1007/s00253-005-1977-3
+Hydrogenovibrio crunogenus	2600	2-35		https://doi.org/10.1099/00207713-35-4-422
+Hydrogenovibrio thermophilus S5	2742	37		10.3389/fmicb.2017.02513
+Idiomarina loihiensis	1296	4–46		https://doi.org/10.1099/ijs.0.02701-0
+Marinactinospora thermotolerans	3865	28		https://doi.org/10.1099/ijs.0.005231-0
+Marinitoga piezophila	2630	65	40	https://doi.org/10.1099/00207713-52-4-1331
+Methanocaldococcus fervens	2600			10.1016/j.copbio.2015.02.013
+Methanocaldococcus jannaschii	2600	85	75	https://doi.org/10.1007/BF00425213
+Methanocaldococcus vulcanius	2600	80		10.1016/j.copbio.2015.02.013
+Methanococcus fervens	2600			10.1016/j.copbio.2015.02.013
+Methanococcus jannaschii	2600	85	75	https://doi.org/10.1007/BF00425213
+Methanococcus thermolithotrophicus	0.5	65	50	https://doi.org/10.1007/BF00690816
+Methanococcus vulcanius	2600	80		10.1016/j.copbio.2015.02.013
+Methanopyrus kandleri	2000	98	20-30	https://doi.org/10.1007/BF00262992
+Methanothermococcus thermolithotrophicus	0.5	65	50	10.1016/B978-0-12-818322-9.00008-3, 10.5283/epub.4822,  10.1128/AEM.54.5.1258-1261.1988  
+Moritella abyssi	2815	10	30	https://doi.org/10.1016/j.tim.2010.06.006
+Moritella japonica	6356	15	10-50	10.2323/jgam.44.289 
+Moritella profunda	2815	2	22	https://doi.org/10.1099/ijs.0.02228-0
+Moritella sp. PE36	3584			10.1016/j.copbio.2015.02.013
+Moritella yayanosii	10898			https://link.springer.com/article/10.1007/s007920050101
+Oceanobacillus iheyensis	1050			https://doi.org/10.1111/j.1574-6968.2001.tb10963.x
+Palaeococcus ferrophilus	1338	83	30	10.1007/s00792-015-0760-3
+Palaeococcus pacificus	2737	80	30	10.1007/s00792-015-0760-3
+Paleococcus ferrophilus	1338	83	30	10.1016/B978-0-12-818322-9.00008-3
+Paleococcus pacificus		80	30	10.1016/B978-0-12-818322-9.00008-3
+Persephonella marina	2507	73		10.1099/00207713-52-4-1349 
+Photobacterium phosphoreum ANT-2200	2200			10.1128/genomeA.00096-14, 10.1016/j.copbio.2015.02.013
+Photobacterium profundum	2551	8-12	28	10.1128/AEM.63.5.2105-2108.1997, 10.1007/s007920050036 
+Piezobacter thermophilus		50	36	https://doi.org/10.1016/j.tim.2010.06.006
+Profundimonas piezophila		8	50	10.1007/s00792-015-0760-3
+Profundionmas piezophila	6000	8	50	10.1016/B978-0-12-818322-9.00008-3
+Pseudoalteromonas sp. SM9913	1855	cold		https://dx.doi.org/10.1099/mic.0.2006/003327-0
+Psychromonas hadalis	7542	6	60	https://pubmed.ncbi.nlm.nih.gov/17551059/
+Psychromonas kaikoae	7434	10	50	https://doi.org/10.1016/j.tim.2010.06.006
+Psychromonas kaikoi				https://link.springer.com/referencework/10.1007%2F978-4-431-53898-1
+Psychromonas profunda	2770	10	25	https://doi.org/10.1016/j.tim.2010.06.006
+Psychromonas sp. CNPT3	2500	cold	15	https://doi.org/10.1016/j.tim.2010.06.006
+Pyrococcus abyssi	2000	96	20-40	10.1007/BF00252219
+Pyrococcus glycovorans	2650			10.1016/j.copbio.2015.02.013
+Pyrococcus horikoshii	1395	98		https://doi.org/10.1007/s007920050051
+Pyrococcus kukulkanii	1997	105	40–50	10.1016/B978-0-12-818322-9.00008-3, https://doi.org/10.1099/ijsem.0.001160
+Pyrococcus yayanosii CH1	4100	98	52	https://doi.org/10.1038/ismej.2009.21
+Rhodobacterales bacterium PRT1	8350	10	80	10.1016/B978-0-12-818322-9.00008-3
+Shewanella benthica	10898	cold	70	10.1128/AEM.64.4.1510-1513.1998
+Shewanella loihica	1325	18		10.1099/ijs.0.64354-0 
+Shewanella piezotolerans	1914	15-20	20	10.1016/B978-0-12-818322-9.00008-3
+Shewanella profunda	4790	25-30	10	10.1016/B978-0-12-818322-9.00008-3
+Shewanella psychrophila			20	10.1016/B978-0-12-818322-9.00008-3
+Shewanella violacea	5110	8	30	10.1007/s002030050650 
+Thermococcus aggregans	2000	75	20	10.1016/B978-0-12-818322-9.00008-3
+Thermococcus barophilus	3550	85	40	https://doi.org/10.1016/j.tim.2010.06.006
+Thermococcus chitonophagus	2600	85		https://doi.org/10.1007/BF02529959
+Thermococcus eurythermalis		85	0.1-30	10.1016/B978-0-12-818322-9.00008-3, 10.1007/s00792-015-0760-3
+Thermococcus guayamasensis		85	ca. 28	10.1016/B978-0-12-818322-9.00008-3
+Thermococcus guaymasensis	2000	85	20-35	10.1007/s00792-015-0760-3
+Thermococcus peptonophilus	1400			https://doi.org/10.1007/BF02529966
+Thermococcus piezophilus	4964	75	50	10.1016/B978-0-12-818322-9.00008-3, https://doi.org/10.1016/j.syapm.2016.08.003
+Thermococcus thioreducens	2300	83–85		10.1099/ijs.0.65057-0 
+Thermosipho japonicus	972	72	20	10.1016/B978-0-12-818322-9.00008-3
+Thermosipho melanesiensis	1832-1887	70		https://doi.org/10.1099/00207713-47-4-1118
+Thermovibrio ammonificans	2500	75		https://doi.org/10.1099/ijs.0.02781-0
+Thioprofundum lithotrophica		50	16	https://doi.org/10.1016/j.tim.2010.06.006
+Thioprofundum lithotrophicum	3620			10.1016/j.copbio.2015.02.013, 10.1111/j.1462-2920.2009.01921.x

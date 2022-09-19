@@ -13,7 +13,6 @@ from pprint import pprint
 from shutil import rmtree
 from typing import List
 
-import versioneer
 from setuptools import Command, find_packages, setup
 
 VERSION = None

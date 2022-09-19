@@ -9,10 +9,11 @@ import logging
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import os
+import subprocess
 import tempfile
 from functools import lru_cache, partial
 from pathlib import Path
-from shutil import which
+from shutil import copyfile, which
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -426,3 +427,63 @@ def is_tool(name: str) -> bool:
     :rtype: bool
     """
     return which(name) is not None
+
+
+def tidy_up_and_update_pdb_file(pdb_filepath: str):
+    """Run 'pdb-tools' to tidy-up and replace an existing erroneous PDB file.
+
+    Modified from: https://github.com/BioinfoMachineLearning/DeepRefine (GPL-3.0).
+
+    :param pdb_filepath: Path to PDB file to be tidied.
+    :type pdb_filepath: str
+    """
+    # Check for pdb-tools installation
+    if not is_tool("pdb_tidy"):
+        raise ImportError(
+            "pdb_tidy not found in PATH. pdb_tidy can be installed with pip install pdb-tools."
+        )
+
+    # Make a copy of the original PDB filepath to circumvent race conditions with 'pdb-tools'
+    tmp_pdb_filepath = f"{pdb_filepath}.tmp"
+    copyfile(pdb_filepath, tmp_pdb_filepath)
+
+    # Clean temporary PDB file and then save its cleaned version as the original PDB file
+    args = ["pdb_tidy", tmp_pdb_filepath]
+    p1 = subprocess.Popen(args=args, stdout=subprocess.PIPE)
+    with open(pdb_filepath, "w") as outfile:
+        _ = subprocess.run(args=["pdb_tidy"], stdin=p1.stdout, stdout=outfile)
+
+    # Clean up from using temporary PDB file for tidying
+    os.remove(tmp_pdb_filepath)
+
+
+@lru_cache()
+def load_af2_metadata(path: Optional[str] = None) -> pd.DataFrame:
+    """
+    Download the download_metadata.json file from the AlphaFoldDB FTP server:
+    https://ftp.ebi.ac.uk/pub/databases/alphafold/
+
+    :param path: Path to save the metadata file to.
+    :type path: Optional[str]
+    :return: Metadata dataframe describing the proteome info.
+    :rtype: pd.DataFrame
+    """
+    if path is None:
+        return pd.read_json(
+            "http://ftp.ebi.ac.uk/pub/databases/alphafold/download_metadata.json"
+        )
+    out_path = Path(path)
+    if not os.path.exists(out_path / "download_metadata.csv"):
+        print(
+            f"Downloading metadata... to: {str(out_path / 'download_metadata.csv')}"
+        )
+        df = pd.read_json(
+            "http://ftp.ebi.ac.uk/pub/databases/alphafold/download_metadata.json"
+        )
+        df.to_csv(out_path / "download_metadata.csv")
+        return df
+    else:
+        print(
+            f"Loading Metadata from disk... ({str(out_path / 'download_metadata.csv')})"
+        )
+        return pd.read_csv(out_path / "download_metadata.csv")

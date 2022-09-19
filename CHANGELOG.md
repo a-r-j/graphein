@@ -1,3 +1,9 @@
+### 1.5.3 - UNRELEASED
+
+#### Protein
+
+* [Feature] - [#204](https://github.com/a-r-j/graphein/pull/204) adds Pytorch Lightning DataModules for four built in datasets: `PROTEINS_LIGANDS`, `PROTEINS_NUCLEIC`, `PROTEINS_NUCLEOTIDES`, `PROTEINS_METAL`.
+
 ### 1.5.2 - 19/9/2022
 
 #### Protein
