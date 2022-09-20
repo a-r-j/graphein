@@ -41,9 +41,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self,
         root: str,
         name: str,
-        pdb_paths: Optional[List[str]] = [],
-        pdb_codes: Optional[List[str]] = [],
-        uniprot_ids: Optional[List[str]] = [],
+        pdb_paths: Optional[List[str]] = None,
+        pdb_codes: Optional[List[str]] = None,
+        uniprot_ids: Optional[List[str]] = None,
         graph_labels: Optional[List[torch.Tensor]] = None,
         node_labels: Optional[List[torch.Tensor]] = None,
         chain_selections: Optional[List[str]] = None,
@@ -73,13 +73,13 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         :type root: str
         :param name: Name of the dataset. Will be saved to ``data_$name.pt``.
         :type name: str
-        :param pdb_paths: List of full path of pdb files to load. Defaults to ``List``.
+        :param pdb_paths: List of full path of pdb files to load. Defaults to ``None``.
         :type pdb_paths: Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
-            Defaults to List.
+            Defaults to None.
         :type pdb_codes: Optional[List[str]], optional
         :param uniprot_ids: List of Uniprot IDs to download and parse from
-            Alphafold Database. Defaults to ``List``.
+            Alphafold Database. Defaults to ``None``.
         :type uniprot_ids: Optional[List[str]], optional
         :param graph_label_map: Dictionary mapping PDB/Uniprot IDs to
             graph-level labels. Defaults to ``None``.
@@ -137,6 +137,11 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             if uniprot_ids is not None
             else []
         )
+        self.pdb_paths = (
+            pdb_paths if pdb_paths is not None
+            else []
+        )
+
         self.pdb_paths = pdb_paths
         #  make sure root path is unique
         if self.pdb_paths:
@@ -355,9 +360,9 @@ class ProteinGraphDataset(Dataset):
     def __init__(
         self,
         root: str,
-        pdb_paths: Optional[List[str]] = [],
-        pdb_codes: Optional[List[str]] = [],
-        uniprot_ids: Optional[List[str]] = [],
+        pdb_paths: Optional[List[str]] = None,
+        pdb_codes: Optional[List[str]] = None,
+        uniprot_ids: Optional[List[str]] = None,
         graph_labels: Optional[List[torch.Tensor]] = None,
         node_labels: Optional[List[torch.Tensor]] = None,
         chain_selections: Optional[List[str]] = None,
@@ -381,13 +386,13 @@ class ProteinGraphDataset(Dataset):
 
         :param root: Root directory where the dataset should be saved.
         :type root: str
-        :param pdb_paths: List of full path of pdb files to load. Defaults to ``List``.
+        :param pdb_paths: List of full path of pdb files to load. Defaults to ``None``.
         :type pdb_paths: Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
-            Defaults to ``List``.
+            Defaults to ``None``.
         :type pdb_codes: Optional[List[str]], optional
         :param uniprot_ids: List of Uniprot IDs to download and parse from
-            Alphafold Database. Defaults to ``List``.
+            Alphafold Database. Defaults to ``None``.
         :type uniprot_ids: Optional[List[str]], optional
         :param graph_labels: List mapping to self.structures by index to graph-level labels. Defaults to ``None``.
         :type graph_labels: Optional[List[torch.Tensor]], optional
@@ -442,7 +447,11 @@ class ProteinGraphDataset(Dataset):
             if uniprot_ids is not None
             else []
         )
-        self.pdb_paths = pdb_paths
+        self.pdb_paths = (
+            pdb_paths if pdb_paths is not None
+            else []
+        )
+
         #  make sure root path is unique
         if self.pdb_paths:
             #  add pdb_paths' name into self.structure
