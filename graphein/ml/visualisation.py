@@ -109,15 +109,15 @@ def plot_pyg_data(
             d["colour"] = float(edge_colour_tensor[i])
 
     return plotly_protein_structure_graph(
-        nx_graph,
-        plot_title,
-        figsize,
-        node_alpha,
-        node_size_min,
-        node_size_multiplier,
-        label_node_ids,
-        node_colour_map,
-        edge_color_map,
-        colour_nodes_by if node_colour_tensor is None else "colour",
-        colour_edges_by if edge_colour_tensor is None else "colour",
+        G = nx_graph,
+        plot_title = plot_title,
+        figsize = figsize,
+        node_alpha = node_alpha,
+        node_size_min = node_size_min,
+        node_size_multiplier = node_size_multiplier,
+        label_node_ids = label_node_ids,
+        node_colour_map = node_colour_map,
+        edge_color_map = edge_color_map,
+        colour_nodes_by = colour_nodes_by if node_colour_tensor is None else "colour",
+        colour_edges_by = colour_edges_by if edge_colour_tensor is None else "colour",
     )

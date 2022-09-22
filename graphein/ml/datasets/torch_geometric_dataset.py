@@ -223,6 +223,8 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
                 self.node_label_map
             ), "Number of proteins and node labels must match"
         if self.chain_selection_map is not None:
+            print(len(self.structures))
+            print(len(self.chain_selection_map))
             assert len(self.structures) == len(
                 self.chain_selection_map
             ), "Number of proteins and chain selections must match"
@@ -269,7 +271,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             ]
 
     def __len__(self) -> int:
-        """Returns length of data set (number of structures)."""
+        """Returns length of data set (number of structures and chain split)."""
         return len(self.structures)
 
     def transform_pdbs(self):
@@ -285,6 +287,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
     def process(self):
         """Process structures into PyG format and save to disk."""
         # Read data into huge `Data` list.
+        print(self.structures)
         structure_files = [
             f"{self.raw_dir}/{pdb}.pdb" for pdb in self.structures
         ]
