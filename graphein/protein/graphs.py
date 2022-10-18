@@ -546,7 +546,7 @@ def calculate_centroid_positions(
     :rtype: pd.DataFrame
     """
     centroids = (
-        atoms.groupby("residue_number")
+        atoms.groupby(["residue_number","chain_id","residue_name"])
         .mean()[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )
