@@ -388,33 +388,41 @@ def ping(host: str) -> bool:
 
 def get_node_attribute_names(g: nx.Graph) -> List[str]:
     """Returns a list of node attribute names present within a graph.
-    
+
     :param g: Networkx Graph.
     :type g: nx.Graph
     :returns: List of node attribute names
     :rtype: List[str]
     """
 
-    return list(set(np.array([list(g.nodes[n].keys()) for n in g.nodes()]).flatten()))
+    return list(
+        set(np.array([list(g.nodes[n].keys()) for n in g.nodes()]).flatten())
+    )
+
 
 def get_edge_attribute_names(g: nx.Graph) -> List[str]:
     """Returns a list of edge attribute names present within a graph.
-    
+
     :param g: Networkx Graph.
     :type g: nx.Graph
     :returns: List of edge attribute names
     :rtype: List[str]
     """
-    return list(set(np.array([list(g.edges[u, v].keys()) for u, v in g.edges()]).flatten()))
+    return list(
+        set(
+            np.array(
+                [list(g.edges[u, v].keys()) for u, v in g.edges()]
+            ).flatten()
+        )
+    )
 
 
 def get_graph_attribute_names(g: nx.Graph) -> List[str]:
     """Returns a list of graph attribute names present within a graph.
-    
+
     :param g: Networkx Graph.
     :type g: nx.Graph
     :returns: List of graph attribute names
     :rtype: List[str]
     """
     return list(g.graph.keys())
-
