@@ -5,15 +5,13 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import logging
 
 import networkx as nx
 import pandas as pd
+from loguru import logger as log
 
 from graphein.ppi.parse_biogrid import BIOGRID_df
 from graphein.ppi.parse_stringdb import STRING_df
-
-log = logging.getLogger(__name__)
 
 
 def add_string_edges(G: nx.Graph, **kwargs) -> nx.Graph:
