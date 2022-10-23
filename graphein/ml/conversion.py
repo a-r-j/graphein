@@ -278,9 +278,9 @@ class GraphFormatConvertor:
         for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
             for key, value in feat_dict.items():
                 if str(key) in self.columns:
-                    data[str(key)] = (
-                        list(value) if i == 0 else data[str(key)] + list(value)
-                    )
+                    if i == 0:
+                        data[str(key)] = []
+                    data[str(key)].append(list(value))
 
         # Add graph-level features
         for feat_name in G.graph:
