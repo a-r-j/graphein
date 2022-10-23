@@ -272,8 +272,9 @@ def download_alphafold_structure(
         query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.cif"
     if pdb:
         query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.pdb"
+        
     structure_filename = wget.download(query_url, out=out_dir)
-
+    
     if rename:
         extension = ".pdb" if pdb else ".cif"
         os.rename(
