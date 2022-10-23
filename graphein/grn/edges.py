@@ -1,19 +1,18 @@
+"""Functions for adding edges to Gene Regulatory Networks from various sources."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import logging
 from typing import Callable, List, Optional
 
 import networkx as nx
 import pandas as pd
+from loguru import logger as log
 
 from graphein.grn.parse_regnetwork import RegNetwork_df
 from graphein.grn.parse_trrust import TRRUST_df
-
-log = logging.getLogger(__name__)
 
 
 def add_trrust_edges(
@@ -24,9 +23,12 @@ def add_trrust_edges(
 
     :param G: Graph to edges to (populated with gene_id nodes)
     :type G: nx.Graph
-    :param trrust_filtering_funcs: List of functions to apply to TRRUST dataframe as pre-processing prior to graph constructions. Defaults to None.
+    :param trrust_filtering_funcs: List of functions to apply to TRRUST
+        dataframe as pre-processing prior to graph constructions. Defaults to
+        ``None``.
     :type trrust_filtering_funcs: List[Callable], optional
-    :return: nx.Graph GRNGraph with TRRUST regulatory interactions added as edges
+    :return: nx.Graph GRNGraph with TRRUST regulatory interactions added
+        as edges
     :rtype: nx.Graph
     """
     G.graph["sources"].append("trrust")
@@ -45,9 +47,11 @@ def add_regnetwork_edges(
     """
     Adds edges from RegNetwork to GRNGraph
 
-    :param G: Graph to edges to (populated with gene_id nodes)
-    :param kwargs:  Additional parameters to pass to RegNetwork
-    :return: nx.Graph GRNGraph with RegNetwork regulatory interactions added as edges
+    :param G: Graph to edges to (populated with gene_id nodes).
+    :type G: nx.Graph
+    :param kwargs:  Additional parameters to pass to RegNetwork.
+    :return: nx.Graph GRNGraph with RegNetwork regulatory interactions added
+        as edges.
     """
     G.graph["sources"].append("regnetwork")
     G.graph["regnetwork_df"] = RegNetwork_df(
@@ -63,15 +67,15 @@ def add_interacting_genes(
     G: nx.Graph, df: pd.DataFrame, kind: str
 ) -> nx.Graph:
     """
-    Generic function for adding interaction edges to GRNGraph
+    Generic function for adding interaction edges to GRNGraph.
 
-    :param G: GRNGraph to populate with edges
+    :param G: GRNGraph to populate with edges.
     :type G: nx.Graph
-    :param df: DataFrame containing edgelist
+    :param df: DataFrame containing edgelist.
     :type df: pd.DataFrame
-    :param kind: name of interaction type
+    :param kind: name of interaction type.
     :type kind: str
-    :returns: Graph with edges added
+    :returns: Graph with edges added.
     :rtype: nx.Graph
     """
 
