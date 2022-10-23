@@ -7,13 +7,13 @@
 from __future__ import annotations
 
 import itertools
-import logging
 from itertools import combinations
 from typing import Dict, List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
+from loguru import logger as log
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import pdist, squareform
 from sklearn.neighbors import kneighbors_graph
@@ -41,8 +41,6 @@ from graphein.protein.resi_atoms import (
     VDW_RADII,
 )
 from graphein.protein.utils import filter_dataframe
-
-log = logging.getLogger(__name__)
 
 
 def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
@@ -225,7 +223,8 @@ def add_disulfide_interactions(
     residues = [d["residue_name"] for _, d in G.nodes(data=True)]
     if residues.count("CYS") < 2:
         log.debug(
-            f"{residues.count('CYS')} CYS residues found. Cannot add disulfide interactions with fewer than two CYS residues."
+            f"{residues.count('CYS')} CYS residues found. Cannot add disulfide \
+                interactions with fewer than two CYS residues."
         )
         return
 
@@ -580,7 +579,6 @@ def add_pi_stacking_interactions(
         (distmat.index[r], distmat.index[c])
         for r, c in zip(indices[0], indices[1])
     ]
-    # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
     for n1, n2 in interacting_resis:
         assert G.nodes[n1]["residue_name"] in PI_RESIS
         assert G.nodes[n2]["residue_name"] in PI_RESIS
@@ -642,7 +640,6 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
         (distmat.index[r], distmat.index[c])
         for r, c in zip(indices[0], indices[1])
     ]
-    # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
     for n1, n2 in interacting_resis:
         assert G.nodes[n1]["residue_name"] in PI_RESIS
         assert G.nodes[n2]["residue_name"] in PI_RESIS
@@ -897,7 +894,8 @@ def add_distance_threshold(
             else:
                 G.add_edge(n1, n2, kind={"distance_threshold"})
     log.info(
-        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count} removed by LIN)"
+        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
+            removed by LIN)"
     )
 
 
@@ -956,7 +954,8 @@ def add_distance_window(
             else:
                 G.add_edge(n1, n2, kind={f"distance_window_{min}_{max}"})
     log.info(
-        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count} removed by LIN)"
+        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
+            removed by LIN)"
     )
 
 
@@ -1220,7 +1219,7 @@ def add_interacting_resis(
 
     ### Parameters
 
-    - interacting_atoms:    (numpy array) result from get_interacting_atoms function.
+    - interacting_atoms:    (numpy array) result from ``get_interacting_atoms``.
     - dataframe:            (pandas dataframe) a pandas dataframe that
                             houses the euclidean locations of each atom.
     - kind:                 (list) the kind of interaction. Contains one
