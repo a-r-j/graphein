@@ -60,6 +60,8 @@ jobs:
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
+      - name: Install notebook utils
+        run: pip install nbformat
       - name: Install Graphein
         run: pip install -e .
       - name: Install Extras
