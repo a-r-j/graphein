@@ -441,7 +441,8 @@ def test_chain_graph():
 
 
 def test_df_processing():
-    def return_empty_df(df: pd.DataFrame) -> pd.DataFrame:
+    def return_even_df(df: pd.DataFrame) -> pd.DataFrame:
+        df = df["residue_id"] % 2 == 0
         return pd.DataFrame()
 
     params_to_change = {"protein_df_processing_functions": [return_empty_df]}
@@ -452,6 +453,9 @@ def test_df_processing():
     g1 = construct_graph(config=config, pdb_code="3eiy")
     g2 = construct_graph(pdb_code="3eiy")
 
-    assert len(g1) == 0, "Graph should be empty"
+    for n, d in g1.nodes(data=True):
+        assert (
+            n.split(":")[-1] % 2 == 0
+        ), "Only even residues should be present"
 
     assert len(g1) != len(g2), "Graphs should not be equal"
