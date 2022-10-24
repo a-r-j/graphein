@@ -4,6 +4,7 @@ from functools import partial
 from pathlib import Path
 
 import networkx as nx
+import pandas as pd
 import pytest
 
 from graphein.protein.config import DSSPConfig, ProteinGraphConfig
@@ -433,3 +434,20 @@ def test_chain_graph():
     h = compute_chain_graph(g, return_weighted_graph=True)
     node_sum = sum(d["num_residues"] for _, d in h.nodes(data=True))
     assert node_sum == len(g), "Number of residues do not match"
+
+
+def test_df_processing():
+    def return_empty_df(df: pd.DataFrame) -> pd.DataFrame:
+        return pd.DataFrame()
+
+    params_to_change = {"protein_df_processing_functions": [return_empty_df]}
+
+    config = ProteinGraphConfig(**params_to_change)
+    config.dict()
+
+    g1 = construct_graph(config=config, pdb_code="3eiy")
+    g2 = construct_graph(pdb_code="3eiy")
+
+    assert len(g1) == 0, "Graph should be empty"
+
+    assert len(g1) != len(g2), "Graphs should not be equal"
