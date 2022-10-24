@@ -122,6 +122,8 @@ def label_node_id(df: pd.DataFrame, granularity: str) -> pd.DataFrame:
         + df["residue_name"]
         + ":"
         + df["residue_number"].apply(str)
+        + ":"
+        + df["insertion"].apply(str)
     )
     df["residue_id"] = df["node_id"]
     if granularity == "atom":
@@ -354,7 +356,7 @@ def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     :return: Sorted protein dataframe.
     :rtype: pd.DataFrame
     """
-    return df.sort_values(by=["chain_id", "residue_number", "atom_number"])
+    return df.sort_values(by=["chain_id", "residue_number", "atom_number", "insertion"])
 
 
 def assign_node_id_to_dataframe(
@@ -379,6 +381,8 @@ def assign_node_id_to_dataframe(
         + protein_df["residue_name"]
         + ":"
         + protein_df["residue_number"].apply(str)
+        + ":"
+        + protein_df["insertion"].apply(str)
     )
     if granularity in {"atom", "rna_atom"}:
         protein_df[
@@ -546,7 +550,7 @@ def calculate_centroid_positions(
     :rtype: pd.DataFrame
     """
     centroids = (
-        atoms.groupby(["residue_number","chain_id","residue_name"])
+        atoms.groupby(["residue_number","chain_id","residue_name", "insertion"])
         .mean()[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )
