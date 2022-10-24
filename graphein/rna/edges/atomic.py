@@ -14,6 +14,7 @@ from loguru import logger as log
 from scipy.spatial import distance_matrix
 
 import graphein.protein.edges.atomic as protein
+from graphein.rna.features.atom import add_atomic_radii
 
 # TODO dealing with metals
 # TODO There are other check and balances that can be implemented from here:
