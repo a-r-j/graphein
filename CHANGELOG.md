@@ -1,7 +1,7 @@
 ### 1.5.3 - UNRELEASED
 
 #### Protein
-
+* [Bugfix] - [#222]https://github.com/a-r-j/graphein/pull/222) Fixes entrypoint for user-defined `df_processing_funcs` ([#216](https://github.com/a-r-j/graphein/issues/216))
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes edge metadata conversion to PyG. Contribution by @manonreau.
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes centroid atom grouping & avoids unnecessary edge computation where none are found. Contribution by @manonreau.
 
