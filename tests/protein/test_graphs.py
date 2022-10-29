@@ -445,7 +445,7 @@ def test_df_processing():
         df = df["residue_id"] % 2 == 0
         return pd.DataFrame()
 
-    params_to_change = {"protein_df_processing_functions": [return_empty_df]}
+    params_to_change = {"protein_df_processing_functions": [return_even_df]}
 
     config = ProteinGraphConfig(**params_to_change)
     config.dict()
