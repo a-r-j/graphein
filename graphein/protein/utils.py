@@ -274,7 +274,9 @@ def download_alphafold_structure(
     try:
         structure_filename = wget.download(query_url, out=out_dir)
     except HTTPError:
-        log.warning(f"No structure found for {uniprot_id}. Used URL: {query_url}")
+        log.warning(
+            f"No structure found for {uniprot_id}. Used URL: {query_url}"
+        )
         return None
 
     if rename:
