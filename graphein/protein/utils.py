@@ -235,7 +235,7 @@ def download_alphafold_structure(
     pdb: bool = True,
     mmcif: bool = False,
     aligned_score: bool = True,
-) -> Union[str, Tuple[str, str]]:
+) -> Union[str, Tuple[str, str], None]:
     """
     Downloads a structure from the Alphafold EBI database
     (https://alphafold.ebi.ac.uk/files/").
