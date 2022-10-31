@@ -10,6 +10,7 @@ import logging as log
 import os
 from pathlib import Path
 from typing import Callable, Dict, Generator, List, Optional
+from urllib.error import HTTPError
 
 import networkx as nx
 from tqdm import tqdm
@@ -145,6 +146,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self.bad_pdbs: List[
             str
         ] = []  # list of pdb codes that failed to download
+        self.bad_uniprot_ids: List[
+            str
+        ] = []  # list of uniprot ids that failed to download
 
         # Labels & Chains
         self.graph_label_map = graph_label_map
@@ -378,6 +382,8 @@ class ProteinGraphDataset(Dataset):
             defaults to ``2``.
         :type af_version: int, optional
         """
+
+
         self.pdb_codes = (
             [pdb.lower() for pdb in pdb_codes]
             if pdb_codes is not None
@@ -417,7 +423,7 @@ class ProteinGraphDataset(Dataset):
             self.chain_selection_map = None
         self.validate_input()
         self.bad_pdbs: List[str] = []
-
+        self.bad_uniprot_ids: List[str] = []
         # Configs
         self.config = graphein_config
         self.graph_format_convertor = graph_format_convertor
@@ -482,6 +488,7 @@ class ProteinGraphDataset(Dataset):
                 for pdb in set(self.pdb_codes)
                 if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
             ]
+            
             download_pdb_multiprocessing(
                 to_download,
                 self.raw_dir,
@@ -494,15 +501,36 @@ class ProteinGraphDataset(Dataset):
                 if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
             ]
         if self.uniprot_ids:
-            [
-                download_alphafold_structure(
+
+            # Only download undownloaded Uniprot IDs
+            to_download = [
+                uniprot
+                for uniprot in set(self.uniprot_ids)
+                if not os.path.exists(Path(self.raw_dir) / f"{uniprot}.pdb")
+            ]
+            print(f"Uniprot IDs to download: {to_download}")
+
+            for uniprot in tqdm(to_download):
+
+                
+                fn = download_alphafold_structure(
                     uniprot,
                     out_dir=self.raw_dir,
                     version=self.af_version,
                     aligned_score=False,
+                    rename=True,
                 )
-                for uniprot in tqdm(self.uniprot_ids)
+                
+            self.bad_uniprot_ids = self.bad_uniprot_ids + [
+                uniprot
+                for uniprot in set(self.uniprot_ids)
+                if not os.path.exists(Path(self.raw_dir) / f"{uniprot}.pdb")
             ]
+                
+                    
+            print(f"Bad uniprot ids: {self.bad_uniprot_ids}")    
+        
+        # TODO: remove bad uniprot / pdb ids from self.structures
 
     def len(self) -> int:
         """Returns length of data set (number of structures)."""
