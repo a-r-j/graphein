@@ -159,7 +159,7 @@ def download_pdb(
             out=str(out_dir / f"{pdb_code}.pdb"),
         )
     except HTTPError:
-        log.info(f"PDB {pdb_code} not found.")
+        log.warning(f"PDB {pdb_code} not found.")
 
     # Check file exists
     if strict:
@@ -270,7 +270,12 @@ def download_alphafold_structure(
         query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.cif"
     if pdb:
         query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.pdb"
-    structure_filename = wget.download(query_url, out=out_dir)
+
+    try:
+        structure_filename = wget.download(query_url, out=out_dir)
+    except HTTPError:
+        log.warning(f"No structure found for {uniprot_id}. Used URL: {query_url}")
+        return None
 
     if rename:
         extension = ".pdb" if pdb else ".cif"
