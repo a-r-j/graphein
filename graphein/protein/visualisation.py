@@ -7,8 +7,6 @@
 from __future__ import annotations
 
 import re
-import logging
-import re
 from itertools import count
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
@@ -20,14 +18,12 @@ import plotly.colors as co
 import plotly.express as px
 import plotly.graph_objects as go
 import seaborn as sns
+from loguru import logger as log
 from mpl_toolkits.mplot3d import Axes3D
 
 from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.utils import import_message
 from graphein.protein.resi_atoms import HYDROPHOBICITY_SCALES
-
-log = logging.getLogger(__name__)
-
 
 try:
     from pytorch3d.ops import sample_points_from_meshes
@@ -175,13 +171,15 @@ def colour_nodes(
     colour_map: matplotlib.colors.ListedColormap = plt.cm.plasma,
 ) -> List[Tuple[float, float, float, float]]:
     """
-    Computes node colours based on ``"degree"``, ``"seq_position"`` or node attributes.
+    Computes node colours based on ``"degree"``, ``"seq_position"`` or node
+    attributes.
 
     :param G: Graph to compute node colours for
     :type G: nx.Graph
     :param colour_map:  Colourmap to use.
     :type colour_map: matplotlib.colors.ListedColormap
-    :param colour_by: Manner in which to colour nodes. If not ``"degree"`` or ``"seq_position"``, this must correspond to a node feature.
+    :param colour_by: Manner in which to colour nodes. If not ``"degree"`` or
+        ``"seq_position"``, this must correspond to a node feature.
     :type colour_by: str
     :return: List of node colours
     :rtype: List[Tuple[float, float, float, float]]
@@ -189,7 +187,8 @@ def colour_nodes(
     # get number of nodes
     n = G.number_of_nodes()
 
-    # Define color range proportional to number of edges adjacent to a single node
+    # Define color range proportional to number of edges adjacent to a single
+    # node
     if colour_by == "degree":
         # Get max number of edges connected to a single node
         edge_max = max(G.degree[i] for i in G.nodes())
@@ -241,9 +240,11 @@ def colour_edges(
     :type G: nx.Graph
     :param colour_map: Colourmap to use.
     :type colour_map: matplotlib.colors.ListedColormap
-    :param colour_by: Edge attribute to colour by. Currently only ``"kind"`` is supported.
+    :param colour_by: Edge attribute to colour by. Currently only ``"kind"`` is
+        supported.
     :type colour_by: Optional[str]
-    :param set_alpha: Sets a given alpha value between 0.0 and 1.0 for all the edge colours.
+    :param set_alpha: Sets a given alpha value between 0.0 and 1.0 for all the
+        edge colours.
     :type set_alpha: float
     :param return_as_rgba: Returns a list of rgba strings instead of tuples.
     :type return_as_rgba: bool
@@ -311,19 +312,26 @@ def plotly_protein_structure_graph(
     :type node_alpha: float
     :param node_size_min: Specifies node minimum size. Defaults to ``20.0``.
     :type node_size_min: float
-    :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree. Defaults to ``20.0``.
+    :param node_size_multiplier: Scales node size by a constant. Node sizes
+        reflect degree. Defaults to ``20.0``.
     :type node_size_multiplier: float
-    :param node_size_feature: Which feature to scale the node size by. Defaults to ``degree``.
+    :param node_size_feature: Which feature to scale the node size by. Defaults
+        to ``degree``.
     :type node_size_feature: str
-    :param label_node_ids: bool indicating whether or not to plot ``node_id`` labels. Defaults to ``True``.
+    :param label_node_ids: bool indicating whether or not to plot ``node_id``
+        labels. Defaults to ``True``.
     :type label_node_ids: bool
-    :param node_colour_map: colour map to use for nodes. Defaults to ``plt.cm.plasma``.
+    :param node_colour_map: colour map to use for nodes. Defaults to
+        ``plt.cm.plasma``.
     :type node_colour_map: plt.cm
-    :param edge_color_map: colour map to use for edges. Defaults to ``plt.cm.plasma``.
+    :param edge_color_map: colour map to use for edges. Defaults to
+        ``plt.cm.plasma``.
     :type edge_color_map: plt.cm
-    :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``, ``"seq_position"`` or a node feature.
+    :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``,
+        ``"seq_position"`` or a node feature.
     :type colour_nodes_by: str
-    :param colour_edges_by: Specifies how to colour edges. Currently only ``"kind"`` or ``None`` are supported.
+    :param colour_edges_by: Specifies how to colour edges. Currently only
+        ``"kind"`` or ``None`` are supported.
     :type colour_edges_by: Optional[str]
     :returns: Plotly Graph Objects plot
     :rtype: go.Figure
@@ -374,8 +382,8 @@ def plotly_protein_structure_graph(
         hoverinfo="text+x+y+z",
     )
 
-    # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
-    # Those two points are the extrema of the line to be plotted
+    # Loop on the list of edges to get the x,y,z, coordinates of the connected
+    # nodes. Those two points are the extrema of the line to be plotted
     x_edges = []
     y_edges = []
     z_edges = []
@@ -472,25 +480,32 @@ def plot_protein_structure_graph(
     :type node_alpha: float
     :param node_size_min: Specifies node minimum size, defaults to ``20``.
     :type node_size_min: float
-    :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree. Defaults to ``20``.
+    :param node_size_multiplier: Scales node size by a constant. Node sizes
+        reflect degree. Defaults to ``20``.
     :type node_size_multiplier: float
-    :param label_node_ids: bool indicating whether or not to plot ``node_id`` labels. Defaults to ``True``.
+    :param label_node_ids: bool indicating whether or not to plot ``node_id``
+        labels. Defaults to ``True``.
     :type label_node_ids: bool
-    :param node_colour_map: colour map to use for nodes. Defaults to ``plt.cm.plasma``.
+    :param node_colour_map: colour map to use for nodes. Defaults to
+        ``plt.cm.plasma``.
     :type node_colour_map: plt.cm
-    :param edge_color_map: colour map to use for edges. Defaults to ``plt.cm.plasma``.
+    :param edge_color_map: colour map to use for edges. Defaults to
+        ``plt.cm.plasma``.
     :type edge_color_map: plt.cm
-    :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``, ``"seq_position"`` or a node feature.
+    :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``,
+        ``"seq_position"`` or a node feature.
     :type colour_nodes_by: str
-    :param colour_edges_by: Specifies how to colour edges. Currently only ``"kind"`` is supported.
+    :param colour_edges_by: Specifies how to colour edges. Currently only
+        ``"kind"`` is supported.
     :type colour_edges_by: str
     :param edge_alpha: Controls edge transparency. Defaults to ``0.5``.
     :type edge_alpha: float
     :param plot_style: matplotlib style sheet to use. Defaults to ``"ggplot"``.
     :type plot_style: str
-    :param out_path: If not none, writes plot to this location. Defaults to ``None`` (does not save).
+    :param out_path: If not none, writes plot to this location. Defaults to
+        ``None`` (does not save).
     :type out_path: str, optional
-    :param out_format: Fileformat to use for plot
+    :param out_format: File format to use for plot
     :type out_format: str
     :return: matplotlib Axes3D object.
     :rtype: Axes3D
@@ -513,7 +528,8 @@ def plot_protein_structure_graph(
         fig = plt.figure(figsize=figsize)
         ax = Axes3D(fig, auto_add_to_figure=True)
 
-        # Loop on the pos dictionary to extract the x,y,z coordinates of each node
+        # Loop on the pos dictionary to extract the x,y,z coordinates of each
+        # node
         for i, (key, value) in enumerate(pos.items()):
             xi = value[0]
             yi = value[1]
@@ -533,8 +549,9 @@ def plot_protein_structure_graph(
                 label = list(G.nodes())[i]
                 ax.text(xi, yi, zi, label)
 
-        # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
-        # Those two points are the extrema of the line to be plotted
+        # Loop on the list of edges to get the x,y,z, coordinates of the
+        # connected nodes. Those two points are the extrema of the line to be
+        # plotted
         for i, j in enumerate(G.edges()):
             x = np.array((pos[j[0]][0], pos[j[1]][0]))
             y = np.array((pos[j[0]][1], pos[j[1]][1]))
@@ -572,11 +589,12 @@ def add_vector_to_plot(
     :type g: nx.Graph
     :param fig: 3D plotly figure to add vectors to.
     :type fig: go.Figure
-    :param vector: Name of node vector feature to add, defaults to "sidechain_vector"
+    :param vector: Name of node vector feature to add, defaults to
+        ``"sidechain_vector"``.
     :type vector: str, optional
     :param scale: How much to scale the vectors by, defaults to 5
     :type scale: float, optional
-    :param colour: Colours for vectors, defaults to "red"
+    :param colour: Colours for vectors, defaults to ``"red"``.
     :type colour: str, optional
     :return: 3D Plotly plot with vectors added.
     :rtype: go.Figure
@@ -665,15 +683,19 @@ def plot_distance_matrix(
 ) -> go.Figure:
     """Plots a distance matrix of the graph.
 
-    :param g: NetworkX graph containing a distance matrix as a graph attribute (``g.graph['dist_mat']``).
+    :param g: NetworkX graph containing a distance matrix as a graph attribute
+        (``g.graph['dist_mat']``).
     :type g: nx.Graph, optional
-    :param dist_mat: Distance matrix to plot. If not provided, the distance matrix is taken from the graph. Defaults to ``None``.
+    :param dist_mat: Distance matrix to plot. If not provided, the distance
+        matrix is taken from the graph. Defaults to ``None``.
     :type dist_mat: np.ndarray, optional
-    :param use_plotly: Whether to use ``plotly`` or ``seaborn`` for plotting. Defaults to ``True``.
+    :param use_plotly: Whether to use ``plotly`` or ``seaborn`` for plotting.
+        Defaults to ``True``.
     :type use_plotly: bool
     :param title: Title of the plot.Defaults to ``None``.
     :type title: str, optional
-    :show_residue_labels: Whether to show residue labels on the plot. Defaults to ``True``.
+    :show_residue_labels: Whether to show residue labels on the plot. Defaults
+        to ``True``.
     :type show_residue_labels: bool
     :raises: ValueError if neither a graph ``g`` or a ``dist_mat`` are provided.
     :return: Plotly figure.
@@ -726,9 +748,11 @@ def plot_distance_landscape(
 ) -> go.Figure:
     """Plots a distance landscape of the graph.
 
-    :param g: Graph to plot (must contain a distance matrix in ``g.graph["dist_mat"]``).
+    :param g: Graph to plot (must contain a distance matrix in
+        ``g.graph["dist_mat"]``).
     :type g: nx.Graph
-    :param add_contour: Whether or not to show the contour, defaults to ``True``.
+    :param add_contour: Whether or not to show the contour, defaults to
+        ``True``.
     :type add_contour: bool, optional
     :param width: Plot width, defaults to ``500``.
     :type width: int, optional
@@ -807,7 +831,8 @@ def asteroid_plot(
 ) -> Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]:
     """Plots a k-hop subgraph around a node as concentric shells.
 
-    Radius of each point is proportional to the degree of the node (modified by node_size_multiplier).
+    Radius of each point is proportional to the degree of the node
+        (modified by node_size_multiplier).
 
     :param g: NetworkX graph to plot.
     :type g: nx.Graph
@@ -815,15 +840,18 @@ def asteroid_plot(
     :type node_id: str
     :param k: Number of hops to plot. Defaults to ``2``.
     :type k: int
-    :param colour_nodes_by: Colour the nodes by this attribute. Currently only ``"shell"`` is supported.
+    :param colour_nodes_by: Colour the nodes by this attribute. Currently only
+        ``"shell"`` is supported.
     :type colour_nodes_by: str
     :param size_nodes_by: Size the nodes by an attribute. 
     :type size_nodes_by: str
-    :param colour_edges_by: Colour the edges by this attribute. Currently only ``"kind"`` is supported.
+    :param colour_edges_by: Colour the edges by this attribute. Currently only
+        ``"kind"`` is supported.
     :type colour_edges_by: str
     :param edge_colour_map: Colour map for edges. Defaults to ``plt.cm.plasma``.
     :type edge_colour_map: plt.cm.Colormap
-    :param edge_alpha: Sets a given alpha value between 0.0 and 1.0 for all the edge colours.
+    :param edge_alpha: Sets a given alpha value between 0.0 and 1.0 for all the
+        edge colours.
     :type edge_alpha: float
     :param title: Title of the plot. Defaults to ``None``.
     :type title: str
@@ -835,12 +863,14 @@ def asteroid_plot(
     :type use_plotly: bool
     :param show_edges: Whether to show edges in the plot. Defaults to ``False``.
     :type show_edges: bool
-    :param show_legend: Whether to show the legend of the edges. Fefaults to `True``.
+    :param show_legend: Whether to show the legend of the edges. Fefaults to
+        `True``.
     :type show_legend: bool
     :param node_size_min: Specifies node minimum size. Defaults to ``20.0``.
     :type node_size_min: float
-    :param node_size_multiplier: Multiplier for the size of the nodes. Defaults to ``10``.
-    :type node_size_multiplier: float
+    :param node_size_multiplier: Multiplier for the size of the nodes. Defaults
+        to ``10``.
+    :type node_size_multiplier: float.
     :returns: Plotly figure or matplotlib figure.
     :rtpye: Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]
     """
@@ -1029,11 +1059,11 @@ def plot_chord_diagram(
         Possible values for `chord_colors` are:
 
         * a single color (do not use an RGB tuple, use hex format instead),
-          e.g. "red" or "#ff0000"; all chords will have this color
+        e.g. "red" or "#ff0000"; all chords will have this color
         * a list of colors, e.g. ``["red", "green", "blue"]``, one per node
-          (in this case, RGB tuples are accepted as entries to the list).
-          Each chord will get its color from its associated source node, or
-          from both nodes if `use_gradient` is True.
+        (in this case, RGB tuples are accepted as entries to the list).
+        Each chord will get its color from its associated source node, or
+        from both nodes if `use_gradient` is True.
     :param show: bool, optional (default: False)
         Whether the plot should be displayed immediately via an automatic call
         to ``plt.show()``.
@@ -1041,7 +1071,7 @@ def plot_chord_diagram(
         Available kwargs are:
 
         ================  ==================  ===============================
-              Name               Type           Purpose and possible values
+            Name               Type           Purpose and possible values
         ================  ==================  ===============================
         fontcolor         str or list         Color of the names
         fontsize          int                 Size of the font for names

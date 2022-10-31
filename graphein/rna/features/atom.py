@@ -1,4 +1,4 @@
-"""Functions for  featurising RNA Structure Graphs."""
+"""Functions for featurising RNA Structure Graphs."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
@@ -18,11 +18,14 @@ def add_atomic_radii(n: str, d: Dict[str, Any]) -> float:
     Lengths Interpreted as Sums of Atomic Covalent Radii
     Raji Heyrovska
 
-    Atoms in the RNA structure are mapped to their bond states (:const:`~graphein.rna.constants.RNA_ATOM_BOND_STATE`),
-    which are in turn mapped to the corresponding atomic radii (:const:`~graphein.rna.constants.RNA_ATOMIC_RADII`).
+    Atoms in the RNA structure are mapped to their bond states
+    (:const:`~graphein.rna.constants.RNA_ATOM_BOND_STATE`),
+    which are in turn mapped to the corresponding atomic radii
+    (:const:`~graphein.rna.constants.RNA_ATOMIC_RADII`).
 
     :param n: The node to add the atomic radius to.
-        Unused, the argument is provided to retain a consistent function signature.
+        Unused, the argument is provided to retain a consistent function
+        signature.
     :type n: str
     :param d: The node data.
     :type d: Dict[str, Any]

@@ -7,7 +7,6 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-import logging
 import traceback
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -17,6 +16,7 @@ import numpy as np
 import pandas as pd
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
+from loguru import logger as log
 from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
 
@@ -46,19 +46,17 @@ from graphein.utils.utils import (
     compute_edges,
 )
 
-# logging.basicConfig(level="DEBUG")
-log = logging.getLogger(__name__)
-
 
 def subset_structure_to_rna(
     df: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    Return a subset of atomic dataframe that contains only certain atom names relevant for RNA structures.
+    Return a subset of atomic DataFrame that contains only certain atom names
+    relevant for RNA structures.
 
-    :param df: Protein Structure dataframe to subset
+    :param df: Protein Structure DataFrame to subset.
     :type df: pd.DataFrame
-    :returns: Subsetted protein structure dataframe
+    :returns: Subsetted protein structure DataFrame.
     :rtype: pd.DataFrame
     """
     return filter_dataframe(
@@ -75,20 +73,24 @@ def read_pdb_to_dataframe(
     """
     Reads PDB file to ``PandasPDB`` object.
 
-    Returns ``atomic_df``, which is a dataframe enumerating all atoms and their cartesian coordinates in 3D space. Also
-    contains associated metadata from the PDB file.
+    Returns ``atomic_df``, which is a DataFrame enumerating all atoms and their
+    cartesian coordinates in 3D space. Also contains associated metadata from
+    the PDB file.
 
     :param pdb_path: path to PDB file. Defaults to ``None``.
     :type pdb_path: str, optional
     :param pdb_code: 4-character PDB accession. Defaults to ``None``.
     :type pdb_code: str, optional
-    :param uniprot_id: UniProt ID to build graph from AlphaFoldDB. Defaults to ``None``.
+    :param uniprot_id: UniProt ID to build graph from AlphaFoldDB. Defaults to
+        ``None``.
     :type uniprot_id: str, optional
-    :param model_index: Index of model to read. Only relevant for structures containing ensembles. Defaults to ``1``.
+    :param model_index: Index of model to read. Only relevant for structures
+        containing ensembles. Defaults to ``1``.
     :type model_index: int, optional
     :param verbose: print dataframe?
     :type verbose: bool
-    :param granularity: Specifies granularity of dataframe. See :class:`~graphein.protein.config.ProteinGraphConfig` for further
+    :param granularity: Specifies granularity of dataframe. See
+        :class:`~graphein.protein.config.ProteinGraphConfig` for further
         details.
     :type granularity: str
     :returns: ``pd.DataFrame`` containing protein structure
@@ -116,6 +118,17 @@ def read_pdb_to_dataframe(
 
 
 def label_node_id(df: pd.DataFrame, granularity: str) -> pd.DataFrame:
+    """Assigns a ``node_id`` column to the atomic dataframe. Node IDs are of the
+    form: ``"<CHAIN>:<RESIDUE_NAME>:<RESIDUE_NUMBER>:<ATOM_NAME>"`` for atomic
+    graphs or ``"<CHAIN>:<RESIDUE_NAME>:<RESIDUE_NUMBER>"`` for residue graphs.
+
+    :param df: Protein structure DataFrame.
+    :type df: pd.DataFrame
+    :param granularity: Granularity of graph.
+    :type granularity: str
+    :return: Protein structure DataFrame with ``node_id`` column.
+    :rtype: pd.DataFrame
+    """
     df["node_id"] = (
         df["chain_id"].apply(str)
         + ":"
@@ -149,20 +162,24 @@ def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
         "Deprotonating protein. This removes H atoms from the pdb_df dataframe"
     )
     return filter_dataframe(
-        df, by_column="atom_name", list_of_values=["H"], boolean=False
+        df, by_column="element_symbol", list_of_values=["H"], boolean=False
     )
 
 
 def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
-    """Overwrite existing ``(x, y, z)`` coordinates with centroids of the amino acids.
+    """Overwrite existing ``(x, y, z)`` coordinates with centroids of the amino
+    acids.
 
-    :param df: Pandas Dataframe protein structure to convert into a dataframe of centroid positions.
+    :param df: Pandas DataFrame protein structure to convert into a dataframe of
+        centroid positions.
     :type df: pd.DataFrame
-    :return: pd.DataFrame with atoms/residues positions converted into centroid positions.
+    :return: pd.DataFrame with atoms/residues positions converted into centroid
+        positions.
     :rtype: pd.DataFrame
     """
     log.debug(
-        "Converting dataframe to centroids. This averages XYZ coords of the atoms in a residue"
+        "Converting dataframe to centroids. This averages XYZ coords of the \
+            atoms in a residue"
     )
 
     centroids = calculate_centroid_positions(df)
@@ -192,11 +209,12 @@ def subset_structure_to_atom_type(
 
 def remove_insertions(df: pd.DataFrame, keep: str = "first") -> pd.DataFrame:
     """
-    This function removes insertions from PDB dataframes.
+    This function removes insertions from PDB DataFrames.
 
     :param df: Protein Structure dataframe to remove insertions from.
     :type df: pd.DataFrame
-    :param keep: Specifies which insertion to keep. Options are ``"first"`` or ``"last"``.
+    :param keep: Specifies which insertion to keep. Options are ``"first"`` or
+        ``"last"``.
         Default is ``"first"``
     :type keep: str
     :return: Protein structure dataframe with insertions removed
@@ -247,35 +265,43 @@ def process_dataframe(
     verbose: bool = False,
 ) -> pd.DataFrame:
     """
-    Process ATOM and HETATM dataframes to produce singular dataframe used for graph construction.
+    Process ATOM and HETATM dataframes to produce singular dataframe used for
+    graph construction.
 
     :param protein_df: Dataframe to process.
-        Should be the object returned from :func:`~graphein.protein.graphs.read_pdb_to_dataframe`.
+        Should be the object returned from
+        :func:`~graphein.protein.graphs.read_pdb_to_dataframe`.
     :type protein_df: pd.DataFrame
-    :param atom_df_processing_funcs: List of functions to process dataframe. These must take in a dataframe and return a
-        dataframe. Defaults to None.
+    :param atom_df_processing_funcs: List of functions to process dataframe.
+        These must take in a DataFrame and return a DataFrame. Defaults to
+        ``None``.
     :type atom_df_processing_funcs: List[Callable], optional
-    :param hetatom_df_processing_funcs: List of functions to process the hetatom dataframe. These must take in a dataframe and return a dataframe
+    :param hetatom_df_processing_funcs: List of functions to process the hetatom
+        dataframe. These must take in a DataFrame and return a DataFrame.
     :type hetatom_df_processing_funcs: List[Callable], optional
-    :param granularity: The level of granularity for the graph. This determines the node definition.
-        Acceptable values include: ``"centroids"``, ``"atoms"``,
-        any of the atom_names in the PDB file (e.g. ``"CA"``, ``"CB"``, ``"OG"``, etc.).
-        See: :const:`~graphein.protein.config.GRAPH_ATOMS` and :const:`~graphein.protein.config.GRANULARITY_OPTS`.
+    :param granularity: The level of granularity for the graph. This determines
+        the node definition. Acceptable values include: ``"centroids"``,
+        ``"atoms"``, any of the atom_names in the PDB file (e.g. ``"CA"``,
+        ``"CB"``, ``"OG"``, etc.).
+        See: :const:`~graphein.protein.config.GRAPH_ATOMS` and
+        :const:`~graphein.protein.config.GRANULARITY_OPTS`.
     :type granularity: str
     :param insertions: Whether or not to keep insertions.
     :param insertions: bool
-    :param deprotonate: Whether or not to remove hydrogen atoms (i.e. deprotonation).
+    :param deprotonate: Whether or not to remove hydrogen atoms (i.e.
+        deprotonation).
     :type deprotonate: bool
     :param keep_hets: Hetatoms to keep. Defaults to an empty list.
         To keep a hetatom, pass it inside a list of hetatom names to keep.
     :type keep_hets: List[str]
     :param verbose: Verbosity level.
     :type verbose: bool
-    :param chain_selection: Which protein chain to select. Defaults to ``"all"``. Eg can use ``"ACF"``
-        to select 3 chains (``A``, ``C`` & ``F``)
+    :param chain_selection: Which protein chain to select. Defaults to
+        ``"all"``. Eg can use ``"ACF"`` to select 3 chains (``A``, ``C`` &
+        ``F``)
     :type chain_selection: str
-    :return: A protein dataframe that can be consumed by
-        other graph construction functions.
+    :return: A protein dataframe that can be consumed by other graph
+        construction functions.
     :rtype: pd.DataFrame
     """
     protein_df = label_node_id(protein_df, granularity=granularity)
@@ -293,8 +319,9 @@ def process_dataframe(
         boolean=True,
     )
 
-    # This block enables processing via a list of supplied functions operating on the atom and hetatom dataframes
-    # If these are provided, the dataframe returned will be computed only from these and the default workflow
+    # This block enables processing via a list of supplied functions operating
+    # on the atom and hetatom dataframes If these are provided, the dataframe
+    # returned will be computed only from these and the default workflow
     # below this block will not execute.
     if atom_df_processing_funcs is not None:
         for func in atom_df_processing_funcs:
@@ -366,9 +393,9 @@ def assign_node_id_to_dataframe(
     :param protein_df: Structure Dataframe
     :type protein_df: pd.DataFrame
     :param granularity: Granularity of graph. Atom-level,
-        residue (e.g. ``CA``) or ``centroids``.
-        See: :const:`~graphein.protein.config.GRAPH_ATOMS`
-        and :const:`~graphein.protein.config.GRANULARITY_OPTS`.
+        residue (e.g. ``CA``) or ``centroids``. See:
+        :const:`~graphein.protein.config.GRAPH_ATOMS` and
+        :const:`~graphein.protein.config.GRANULARITY_OPTS`.
     :type granularity: str
     :return: Returns dataframe with added ``node_ids``
     :rtype: pd.DataFrame
@@ -392,7 +419,7 @@ def select_chains(
     """
     Extracts relevant chains from ``protein_df``.
 
-    :param protein_df: pandas dataframe of PDB subsetted to relevant atoms
+    :param protein_df: pandas DataFrame of PDB subsetted to relevant atoms
         (``CA``, ``CB``).
     :type protein_df: pd.DataFrame
     :param chain_selection: Specifies chains that should be extracted from
@@ -426,18 +453,24 @@ def initialise_graph_with_metadata(
     """
     Initializes the nx Graph object with initial metadata.
 
-    :param protein_df: Processed Dataframe of protein structure.
+    :param protein_df: Processed DataFrame of protein structure.
     :type protein_df: pd.DataFrame
-    :param raw_pdb_df: Unprocessed dataframe of protein structure for comparison and traceability downstream.
+    :param raw_pdb_df: Unprocessed dataframe of protein structure for comparison
+        and traceability downstream.
     :type raw_pdb_df: pd.DataFrame
-    :param granularity: Granularity of the graph (eg ``"atom"``, ``"CA"``, ``"CB"`` etc or ``"centroid"``).
-        See: :const:`~graphein.protein.config.GRAPH_ATOMS` and :const:`~graphein.protein.config.GRANULARITY_OPTS`.
+    :param granularity: Granularity of the graph (eg ``"atom"``, ``"CA"``,
+        ``"CB"`` etc or ``"centroid"``). See:
+        :const:`~graphein.protein.config.GRAPH_ATOMS` and
+        :const:`~graphein.protein.config.GRANULARITY_OPTS`.
     :type granularity: str
-    :param name: specified given name for the graph. If None, the PDB code or the file name will be used to name the graph.
+    :param name: specified given name for the graph. If None, the PDB code or
+        the file name will be used to name the graph.
     :type name: Optional[str], defaults to ``None``
-    :param pdb_code: PDB ID / Accession code, if the PDB is available on the PDB database.
+    :param pdb_code: PDB ID / Accession code, if the PDB is available on the
+        PDB database.
     :type pdb_code: Optional[str], defaults to ``None``
-    :param pdb_path: path to local PDB file, if constructing a graph from a local file.
+    :param pdb_path: path to local PDB file, if constructing a graph from a
+        local file.
     :type pdb_path: Optional[str], defaults to ``None``
     :return: Returns initial protein structure graph with metadata.
     :rtype: nx.Graph
@@ -489,7 +522,8 @@ def add_nodes_to_graph(
 
     :param G: ``nx.Graph`` with metadata to populate with nodes.
     :type G: nx.Graph
-    :protein_df: DataFrame of protein structure containing nodes & initial node metadata to add to the graph.
+    :param protein_df: DataFrame of protein structure containing nodes & initial
+        node metadata to add to the graph.
     :type protein_df: pd.DataFrame, optional
     :param verbose: Controls verbosity of this step.
     :type verbose: bool
@@ -546,7 +580,7 @@ def calculate_centroid_positions(
     :rtype: pd.DataFrame
     """
     centroids = (
-        atoms.groupby("residue_number")
+        atoms.groupby(["residue_number", "chain_id", "residue_name"])
         .mean()[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )
@@ -576,7 +610,8 @@ def compute_edges(
     :return: Graph with added edges.
     :rtype: nx.Graph
     """
-    # This control flow prevents unnecessary computation of the distance matrices
+    # This control flow prevents unnecessary computation of the distance
+    # matrices
     if "config" in G.graph:
         if G.graph["config"].granularity == "atom":
             G.graph["atomic_dist_mat"] = compute_distmat(G.graph["pdb_df"])
@@ -609,31 +644,44 @@ def construct_graph(
     Users can provide a :class:`~graphein.protein.config.ProteinGraphConfig`
     object to specify construction parameters.
 
-    However, config parameters can be overridden by passing arguments directly to the function.
+    However, config parameters can be overridden by passing arguments directly
+    to the function.
 
-    :param config: :class:`~graphein.protein.config.ProteinGraphConfig` object. If None, defaults to config in ``graphein.protein.config``.
+    :param config: :class:`~graphein.protein.config.ProteinGraphConfig` object.
+        If ``None``, defaults to config in ``graphein.protein.config``.
     :type config: graphein.protein.config.ProteinGraphConfig, optional
-    :param name: an optional given name for the graph. the PDB ID or PDB file name will be used if not specified.
+    :param name: an optional given name for the graph. the PDB ID or PDB file
+        name will be used if not specified.
     :type name: str, optional
-    :param pdb_path: Path to ``pdb_file`` when constructing a graph from a local pdb file. Default is ``None``.
+    :param pdb_path: Path to ``pdb_file`` when constructing a graph from a
+        local pdb file. Default is ``None``.
     :type pdb_path: Optional[str], defaults to ``None``
-    :param pdb_code: A 4-character PDB ID / accession to be used to construct the graph, if available. Default is ``None``.
+    :param pdb_code: A 4-character PDB ID / accession to be used to construct
+        the graph, if available. Default is ``None``.
     :type pdb_code: Optional[str], defaults to ``None``
-    :param uniprot_id: UniProt accession ID to build graph from AlphaFold2DB. Default is ``None``.
+    :param uniprot_id: UniProt accession ID to build graph from AlphaFold2DB.
+        Default is ``None``.
     :type uniprot_id: str, optional
-    :param chain_selection: String of polypeptide chains to include in graph. E.g ``"ABDF"`` or ``"all"``. Default is ``"all"``.
+    :param chain_selection: String of polypeptide chains to include in graph.
+        E.g ``"ABDF"`` or ``"all"``. Default is ``"all"``.
     :type chain_selection: str
-    :param model_index: Index of model to use in the case of structural ensembles. Default is ``1``.
+    :param model_index: Index of model to use in the case of structural
+        ensembles. Default is ``1``.
     :type model_index: int
-    :param df_processing_funcs: List of dataframe processing functions. Default is ``None``.
+    :param df_processing_funcs: List of dataframe processing functions.
+        Default is ``None``.
     :type df_processing_funcs: List[Callable], optional
-    :param edge_construction_funcs: List of edge construction functions. Default is ``None``.
+    :param edge_construction_funcs: List of edge construction functions.
+        Default is ``None``.
     :type edge_construction_funcs: List[Callable], optional
-    :param edge_annotation_funcs: List of edge annotation functions. Default is ``None``.
+    :param edge_annotation_funcs: List of edge annotation functions.
+        Default is ``None``.
     :type edge_annotation_funcs: List[Callable], optional
-    :param node_annotation_funcs: List of node annotation functions. Default is ``None``.
+    :param node_annotation_funcs: List of node annotation functions.
+        Default is ``None``.
     :type node_annotation_funcs: List[Callable], optional
-    :param graph_annotation_funcs: List of graph annotation function. Default is ``None``.
+    :param graph_annotation_funcs: List of graph annotation function.
+        Default is ``None``.
     :type graph_annotation_funcs: List[Callable]
     :return: Protein Structure Graph
     :rtype: nx.Graph
@@ -751,19 +799,23 @@ def _mp_graph_constructor(
     args: Tuple[str, str, int], source: str, config: ProteinGraphConfig
 ) -> Union[nx.Graph, None]:
     """
-    Protein graph constructor for use in multiprocessing several protein structure graphs.
+    Protein graph constructor for use in multiprocessing several protein
+    structure graphs.
 
     :param args: Tuple of pdb code/path and the chain selection for that PDB.
     :type args: Tuple[str, str]
-    :param use_pdb_code: Whether we are using ``"pdb_code"``s, ``pdb_path``s or ``"uniprot_id"``s.
+    :param use_pdb_code: Whether we are using ``"pdb_code"``s, ``pdb_path``s or
+        ``"uniprot_id"``s.
     :type use_pdb_code: bool
-    :param config: Protein structure graph construction config (see: :class:`graphein.protein.config.ProteinGraphConfig`).
+    :param config: Protein structure graph construction config (see:
+        :class:`graphein.protein.config.ProteinGraphConfig`).
     :type config: ProteinGraphConfig
     :return: Protein structure graph or ``None`` if an error is encountered.
     :rtype: Union[nx.Graph, None]
     """
     log.info(
-        f"Constructing graph for: {args[0]}. Chain selection: {args[1]}. Model index: {args[2]}"
+        f"Constructing graph for: {args[0]}. Chain selection: {args[1]}. \
+            Model index: {args[2]}"
     )
     func = partial(construct_graph, config=config)
     try:
@@ -802,25 +854,35 @@ def construct_graphs_mp(
     out_path: Optional[str] = None,
 ) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:
     """
-    Constructs protein graphs for a list of pdb codes or pdb paths using multiprocessing.
+    Constructs protein graphs for a list of pdb codes or pdb paths using
+    multiprocessing.
 
     :param pdb_code_it: List of pdb codes to use for protein graph construction
     :type pdb_code_it: Optional[List[str]], defaults to ``None``
-    :param pdb_path_it: List of paths to PDB files to use for protein graph construction
+    :param pdb_path_it: List of paths to PDB files to use for protein graph
+        construction.
     :type pdb_path_it: Optional[List[str]], defaults to ``None``
-    :param chain_selections: List of chains to select from the protein structures (e.g. ``["ABC", "A", "L", "CD"...]``)
+    :param chain_selections: List of chains to select from the protein
+        structures (e.g. ``["ABC", "A", "L", "CD"...]``).
     :type chain_selections: Optional[List[str]], defaults to ``None``
-    :param model_indices: List of model indices to use for protein graph construction. Only relevant for structures containing ensembles of models.
+    :param model_indices: List of model indices to use for protein graph
+        construction. Only relevant for structures containing ensembles of
+        models.
     :type model_indices: Optional[List[str]], defaults to ``None``
     :param config: ProteinGraphConfig to use.
-    :type config: graphein.protein.config.ProteinGraphConfig, defaults to default config params
-    :param num_cores: Number of cores to use for multiprocessing. The more the merrier
+    :type config: graphein.protein.config.ProteinGraphConfig, defaults to
+        default config params.
+    :param num_cores: Number of cores to use for multiprocessing. The more the
+        merrier.
     :type num_cores: int, defaults to ``16``
-    :param return_dict: Whether or not to return a dictionary (indexed by pdb codes/paths) or a list of graphs.
+    :param return_dict: Whether or not to return a dictionary
+        (indexed by pdb codes/paths) or a list of graphs.
     :type return_dict: bool, default to ``True``
-    :param out_path: Path to save the graphs to. If None, graphs are not saved.
+    :param out_path: Path to save the graphs to. If ``None``, graphs are not
+        saved to disk.
     :type out_path: Optional[str], defaults to ``None``
-    :return: Iterable of protein graphs. None values indicate there was a problem in constructing the graph for this particular pdb
+    :return: Iterable of protein graphs. None values indicate there was a
+        problem in constructing the graph for this particular pdb.
     :rtype: Union[List[nx.Graph], Dict[str, nx.Graph]]
     """
     assert (
@@ -928,7 +990,8 @@ def compute_chain_graph(
         h.add_edge(
             g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=d["kind"]
         )
-    # Remove self-loops if necessary. Checks for equality between nodes in a given edge.
+    # Remove self-loops if necessary. Checks for equality between nodes in a
+    # given edge.
     if remove_self_loops:
         edges_to_remove: List[Tuple[str]] = [
             (u, v) for u, v in h.edges() if u == v

@@ -6,7 +6,6 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-import logging
 import os
 import subprocess
 from pathlib import Path
@@ -14,19 +13,18 @@ from typing import Optional
 
 import networkx as nx
 import pandas as pd
+from loguru import logger as log
 
 from graphein.protein.utils import download_pdb
-
-log = logging.getLogger(__name__)
 
 
 def peptide_bonds(G: nx.Graph) -> nx.Graph:
     """
-    Adds peptide backbone to residues in each chain
+    Adds peptide backbone to residues in each chain.
 
-    :param G: nx.Graph protein graph
+    :param G: nx.Graph protein graph.
     :type G: nx.Graph
-    :returns: nx.Graph protein graph with added peptide bonds
+    :returns: nx.Graph protein graph with added peptide bonds.
     :rtype: nx.Graph
     """
     log.debug("Adding peptide bonds to graph")
@@ -81,19 +79,20 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
 
 def get_contacts_df(config: GetContactsConfig, pdb_name: str) -> pd.DataFrame:
     """
-    Reads GetContact File and returns it as a pd.DataFrame
+    Reads GetContact File and returns it as a ``pd.DataFrame``.
 
     :param config: GetContactsConfig object
     :type config: GetContactsConfig
-    :param pdb_name: Name of PDB file. Contacts files are name {pdb_name}_contacts.tsv
+    :param pdb_name: Name of PDB file. Output contacts files are named:
+        ``{pdb_name}_contacts.tsv``.
     :type pdb_name: str
-    :return: DataFrame of prased GetContacts output
+    :return: DataFrame of parsed GetContacts output.
     :rtype: pd.DataFrame
     """
     if not config.contacts_dir:
         config.contacts_dir = Path("/tmp/")
 
-    contacts_file = config.contacts_dir / (pdb_name + "_contacts.tsv")
+    contacts_file = config.contacts_dir / f"{pdb_name}_contacts.tsv"
 
     # Check for existence of GetContacts file
     if not os.path.isfile(contacts_file):
@@ -115,28 +114,33 @@ def run_get_contacts(
     file_name: Optional[str] = None,
 ):
     """
-    Runs GetContacts on a protein structure. If no file_name is provided, a PDB file is downloaded for the pdb_id
+    Runs GetContacts on a protein structure. If no file_name is provided, a
+    PDB file is downloaded for the pdb_id
 
     :param config: GetContactsConfig object containing GetContacts parameters
     :type config: graphein.protein.config.GetContactsConfig
     :param pdb_id: 4-character PDB accession code
     :type pdb_id: str, optional
-    :param file_name: PDB_name file to use, if annotations to be retrieved from the PDB
+    :param file_name: PDB_name file to use, if annotations to be retrieved from
+        the PDB
     :type file_name: str, optional
     """
     # Check for GetContacts Installation
     assert os.path.isfile(
         f"{config.get_contacts_path}/get_static_contacts.py"
-    ), "No GetContacts Installation Detected. Please install from: https://getcontacts.github.io"
+    ), "No GetContacts Installation Detected. Please install from: \
+    https://getcontacts.github.io"
 
     # Check for existence of pdb file. If not, download it.
     if not os.path.isfile(config.pdb_dir / file_name):
         log.debug(
-            f"No pdb file found for {config.pdb_dir / file_name}. Checking pdb_id..."
+            f"No pdb file found for {config.pdb_dir / file_name}. \
+            Checking pdb_id..."
         )
         if not os.path.isfile(config.pdb_dir / pdb_id):
             log.debug(
-                f"No pdb file found for {config.pdb_dir / pdb_id}. Downloading..."
+                f"No pdb file found for {config.pdb_dir / pdb_id}. \
+                Downloading..."
             )
             pdb_file = download_pdb(pdb_code=pdb_id, out_dir=config.pdb_dir)
         else:
@@ -161,9 +165,10 @@ def read_contacts_file(
     config: GetContactsConfig, contacts_file: str
 ) -> pd.DataFrame:
     """
-    Parses GetContacts file to an edgelist (pd.DataFrame)
+    Parses GetContacts file to an edge list (pd.DataFrame).
 
-    :param config: GetContactsConfig object (graphein.protein.config.GetContactsConfig)
+    :param config: GetContactsConfig object
+        (:ref:`~graphein.protein.config.GetContactsConfig`)
     :type config: GetContactsConfig
     :param contacts_file: file name of contacts file
     :type contacts_file: str
@@ -204,9 +209,9 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     """
     Adds specific interaction types to the protein graph.
 
-    :param G: networkx protein graph
+    :param G: Networkx protein graph.
     :type G: nx.Graph
-    :param interaction_type: interaction type to be added
+    :param interaction_type: Interaction type to be added.
     :type interaction_type: str
     :return G: nx.Graph with specified interaction-based edges added.
     :rtype: nx.Graph
@@ -242,11 +247,11 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
 
 def hydrogen_bond(G: nx.Graph) -> nx.Graph:
     """
-    Adds hydrogen bonds to protein structure graph
+    Adds hydrogen bonds to protein structure graph.
 
-    :param G: nx.Graph to add hydrogen bonds to
+    :param G: nx.Graph to add hydrogen bonds to.
     :type G: nx.Graph
-    :return: nx.Graph with hydrogen bonds added
+    :return: nx.Graph with hydrogen bonds added.
     :rtype: nx.Graph
     """
     return add_contacts_edge(G, "hb")
@@ -254,11 +259,11 @@ def hydrogen_bond(G: nx.Graph) -> nx.Graph:
 
 def salt_bridge(G: nx.Graph) -> nx.Graph:
     """
-    Adds salt bridges to protein structure graph
+    Adds salt bridges to protein structure graph.
 
-    :param G: nx.Graph to add salt bridges to
+    :param G: nx.Graph to add salt bridges to.
     :type G: nx.Graph
-    :return: nx.Graph with salt bridges added
+    :return: nx.Graph with salt bridges added.
     :rtype: nx.Graph
     """
     return add_contacts_edge(G, "sb")
@@ -266,11 +271,11 @@ def salt_bridge(G: nx.Graph) -> nx.Graph:
 
 def pi_cation(G: nx.Graph) -> nx.Graph:
     """
-    Adds pi-cation interactions to protein structure graph
+    Adds pi-cation interactions to protein structure graph.
 
-    :param G: nx.Graph to add pi-cation interactions to
+    :param G: nx.Graph to add pi-cation interactions to.
     :type G: nx.Graph
-    :return: nx.Graph with pi-pi_cation interactions added
+    :return: nx.Graph with pi-pi_cation interactions added.
     :rtype: nx.Graph
     """
 
@@ -291,11 +296,11 @@ def pi_stacking(G: nx.Graph) -> nx.Graph:
 
 def t_stacking(G: nx.Graph) -> nx.Graph:
     """
-    Adds t-stacking interactions to protein structure graph
+    Adds t-stacking interactions to protein structure graph.
 
-    :param G: nx.Graph to add t-stacking interactions to
+    :param G: nx.Graph to add t-stacking interactions to.
     :type G: nx.Graph
-    :return: nx.Graph with t-stacking interactions added
+    :return: nx.Graph with t-stacking interactions added.
     :rtype: nx.Graph
     """
     return add_contacts_edge(G, "ts")
@@ -303,11 +308,11 @@ def t_stacking(G: nx.Graph) -> nx.Graph:
 
 def hydrophobic(G: nx.Graph) -> nx.Graph:
     """
-    Adds hydrophobic interactions to protein structure graph
+    Adds hydrophobic interactions to protein structure graph.
 
-    :param G: nx.Graph to add hydrophobic interaction edges to
+    :param G: nx.Graph to add hydrophobic interaction edges to.
     :type G: nx.Graph
-    :return: nx.Graph with hydrophobic interactions added
+    :return: nx.Graph with hydrophobic interactions added.
     :rtype: nx.Graph
     """
     return add_contacts_edge(G, "hp")
@@ -315,11 +320,11 @@ def hydrophobic(G: nx.Graph) -> nx.Graph:
 
 def van_der_waals(G: nx.Graph) -> nx.Graph:
     """
-    Adds van der Waals interactions to protein structure graph
+    Adds van der Waals interactions to protein structure graph.
 
-    :param G: nx.Graph to add van der Waals interactions to
+    :param G: nx.Graph to add van der Waals interactions to.
     :type G: nx.Graph
-    :return: nx.Graph with van der Waals interactions added
+    :return: nx.Graph with van der Waals interactions added.
     :rtype: nx.Graph
     """
     return add_contacts_edge(G, "vdw")
