@@ -8,16 +8,14 @@
 from __future__ import annotations
 
 import itertools
-import logging
 from typing import Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
+from loguru import logger as log
 from sklearn.metrics import pairwise_distances
 from sklearn.neighbors import kneighbors_graph
-
-log = logging.getLogger(__name__)
 
 
 def compute_distmat(coords: np.ndarray) -> np.ndarray:
@@ -27,7 +25,8 @@ def compute_distmat(coords: np.ndarray) -> np.ndarray:
     Design choice: passed in a DataFrame to enable easier testing on
     dummy data.
 
-    :param coords: pd.Dataframe containing molecule structure. Must contain columns ``["x_coord", "y_coord", "z_coord"]``.
+    :param coords: pd.Dataframe containing molecule structure. Must contain
+        columns ``["x_coord", "y_coord", "z_coord"]``.
     :type coords: pd.DataFrame
     :return: np.ndarray of euclidean distance matrix.
     :rtype: np.ndarray
@@ -54,7 +53,8 @@ def add_distance_threshold(G: nx.Graph, threshold: float = 5.0):
 
     :param G: molecule structure graph to add distance edges to
     :type G: nx.Graph
-    :param threshold: Distance in angstroms, below which two nodes are connected.
+    :param threshold: Distance in angstroms, below which two nodes are
+        connected.
     :type threshold: float
     :return: Graph with distance-based edges added
     """
@@ -108,18 +108,24 @@ def add_k_nn_edges(
     :type G: nx.Graph
     :param k: Number of neighbors for each sample.
     :type k: int
-    :param mode: Type of returned matrix: ``"connectivity"`` will return the connectivity matrix with ones and zeros,
-        and ``"distance"`` will return the distances between neighbors according to the given metric.
+    :param mode: Type of returned matrix: ``"connectivity"`` will return the
+        connectivity matrix with ones and zeros, and ``"distance"`` will return
+        the distances between neighbors according to the given metric.
     :type mode: str
-    :param metric: The distance metric used to calculate the k-Neighbors for each sample point.
-        The DistanceMetric class gives a list of available metrics.
-        The default distance is ``"euclidean"`` (``"minkowski"`` metric with the ``p`` param equal to ``2``).
+    :param metric: The distance metric used to calculate the k-Neighbors for
+        each sample point. The DistanceMetric class gives a list of available
+        metrics. The default distance is ``"euclidean"`` (``"minkowski"``
+        metric with the ``p`` param equal to ``2``).
     :type metric: str
-    :param p: Power parameter for the Minkowski metric. When ``p = 1``, this is equivalent to using ``manhattan_distance`` (l1),
-        and ``euclidean_distance`` (l2) for ``p = 2``. For arbitrary ``p``, ``minkowski_distance`` (l_p) is used. Default is ``2`` (euclidean).
+    :param p: Power parameter for the Minkowski metric. When ``p = 1``, this is
+        equivalent to using ``manhattan_distance`` (l1), and
+        ``euclidean_distance`` (l2) for ``p = 2``. For arbitrary ``p``,
+        ``minkowski_distance`` (l_p) is used. Default is ``2`` (euclidean).
     :type p: int
-    :param include_self: Whether or not to mark each sample as the first nearest neighbor to itself.
-        If ``"auto"``, then ``True`` is used for ``mode="connectivity"`` and ``False`` for ``mode="distance"``. Default is ``False``.
+    :param include_self: Whether or not to mark each sample as the first nearest
+        neighbor to itself. If ``"auto"``, then ``True`` is used for
+        ``mode="connectivity"`` and ``False`` for ``mode="distance"``. Default
+        is ``False``.
     :type include_self: Union[bool, str]
     :return: Graph with knn-based edges added.
     :rtype: nx.Graph

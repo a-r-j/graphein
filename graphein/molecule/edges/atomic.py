@@ -1,15 +1,13 @@
 """Functions for computing atomic structure of molecules."""
+import networkx as nx
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import logging
-
-import networkx as nx
-
-log = logging.getLogger(__name__)
+from loguru import logger as log
 
 
 def add_atom_bonds(G: nx.Graph) -> nx.Graph:

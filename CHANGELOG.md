@@ -1,3 +1,13 @@
+### 1.5.3 - UNRELEASED
+
+#### Improvements
+* [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
+
+#### Protein
+
+* [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes edge metadata conversion to PyG. Contribution by @manonreau.
+* [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes centroid atom grouping & avoids unnecessary edge computation where none are found. Contribution by @manonreau.
+
 ### 1.5.2 - 19/9/2022
 
 #### Protein

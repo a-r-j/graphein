@@ -6,19 +6,17 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-import logging
 from collections import defaultdict
 from itertools import chain
 from typing import Dict, List
 
 import networkx as nx
+from loguru import logger as log
 
 from graphein.protein.visualisation import (
     plotly_protein_structure_graph as plotly_rna_structure_graph,
 )
 from graphein.rna.graphs import RNA_BASE_COLORS
-
-log = logging.getLogger(__name__)
 
 
 def plot_rna_graph(

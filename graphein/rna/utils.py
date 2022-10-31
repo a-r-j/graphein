@@ -1,4 +1,10 @@
 """Utility Functions for working with RNA Secondary Structure Graphs."""
+import os
+import shutil
+from typing import Tuple
+
+import wget
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
@@ -6,19 +12,12 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 # This submodule is heavily inspired by: https://github.com/emalgorithm/rna-design/blob/aec77a18abe4850958d6736ec185a6f8cbfdf20c/src/util.py#L9
-import logging
-import os
-import shutil
-from typing import Tuple
-
-import wget
+from loguru import logger as log
 
 BP_RNA_1M_DB_URL: str = (
     "http://bprna.cgrb.oregonstate.edu/bpRNA_1m/dbnFiles.zip"
 )
 BP_RNA_1M_90_DB_URL: str = "http://bprna.cgrb.oregonstate.edu/bpRNA_1m_90.zip"
-
-log = logging.getLogger(__name__)
 
 
 def download_bp_rna_1m(out_path: str = "/tmp/"):

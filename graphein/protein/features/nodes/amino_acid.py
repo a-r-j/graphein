@@ -5,13 +5,13 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-import logging
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from loguru import logger as log
 
 from graphein.protein.resi_atoms import (
     BASE_AMINO_ACIDS,
@@ -20,8 +20,6 @@ from graphein.protein.resi_atoms import (
     RESI_THREE_TO_1,
 )
 from graphein.utils.utils import onek_encoding_unk
-
-log = logging.getLogger(__name__)
 
 
 @lru_cache()
@@ -61,8 +59,8 @@ def load_meiler_embeddings() -> pd.DataFrame:
 
 
 def expasy_protein_scale(
-    n,
-    d,
+    n: str,
+    d: Dict[str, Any],
     selection: Optional[List[str]] = None,
     add_separate: bool = False,
     return_array: bool = False,
@@ -73,11 +71,16 @@ def expasy_protein_scale(
     Source: https://web.expasy.org/protscale/
 
     :param n: Node in a NetworkX graph
+    :type n: str
     :param d: NetworkX node attributes.
-    :param selection: List of columns to select. Viewable in graphein.protein.features.nodes.meiler_embeddings
+    :type d: Dict[str, Any]
+    :param selection: List of columns to select. Viewable in
+        :ref:`~graphein.protein.features.nodes.meiler_embeddings`.
     :type selection: List[str], optional
-    :param add_separate: Whether or not to add the expasy features as indvidual entries or as a series.
-    :param return_array: Bool indicating whether or not to return a np.ndarray of the features. Default is pd.Series
+    :param add_separate: Whether or not to add the expasy features as individual
+        entries or as a series.
+    :param return_array: Bool indicating whether or not to return a
+        ``np.ndarray`` of the features. Default is ``pd.Series``.
     :type return_array: bool
     :returns: pd.Series of amino acid features
     :rtype: pd.Series
@@ -104,16 +107,21 @@ def expasy_protein_scale(
 
 
 def meiler_embedding(
-    n, d, return_array: bool = False
-) -> Union[pd.Series, np.array]:
+    n: str, d: Dict[str, Any], return_array: bool = False
+) -> Union[pd.Series, np.ndarray]:
     """
-    Return amino acid features from reduced dimensional embeddings of amino acid physicochemical properties.
+    Return amino acid features from reduced dimensional embeddings of amino
+    acid physicochemical properties.
 
     Source: https://link.springer.com/article/10.1007/s008940100038
     doi: https://doi.org/10.1007/s008940100038
 
     :param n: Node in a NetworkX graph
+    :type n: str
     :param d: NetworkX node attributes.
+    :type d: Dict[str, Any]
+    :param return_array: Bool indicating whether or not to return a
+        ``np.ndarray`` of the features. Default is ``pd.Series``.
     :returns: pd.Series of amino acid features
     :rtype: pd.Series
     """
@@ -121,7 +129,7 @@ def meiler_embedding(
     amino_acid = d["residue_name"]
     try:
         features = df[amino_acid]
-    except:
+    except KeyError:
         features = pd.Series(np.zeros(len(df)))
 
     if return_array:
@@ -140,14 +148,18 @@ def amino_acid_one_hot(
 ) -> Union[pd.Series, np.ndarray]:
     """Adds a one-hot encoding of amino acid types as a node attribute.
 
-    :param n: node name, this is unused and only included for compatibility with the other functions
+    :param n: node name, this is unused and only included for compatibility
+        with the other functions
     :type n: str
-    :param d: Node data
+    :param d: Node data.
     :type d: Dict[str, Any]
-    :param return_array: If True, returns a numpy array of one-hot encoding, otherwise returns a pd.Series. Default is True.
+    :param return_array: If True, returns a numpy array of one-hot encoding,
+        otherwise returns a pd.Series. Default is True.
     :type return_array: bool
-    :param allowable_set: Specifies vocabulary of amino acids. Default is None (which uses `graphein.protein.resi_atoms.STANDARD_AMINO_ACIDS`).
-    :return: One-hot encoding of amino acid types
+    :param allowable_set: Specifies vocabulary of amino acids. Default is
+        ``None`` (which uses
+        :const:`~graphein.protein.resi_atoms.STANDARD_AMINO_ACIDS`).
+    :return: One-hot encoding of amino acid types.
     :rtype: Union[pd.Series, np.ndarray]
     """
 
@@ -173,18 +185,19 @@ def hydrogen_bond_donor(
     d: Dict[str, Any],
     sum_features: bool = True,
     return_array: bool = False,
-) -> pd.Series:
+):
     """Adds Hydrogen Bond Donor status to nodes as a feature.
 
-    :param n: node id
+    :param n: Node id
     :type n: str
     :param d: Dict of node attributes
     :type d: Dict[str, Any]
-    :param sum_features: If ``True``, the feature is the number of hydrogen bond donors per node.
-        If ``False``, the feature is a boolean indicating whether or not the node has a hydrogen
-        bond donor. Default is ``True``.
+    :param sum_features: If ``True``, the feature is the number of hydrogen
+        bond donors per node. If ``False``, the feature is a boolean indicating
+        whether or not the node has a hydrogen bond donor. Default is ``True``.
     :type sum_features: bool
-    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise returns a ``pd.Series``. Default is ``True``.
+    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise
+        returns a ``pd.Series``. Default is ``True``.
     :type return_array: bool
     """
     node_id = n.split(":")
@@ -214,17 +227,19 @@ def hydrogen_bond_donor(
 def hydrogen_bond_acceptor(
     n, d, sum_features: bool = True, return_array: bool = False
 ) -> pd.Series:
-    """Adds Hydrogen Bond Acceptor status to nodes as a feature."
+    """Adds Hydrogen Bond Acceptor status to nodes as a feature.
 
-    :param n: node id
+    :param n: Node id
     :type n: str
-    :param d: Dict of node attributes
+    :param d: Dict of node attributes.
     :type d: Dict[str, Any]
-    :param sum_features: If ``True``, the feature is the number of hydrogen bond acceptors per node.
-        If ``False``, the feature is a boolean indicating whether or not the node has a hydrogen
-        bond acceptor. Default is ``True``.
+    :param sum_features: If ``True``, the feature is the number of hydrogen
+        bond acceptors per node. If ``False``, the feature is a boolean
+        indicating whether or not the node has a hydrogen bond acceptor.
+        Default is ``True``.
     :type sum_features: bool
-    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise returns a ``pd.Series``. Default is ``True``.
+    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise
+        returns a ``pd.Series``. Default is ``True``.
     :type return_array: bool
     """
     node_id = n.split(":")

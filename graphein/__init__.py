@@ -20,3 +20,15 @@ logger.configure(
         {"sink": RichHandler(rich_tracebacks=True), "format": "{message}"}
     ]
 )
+
+
+def verbose(enabled: bool = False):
+    """Enable/Disable logging.
+
+    :param enabled: Whether or not to enable logging, defaults to ``False``.
+    :type enabled: bool, optional
+    """
+    if not enabled:
+        logger.disable("graphein")
+    else:
+        logger.enable("graphein")
