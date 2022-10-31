@@ -1,9 +1,9 @@
-import logging
+"""Node featurisation utilities for Gene Regulatory Networks."""
 from typing import Any, Dict
 
-from graphein.utils.utils import import_message
+from loguru import logger as log
 
-log = logging.getLogger(__name__)
+from graphein.utils.utils import import_message
 
 try:
     from bioservices import HGNC, UniProt

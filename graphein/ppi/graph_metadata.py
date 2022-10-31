@@ -5,16 +5,14 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import logging
 from typing import Dict, Union
 
 import networkx as nx
 import pandas as pd
+from loguru import logger as log
 
 from graphein.ppi.parse_biogrid import BIOGRID_df
 from graphein.ppi.parse_stringdb import STRING_df
-
-log = logging.getLogger(__name__)
 
 
 def add_string_metadata(
@@ -23,11 +21,11 @@ def add_string_metadata(
     """
     Adds interaction dataframe from STRING to graph.
 
-    :param G: PPI Graph to add metadata to
+    :param G: PPI Graph to add metadata to.
     :type G: nx.Graph
-    :param kwargs:  Additional parameters for STRING API call
+    :param kwargs:  Additional parameters for STRING API call.
     :type kwargs: Dict[str, Union[str, int]]
-    :return: PPIGraph with added STRING interaction_df as metadata
+    :return: PPIGraph with added STRING ``interaction_df`` as metadata.
     :rtype: nx.Graph
     """
     G.graph["string_df"] = STRING_df(
@@ -63,11 +61,11 @@ def add_string_biogrid_metadata(
     """
     Adds interaction dataframe from STRING and BIOGRID to graph.
 
-    :param G: PPIGraph to add metadata to
+    :param G: PPIGraph to add metadata to.
     :type G: nx.Graph
-    :param kwargs:  Additional parameters for STRING and BIOGRID API calls
+    :param kwargs:  Additional parameters for STRING and BIOGRID API calls.
     :type kwargs: Dict[str, Union[str, int]]
-    :return: PPIGraph with added STRING and BIOGRID interaction_df as metadata
+    :return: PPIGraph with added STRING and BIOGRID interaction_df as metadata.
     :rtype: nx.Graph
     """
     G.graph["string_df"] = STRING_df(

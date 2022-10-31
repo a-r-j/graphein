@@ -1,13 +1,10 @@
 """Provides utility functions for use across Graphein."""
-from __future__ import annotations
-
-import logging
-
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+
 import os
 import tempfile
 from functools import lru_cache, partial
@@ -21,11 +18,10 @@ import networkx as nx
 import pandas as pd
 import wget
 from biopandas.pdb import PandasPdb
+from loguru import logger as log
 from tqdm.contrib.concurrent import process_map
 
 from .resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
-
-log = logging.getLogger(__name__)
 
 
 class ProteinGraphConfigurationError(Exception):
@@ -146,7 +142,8 @@ def download_pdb(
             return download_pdb(new_pdb, out_dir, overwrite=overwrite)
         except KeyError:
             log.warning(
-                f"PDB {pdb_code} not found. Possibly too large; large structures are only provided as mmCIF files."
+                f"PDB {pdb_code} not found. Possibly too large; large \
+                    structures are only provided as mmCIF files."
             )
             return
 
@@ -240,7 +237,8 @@ def download_alphafold_structure(
     aligned_score: bool = True,
 ) -> Union[str, Tuple[str, str]]:
     """
-    Downloads a structure from the Alphafold EBI database (https://alphafold.ebi.ac.uk/files/").
+    Downloads a structure from the Alphafold EBI database
+    (https://alphafold.ebi.ac.uk/files/").
 
     :param uniprot_id: UniProt ID of desired protein.
     :type uniprot_id: str
@@ -418,7 +416,8 @@ def save_rgroup_df_to_pdb(
 def is_tool(name: str) -> bool:
     """Checks whether ``name`` is on ``PATH`` and is marked as an executable.
 
-    Source: https://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
+    Source:
+    https://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
 
     :param name: Name of program to check for execution ability.
     :type name: str

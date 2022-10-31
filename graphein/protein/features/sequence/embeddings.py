@@ -1,4 +1,5 @@
-"""Functions to add embeddings from pre-trained language models protein structure graphs."""
+"""Functions to add embeddings from pre-trained language models protein
+structure graphs."""
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -6,21 +7,19 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-import logging
 import os
 from functools import lru_cache, partial
 from pathlib import Path
 
 import networkx as nx
+import numpy as np
+from loguru import logger as log
 
 from graphein.protein.features.sequence.utils import (
     compute_feature_over_chains,
     subset_by_node_feature_value,
 )
 from graphein.utils.utils import import_message
-
-log = logging.getLogger(__name__)
-
 
 try:
     import torch
@@ -49,13 +48,16 @@ def _load_esm_model(model_name: str = "esm1b_t33_650M_UR50S"):
     """
     Loads pre-trained FAIR ESM model from torch hub.
 
-        Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
-        Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
-        Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
+        *Biological Structure and Function Emerge from Scaling Unsupervised*
+        *Learning to 250 Million Protein Sequences* (2019)
+        Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth
+        and Lin, Zeming and Liu, Jason and Guo, Demi and Ott, Myle and Zitnick,
+        C. Lawrence and Ma, Jerry and Fergus, Rob
 
 
-        Transformer protein language models are unsupervised structure learners 2020
-        Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
+        *Transformer protein language models are unsupervised structure learners*
+        2020 Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov,
+        Sergey and Rives, Alexander
 
     Pre-trained models:
     Full Name layers params Dataset Embedding Dim Model URL
@@ -84,13 +86,15 @@ def compute_esm_embedding(
     """
     Computes sequence embedding using Pre-trained ESM model from FAIR
 
-        Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
-        Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
-        Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
+        *Biological Structure and Function Emerge from Scaling Unsupervised*
+        *Learning to 250 Million Protein Sequences* (2019)
+        Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth
+        and Lin, Zeming and Liu, Jason and Guo, Demi and Ott, Myle and Zitnick,
+        C. Lawrence and Ma, Jerry and Fergus, Rob
 
-
-        Transformer protein language models are unsupervised structure learners 2020
-        Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
+        *Transformer protein language models are unsupervised structure learners*
+        2020 Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov,
+            Sergey and Rives, Alexander
 
     Pre-trained models:
 
@@ -105,11 +109,14 @@ def compute_esm_embedding(
 
     :param sequence: Protein sequence to embed (str)
     :type sequence: str
-    :param representation: Type of embedding to extract. ``"residue"`` or ``"sequence"``. Sequence-level embeddings are averaged residue embeddings
+    :param representation: Type of embedding to extract. ``"residue"`` or
+        ``"sequence"``. Sequence-level embeddings are averaged residue
+        embeddings
     :type representation: str
     :param model_name: Name of pre-trained model to use
     :type model_name: str
-    :param output_layer: integer indicating which layer the output should be taken from
+    :param output_layer: integer indicating which layer the output should be
+        taken from.
     :type output_layer: int
     :return: embedding (``np.ndarray``)
     :rtype: np.ndarray
@@ -133,7 +140,8 @@ def compute_esm_embedding(
         return token_representations.numpy()
 
     # Generate per-sequence representations via averaging
-    # NOTE: token 0 is always a beginning-of-sequence token, so the first residue is token 1.
+    # NOTE: token 0 is always a beginning-of-sequence token, so the first
+    # residue is token 1.
     elif representation == "sequence":
         sequence_representations = []
         for i, (_, seq) in enumerate(data):
@@ -149,15 +157,20 @@ def esm_residue_embedding(
     output_layer: int = 33,
 ) -> nx.Graph:
     """
-    Computes ESM residue embeddings from a protein sequence and adds the to the graph.
+    Computes ESM residue embeddings from a protein sequence and adds the to the
+    graph.
 
-        Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences (2019)
-        Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth and Lin, Zeming and Liu, Jason and Guo,
-        Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus, Rob
+        *Biological Structure and Function Emerge from Scaling Unsupervised*
+        *Learning to 250 Million Protein Sequences* (2019)
+        Rives, Alexander and Meier, Joshua and Sercu, Tom and Goyal, Siddharth
+        and Lin, Zeming and Liu, Jason and Guo,
+        Demi and Ott, Myle and Zitnick, C. Lawrence and Ma, Jerry and Fergus,
+        Rob
 
 
-        Transformer protein language models are unsupervised structure learners 2020
-        Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov, Sergey and Rives, Alexander
+        *Transformer protein language models are unsupervised structure learners*
+        (2020) Rao, Roshan M and Meier, Joshua and Sercu, Tom and Ovchinnikov,
+        Sergey and Rives, Alexander
 
     **Pre-trained models**
 
@@ -205,7 +218,8 @@ def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
 
     :param G: nx.Graph protein structure graph.
     :type G: nx.Graph
-    :return: nx.Graph protein structure graph with esm embedding features added eg. ``G.graph["esm_embedding_A"]`` for chain A.
+    :return: nx.Graph protein structure graph with esm embedding features added
+        eg. ``G.graph["esm_embedding_A"]`` for chain A.
     :rtype: nx.Graph
     """
     func = partial(compute_esm_embedding, representation="sequence")
@@ -245,7 +259,8 @@ def biovec_sequence_embedding(G: nx.Graph) -> nx.Graph:
 
     :param G: nx.Graph protein structure graph.
     :type G: nx.Graph
-    :return: nx.Graph protein structure graph with biovec embedding added. e.g. ``G.graph["biovec_embedding_A"]`` for chain ``A``.
+    :return: nx.Graph protein structure graph with biovec embedding added. e.g.
+        ``G.graph["biovec_embedding_A"]`` for chain ``A``.
     :rtype: nx.Graph
     """
     pv = _load_biovec_model()
