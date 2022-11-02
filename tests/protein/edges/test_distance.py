@@ -184,7 +184,7 @@ def test_add_peptide_bonds():
     G = construct_graph(pdb_path=str(file_path))
 
     for u, v in G.edges():
-        assert abs(int(u.split(":")[-1]) - int(v.split(":")[-1])) == 1
+        assert abs(int(u.split(":")[2]) - int(v.split(":")[2])) == 1
 
 
 def test_add_sequence_distance_edges():
@@ -199,7 +199,7 @@ def test_add_sequence_distance_edges():
         )
         G = construct_graph(pdb_path=str(file_path), config=config)
         for u, v in G.edges():
-            assert abs(int(u.split(":")[-1]) - int(v.split(":")[-1])) == d
+            assert abs(int(u.split(":")[2]) - int(v.split(":")[2])) == d
 
 
 def test_salt_bridge_interactions():
