@@ -443,7 +443,7 @@ def test_chain_graph():
 def test_df_processing():
     def return_even_df(df: pd.DataFrame) -> pd.DataFrame:
         df = df["residue_number"] % 2 == 0
-        return pd.DataFrame()
+        return df
 
     params_to_change = {"protein_df_processing_functions": [return_even_df]}
 
