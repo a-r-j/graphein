@@ -1063,7 +1063,8 @@ def add_k_nn_edges(
     G: nx.Graph,
     long_interaction_threshold: int,
     k: int = 5,
-    exclude_edges: Iterable[str] = ('self',)
+    exclude_edges: Iterable[str] = ('self',),
+    kind_name: str = 'knn'
 ):
     """
     Adds edges to nodes based on K nearest neighbours. Long interaction
@@ -1083,6 +1084,8 @@ def add_k_nn_edges(
         - `inter` removes inter-connections between nodes of the same chain.
         - `intra` removes intra-connections between nodes of different chains.
     :type exclude_edges: Iterable[str].
+    :param kind_name: Name for kind of edges in networkx graph.
+    :type kind_name: str
     :return: Graph with knn-based edges added
     :rtype: nx.Graph
     """
@@ -1128,9 +1131,9 @@ def add_k_nn_edges(
         # If on same chain and separation is sufficient add edge
         if condition_1 or condition_2:
             if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("k_nn")
+                G.edges[n1, n2]["kind"].add(kind_name)
             else:
-                G.add_edge(n1, n2, kind={"k_nn"})
+                G.add_edge(n1, n2, kind={kind_name})
 
 
 def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
