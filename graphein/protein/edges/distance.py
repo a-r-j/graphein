@@ -7,8 +7,8 @@
 from __future__ import annotations
 
 import itertools
-from itertools import combinations
-from typing import Dict, List, Optional, Tuple, Union
+from itertools import combinations, product
+from typing import Dict, List, Optional, Tuple, Union, Iterable
 
 import networkx as nx
 import numpy as np
@@ -43,6 +43,9 @@ from graphein.protein.resi_atoms import (
 from graphein.protein.utils import filter_dataframe
 
 
+INFINITE_DIST = 10_000  # np.inf leads to errors in some cases
+
+
 def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     """
     Compute pairwise Euclidean distances between every atom.
@@ -73,6 +76,58 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     eucl_dists.columns = pdb_df.index
 
     return eucl_dists
+
+
+def filter_distmat(
+    pdb_df: pd.DataFrame,
+    distmat: pd.DataFrame,
+    exclude_edges: Iterable[str],
+    inplace: bool = True
+) -> pd.DataFrame:
+    """
+    Filter distance matrix in place based on edge types to exclude.
+
+    :param pdb_df: Data frame representing a PDB graph.
+    :param distmat: Pairwise-distance matrix between all nodes
+    :param exclude_edges: Supported values: `self`, `inter`, `intra`
+        - `self` removes self loops.
+        - `inter` removes inter-connections between nodes of the same chain.
+        - `intra` removes intra-connections between nodes of different chains.
+    :param inplace: False to create a deep copy.
+    :return: Modified pairwise-distance matrix between all nodes.
+    """
+    supported_exclude_edges_vals = ['self', 'inter', 'intra']
+    for val in exclude_edges:
+        if val not in supported_exclude_edges_vals:
+            raise ValueError(f'Unknown `exclude_edges` value \'{val}\'.')
+
+    if not inplace:
+        distmat = distmat.copy(deep=True)
+
+    chain_to_nodes = pdb_df.groupby('chain_id')['node_id'].apply(list).to_dict()
+    node_id_to_int = dict(zip(pdb_df['node_id'], pdb_df.index))
+    chain_to_nodes = {
+        ch: [node_id_to_int[n] for n in nodes]
+        for ch, nodes in chain_to_nodes.items()
+    }
+
+    edges_to_excl = []
+    if 'self' in exclude_edges:
+        n_nodes = len(distmat)
+        edges_to_excl.extend(list(zip(range(n_nodes), range(n_nodes))))
+    if 'intra' in exclude_edges:
+        for nodes in chain_to_nodes.values():
+            edges_to_excl.extend(list(combinations(nodes, 2)))
+    if 'inter' in exclude_edges:
+        for nodes0, nodes1 in combinations(chain_to_nodes.values(), 2):
+            edges_to_excl.extend(list(product(nodes0, nodes1)))
+
+    if len(exclude_edges):
+        row_idx_to_excl, col_idx_to_excl = zip(*edges_to_excl)
+        distmat.iloc[row_idx_to_excl, col_idx_to_excl] = INFINITE_DIST
+        distmat.iloc[col_idx_to_excl, row_idx_to_excl] = INFINITE_DIST
+
+    return distmat
 
 
 def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
@@ -1008,10 +1063,7 @@ def add_k_nn_edges(
     G: nx.Graph,
     long_interaction_threshold: int,
     k: int = 5,
-    mode: str = "connectivity",
-    metric: str = "minkowski",
-    p: int = 2,
-    include_self: Union[bool, str] = False,
+    exclude_edges: Iterable[str] = ('self',)
 ):
     """
     Adds edges to nodes based on K nearest neighbours. Long interaction
@@ -1025,25 +1077,12 @@ def add_k_nn_edges(
     :type long_interaction_threshold: int
     :param k: Number of neighbors for each sample.
     :type k: int
-    :param mode: Type of returned matrix: ``"connectivity"`` will return the
-        connectivity matrix with ones and zeros, and ``"distance"`` will return
-        the distances between neighbors according to the given metric.
-    :type mode: str
-    :param metric: The distance metric used to calculate the k-Neighbors for
-        each sample point. The ``DistanceMetric`` class gives a list of
-        available metrics. The default distance is ``"euclidean"``
-        (``"minkowski"`` metric with the ``p`` param equal to ``2``).
-    :type metric: str
-    :param p: Power parameter for the Minkowski metric. When ``p = 1``, this is
-        equivalent to using ``manhattan_distance`` (l1), and
-        ``euclidean_distance`` (l2) for ``p = 2``. For arbitrary ``p``,
-        ``minkowski_distance`` (l_p) is used. Default is ``2`` (euclidean).
-    :type p: int
-    :param include_self: Whether or not to mark each sample as the first nearest
-        neighbor to itself. If ``"auto"``, then ``True`` is used for
-        ``mode="connectivity"`` and ``False`` for ``mode="distance"``.
-        Default is ``False``.
-    :type include_self: Union[bool, str]
+    :param exclude_edges: Types of edges to exclude. Supported values are
+        `self`, `inter`,`intra`.
+        - `self` removes self loops.
+        - `inter` removes inter-connections between nodes of the same chain.
+        - `intra` removes intra-connections between nodes of different chains.
+    :type exclude_edges: Iterable[str].
     :return: Graph with knn-based edges added
     :rtype: nx.Graph
     """
@@ -1052,6 +1091,10 @@ def add_k_nn_edges(
     )
     dist_mat = compute_distmat(pdb_df)
 
+    # Filter edges
+    dist_mat = filter_distmat(pdb_df, dist_mat, exclude_edges)
+
+    # Run k-NN search
     neigh = NearestNeighbors(n_neighbors=k, metric='precomputed')
     neigh.fit(dist_mat)
     nn = neigh.kneighbors_graph()
