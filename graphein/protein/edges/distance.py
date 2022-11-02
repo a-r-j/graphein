@@ -16,7 +16,7 @@ import pandas as pd
 from loguru import logger as log
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import pdist, squareform
-from sklearn.neighbors import kneighbors_graph
+from sklearn.neighbors import kneighbors_graph, NearestNeighbors
 
 from graphein.protein.resi_atoms import (
     AA_RING_ATOMS,
@@ -1052,14 +1052,9 @@ def add_k_nn_edges(
     )
     dist_mat = compute_distmat(pdb_df)
 
-    nn = kneighbors_graph(
-        X=dist_mat,
-        n_neighbors=k,
-        mode=mode,
-        metric=metric,
-        p=p,
-        include_self=include_self,
-    )
+    neigh = NearestNeighbors(n_neighbors=k, metric='precomputed')
+    neigh.fit(dist_mat)
+    nn = neigh.kneighbors_graph()
 
     # Create iterable of node indices
     outgoing = np.repeat(np.array(range(len(G.graph["pdb_df"]))), k)
