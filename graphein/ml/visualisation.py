@@ -49,17 +49,20 @@ def plot_pyg_data(
     colour_edges_by: Optional[str] = None,
 ) -> go.Figure:
     """
-    Plots protein structure graph from ``torch_geometric.data.Data`` using plotly.
+    Plots protein structure graph from ``torch_geometric.data.Data``
+    using plotly.
 
     This function can be used for logging proteins to e.g. wandb.
 
     :param x: ``torch_geometric.data.Data`` Protein Structure graph to plot.
     :type x: torch_geometric.data.Data
-    :param node_colour_tensor: Tensor of node colours (must match length of nodes in graph).
-        If ``None``, ``colour_nodes_by`` will be used. Default is ``None``.
+    :param node_colour_tensor: Tensor of node colours (must match length of
+        nodes in graph). If ``None``, ``colour_nodes_by`` will be used. Default
+        is ``None``.
     :type node_colour_tensor: torch.Tensor, optional
-    :parm edge_colour_tensor: Tensor of edge colours (must match length of edges in graph).
-        If ``None``, ``colour_edges_by`` will be used. Default is ``None``.
+    :parm edge_colour_tensor: Tensor of edge colours (must match length of edges
+        in graph). If ``None``, ``colour_edges_by`` will be used. Default is
+        ``None``.
     :type edge_colour_tensor: torch.Tensor, optional
     :param plot_title: Title of plot, defaults to ``None``.
     :type plot_title: str, optional
@@ -69,17 +72,23 @@ def plot_pyg_data(
     :type node_alpha: float
     :param node_size_min: Specifies node minimum size. Defaults to ``20.0``.
     :type node_size_min: float
-    :param node_size_multiplier: Scales node size by a constant. Node sizes reflect degree. Defaults to ``20.0``.
+    :param node_size_multiplier: Scales node size by a constant. Node sizes
+        reflect degree. Defaults to ``20.0``.
     :type node_size_multiplier: float
-    :param label_node_ids: bool indicating whether or not to plot ``node_id`` labels. Defaults to ``True``.
+    :param label_node_ids: bool indicating whether or not to plot ``node_id``
+        labels. Defaults to ``True``.
     :type label_node_ids: bool
-    :param node_colour_map: colour map to use for nodes. Defaults to ``plt.cm.plasma``.
+    :param node_colour_map: colour map to use for nodes. Defaults to
+        ``plt.cm.plasma``.
     :type node_colour_map: plt.cm
-    :param edge_color_map: colour map to use for edges. Defaults to ``plt.cm.plasma``.
+    :param edge_color_map: colour map to use for edges. Defaults to
+        ``plt.cm.plasma``.
     :type edge_color_map: plt.cm
-    :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``, ``"seq_position"`` or a node feature.
+    :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``,
+        ``"seq_position"`` or a node feature.
     :type colour_nodes_by: str
-    :param colour_edges_by: Specifies how to colour edges. Currently only ``"kind"`` or ``None`` are supported.
+    :param colour_edges_by: Specifies how to colour edges. Currently only
+        ``"kind"`` or ``None`` are supported.
     :type colour_edges_by: Optional[str]
     :returns: Plotly Graph Objects plot
     :rtype: go.Figure

@@ -5,10 +5,11 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import logging
+
 from typing import Callable, List, Optional
 
 import networkx as nx
+from loguru import logger as log
 
 from graphein.ppi.config import PPIGraphConfig
 from graphein.utils.utils import (
@@ -18,15 +19,13 @@ from graphein.utils.utils import (
     compute_edges,
 )
 
-log = logging.getLogger(__name__)
-
-
 EDGE_COLOR_MAPPING = {"string": "r", "biogrid": "b"}
 
 
 def parse_kwargs_from_config(config: PPIGraphConfig) -> PPIGraphConfig:
     """
-    If configs for STRING and BIOGRID are provided in the Global :ref:`~graphein.ppi.config.PPIGraphConfig`, we update the kwargs
+    If configs for STRING and BIOGRID are provided in the Global
+        :ref:`~graphein.ppi.config.PPIGraphConfig`, we update the kwargs
 
     :param config: PPI graph configuration object.
     :type config: PPIGraphConfig
@@ -58,7 +57,8 @@ def compute_ppi_graph(
     config: Optional[PPIGraphConfig] = None,
 ) -> nx.Graph:
     """
-    Computes a PPI Graph from a list of protein IDs. This is the core function for PPI graph construction.
+    Computes a PPI Graph from a list of protein IDs. This is the core function
+        for PPI graph construction.
 
     :param protein_list: List of protein identifiers
     :type protein_list: List[str]
@@ -70,7 +70,8 @@ def compute_ppi_graph(
     :type node_annotation_funcs: List[Callable], optional
     :param edge_annotation_funcs: List of function to annotate edge metadata
     :type edge_annotation_funcs: List[Callable], optional
-    :param config: Config object specifying additional parameters for STRING and BIOGRID API calls
+    :param config: Config object specifying additional parameters for STRING
+        and BIOGRID API calls
     :type config: PPIGraphConfig, optional
     :return: ``nx.Graph`` of PPI network
     :rtype: nx.Graph

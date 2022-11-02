@@ -5,15 +5,13 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import logging
 
 import networkx as nx
 import pandas as pd
+from loguru import logger as log
 
 from graphein.ppi.parse_biogrid import BIOGRID_df
 from graphein.ppi.parse_stringdb import STRING_df
-
-log = logging.getLogger(__name__)
 
 
 def add_string_edges(G: nx.Graph, **kwargs) -> nx.Graph:
@@ -63,11 +61,11 @@ def add_interacting_proteins(
 ) -> nx.Graph:
     """
     Generic function for adding interaction edges to PPI Graph.
-    You can use this function to additional interactions using a dataframe with columns ``"p1"`` and ``"p2"``.
+    You can use this function to additional interactions using a DataFrame with columns ``"p1"`` and ``"p2"``.
 
     :param G: PPI Graph to populate with edges.
     :type G: nx.Graph
-    :param df: Dataframe containing edgelist.
+    :param df: DataFrame containing edge list.
     :type df: pd.DataFrame
     :param kind: name of interaction type.
     :type kind: str

@@ -1,5 +1,8 @@
 ### 1.5.3 - UNRELEASED
 
+#### Improvements
+* [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
+
 #### Protein
 * [Bugfix] - [#222]https://github.com/a-r-j/graphein/pull/222) Fixes entrypoint for user-defined `df_processing_funcs` ([#216](https://github.com/a-r-j/graphein/issues/216))
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes edge metadata conversion to PyG. Contribution by @manonreau.

@@ -7,10 +7,9 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-import logging
 from typing import Any, Dict
 
-log = logging.getLogger(__name__)
+from loguru import logger as log
 
 
 def add_bond_type(
@@ -102,7 +101,8 @@ def bond_is_in_ring(u: str, v: str, d: Dict[str, Any]) -> bool:
 def bond_is_in_ring_size(
     u: str, v: str, d: Dict[str, Any], ring_size: int
 ) -> int:
-    """Adds indicator of ring membership of size ``ring_size`` to the graph as an edge feature.
+    """Adds indicator of ring membership of size ``ring_size`` to the graph
+    as an edge feature.
 
     :param u: First node in the edge.
     :type u: str
