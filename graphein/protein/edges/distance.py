@@ -1066,7 +1066,7 @@ def add_fully_connected_edges(G: nx.Graph):
 
 def add_k_nn_edges(
     G: nx.Graph,
-    long_interaction_threshold: int,
+    long_interaction_threshold: int = 0,
     k: int = 5,
     exclude_edges: Iterable[str] = ('self',),
     kind_name: str = 'knn'
