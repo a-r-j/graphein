@@ -43,7 +43,7 @@ from graphein.protein.resi_atoms import (
 from graphein.protein.utils import filter_dataframe
 
 
-INFINITE_DIST = 10_000  # np.inf leads to errors in some cases
+INFINITE_DIST = 10_000.  # np.inf leads to errors in some cases
 
 
 def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:

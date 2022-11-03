@@ -11,9 +11,13 @@ from pathlib import Path
 
 import pytest
 
+import pandas as pd
+
 import graphein.protein as gp
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
+    INFINITE_DIST,
+    filter_distmat,
     add_salt_bridges,
     add_sequence_distance_edges,
     add_vdw_clashes,
@@ -312,3 +316,39 @@ def test_vdw_clashes():
         assert (
             d["distance"] < rad1 + rad2
         ), f"Vdw clash distance is too long: {d['distance']}"
+
+
+def test_filter_distmat():
+    pdb_df = pd.DataFrame({
+        'node_id': ['A:HIS:1', 'A:TYR:2', 'B:ALA:3'],
+        'chain_id': ['A', 'A', 'B']
+    })
+
+    distmat = pd.DataFrame([
+        [0., 1., 2.],
+        [1., 0., 2.],
+        [2., 2., 0.]
+    ])
+
+    exclude_edges_vals = [['intra'], ['inter'], ['self', 'inter']]
+    expected_distmats = [
+        pd.DataFrame([
+            [0., INFINITE_DIST, 2.],
+            [INFINITE_DIST, 0., 2.],
+            [2., 2., 0.]
+        ]),
+        pd.DataFrame([
+            [0., 1., INFINITE_DIST],
+            [1., 0., INFINITE_DIST],
+            [INFINITE_DIST, INFINITE_DIST, 0.]
+        ]),
+        pd.DataFrame([
+            [INFINITE_DIST, 1., INFINITE_DIST],
+            [1., INFINITE_DIST, INFINITE_DIST],
+            [INFINITE_DIST, INFINITE_DIST, INFINITE_DIST]
+        ])
+    ]
+
+    for vals, distmat_expected in zip(exclude_edges_vals, expected_distmats):
+        distmat_out = filter_distmat(pdb_df, distmat, vals, False)
+        pd.testing.assert_frame_equal(distmat_expected, distmat_out)
