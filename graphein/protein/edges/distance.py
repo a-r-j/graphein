@@ -88,13 +88,18 @@ def filter_distmat(
     Filter distance matrix in place based on edge types to exclude.
 
     :param pdb_df: Data frame representing a PDB graph.
+    :type pdb_df: pd.DataFrame
     :param distmat: Pairwise-distance matrix between all nodes
+    :type pdb_df: pd.DataFrame
     :param exclude_edges: Supported values: `self`, `inter`, `intra`
         - `self` removes self loops.
         - `inter` removes inter-connections between nodes of the same chain.
         - `intra` removes intra-connections between nodes of different chains.
+    :type exclude_edges: Iterable[str]
     :param inplace: False to create a deep copy.
+    :type inplace: bool
     :return: Modified pairwise-distance matrix between all nodes.
+    :rtype: pd.DataFrame
     """
     supported_exclude_edges_vals = ['self', 'inter', 'intra']
     for val in exclude_edges:
