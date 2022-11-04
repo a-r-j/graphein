@@ -454,10 +454,7 @@ def add_aromatic_interactions(
         for n1, n2 in interacting_resis:
             assert G.nodes[n1]["residue_name"] in AROMATIC_RESIS
             assert G.nodes[n2]["residue_name"] in AROMATIC_RESIS
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("aromatic")
-            else:
-                G.add_edge(n1, n2, kind={"aromatic"})
+            add_edge(G, n1, n2, "aromatic")
 
 
 def add_aromatic_sulphur_interactions(
@@ -500,10 +497,7 @@ def add_aromatic_sulphur_interactions(
             condition2 = resi1 in PI_RESIS and resi2 in SULPHUR_RESIS
 
             if (condition1 or condition2) and resi1 != resi2:
-                if G.has_edge(resi1, resi2):
-                    G.edges[resi1, resi2]["kind"].add("aromatic_sulphur")
-                else:
-                    G.add_edge(resi1, resi2, kind={"aromatic_sulphur"})
+                add_edge(G, resi1, resi2, "aromatic_sulphur")
 
 
 def add_cation_pi_interactions(
@@ -544,10 +538,7 @@ def add_cation_pi_interactions(
             condition2 = resi1 in PI_RESIS and resi2 in CATION_RESIS
 
             if (condition1 or condition2) and resi1 != resi2:
-                if G.has_edge(resi1, resi2):
-                    G.edges[resi1, resi2]["kind"].add("cation_pi")
-                else:
-                    G.add_edge(resi1, resi2, kind={"cation_pi"})
+                add_edge(G, resi1, resi2, "cation_pi")
 
 
 def add_vdw_interactions(
@@ -694,10 +685,7 @@ def add_pi_stacking_interactions(
                 or n2_centroid_angle >= 45
             ):
                 continue
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("pi_stacking")
-            else:
-                G.add_edge(n1, n2, kind={"pi_stacking"})
+            add_edge(G, n1, n2, "pi_stacking")
 
 
 def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
@@ -763,10 +751,7 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
                 or n2_centroid_angle >= 45
             ):
                 continue
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("t_stacking")
-            else:
-                G.add_edge(n1, n2, kind={"t_stacking"})
+            add_edge(G, n1, n2, "t_stacking")
 
 
 def add_backbone_carbonyl_carbonyl_interactions(
@@ -939,10 +924,7 @@ def add_delaunay_triangulation(
         for n1, n2 in combinations(nodes, 2):
             if n1 not in G.nodes or n2 not in G.nodes:
                 continue
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("delaunay")
-            else:
-                G.add_edge(n1, n2, kind={"delaunay"})
+            add_edge(G, n1, n2, "delaunay")
 
 
 def add_distance_threshold(
@@ -986,10 +968,8 @@ def add_distance_threshold(
 
         if not (condition_1 and condition_2):
             count += 1
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("distance_threshold")
-            else:
-                G.add_edge(n1, n2, kind={"distance_threshold"})
+            add_edge(G, n1, n2, "distance_threshold")
+
     log.info(
         f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
             removed by LIN)"
@@ -1046,10 +1026,7 @@ def add_distance_window(
 
         if not (condition_1 and condition_2):
             count += 1
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add(f"distance_window_{min}_{max}")
-            else:
-                G.add_edge(n1, n2, kind={f"distance_window_{min}_{max}"})
+            add_edge(G, n1, n2, f"distance_window_{min}_{max}")
     log.info(
         f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
             removed by LIN)"
@@ -1064,10 +1041,7 @@ def add_fully_connected_edges(G: nx.Graph):
     :type G: nx.Graph
     """
     for n1, n2 in itertools.product(G.nodes(), G.nodes()):
-        if G.has_edge(n1, n2):
-            G.edges[n1, n2]["kind"].add("fully_connected")
-        else:
-            G.add_edge(n1, n2, kind={"fully_connected"})
+        add_edge(G, n1, n2, f"fully_connected")
 
 
 # TODO Support for directed edges
