@@ -91,8 +91,7 @@ def filter_distmat(
     :type pdb_df: pd.DataFrame
     :param distmat: Pairwise-distance matrix between all nodes
     :type pdb_df: pd.DataFrame
-    :param exclude_edges: Supported values: `self`, `inter`, `intra`
-        - `self` removes self loops.
+    :param exclude_edges: Supported values: `inter`, `intra`
         - `inter` removes inter-connections between nodes of the same chain.
         - `intra` removes intra-connections between nodes of different chains.
     :type exclude_edges: Iterable[str]
@@ -101,14 +100,15 @@ def filter_distmat(
     :return: Modified pairwise-distance matrix between all nodes.
     :rtype: pd.DataFrame
     """
-    supported_exclude_edges_vals = ['self', 'inter', 'intra']
+    # Process input argument values
+    supported_exclude_edges_vals = ['inter', 'intra']
     for val in exclude_edges:
         if val not in supported_exclude_edges_vals:
             raise ValueError(f'Unknown `exclude_edges` value \'{val}\'.')
-
     if not inplace:
         distmat = distmat.copy(deep=True)
 
+    # Prepare
     chain_to_nodes = pdb_df.groupby('chain_id')['node_id'].apply(list).to_dict()
     node_id_to_int = dict(zip(pdb_df['node_id'], pdb_df.index))
     chain_to_nodes = {
@@ -116,10 +116,8 @@ def filter_distmat(
         for ch, nodes in chain_to_nodes.items()
     }
 
+    # Construct indices of edges to exclude
     edges_to_excl = []
-    if 'self' in exclude_edges:
-        n_nodes = len(distmat)
-        edges_to_excl.extend(list(zip(range(n_nodes), range(n_nodes))))
     if 'intra' in exclude_edges:
         for nodes in chain_to_nodes.values():
             edges_to_excl.extend(list(combinations(nodes, 2)))
@@ -127,12 +125,20 @@ def filter_distmat(
         for nodes0, nodes1 in combinations(chain_to_nodes.values(), 2):
             edges_to_excl.extend(list(product(nodes0, nodes1)))
 
+    # Filter distance matrix based on indices of edges to exclude
     if len(exclude_edges):
         row_idx_to_excl, col_idx_to_excl = zip(*edges_to_excl)
         distmat.iloc[row_idx_to_excl, col_idx_to_excl] = INFINITE_DIST
         distmat.iloc[col_idx_to_excl, row_idx_to_excl] = INFINITE_DIST
 
     return distmat
+
+
+def add_edge(G, n1, n2, kind_name):
+    if G.has_edge(n1, n2):
+        G.edges[n1, n2]['kind'].add(kind_name)
+    else:
+        G.add_edge(n1, n2, kind={kind_name})
 
 
 def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
@@ -1064,11 +1070,13 @@ def add_fully_connected_edges(G: nx.Graph):
             G.add_edge(n1, n2, kind={"fully_connected"})
 
 
+# TODO Support for directed edges
 def add_k_nn_edges(
     G: nx.Graph,
     long_interaction_threshold: int = 0,
     k: int = 5,
-    exclude_edges: Iterable[str] = ('self',),
+    exclude_edges: Iterable[str] = (),
+    exclude_self_loops: bool = True,
     kind_name: str = 'knn'
 ):
     """
@@ -1084,11 +1092,13 @@ def add_k_nn_edges(
     :param k: Number of neighbors for each sample.
     :type k: int
     :param exclude_edges: Types of edges to exclude. Supported values are
-        `self`, `inter`,`intra`.
-        - `self` removes self loops.
+        `inter` and `intra`.
         - `inter` removes inter-connections between nodes of the same chain.
         - `intra` removes intra-connections between nodes of different chains.
     :type exclude_edges: Iterable[str].
+    :param exclude_self_loops: Whether or not to mark each sample as the first
+        nearest neighbor to itself.
+    :type exclude_self_loops: Union[bool, str]
     :param kind_name: Name for kind of edges in networkx graph.
     :type kind_name: str
     :return: Graph with knn-based edges added
@@ -1101,6 +1111,14 @@ def add_k_nn_edges(
 
     # Filter edges
     dist_mat = filter_distmat(pdb_df, dist_mat, exclude_edges)
+
+    # Add self-loops if specified
+    if not exclude_self_loops:
+        k -= 1
+        for n1, n2 in zip(G.nodes(), G.nodes()):
+            add_edge(G, n1, n2, kind_name)
+    if k == 0:
+        return
 
     # Run k-NN search
     neigh = NearestNeighbors(n_neighbors=k, metric='precomputed')
@@ -1135,10 +1153,7 @@ def add_k_nn_edges(
         # If not on same chain add edge or
         # If on same chain and separation is sufficient add edge
         if condition_1 or condition_2:
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add(kind_name)
-            else:
-                G.add_edge(n1, n2, kind={kind_name})
+            add_edge(G, n1, n2, kind_name)
 
 
 def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
