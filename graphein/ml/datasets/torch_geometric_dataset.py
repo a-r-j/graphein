@@ -256,6 +256,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             return_dict=True,
             num_cores=self.num_cores,
         )
+        # Keep only graphs that were successfully constructed 
+        graphs = [g for g in graphs if g is not None]
+
         # Transform graphs
         if self.graph_transformation_funcs is not None:
             print("Transforming Nx Graphs...")
@@ -557,7 +560,12 @@ class ProteinGraphDataset(Dataset):
         if self.pdb_transform:
             self.transform_pdbs()
 
-        idx = 0
+
+        # DEBUG
+        print("EXAMPLES:")
+        print(self.examples)
+        
+        idx = 0 
         # Chunk dataset for parallel processing
         chunk_size = 128
 
@@ -582,12 +590,32 @@ class ProteinGraphDataset(Dataset):
 
             # Create graph objects
             file_names = [f"{self.raw_dir}/{pdb}.pdb" for pdb in pdbs]
+
+            print("filenames")
+            print(file_names)
+
+            # TEST NONE
+            file_names[1] = "nothing"
+            
             graphs = construct_graphs_mp(
                 pdb_path_it=file_names,
                 config=self.config,
                 chain_selections=chain_selections,
                 return_dict=False,
             )
+            print("GRAPHS")
+            print(graphs)
+            graphs = [
+                g 
+                for g in graphs 
+                if g is not None
+            ]
+
+            
+
+            print("GRAPHS NOT NONE:")
+            print(graphs)
+            exit(1)
             if self.graph_transformation_funcs is not None:
                 graphs = [self.transform_graphein_graphs(g) for g in graphs]
 
@@ -645,6 +673,10 @@ class ProteinGraphDataset(Dataset):
             return torch.load(
                 os.path.join(self.processed_dir, f"{self.structures[idx]}.pt")
             )
+
+
+
+
 
 
 class ProteinGraphListDataset(InMemoryDataset):
