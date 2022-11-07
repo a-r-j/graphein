@@ -52,7 +52,7 @@ RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace
     && pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir \
     && pip install torch-geometric --no-cache-dir
 
-RUN pip install jupyter_contrib_nbextensions 
+RUN pip install jupyter_contrib_nbextensions
 RUN jupyter nbextension enable --py widgetsnbextension
 
 # Testing
