@@ -7,16 +7,16 @@
 from __future__ import annotations
 
 import itertools
-import logging
-from itertools import combinations
-from typing import Dict, List, Optional, Tuple, Union
+from itertools import combinations, product
+from typing import Dict, List, Optional, Tuple, Union, Iterable
 
 import networkx as nx
 import numpy as np
 import pandas as pd
+from loguru import logger as log
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import pdist, squareform
-from sklearn.neighbors import kneighbors_graph
+from sklearn.neighbors import kneighbors_graph, NearestNeighbors
 
 from graphein.protein.resi_atoms import (
     AA_RING_ATOMS,
@@ -42,7 +42,8 @@ from graphein.protein.resi_atoms import (
 )
 from graphein.protein.utils import filter_dataframe
 
-log = logging.getLogger(__name__)
+
+INFINITE_DIST = 10_000.  # np.inf leads to errors in some cases
 
 
 def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
@@ -54,7 +55,7 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
 
     :param pdb_df: Dataframe containing protein structure. Must contain columns
         ``["x_coord", "y_coord", "z_coord"]``.
-    :type pdb_df: pd.DataFrame
+    :type pdb_df: pd.DataFrames
     :raises: ValueError if ``pdb_df`` does not contain the required columns.
     :return: pd.Dataframe of Euclidean distance matrix.
     :rtype: pd.DataFrame
@@ -75,6 +76,69 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     eucl_dists.columns = pdb_df.index
 
     return eucl_dists
+
+
+def filter_distmat(
+    pdb_df: pd.DataFrame,
+    distmat: pd.DataFrame,
+    exclude_edges: Iterable[str],
+    inplace: bool = True
+) -> pd.DataFrame:
+    """
+    Filter distance matrix in place based on edge types to exclude.
+
+    :param pdb_df: Data frame representing a PDB graph.
+    :type pdb_df: pd.DataFrame
+    :param distmat: Pairwise-distance matrix between all nodes
+    :type pdb_df: pd.DataFrame
+    :param exclude_edges: Supported values: `inter`, `intra`
+        - `inter` removes inter-connections between nodes of the same chain.
+        - `intra` removes intra-connections between nodes of different chains.
+    :type exclude_edges: Iterable[str]
+    :param inplace: False to create a deep copy.
+    :type inplace: bool
+    :return: Modified pairwise-distance matrix between all nodes.
+    :rtype: pd.DataFrame
+    """
+    # Process input argument values
+    supported_exclude_edges_vals = ['inter', 'intra']
+    for val in exclude_edges:
+        if val not in supported_exclude_edges_vals:
+            raise ValueError(f'Unknown `exclude_edges` value \'{val}\'.')
+    if not inplace:
+        distmat = distmat.copy(deep=True)
+
+    # Prepare
+    chain_to_nodes = pdb_df.groupby('chain_id')['node_id'].apply(list).to_dict()
+    node_id_to_int = dict(zip(pdb_df['node_id'], pdb_df.index))
+    chain_to_nodes = {
+        ch: [node_id_to_int[n] for n in nodes]
+        for ch, nodes in chain_to_nodes.items()
+    }
+
+    # Construct indices of edges to exclude
+    edges_to_excl = []
+    if 'intra' in exclude_edges:
+        for nodes in chain_to_nodes.values():
+            edges_to_excl.extend(list(combinations(nodes, 2)))
+    if 'inter' in exclude_edges:
+        for nodes0, nodes1 in combinations(chain_to_nodes.values(), 2):
+            edges_to_excl.extend(list(product(nodes0, nodes1)))
+
+    # Filter distance matrix based on indices of edges to exclude
+    if len(exclude_edges):
+        row_idx_to_excl, col_idx_to_excl = zip(*edges_to_excl)
+        distmat.iloc[row_idx_to_excl, col_idx_to_excl] = INFINITE_DIST
+        distmat.iloc[col_idx_to_excl, row_idx_to_excl] = INFINITE_DIST
+
+    return distmat
+
+
+def add_edge(G, n1, n2, kind_name):
+    if G.has_edge(n1, n2):
+        G.edges[n1, n2]['kind'].add(kind_name)
+    else:
+        G.add_edge(n1, n2, kind={kind_name})
 
 
 def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
@@ -198,11 +262,12 @@ def add_hydrophobic_interactions(
     hydrophobics_df = filter_dataframe(
         hydrophobics_df, "node_id", list(G.nodes()), True
     )
-    distmat = compute_distmat(hydrophobics_df)
-    interacting_atoms = get_interacting_atoms(5, distmat)
-    add_interacting_resis(
-        G, interacting_atoms, hydrophobics_df, ["hydrophobic"]
-    )
+    if hydrophobics_df.shape[0] > 0:
+        distmat = compute_distmat(hydrophobics_df)
+        interacting_atoms = get_interacting_atoms(5, distmat)
+        add_interacting_resis(
+            G, interacting_atoms, hydrophobics_df, ["hydrophobic"]
+        )
 
 
 def add_disulfide_interactions(
@@ -225,7 +290,8 @@ def add_disulfide_interactions(
     residues = [d["residue_name"] for _, d in G.nodes(data=True)]
     if residues.count("CYS") < 2:
         log.debug(
-            f"{residues.count('CYS')} CYS residues found. Cannot add disulfide interactions with fewer than two CYS residues."
+            f"{residues.count('CYS')} CYS residues found. Cannot add disulfide \
+                interactions with fewer than two CYS residues."
         )
         return
 
@@ -237,9 +303,16 @@ def add_disulfide_interactions(
     disulfide_df = filter_dataframe(
         disulfide_df, "atom_name", DISULFIDE_ATOMS, True
     )
-    distmat = compute_distmat(disulfide_df)
-    interacting_atoms = get_interacting_atoms(2.2, distmat)
-    add_interacting_resis(G, interacting_atoms, disulfide_df, ["disulfide"])
+    # Ensure only residues in the graph are kept
+    disulfide_df = filter_dataframe(
+        disulfide_df, "node_id", list(G.nodes), True
+    )
+    if disulfide_df.shape[0] > 0:
+        distmat = compute_distmat(disulfide_df)
+        interacting_atoms = get_interacting_atoms(2.2, distmat)
+        add_interacting_resis(
+            G, interacting_atoms, disulfide_df, ["disulfide"]
+        )
 
 
 def add_hydrogen_bond_interactions(
@@ -304,26 +377,27 @@ def add_ionic_interactions(
         rgroup_df = G.graph["rgroup_df"]
     ionic_df = filter_dataframe(rgroup_df, "residue_name", IONIC_RESIS, True)
     ionic_df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
-    distmat = compute_distmat(ionic_df)
-    interacting_atoms = get_interacting_atoms(6, distmat)
-    add_interacting_resis(G, interacting_atoms, ionic_df, ["ionic"])
-    # Check that the interacting residues are of opposite charges
-    for r1, r2 in get_edges_by_bond_type(G, "ionic"):
-        condition1 = (
-            G.nodes[r1]["residue_name"] in POS_AA
-            and G.nodes[r2]["residue_name"] in NEG_AA
-        )
+    if ionic_df.shape[0] > 0:
+        distmat = compute_distmat(ionic_df)
+        interacting_atoms = get_interacting_atoms(6, distmat)
+        add_interacting_resis(G, interacting_atoms, ionic_df, ["ionic"])
+        # Check that the interacting residues are of opposite charges
+        for r1, r2 in get_edges_by_bond_type(G, "ionic"):
+            condition1 = (
+                G.nodes[r1]["residue_name"] in POS_AA
+                and G.nodes[r2]["residue_name"] in NEG_AA
+            )
 
-        condition2 = (
-            G.nodes[r2]["residue_name"] in POS_AA
-            and G.nodes[r1]["residue_name"] in NEG_AA
-        )
+            condition2 = (
+                G.nodes[r2]["residue_name"] in POS_AA
+                and G.nodes[r1]["residue_name"] in NEG_AA
+            )
 
-        is_ionic = condition1 or condition2
-        if not is_ionic:
-            G.edges[r1, r2]["kind"].remove("ionic")
-            if len(G.edges[r1, r2]["kind"]) == 0:
-                G.remove_edge(r1, r2)
+            is_ionic = condition1 or condition2
+            if not is_ionic:
+                G.edges[r1, r2]["kind"].remove("ionic")
+                if len(G.edges[r1, r2]["kind"]) == 0:
+                    G.remove_edge(r1, r2)
 
 
 def add_aromatic_interactions(
@@ -363,24 +437,24 @@ def add_aromatic_interactions(
     aromatic_df = (
         pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
     )
-    distmat = compute_distmat(aromatic_df)
-    distmat.set_index(aromatic_df["node_id"], inplace=True)
-    distmat.columns = aromatic_df["node_id"]
-    distmat = distmat[(distmat >= 4.5) & (distmat <= 7)].fillna(0)
-    indices = np.where(distmat > 0)
+    if aromatic_df.shape[0] > 0:
+        distmat = compute_distmat(aromatic_df)
+        distmat.set_index(aromatic_df["node_id"], inplace=True)
+        distmat.columns = aromatic_df["node_id"]
+        distmat = distmat[(distmat >= 4.5) & (distmat <= 7)].fillna(0)
+        indices = np.where(distmat > 0)
 
-    interacting_resis = [
-        (distmat.index[r], distmat.index[c])
-        for r, c in zip(indices[0], indices[1])
-    ]
-    log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
-    for n1, n2 in interacting_resis:
-        assert G.nodes[n1]["residue_name"] in AROMATIC_RESIS
-        assert G.nodes[n2]["residue_name"] in AROMATIC_RESIS
-        if G.has_edge(n1, n2):
-            G.edges[n1, n2]["kind"].add("aromatic")
-        else:
-            G.add_edge(n1, n2, kind={"aromatic"})
+        interacting_resis = [
+            (distmat.index[r], distmat.index[c])
+            for r, c in zip(indices[0], indices[1])
+        ]
+        log.info(
+            f"Found: {len(interacting_resis)} aromatic-aromatic interactions"
+        )
+        for n1, n2 in interacting_resis:
+            assert G.nodes[n1]["residue_name"] in AROMATIC_RESIS
+            assert G.nodes[n2]["residue_name"] in AROMATIC_RESIS
+            add_edge(G, n1, n2, "aromatic")
 
 
 def add_aromatic_sulphur_interactions(
@@ -407,22 +481,23 @@ def add_aromatic_sulphur_interactions(
     aromatic_sulphur_df = filter_dataframe(
         aromatic_sulphur_df, "node_id", list(G.nodes()), True
     )
-    distmat = compute_distmat(aromatic_sulphur_df)
-    interacting_atoms = get_interacting_atoms(5.3, distmat)
-    interacting_atoms = list(zip(interacting_atoms[0], interacting_atoms[1]))
 
-    for (a1, a2) in interacting_atoms:
-        resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
-        resi2 = aromatic_sulphur_df.loc[a2, "node_id"]
+    if aromatic_sulphur_df.shape[0] > 0:
+        distmat = compute_distmat(aromatic_sulphur_df)
+        interacting_atoms = get_interacting_atoms(5.3, distmat)
+        interacting_atoms = list(
+            zip(interacting_atoms[0], interacting_atoms[1])
+        )
 
-        condition1 = resi1 in SULPHUR_RESIS and resi2 in PI_RESIS
-        condition2 = resi1 in PI_RESIS and resi2 in SULPHUR_RESIS
+        for (a1, a2) in interacting_atoms:
+            resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
+            resi2 = aromatic_sulphur_df.loc[a2, "node_id"]
 
-        if (condition1 or condition2) and resi1 != resi2:
-            if G.has_edge(resi1, resi2):
-                G.edges[resi1, resi2]["kind"].add("aromatic_sulphur")
-            else:
-                G.add_edge(resi1, resi2, kind={"aromatic_sulphur"})
+            condition1 = resi1 in SULPHUR_RESIS and resi2 in PI_RESIS
+            condition2 = resi1 in PI_RESIS and resi2 in SULPHUR_RESIS
+
+            if (condition1 or condition2) and resi1 != resi2:
+                add_edge(G, resi1, resi2, "aromatic_sulphur")
 
 
 def add_cation_pi_interactions(
@@ -447,22 +522,23 @@ def add_cation_pi_interactions(
     cation_pi_df = filter_dataframe(
         cation_pi_df, "node_id", list(G.nodes()), True
     )
-    distmat = compute_distmat(cation_pi_df)
-    interacting_atoms = get_interacting_atoms(6, distmat)
-    interacting_atoms = list(zip(interacting_atoms[0], interacting_atoms[1]))
 
-    for (a1, a2) in interacting_atoms:
-        resi1 = cation_pi_df.loc[a1, "node_id"]
-        resi2 = cation_pi_df.loc[a2, "node_id"]
+    if cation_pi_df.shape[0] > 0:
+        distmat = compute_distmat(cation_pi_df)
+        interacting_atoms = get_interacting_atoms(6, distmat)
+        interacting_atoms = list(
+            zip(interacting_atoms[0], interacting_atoms[1])
+        )
 
-        condition1 = resi1 in CATION_RESIS and resi2 in PI_RESIS
-        condition2 = resi1 in PI_RESIS and resi2 in CATION_RESIS
+        for (a1, a2) in interacting_atoms:
+            resi1 = cation_pi_df.loc[a1, "node_id"]
+            resi2 = cation_pi_df.loc[a2, "node_id"]
 
-        if (condition1 or condition2) and resi1 != resi2:
-            if G.has_edge(resi1, resi2):
-                G.edges[resi1, resi2]["kind"].add("cation_pi")
-            else:
-                G.add_edge(resi1, resi2, kind={"cation_pi"})
+            condition1 = resi1 in CATION_RESIS and resi2 in PI_RESIS
+            condition2 = resi1 in PI_RESIS and resi2 in CATION_RESIS
+
+            if (condition1 or condition2) and resi1 != resi2:
+                add_edge(G, resi1, resi2, "cation_pi")
 
 
 def add_vdw_interactions(
@@ -566,47 +642,50 @@ def add_pi_stacking_interactions(
     aromatic_df = (
         pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
     )
-    distmat = compute_distmat(aromatic_df)
-    distmat.set_index(aromatic_df["node_id"], inplace=True)
-    distmat.columns = aromatic_df["node_id"]
-    distmat = distmat[distmat <= centroid_distance].fillna(0)
-    indices = np.where(distmat > 0)
 
-    interacting_resis = [
-        (distmat.index[r], distmat.index[c])
-        for r, c in zip(indices[0], indices[1])
-    ]
-    # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
-    for n1, n2 in interacting_resis:
-        assert G.nodes[n1]["residue_name"] in PI_RESIS
-        assert G.nodes[n2]["residue_name"] in PI_RESIS
+    if aromatic_df.shape[0] > 0:
+        distmat = compute_distmat(aromatic_df)
+        distmat.set_index(aromatic_df["node_id"], inplace=True)
+        distmat.columns = aromatic_df["node_id"]
+        distmat = distmat[distmat <= centroid_distance].fillna(0)
+        indices = np.where(distmat > 0)
 
-        n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
-            ["x_coord", "y_coord", "z_coord"]
-        ].values[0]
-        n2_centroid = aromatic_df.loc[aromatic_df["node_id"] == n2][
-            ["x_coord", "y_coord", "z_coord"]
-        ].values[0]
+        interacting_resis = [
+            (distmat.index[r], distmat.index[c])
+            for r, c in zip(indices[0], indices[1])
+        ]
+        # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
+        for n1, n2 in interacting_resis:
+            assert G.nodes[n1]["residue_name"] in PI_RESIS
+            assert G.nodes[n2]["residue_name"] in PI_RESIS
 
-        n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][0].values[0]
-        n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][0].values[0]
+            n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
+                ["x_coord", "y_coord", "z_coord"]
+            ].values[0]
+            n2_centroid = aromatic_df.loc[aromatic_df["node_id"] == n2][
+                ["x_coord", "y_coord", "z_coord"]
+            ].values[0]
 
-        centroid_vector = n2_centroid - n1_centroid
+            n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][
+                0
+            ].values[0]
+            n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][
+                0
+            ].values[0]
 
-        norm_angle = compute_angle(n1_normal, n2_normal)
-        n1_centroid_angle = compute_angle(n1_normal, centroid_vector)
-        n2_centroid_angle = compute_angle(n2_normal, centroid_vector)
+            centroid_vector = n2_centroid - n1_centroid
 
-        if (
-            norm_angle >= 30
-            or n1_centroid_angle >= 45
-            or n2_centroid_angle >= 45
-        ):
-            continue
-        if G.has_edge(n1, n2):
-            G.edges[n1, n2]["kind"].add("pi_stacking")
-        else:
-            G.add_edge(n1, n2, kind={"pi_stacking"})
+            norm_angle = compute_angle(n1_normal, n2_normal)
+            n1_centroid_angle = compute_angle(n1_normal, centroid_vector)
+            n2_centroid_angle = compute_angle(n2_normal, centroid_vector)
+
+            if (
+                norm_angle >= 30
+                or n1_centroid_angle >= 45
+                or n2_centroid_angle >= 45
+            ):
+                continue
+            add_edge(G, n1, n2, "pi_stacking")
 
 
 def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
@@ -628,48 +707,51 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
     aromatic_df = (
         pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
     )
-    distmat = compute_distmat(aromatic_df)
-    distmat.set_index(aromatic_df["node_id"], inplace=True)
-    distmat.columns = aromatic_df["node_id"]
-    distmat = distmat[distmat <= 7].fillna(0)
-    indices = np.where(distmat > 0)
 
-    interacting_resis = [
-        (distmat.index[r], distmat.index[c])
-        for r, c in zip(indices[0], indices[1])
-    ]
-    # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
-    for n1, n2 in interacting_resis:
-        assert G.nodes[n1]["residue_name"] in PI_RESIS
-        assert G.nodes[n2]["residue_name"] in PI_RESIS
+    if aromatic_df.shape[0] > 0:
+        distmat = compute_distmat(aromatic_df)
+        distmat.set_index(aromatic_df["node_id"], inplace=True)
+        distmat.columns = aromatic_df["node_id"]
+        distmat = distmat[distmat <= 7].fillna(0)
+        indices = np.where(distmat > 0)
 
-        n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
-            ["x_coord", "y_coord", "z_coord"]
-        ].values[0]
-        n2_centroid = aromatic_df.loc[aromatic_df["node_id"] == n2][
-            ["x_coord", "y_coord", "z_coord"]
-        ].values[0]
+        interacting_resis = [
+            (distmat.index[r], distmat.index[c])
+            for r, c in zip(indices[0], indices[1])
+        ]
+        # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
+        for n1, n2 in interacting_resis:
+            assert G.nodes[n1]["residue_name"] in PI_RESIS
+            assert G.nodes[n2]["residue_name"] in PI_RESIS
 
-        n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][0].values[0]
-        n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][0].values[0]
+            n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
+                ["x_coord", "y_coord", "z_coord"]
+            ].values[0]
+            n2_centroid = aromatic_df.loc[aromatic_df["node_id"] == n2][
+                ["x_coord", "y_coord", "z_coord"]
+            ].values[0]
 
-        centroid_vector = n2_centroid - n1_centroid
+            n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][
+                0
+            ].values[0]
+            n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][
+                0
+            ].values[0]
 
-        norm_angle = compute_angle(n1_normal, n2_normal)
-        n1_centroid_angle = compute_angle(n1_normal, centroid_vector)
-        n2_centroid_angle = compute_angle(n2_normal, centroid_vector)
+            centroid_vector = n2_centroid - n1_centroid
 
-        if (
-            norm_angle >= 90
-            or norm_angle <= 60
-            or n1_centroid_angle >= 45
-            or n2_centroid_angle >= 45
-        ):
-            continue
-        if G.has_edge(n1, n2):
-            G.edges[n1, n2]["kind"].add("t_stacking")
-        else:
-            G.add_edge(n1, n2, kind={"t_stacking"})
+            norm_angle = compute_angle(n1_normal, n2_normal)
+            n1_centroid_angle = compute_angle(n1_normal, centroid_vector)
+            n2_centroid_angle = compute_angle(n2_normal, centroid_vector)
+
+            if (
+                norm_angle >= 90
+                or norm_angle <= 60
+                or n1_centroid_angle >= 45
+                or n2_centroid_angle >= 45
+            ):
+                continue
+            add_edge(G, n1, n2, "t_stacking")
 
 
 def add_backbone_carbonyl_carbonyl_interactions(
@@ -746,28 +828,29 @@ def add_salt_bridges(
     salt_bridge_df = filter_dataframe(
         salt_bridge_df, "atom_name", SALT_BRIDGE_ATOMS, boolean=True
     )
-    distmat = compute_distmat(salt_bridge_df)
-    interacting_atoms = get_interacting_atoms(threshold, distmat)
-    add_interacting_resis(
-        G, interacting_atoms, salt_bridge_df, ["salt_bridge"]
-    )
-
-    for r1, r2 in get_edges_by_bond_type(G, "salt_bridge"):
-        condition1 = (
-            G.nodes[r1]["residue_name"] in SALT_BRIDGE_ANIONS
-            and G.nodes[r2]["residue_name"] in SALT_BRIDGE_CATIONS
+    if salt_bridge_df.shape[0] > 0:
+        distmat = compute_distmat(salt_bridge_df)
+        interacting_atoms = get_interacting_atoms(threshold, distmat)
+        add_interacting_resis(
+            G, interacting_atoms, salt_bridge_df, ["salt_bridge"]
         )
 
-        condition2 = (
-            G.nodes[r2]["residue_name"] in SALT_BRIDGE_ANIONS
-            and G.nodes[r1]["residue_name"] in SALT_BRIDGE_CATIONS
-        )
+        for r1, r2 in get_edges_by_bond_type(G, "salt_bridge"):
+            condition1 = (
+                G.nodes[r1]["residue_name"] in SALT_BRIDGE_ANIONS
+                and G.nodes[r2]["residue_name"] in SALT_BRIDGE_CATIONS
+            )
 
-        is_ionic = condition1 or condition2
-        if not is_ionic:
-            G.edges[r1, r2]["kind"].remove("salt_bridge")
-            if len(G.edges[r1, r2]["kind"]) == 0:
-                G.remove_edge(r1, r2)
+            condition2 = (
+                G.nodes[r2]["residue_name"] in SALT_BRIDGE_ANIONS
+                and G.nodes[r1]["residue_name"] in SALT_BRIDGE_CATIONS
+            )
+
+            is_ionic = condition1 or condition2
+            if not is_ionic:
+                G.edges[r1, r2]["kind"].remove("salt_bridge")
+                if len(G.edges[r1, r2]["kind"]) == 0:
+                    G.remove_edge(r1, r2)
 
 
 def get_interacting_atoms(
@@ -841,10 +924,7 @@ def add_delaunay_triangulation(
         for n1, n2 in combinations(nodes, 2):
             if n1 not in G.nodes or n2 not in G.nodes:
                 continue
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("delaunay")
-            else:
-                G.add_edge(n1, n2, kind={"delaunay"})
+            add_edge(G, n1, n2, "delaunay")
 
 
 def add_distance_threshold(
@@ -888,12 +968,11 @@ def add_distance_threshold(
 
         if not (condition_1 and condition_2):
             count += 1
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("distance_threshold")
-            else:
-                G.add_edge(n1, n2, kind={"distance_threshold"})
+            add_edge(G, n1, n2, "distance_threshold")
+
     log.info(
-        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count} removed by LIN)"
+        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
+            removed by LIN)"
     )
 
 
@@ -947,12 +1026,10 @@ def add_distance_window(
 
         if not (condition_1 and condition_2):
             count += 1
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add(f"distance_window_{min}_{max}")
-            else:
-                G.add_edge(n1, n2, kind={f"distance_window_{min}_{max}"})
+            add_edge(G, n1, n2, f"distance_window_{min}_{max}")
     log.info(
-        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count} removed by LIN)"
+        f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
+            removed by LIN)"
     )
 
 
@@ -964,20 +1041,17 @@ def add_fully_connected_edges(G: nx.Graph):
     :type G: nx.Graph
     """
     for n1, n2 in itertools.product(G.nodes(), G.nodes()):
-        if G.has_edge(n1, n2):
-            G.edges[n1, n2]["kind"].add("fully_connected")
-        else:
-            G.add_edge(n1, n2, kind={"fully_connected"})
+        add_edge(G, n1, n2, f"fully_connected")
 
 
+# TODO Support for directed edges
 def add_k_nn_edges(
     G: nx.Graph,
-    long_interaction_threshold: int,
+    long_interaction_threshold: int = 0,
     k: int = 5,
-    mode: str = "connectivity",
-    metric: str = "minkowski",
-    p: int = 2,
-    include_self: Union[bool, str] = False,
+    exclude_edges: Iterable[str] = (),
+    exclude_self_loops: bool = True,
+    kind_name: str = 'knn'
 ):
     """
     Adds edges to nodes based on K nearest neighbours. Long interaction
@@ -991,25 +1065,16 @@ def add_k_nn_edges(
     :type long_interaction_threshold: int
     :param k: Number of neighbors for each sample.
     :type k: int
-    :param mode: Type of returned matrix: ``"connectivity"`` will return the
-        connectivity matrix with ones and zeros, and ``"distance"`` will return
-        the distances between neighbors according to the given metric.
-    :type mode: str
-    :param metric: The distance metric used to calculate the k-Neighbors for
-        each sample point. The ``DistanceMetric`` class gives a list of
-        available metrics. The default distance is ``"euclidean"``
-        (``"minkowski"`` metric with the ``p`` param equal to ``2``).
-    :type metric: str
-    :param p: Power parameter for the Minkowski metric. When ``p = 1``, this is
-        equivalent to using ``manhattan_distance`` (l1), and
-        ``euclidean_distance`` (l2) for ``p = 2``. For arbitrary ``p``,
-        ``minkowski_distance`` (l_p) is used. Default is ``2`` (euclidean).
-    :type p: int
-    :param include_self: Whether or not to mark each sample as the first nearest
-        neighbor to itself. If ``"auto"``, then ``True`` is used for
-        ``mode="connectivity"`` and ``False`` for ``mode="distance"``.
-        Default is ``False``.
-    :type include_self: Union[bool, str]
+    :param exclude_edges: Types of edges to exclude. Supported values are
+        `inter` and `intra`.
+        - `inter` removes inter-connections between nodes of the same chain.
+        - `intra` removes intra-connections between nodes of different chains.
+    :type exclude_edges: Iterable[str].
+    :param exclude_self_loops: Whether or not to mark each sample as the first
+        nearest neighbor to itself.
+    :type exclude_self_loops: Union[bool, str]
+    :param kind_name: Name for kind of edges in networkx graph.
+    :type kind_name: str
     :return: Graph with knn-based edges added
     :rtype: nx.Graph
     """
@@ -1018,14 +1083,21 @@ def add_k_nn_edges(
     )
     dist_mat = compute_distmat(pdb_df)
 
-    nn = kneighbors_graph(
-        X=dist_mat,
-        n_neighbors=k,
-        mode=mode,
-        metric=metric,
-        p=p,
-        include_self=include_self,
-    )
+    # Filter edges
+    dist_mat = filter_distmat(pdb_df, dist_mat, exclude_edges)
+
+    # Add self-loops if specified
+    if not exclude_self_loops:
+        k -= 1
+        for n1, n2 in zip(G.nodes(), G.nodes()):
+            add_edge(G, n1, n2, kind_name)
+    if k == 0:
+        return
+
+    # Run k-NN search
+    neigh = NearestNeighbors(n_neighbors=k, metric='precomputed')
+    neigh.fit(dist_mat)
+    nn = neigh.kneighbors_graph()
 
     # Create iterable of node indices
     outgoing = np.repeat(np.array(range(len(G.graph["pdb_df"]))), k)
@@ -1055,10 +1127,7 @@ def add_k_nn_edges(
         # If not on same chain add edge or
         # If on same chain and separation is sufficient add edge
         if condition_1 or condition_2:
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("k_nn")
-            else:
-                G.add_edge(n1, n2, kind={"k_nn"})
+            add_edge(G, n1, n2, kind_name)
 
 
 def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
@@ -1194,7 +1263,7 @@ def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
     :return: Tuple of coordinates ``(x, y, z)``
     :rtype: Tuple[float, float, float]
     """
-    (x, y, z) = tuple(G.nodes[n]['coords'])
+    (x, y, z) = tuple(G.nodes[n]["coords"])
     return x, y, z
 
 
@@ -1216,7 +1285,7 @@ def add_interacting_resis(
 
     ### Parameters
 
-    - interacting_atoms:    (numpy array) result from get_interacting_atoms function.
+    - interacting_atoms:    (numpy array) result from ``get_interacting_atoms``.
     - dataframe:            (pandas dataframe) a pandas dataframe that
                             houses the euclidean locations of each atom.
     - kind:                 (list) the kind of interaction. Contains one

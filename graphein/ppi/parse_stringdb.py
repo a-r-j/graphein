@@ -5,38 +5,40 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import logging
+
 from typing import Dict, List, Union
 
 import pandas as pd
 import requests
-
-log = logging.getLogger(__name__)
+from loguru import logger as log
 
 
 def params_STRING(
     params: Dict[str, Union[str, int, List[str], List[int]]], **kwargs
 ) -> Dict[str, Union[str, int]]:
     """
-    Updates default parameters with user parameters for the method "network" of the STRING API REST.
-    See also https://string-db.org/help/api/
+    Updates default parameters with user parameters for the method "network"
+    of the STRING API REST. See also https://string-db.org/help/api/
 
-    :param params: Dictionary of default parameters
+    :param params: Dictionary of default parameters.
     :type params: Dict[str, Union[str, int, List[str], List[int]]]
-    :param kwargs: User parameters for the method "network" of the STRING API REST. The key must start with "STRING"
+    :param kwargs: User parameters for the method "network" of the STRING API
+        REST. The key must start with ``"STRING"``.
     :type kwargs: Dict[str, Union[str, int, List[str], List[int]]]
-    :return: Dictionary of parameters
+    :return: Dictionary of parameters.
     :rtype: Dict[str, Union[str, int]]
     """
     # TODO: Might be possible to generalise this function for all sources
     fields = [
         "species",  # NCBI taxon identifiers
-        "required_score",  # threshold of significance to include a interaction, a number between 0 and 1000
-        # (default depends on the network)
+        "required_score",  # threshold of significance to include a interaction,
+        # a number between 0 and 1000 (default depends on the network)
         "network_type",  # network type: functional (default), physical
-        "add_nodes",  # adds a number of proteins to the network based on their confidence score,
-        # e.g., extends the interaction neighborhood of selected proteins to desired value
-        "show_query_node_labels"  # when available use submitted names in the preferredName column when
+        "add_nodes",  # adds a number of proteins to the network based on their
+        # confidence score, e.g., extends the interaction neighborhood of
+        # selected proteins to desired value
+        "show_query_node_labels"  # when available use submitted names in the
+        # preferredName column when
         # (0 or 1) (default:0)
     ]
     for p in fields:
@@ -55,18 +57,20 @@ def parse_STRING(
     **kwargs,
 ) -> pd.DataFrame:
     """
-    Makes STRING API call and returns a source specific Pandas dataframe.
+    Makes STRING API call and returns a source specific Pandas DataFrame.
     See also [1] STRING: https://string-db.org/help/api/
 
     :param protein_list: Proteins to include in the graph
     :type protein_list: List[str]
-    :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism. Default is 9606 (Homo Sapiens)
+    :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism. Default is
+        ``9606`` (Homo Sapiens).
     :type ncbi_taxon_id: int
-    :param kwargs: Parameters of the "network" method of the STRING API REST, used to select the results. The
-        parameter names are of the form STRING_<param>, where <param> is the name of the parameter.
+    :param kwargs: Parameters of the "network" method of the STRING API REST,
+        used to select the results. The parameter names are of the form
+        ``"STRING_<param>"``, where ``<param>`` is the name of the parameter.
         Information about these parameters can be found at [1].
     :type kwargs: Dict[str, Union[str, int, List[str], List[int]]]
-    :return: Source specific Pandas dataframe.
+    :return: Source specific Pandas DataFrame.
     :rtype: pd.DataFrame
     """
     # Prepare call to STRING API
@@ -90,15 +94,18 @@ def parse_STRING(
 
 def filter_STRING(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
     """
-    Filters results of the STRING API call according to user kwargs, keeping rows where the input parameters are
-    greater or equal than the input thresholds.
+    Filters results of the STRING API call according to user kwargs, keeping
+    rows where the input parameters are greater or equal than the input
+    thresholds.
 
-    :param df: Source specific Pandas dataframe (STRING) with results of the API call
+    :param df: Source specific Pandas DataFrame (STRING) with results of the API
+        call
     :type df: pd.DataFrame
-    :param kwargs: User thresholds used to filter the results. The parameter names are of the form STRING_<param>,
-        where <param> is the name of the parameter. All the parameters are numerical values.
+    :param kwargs: User thresholds used to filter the results. The parameter
+        names are of the form ``"STRING_<param>"``, where ``<param>`` is the
+        name of the parameter. All the parameters are numerical values.
     :type kwargs: Dict[str, Union[str, int, List[str], List[int]]]
-    :return: Source specific Pandas dataframe with filtered results
+    :return: Source specific Pandas DataFrame with filtered results
     :rtype: pd.DataFrame
     """
     scores = [
@@ -121,11 +128,11 @@ def filter_STRING(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
 
 def standardise_STRING(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Standardises STRING dataframe, e.g. puts everything into a common format.
+    Standardises STRING DataFrame, e.g. puts everything into a common format.
 
-    :param df: Source specific Pandas dataframe
+    :param df: Source specific Pandas DataFrame.
     :type df: pd.DataFrame
-    :return: Standardised dataframe
+    :return: Standardised DataFrame.
     :rtype: pd.DataFrame
     """
     if df.empty:
@@ -147,14 +154,17 @@ def STRING_df(
     **kwargs,
 ) -> pd.DataFrame:
     """
-    Generates standardised dataframe with STRING protein-protein interactions, filtered according to user's input.
+    Generates standardised DataFrame with STRING protein-protein interactions,
+    filtered according to user's input.
 
-    :param protein_list: List of proteins (official symbol) that will be included in the PPI graph
+    :param protein_list: List of proteins (official symbol) that will be
+        included in the PPI graph.
     :type protein_list: List[str]
-    :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism. 9606 corresponds to Homo Sapiens
+    :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism.
+        ``9606`` corresponds to Homo Sapiens.
     :type ncbi_taxon_id: int
     :param kwargs:  Additional parameters to pass to STRING API calls
-    :return: Standardised dataframe with STRING interactions
+    :return: Standardised DataFrame with STRING interactions
     :rtype: pd.DataFrame
     """
     df = parse_STRING(
@@ -164,27 +174,3 @@ def STRING_df(
     df = standardise_STRING(df)
 
     return df
-
-
-if __name__ == "__main__":
-    protein_list = [
-        "CDC42",
-        "CDK1",
-        "KIF23",
-        "PLK1",
-        "RAC2",
-        "RACGAP1",
-        "RHOA",
-        "RHOB",
-    ]
-    sources = ["STRING", "BIOGRID"]
-    kwargs = {
-        "STRING_escore": 0.2,  # Keeps STRING interactions with an experimental score >= 0.2
-        "BIOGRID_throughputTag": "high",  # Keeps high throughput BIOGRID interactions
-    }
-
-    df = STRING_df(
-        protein_list=protein_list, ncbi_taxon_id=9606, kwargs=kwargs
-    )
-
-    print(df)

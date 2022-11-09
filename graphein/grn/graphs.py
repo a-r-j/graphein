@@ -1,13 +1,14 @@
+"""Graph construction utilities for Gene Regulatory Networks."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import logging
 from typing import Callable, List, Optional
 
 import networkx as nx
+from loguru import logger as log
 
 from graphein.grn.config import GRNGraphConfig
 from graphein.utils.utils import (
@@ -16,9 +17,6 @@ from graphein.utils.utils import (
     annotate_node_metadata,
     compute_edges,
 )
-
-log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 EDGE_COLOR_MAPPING = {"trrust": "r", "regnetwork": "b", "abasy": "g"}
 

@@ -1,3 +1,4 @@
+"""Sequence featurisation functions wrapping ProPy."""
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
@@ -5,15 +6,11 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-# TODO: This the docstrings inside this module's set of functions
-# can do without the `type`s.
-# This is because the types are already annotated on the function.
-
-import logging
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional
 
 import networkx as nx
+from loguru import logger as log
 
 from graphein.protein.features.sequence.utils import (
     aggregate_feature_over_chains,
@@ -23,8 +20,6 @@ from graphein.protein.features.utils import (
     aggregate_graph_feature_over_chains,
     convert_graph_dict_feat_to_series,
 )
-
-log = logging.getLogger(__name__)
 
 
 def compute_propy_feature(
@@ -42,10 +37,12 @@ def compute_propy_feature(
     :type func: Callable
     :param feature_name: Name of feature to index it in the nx.Graph object
     :type feature_name: str
-    :param aggregation_type: Type of aggregation to use when aggregating a feature over multiple chains. One of:
-        ["mean", "man", "sum"]. Defaults to None.
+    :param aggregation_type: Type of aggregation to use when aggregating a
+        feature over multiple chains. One of: ``["mean", "max", "sum"]``.
+        Defaults to ``None``.
     :type aggregation_type: List[str], optional
-    :return G: Returns protein Graph with features added. Features are accessible with G.graph[{feature_name}_{chain | aggegation_type}]
+    :return G: Returns protein Graph with features added. Features are
+        accessible with ``G.graph[{feature_name}_{chain | aggegation_type}]``
     :rtype: nx.Graph
     """
     G = compute_feature_over_chains(G, func, feature_name=feature_name)
@@ -70,11 +67,12 @@ def amino_acid_composition(
     """
     Calculate the composition of Amino acids for a given protein sequence.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use
+    :param aggregation_type: Aggregation types to use.
     :type aggregation_type: Optional[List[str]]
-    :return: Protein Graph with amino_acid_composition feature added. G.graph["amino_acid_composition_{chain | aggregation_type}"]
+    :return: Protein Graph with ``amino_acid_composition`` feature added.
+        ``G.graph["amino_acid_composition_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.AAComposition import CalculateAAComposition
@@ -94,13 +92,15 @@ def dipeptide_composition(
     G: nx.Graph, aggregation_type: Optional[List[str]] = None
 ) -> nx.Graph:
     """
-    Calculate the composition of dipeptidefor a given protein sequence. Contains composition of 400 dipeptides
+    Calculate the composition of dipeptide for a given protein sequence.
+    Contains composition of 400 dipeptides.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with dipeptide_composition feature added. G.graph["dipeptide_composition_{chain | aggregation_type}"]
+    :return: Protein Graph with ``dipeptide_composition`` feature added.
+        ``G.graph["dipeptide_composition_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.AAComposition import CalculateDipeptideComposition
@@ -120,15 +120,16 @@ def aa_dipeptide_composition(
     G: nx.Graph, aggregation_type: Optional[List[str]] = None
 ) -> nx.Graph:
     """
-    Calculate the composition of AADs, dipeptide and 3-mers for a given protein sequence. Contains all composition
-        values of AADs, dipeptide and 3-mers (8420).
+    Calculate the composition of AADs, dipeptide and 3-mers for a given protein
+    sequence. Contains all composition values of AADs, dipeptide and 3-mers
+    (8420).
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with aa_dipeptide_composition feature added.
-        G.graph["aa_dipeptide_composition_{chain | aggregation_type}"]
+    :return: Protein Graph with ``aa_dipeptide_composition`` feature added.
+        ``G.graph["aa_dipeptide_composition_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.AAComposition import CalculateAADipeptideComposition
@@ -148,13 +149,15 @@ def aa_spectrum(
     G: nx.Graph, aggregation_type: Optional[List[str]] = None
 ) -> nx.Graph:
     """
-    Calculate the spectrum descriptors of 3-mers for a given protein. Contains the composition values of 8000 3-mers
+    Calculate the spectrum descriptors of 3-mers for a given protein. Contains
+    the composition values of 8000 3-mers
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with aa_spectrum feature added. G.graph["aa_spectrum_{chain | aggregation_type}"]
+    :return: Protein Graph with aa_spectrum feature added.
+        ``G.graph["aa_spectrum_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.AAComposition import GetSpectrumDict
@@ -177,14 +180,15 @@ def all_composition_descriptors(
     G: nx.Graph, aggregation_type: Optional[List[str]] = None
 ) -> nx.Graph:
     """
-    Calculate all composition descriptors based on seven different properties of AADs.
+    Calculate all composition descriptors based on seven different properties of
+    AADs.
 
     :param G: Protein Graph to featurise
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with composition_descriptors feature added.
-        G.graph["composition_descriptors_{chain | aggregation_type}"]
+    :return: Protein Graph with ``composition_descriptors`` feature added.
+        ``G.graph["composition_descriptors_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateC
@@ -206,12 +210,12 @@ def all_ctd_descriptors(
     """
     Calculate all CTD descriptors based seven different properties of AADs.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with ctd_descriptors feature added.
-        G.graph["ctd_descriptors_{chain | aggregation_type}"]
+    :return: Protein Graph with ``ctd_descriptors`` feature added.
+        ``G.graph["ctd_descriptors_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateCTD
@@ -236,16 +240,17 @@ def composition_descriptor(
     """
     Compute composition descriptors.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param AAProperty: contains classification of amino acids such as _Polarizability.
+    :param AAProperty: contains classification of amino acids such as
+        ``_Polarizability.``
     :type AAProperty: Dict[Any, Any]
     :param AAPName: used for indicating a AAP name.
     :type AAPName: str
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with composition_{AAPName} feature added.
-        G.graph["composition_{AAPName}_{chain | aggregation_type}"]
+    :return: Protein Graph with ``composition_{AAPName}`` feature added.
+        ``G.graph["composition_{AAPName}_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateComposition
@@ -269,12 +274,12 @@ def composition_charge(
     """
     Calculate composition descriptors based on Charge of AADs.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with composition_charge feature added.
-        G.graph["composition_charge_{chain | aggregation_type}"]
+    :return: Protein Graph with ``composition_charge`` feature added.
+        ``G.graph["composition_charge_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateCompositionCharge
@@ -298,12 +303,12 @@ def composition_hydrophobicity(
     """
     Calculate composition descriptors based on Hydrophobicity of AADs.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with composition_hydrophobicity feature added.
-        G.graph["composition_hydrophobicity_{chain | aggregation_type}"]
+    :return: Protein Graph with ``composition_hydrophobicity`` feature added.
+        ``G.graph["composition_hydrophobicity_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateCompositionHydrophobicity
@@ -329,8 +334,8 @@ def composition_normalized_vdwv(
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with composition_normalized_vdwv feature added.
-        G.graph["composition_normalized_vdwv_{chain | aggregation_type}"]
+    :return: Protein Graph with ``composition_normalized_vdwv`` feature added.
+        ``G.graph["composition_normalized_vdwv_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateCompositionNormalizedVDWV
@@ -356,8 +361,8 @@ def composition_polarity(
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with composition_polarity feature added.
-        G.graph["composition_polarity_{chain | aggregation_type}"]
+    :return: Protein Graph with ``composition_polarity`` feature added.
+        ``G.graph["composition_polarity_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateCompositionPolarity
@@ -383,8 +388,8 @@ def composition_polarizability(
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with composition_polarizability feature added.
-        G.graph["composition_polarizability_{chain | aggregation_type}"]
+    :return: Protein Graph with ``composition_polarizability`` feature added.
+        ``G.graph["composition_polarizability_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateCompositionPolarizability
@@ -410,8 +415,8 @@ def composition_secondary_str(
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with composition_secondary_str feature added.
-        G.graph["composition_secondary_str_{chain | aggregation_type}"]
+    :return: Protein Graph with ``composition_secondary_str`` feature added.
+        ``G.graph["composition_secondary_str_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateCompositionSecondaryStr
@@ -458,14 +463,15 @@ def all_distribution_descriptors(
     G: nx.Graph, aggregation_type: Optional[List[str]] = None
 ) -> nx.Graph:
     """
-    Calculate all distribution descriptors based on seven different properties of AADs.
+    Calculate all distribution descriptors based on seven different properties
+    of AADs.
 
     :param G: Protein Graph to featurise
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with distribution_descriptors feature added.
-        G.graph["distribution_descriptors_{chain | aggregation_type}"]
+    :return: Protein Graph with ``distribution_descriptors`` feature added.
+        ``G.graph["distribution_descriptors_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateC
@@ -490,16 +496,16 @@ def distribution_descriptor(
     """
     Compute distribution descriptors.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
     :param AAProperty: contains classifciation of amino acids such as _Polarizability.
     :type AAProperty: Dict[Any, Any]
     :param AAPName: used for indicating a AAP name.
     :type AAPName: str
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with distribution_{AAPName} feature added.
-        G.graph["distribution_{AAPName}_{chain | aggregation_type}"]
+    :return: Protein Graph with ``distribution_{AAPName}`` feature added.
+        ``G.graph["distribution_{AAPName}_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateDistribution
@@ -523,12 +529,12 @@ def distribution_charge(
     """
     Calculate distribution descriptors based on Charge of AADs.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with distribution_charge feature added.
-        G.graph["distribution_charge_{chain | aggregation_type}"]
+    :return: Protein Graph with ``distribution_charge`` feature added.
+        ``G.graph["distribution_charge_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateDistributionCharge
@@ -554,12 +560,12 @@ def distribution_hydrophobicity(
     """
     Calculate distribution descriptors based on Hydrophobicity of AADs.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with distribution_hydrophobicity feature added.
-        G.graph["distribution_hydrophobicity_{chain | aggregation_type}"]
+    :return: Protein Graph with ``distribution_hydrophobicity`` feature added.
+        ``G.graph["distribution_hydrophobicity_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateDistributionHydrophobicity
@@ -585,8 +591,8 @@ def distribution_normalized_vdwv(
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with distribution_normalized_vdwv feature added.
-        G.graph["distribution_normalized_vdwv_{chain | aggregation_type}"]
+    :return: Protein Graph with ``distribution_normalized_vdwv`` feature added.
+        ``G.graph["distribution_normalized_vdwv_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateDistributionNormalizedVDWV
@@ -608,12 +614,12 @@ def distribution_polarity(
     """
     Calculate distribution descriptors based on Polarity of AADs.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with distribution_polarity feature added.
-        G.graph["distribution_polarity_{chain | aggregation_type}"]
+    :return: Protein Graph with ``distribution_polarity`` feature added.
+        ``G.graph["distribution_polarity_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateDistributionPolarity
@@ -635,12 +641,12 @@ def distribution_polarizability(
     """
     Calculate distribution descriptors based on Polarizability of AADs.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with distribution_polarizability feature added.
-        G.graph["distribution_polarizability_{chain | aggregation_type}"]
+    :return: Protein Graph with ``distribution_polarizability`` feature added.
+        ``G.graph["distribution_polarizability_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateDistributionPolarizability
@@ -662,12 +668,12 @@ def distribution_secondary_str(
     """
     Calculate distribution descriptors based on SecondaryStr of AADs.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with distribution_secondary_str feature added.
-        G.graph["distribution_secondary_str_{chain | aggregation_type}"]
+    :return: Protein Graph with ``distribution_secondary_str`` feature added.
+        ``G.graph["distribution_secondary_str_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateDistributionSecondaryStr
@@ -689,12 +695,13 @@ def distribution_solvent_accessibility(
     """
     Calculate distribution descriptors based on SolventAccessibility of AADs.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with distribution_solvent_accessibility feature added.
-        G.graph["distribution_solvent_accessibility_{chain | aggregation_type}"]
+    :return: Protein Graph with ``distribution_solvent_accessibility`` feature
+        added.
+        ``G.graph["distribution_solvent_accessibility_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateDistributionSolventAccessibility
@@ -714,14 +721,15 @@ def all_transition_descriptors(
     G: nx.Graph, aggregation_type: Optional[List[str]] = None
 ) -> nx.Graph:
     """
-    Calculate all transition descriptors based on seven different properties of AADs.
+    Calculate all transition descriptors based on seven different properties of
+    AADs.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with transition_descriptors feature added.
-        G.graph["transition_descriptors_{chain | aggregation_type}"]
+    :return: Protein Graph with ``transition_descriptors`` feature added.
+        ``G.graph["transition_descriptors_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateC
@@ -746,16 +754,16 @@ def transition_descriptor(
     """
     Compute transition descriptors.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
     :param AAProperty: contains classifciation of amino acids such as _Polarizability.
     :type AAProperty: Dict[Any, Any]
     :param AAPName: used for indicating a AAP name.
     :type AAPName: str
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with transition_{AAPName} feature added.
-        G.graph["transition_{AAPName}_{chain | aggregation_type}"]
+    :return: Protein Graph with ``transition_{AAPName}`` feature added.
+        ``G.graph["transition_{AAPName}_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateTransition
@@ -777,12 +785,12 @@ def transition_charge(
     """
     Calculate transition descriptors based on Charge of AADs.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with transition_charge feature added.
-        G.graph["transition_charge_{chain | aggregation_type}"]
+    :return: Protein Graph with ``transition_charge`` feature added.
+        ``G.graph["transition_charge_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateTransitionCharge
@@ -808,10 +816,10 @@ def transition_hydrophobicity(
 
     :param G: Protein Graph to featurise
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with transition_hydrophobicity feature added.
-        G.graph["transition_hydrophobicity_{chain | aggregation_type}"]
+    :return: Protein Graph with ``transition_hydrophobicity`` feature added.
+        ``G.graph["transition_hydrophobicity_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateTransitionHydrophobicity
@@ -833,12 +841,12 @@ def transition_normalized_vdwv(
     """
     Calculate transition descriptors based on NormalizedVDWV of AADs.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with transition_normalized_vdwv feature added.
-        G.graph["transition_normalized_vdwv_{chain | aggregation_type}"]
+    :return: Protein Graph with ``transition_normalized_vdwv`` feature added.
+        ``G.graph["transition_normalized_vdwv_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateTransitionNormalizedVDWV
@@ -860,12 +868,12 @@ def transition_polarity(
     """
     Calculate transition descriptors based on Polarity of AADs.
 
-    :param G: Protein Graph to featurise
+    :param G: Protein Graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with transition_polarity feature added.
-        G.graph["transition_polarity_{chain | aggregation_type}"]
+    :return: Protein Graph with ``transition_polarity`` feature added.
+        ``G.graph["transition_polarity_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateTransitionPolarity
@@ -887,12 +895,12 @@ def transition_polarizability(
     """
     Calculate transition descriptors based on Polarizability of AADs.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with transition_polarizability feature added.
-        G.graph["transition_polarizability_{chain | aggregation_type}"]
+    :return: Protein Graph with ``transition_polarizability`` feature added.
+        ``G.graph["transition_polarizability_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateTransitionPolarizability
@@ -914,12 +922,12 @@ def transition_secondary_str(
     """
     Calculate transition descriptors based on SecondaryStr of AADs.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with transition_secondary_str feature added.
-        G.graph["transition_secondary_str_{chain | aggregation_type}"]
+    :return: Protein Graph with ``transition_secondary_str`` feature added.
+        ``G.graph["transition_secondary_str_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateTransitionSecondaryStr
@@ -941,12 +949,13 @@ def transition_solvent_accessibility(
     """
     Calculate transition descriptors based on SolventAccessibility of AADs.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with transition_solvent_accessibility feature added.
-        G.graph["transition_solvent_accessibility_{chain | aggregation_type}"]
+    :return: Protein Graph with ``transition_solvent_accessibility`` feature
+        added.
+        ``G.graph["transition_solvent_accessibility_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.CTD import CalculateTransitionSolventAccessibility
@@ -969,15 +978,16 @@ def autocorrelation_total(
     G: nx.Graph, aggregation_type: Optional[List[str]] = None
 ) -> nx.Graph:
     """
-    Compute all autocorrelation descriptors based on 8 properties of AADs. result contains 30*8*3=720 normalized Moreau
-        Broto, Moran, and Geary
+    Compute all autocorrelation descriptors based on 8 properties of AADs.
+    result contains 30*8*3=720 normalized Moreau Broto, Moran, and Geary
+    autocorrelation descriptors.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_total feature added.
-        G.graph["autocorrelation_total_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_total`` feature added.
+        ``G.graph["autocorrelation_total_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateAutoTotal
@@ -997,15 +1007,16 @@ def autocorrelation_geary_all(
     G: nx.Graph, aggregation_type: Optional[List[str]] = None
 ) -> nx.Graph:
     """
-    Compute Geary autocorrelation descriptors based on 8 properties of AADs. Result contains 30*8=240 Geary
-        autocorrelation descriptors based on the given properties(i.e., _AAPropert).
+    Compute Geary autocorrelation descriptors based on 8 properties of AADs.
+    Result contains 30*8=240 Geary autocorrelation descriptors based on the
+    given properties(i.e., _AAPropert).
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_geary_all feature added.
-        G.graph["autocorrelation_geary_all_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_geary_all`` feature added.
+        ``G.graph["autocorrelation_geary_all_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateGearyAutoTotal
@@ -1025,15 +1036,16 @@ def autocorrelation_geary_av_flexibility(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Geary Autocorrelation descriptors based on AvFlexibility. contains 30 Geary Autocorrelation
-        descriptors based on AvFlexibility.
+    Calculate the Geary Autocorrelation descriptors based on AvFlexibility.
+    contains 30 Geary Autocorrelation descriptors based on AvFlexibility.
 
     :param G: Protein graph to featurise
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_geary_av_flexibility feature added.
-        G.graph["autocorrelation_geary_av_flexibility_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_geary_av_flexibility``
+        feature added.
+        ``G.graph["autocorrelation_geary_av_flexibility_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateGearyAutoAvFlexibility
@@ -1053,15 +1065,16 @@ def autocorrelation_geary_free_energy(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Geary Autocorrelation descriptors based on FreeEnergy. result contains 30 Geary Autocorrelation
-        descriptors based on FreeEnergy.
+    Calculate the Geary Autocorrelation descriptors based on FreeEnergy.
+    Result contains 30 Geary Autocorrelation descriptors based on FreeEnergy.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_geary_free_energy feature added.
-        G.graph["autocorrelation_geary_av_free_energy_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_geary_free_energy`` feature
+        added.
+        ``G.graph["autocorrelation_geary_av_free_energy_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateGearyAutoFreeEnergy
@@ -1081,15 +1094,16 @@ def autocorrelation_geary_hydrophobicity(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Geary Autocorrelation descriptors based on hydrophobicity. result contains 30 Geary Autocorrelation
-        descriptors based on hydrophobicity.
+    Calculate the Geary Autocorrelation descriptors based on hydrophobicity.
+    result contains 30 Geary Autocorrelation descriptors based on hydrophobicity.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_geary_hydrophobicity feature added.
-        G.graph["autocorrelation_geary_hydrophobicity_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_geary_hydrophobicity`` feature
+        added.
+        ``G.graph["autocorrelation_geary_hydrophobicity_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateGearyAutoHydrophobicity
@@ -1109,15 +1123,16 @@ def autocorrelation_geary_mutability(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Geary Autocorrelation descriptors based on Mutability. result contains 30 Geary Autocorrelation
-        descriptors based on mutability.
+    Calculate the Geary Autocorrelation descriptors based on Mutability.
+    Result contains 30 Geary Autocorrelation descriptors based on mutability.
 
     :param G: Protein graph to featurise
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_geary_mutability feature added.
-        G.graph["autocorrelation_geary_mutability_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_geary_mutability`` feature
+        added.
+        ``G.graph["autocorrelation_geary_mutability_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateGearyAutoMutability
@@ -1137,15 +1152,17 @@ def autocorrelation_geary_polarizability(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Geary Autocorrelation descriptors based on polarizability. result contains 30 Geary Autocorrelation
-        descriptors based on polarizability.
+    Calculate the Geary Autocorrelation descriptors based on polarizability.
+    Result contains 30 Geary Autocorrelation descriptors based on
+    polarizability.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_geary_polarizability feature added.
-        G.graph["autocorrelation_geary_polarizability_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_geary_polarizability``
+        feature added.
+        ``G.graph["autocorrelation_geary_polarizability_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateGearyAutoPolarizability
@@ -1165,15 +1182,15 @@ def autocorrelation_geary_residue_asa(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Geary Autocorrelation descriptors based on ResidueASA. result contains 30 Geary Autocorrelation
-        descriptors based on ResidueASA.
+    Calculate the Geary Autocorrelation descriptors based on ResidueASA.
+    Result contains 30 Geary Autocorrelation descriptors based on ResidueASA.
 
     :param G: Protein graph to featurise
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_geary_residue_asa feature added.
-        G.graph["autocorrelation_geary_residue_asa_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_geary_residue_asa`` feature added.
+        ``G.graph["autocorrelation_geary_residue_asa_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateGearyAutoResidueASA
@@ -1193,15 +1210,16 @@ def autocorrelation_geary_residue_vol(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Geary Autocorrelation descriptors based on ResidueVol. result contains 30 Geary Autocorrelation
-        descriptors based on ResidueVol.
+    Calculate the Geary Autocorrelation descriptors based on ResidueVol.
+    Result contains 30 Geary Autocorrelation descriptors based on ResidueVol.
 
     :param G: Protein graph to featurise
     :type G: nx.Graph
     :param aggregation_type: Aggregation types to use over chains
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_geary_residue_vol feature added.
-        G.graph["autocorrelation_geary_residue_vol_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_geary_residue_vol`` feature
+        added.
+        ``G.graph["autocorrelation_geary_residue_vol_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateGearyAutoResidueVol
@@ -1221,15 +1239,15 @@ def autocorrelation_geary_steric(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Geary Autocorrelation descriptors based on Steric. result contains 30 Geary Autocorrelation
-        descriptors based on Steric
+    Calculate the Geary Autocorrelation descriptors based on Steric. Result
+    contains 30 Geary Autocorrelation descriptors based on Steric
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_geary_steric feature added.
-        G.graph["autocorrelation_geary_steric_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_geary_steric`` feature added.
+        ``G.graph["autocorrelation_geary_steric_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateGearyAutoSteric
@@ -1249,15 +1267,16 @@ def autocorrelation_moran_all(
     G: nx.Graph, aggregation_type: Optional[List[str]] = None
 ) -> nx.Graph:
     """
-    Compute Moran autocorrelation descriptors based on 8 properties of AADs. Result contains 30*8=240 Moran
-        autocorrelation descriptors based on the given properties(i.e., _AAPropert).
+    Compute Moran autocorrelation descriptors based on 8 properties of AADs.
+    Result contains 30*8=240 Moran autocorrelation descriptors based on the
+    given properties(i.e., _AAPropert).
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_moran_all feature added.
-        G.graph["autocorrelation_moran_all_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_moran_all`` feature added.
+        ``G.graph["autocorrelation_moran_all_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateMoranAutoTotal
@@ -1277,15 +1296,16 @@ def autocorrelation_moran_av_flexibility(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Moran Autocorrelation descriptors based on AvFlexibility. contains 30 Moran Autocorrelation
-        descriptors based on AvFlexibility.
+    Calculate the Moran Autocorrelation descriptors based on AvFlexibility.
+    Contains 30 Moran Autocorrelation descriptors based on AvFlexibility.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_moran_av_flexibility feature added.
-        G.graph["autocorrelation_moran_av_flexibility_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_moran_av_flexibility``
+        feature added.
+        ``G.graph["autocorrelation_moran_av_flexibility_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateMoranAutoAvFlexibility
@@ -1305,15 +1325,16 @@ def autocorrelation_moran_free_energy(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Moran Autocorrelation descriptors based on FreeEnergy. result contains 30 Moran Autocorrelation
-        descriptors based on FreeEnergy.
+    Calculate the Moran Autocorrelation descriptors based on FreeEnergy.
+    Result contains 30 Moran Autocorrelation descriptors based on FreeEnergy.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_moran_free_energy feature added.
-        G.graph["autocorrelation_moran_av_free_energy_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_moran_free_energy`` feature
+        added.
+        ``G.graph["autocorrelation_moran_av_free_energy_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateMoranAutoFreeEnergy
@@ -1333,15 +1354,16 @@ def autocorrelation_moran_hydrophobicity(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Moran Autocorrelation descriptors based on hydrophobicity. result contains 30 Moran Autocorrelation
-        descriptors based on hydrophobicity.
+    Calculate the Moran Autocorrelation descriptors based on hydrophobicity.
+    Result contains 30 Moran Autocorrelation descriptors based on hydrophobicity.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_moran_hydrophobicity feature added.
-        G.graph["autocorrelation_moran_hydrophobicity_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_moran_hydrophobicity`` feature
+        added.
+        ``G.graph["autocorrelation_moran_hydrophobicity_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateMoranAutoHydrophobicity
@@ -1361,15 +1383,16 @@ def autocorrelation_moran_mutability(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Moran Autocorrelation descriptors based on Mutability. result contains 30 Moran Autocorrelation
-        descriptors based on mutability.
+    Calculate the Moran Autocorrelation descriptors based on Mutability.
+    Result contains 30 Moran Autocorrelation descriptors based on mutability.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_moran_mutability feature added.
-        G.graph["autocorrelation_moran_mutability_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_moran_mutability`` feature
+        added.
+        ``G.graph["autocorrelation_moran_mutability_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateMoranAutoMutability
@@ -1389,15 +1412,16 @@ def autocorrelation_moran_polarizability(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Moran Autocorrelation descriptors based on polarizability. result contains 30 Moran Autocorrelation
-        descriptors based on polarizability.
+    Calculate the Moran Autocorrelation descriptors based on polarizability.
+    Result contains 30 Moran Autocorrelation descriptors based on polarizability.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_moran_polarizability feature added.
-        G.graph["autocorrelation_moran_polarizability_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_moran_polarizability`` feature
+        added.
+        ``G.graph["autocorrelation_moran_polarizability_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateMoranAutoPolarizability
@@ -1417,15 +1441,15 @@ def autocorrelation_moran_residue_asa(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Moran Autocorrelation descriptors based on ResidueASA. result contains 30 Moran Autocorrelation
-        descriptors based on ResidueASA.
+    Calculate the Moran Autocorrelation descriptors based on ResidueASA.
+    Result contains 30 Moran Autocorrelation descriptors based on ResidueASA.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_moran_residue_asa feature added.
-        G.graph["autocorrelation_moran_residue_asa_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_moran_residue_asa`` feature added.
+        ``G.graph["autocorrelation_moran_residue_asa_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateMoranAutoResidueASA
@@ -1445,15 +1469,16 @@ def autocorrelation_moran_residue_vol(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Moran Autocorrelation descriptors based on ResidueVol. result contains 30 Moran Autocorrelation
-        descriptors based on ResidueVol.
+    Calculate the Moran Autocorrelation descriptors based on ResidueVol.
+    Result contains 30 Moran Autocorrelation descriptors based on ResidueVol.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_moran_residue_vol feature added.
-        G.graph["autocorrelation_moran_residue_vol_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_moran_residue_vol`` feature
+        added.
+        ``G.graph["autocorrelation_moran_residue_vol_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateMoranAutoResidueVol
@@ -1473,15 +1498,15 @@ def autocorrelation_moran_steric(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the Moran Autocorrelation descriptors based on Steric. result contains 30 Moran Autocorrelation
-        descriptors based on Steric
+    Calculate the Moran Autocorrelation descriptors based on Steric. Result
+    contains 30 Moran Autocorrelation descriptors based on Steric
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_moran_steric feature added.
-        G.graph["autocorrelation_moran_steric_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_moran_steric`` feature added.
+        ``G.graph["autocorrelation_moran_steric_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateMoranAutoSteric
@@ -1501,15 +1526,17 @@ def autocorrelation_normalized_moreau_broto_all(
     G: nx.Graph, aggregation_type: Optional[List[str]] = None
 ) -> nx.Graph:
     """
-    Compute NormalizedMoreauBroto autocorrelation descriptors based on 8 properties of AADs. Result contains 30*8=240
-        NormalizedMoreauBroto autocorrelation descriptors based on the given properties(i.e., _AAPropert).
+    Compute NormalizedMoreauBroto autocorrelation descriptors based on 8
+    properties of AADs. Result contains 30*8=240 NormalizedMoreauBroto
+    autocorrelation descriptors based on the given properties(i.e., _AAPropert).
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_normalized_moreau_broto_all feature added.
-        G.graph["autocorrelation_normalized_moreau_broto_all_{chain | aggregation_type}"]
+    :return: Protein Graph with ``autocorrelation_normalized_moreau_broto_all``
+        feature added.
+        ``G.graph["autocorrelation_normalized_moreau_broto_all_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateNormalizedMoreauBrotoAutoTotal
@@ -1529,15 +1556,18 @@ def autocorrelation_normalized_moreau_broto_av_flexibility(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on AvFlexibility. contains 30
-        NormalizedMoreauBroto Autocorrelation descriptors based on AvFlexibility.
+    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
+    AvFlexibility. contains 30 NormalizedMoreauBroto Autocorrelation descriptors
+    based on AvFlexibility.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_normalized_moreau_broto_av_flexibility feature added.
-        G.graph["autocorrelation_normalized_moreau_broto_av_flexibility_{chain | aggregation_type}"]
+    :return: Protein Graph with
+        ``autocorrelation_normalized_moreau_broto_av_flexibility`` feature
+        added.
+        ``G.graph["autocorrelation_normalized_moreau_broto_av_flexibility_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import (
@@ -1559,15 +1589,17 @@ def autocorrelation_normalized_moreau_broto_free_energy(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on FreeEnergy. result contains 30
-        NormalizedMoreauBroto Autocorrelation descriptors based on FreeEnergy.
+    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
+    FreeEnergy. Result contains 30 NormalizedMoreauBroto Autocorrelation
+    descriptors based on FreeEnergy.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_normalized_moreau_broto_free_energy feature added.
-        G.graph["autocorrelation_normalized_moreau_broto_av_free_energy_{chain | aggregation_type}"]
+    :return: Protein Graph with
+        ``autocorrelation_normalized_moreau_broto_free_energy`` feature added.
+        ``G.graph["autocorrelation_normalized_moreau_broto_av_free_energy_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import (
@@ -1589,15 +1621,18 @@ def autocorrelation_normalized_moreau_broto_hydrophobicity(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on hydrophobicity. result contains 30
-        NormalizedMoreauBroto Autocorrelation descriptors based on hydrophobicity.
+    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
+    hydrophobicity. Result contains 30 NormalizedMoreauBroto Autocorrelation
+    descriptors based on hydrophobicity.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_normalized_moreau_broto_hydrophobicity feature added.
-        G.graph["autocorrelation_normalized_moreau_broto_hydrophobicity_{chain | aggregation_type}"]
+    :return: Protein Graph with
+        ``autocorrelation_normalized_moreau_broto_hydrophobicity`` feature
+        added.
+        ``G.graph["autocorrelation_normalized_moreau_broto_hydrophobicity_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import (
@@ -1619,15 +1654,17 @@ def autocorrelation_normalized_moreau_broto_mutability(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on Mutability. result contains 30
-        NormalizedMoreauBroto Autocorrelation descriptors based on mutability.
+    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
+    Mutability. Result contains 30 NormalizedMoreauBroto Autocorrelation
+    descriptors based on mutability.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_normalized_moreau_broto_mutability feature added.
-        G.graph["autocorrelation_normalized_moreau_broto_mutability_{chain | aggregation_type}"]
+    :return: Protein Graph with
+        ``autocorrelation_normalized_moreau_broto_mutability`` feature added.
+        ``G.graph["autocorrelation_normalized_moreau_broto_mutability_{chain | aggregation_type}"]``
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import (
@@ -1649,15 +1686,18 @@ def autocorrelation_normalized_moreau_broto_polarizability(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on polarizability. result contains 30
-        NormalizedMoreauBroto Autocorrelation descriptors based on polarizability.
+    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
+    polarizability. Result contains 30 NormalizedMoreauBroto Autocorrelation
+    descriptors based on polarizability.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_normalized_moreau_broto_polarizability feature added.
-        G.graph["autocorrelation_normalized_moreau_broto_polarizability_{chain | aggregation_type}"]
+    :return: Protein Graph with
+        ``autocorrelation_normalized_moreau_broto_polarizability`` feature
+        added.
+        ``G.graph["autocorrelation_normalized_moreau_broto_polarizability_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import (
@@ -1679,15 +1719,17 @@ def autocorrelation_normalized_moreau_broto_residue_asa(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on ResidueASA. result contains 30
-        NormalizedMoreauBroto Autocorrelation descriptors based on ResidueASA.
+    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
+    ResidueASA. Result contains 30 NormalizedMoreauBroto Autocorrelation
+    descriptors based on ResidueASA.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_normalized_moreau_broto_residue_asa feature added.
-        G.graph["autocorrelation_normalized_moreau_broto_residue_asa_{chain | aggregation_type}"]
+    :return: Protein Graph with
+        ``autocorrelation_normalized_moreau_broto_residue_asa`` feature added.
+        ``G.graph["autocorrelation_normalized_moreau_broto_residue_asa_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import (
@@ -1709,15 +1751,17 @@ def autocorrelation_normalized_moreau_broto_residue_vol(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on ResidueVol. result contains 30
-        NormalizedMoreauBroto Autocorrelation descriptors based on ResidueVol.
+    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
+    ResidueVol. Result contains 30 NormalizedMoreauBroto Autocorrelation
+    descriptors based on ResidueVol.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_normalized_moreau_broto_residue_vol feature added.
-        G.graph["autocorrelation_normalized_moreau_broto_residue_vol_{chain | aggregation_type}"]
+    :return: Protein Graph with
+        ``autocorrelation_normalized_moreau_broto_residue_vol`` feature added.
+        ``G.graph["autocorrelation_normalized_moreau_broto_residue_vol_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import (
@@ -1739,15 +1783,17 @@ def autocorrelation_normalized_moreau_broto_steric(
     G: nx.Graph, aggregation_type: Optional[List[str]]
 ) -> nx.Graph:
     """
-    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on Steric. result contains 30
-        NormalizedMoreauBroto Autocorrelation descriptors based on Steric
+    Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
+    Steric. Result contains 30 NormalizedMoreauBroto Autocorrelation descriptors
+    based on Steric.
 
-    :param G: Protein graph to featurise
+    :param G: Protein graph to featurise.
     :type G: nx.Graph
-    :param aggregation_type: Aggregation types to use over chains
+    :param aggregation_type: Aggregation types to use over chains.
     :type aggregation_type: List[Optional[str]]
-    :return: Protein Graph with autocorrelation_normalized_moreau_broto_steric feature added.
-        G.graph["autocorrelation_normalized_moreau_broto_steric_{chain | aggregation_type}"]
+    :return: Protein Graph with
+        ``autocorrelation_normalized_moreau_broto_steric`` feature added.
+        ``G.graph["autocorrelation_normalized_moreau_broto_steric_{chain | aggregation_type}"]``.
     :rtype: nx.Graph
     """
     from propy.Autocorrelation import CalculateNormalizedMoreauBrotoAutoSteric
@@ -1783,15 +1829,16 @@ def quasi_sequence_order(
     """
     Compute quasi-sequence-order descriptors for a given protein.
 
-    Kuo-Chen Chou. Prediction of Protein Subcellar Locations by Incorporating Quasi-Sequence-Order Effect.
-        Biochemical and Biophysical Research Communications 2000, 278, 477-483.
+    Kuo-Chen Chou. Prediction of Protein Subcellar Locations by Incorporating
+    Quasi-Sequence-Order Effect. Biochemical and Biophysical Research
+    Communications 2000, 278, 477-483.
 
-    :param maxlag: (int, optional (default: 30)) – the maximum lag and the length of the protein should be larger than
-        maxlag
-    :type maxlag: int
-    :param weight: (float, optional (default: 0.1)) – a weight factor. Please see reference 1 for its choice.
-    :type weight: float
-    :returns:
+    :param maxlag: The maximum lag and the
+        length of the protein should be larger than maxlag.
+    :type maxlag: int, defaults to ``30``.
+    :param weight: Weight factor. Please see reference 1 for its choice.
+    :type weight: float, defaults to ``0.1``.
+    :returns: Protein Graph with ``quasi_sequence_order`` feature added.
     :rtype: nx.Graph
     """
     from propy.QuasiSequenceOrder import GetQuasiSequenceOrder
@@ -1807,13 +1854,16 @@ def sequence_order_coupling_number_total(
     G: nx.Graph, maxlag: int = 30
 ) -> nx.Graph:
     """
-    Compute the sequence order coupling numbers from 1 to maxlag for a given protein sequence.
+    Compute the sequence order coupling numbers from 1 to maxlag for a given
+    protein sequence.
 
-    :param G: Protein Graph
+    :param G: Protein Graph.
     :type G: nx.Graph
-    :param maxlag (int, optional (default: 30)) – the maximum lag and the length of the protein should be larger
-    :type maxlag: int
-    :returns:
+    :param maxlag: The maximum lag and the length of the protein should be
+        larger.
+    :type maxlag: int, defaults to ``30``.
+    :returns: Protein Graph with ``sequence_order_coupling_number_total``
+        feature.
     :rtype: nx.Graph
     """
     from propy.QuasiSequenceOrder import GetSequenceOrderCouplingNumberTotal
@@ -1826,7 +1876,4 @@ def sequence_order_coupling_number_total(
     return G
 
 
-# Todo feature aggregation
-
-if __name__ == "__main__":
-    pass
+# TODO feature aggregation

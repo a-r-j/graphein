@@ -1,12 +1,10 @@
-import logging
+"""Functions for adding node features from AAIndex."""
 from typing import Dict, Tuple
 
 import networkx as nx
+from loguru import logger as log
 
 from graphein.utils.utils import import_message, protein_letters_3to1_all_caps
-
-log = logging.getLogger(__name__)
-
 
 try:
     from pyaaisc import Aaindex
