@@ -84,12 +84,8 @@ def download_pdb_multiprocessing(
     :rtype: List[Path]
     """
     out_dir: Path = Path(out_dir)
-    func = partial(
-        download_pdb, out_dir=out_dir, overwrite=overwrite, strict=strict
-    )
-    return process_map(
-        func, pdb_codes, max_workers=max_workers, chunksize=chunksize
-    )
+    func = partial(download_pdb, out_dir=out_dir, overwrite=overwrite, strict=strict)
+    return process_map(func, pdb_codes, max_workers=max_workers, chunksize=chunksize)
 
 
 def download_pdb(
@@ -136,9 +132,7 @@ def download_pdb(
         obs_map = get_obsolete_mapping()
         try:
             new_pdb = obs_map[pdb_code.lower()].lower()
-            log.info(
-                "{pdb_code} is deprecated. Downloading {new_pdb} instead."
-            )
+            log.info("{pdb_code} is deprecated. Downloading {new_pdb} instead.")
             return download_pdb(new_pdb, out_dir, overwrite=overwrite)
         except KeyError:
             log.warning(
@@ -279,12 +273,8 @@ def download_alphafold_structure(
 
     if rename:
         extension = ".pdb" if pdb else ".cif"
-        os.rename(
-            structure_filename, Path(out_dir) / f"{uniprot_id}{extension}"
-        )
-        structure_filename = str(
-            (Path(out_dir) / f"{uniprot_id}{extension}").resolve()
-        )
+        os.rename(structure_filename, Path(out_dir) / f"{uniprot_id}{extension}")
+        structure_filename = str((Path(out_dir) / f"{uniprot_id}{extension}").resolve())
 
     log.info(f"Downloaded AlphaFold PDB file for: {uniprot_id}")
     if aligned_score:
@@ -297,9 +287,7 @@ def download_alphafold_structure(
         score_filename = wget.download(score_query, out=out_dir)
         if rename:
             os.rename(score_filename, Path(out_dir) / f"{uniprot_id}.json")
-            score_filename = str(
-                (Path(out_dir) / f"{uniprot_id}.json").resolve()
-            )
+            score_filename = str((Path(out_dir) / f"{uniprot_id}.json").resolve())
         return structure_filename, score_filename
 
     return structure_filename
@@ -341,9 +329,7 @@ def save_graph_to_pdb(
     :type gz: bool
     """
     ppd = PandasPdb()
-    atom_df = filter_dataframe(
-        g.graph["pdb_df"], "record_name", ["ATOM"], boolean=True
-    )
+    atom_df = filter_dataframe(g.graph["pdb_df"], "record_name", ["ATOM"], boolean=True)
     hetatm_df = filter_dataframe(
         g.graph["pdb_df"], "record_name", ["HETATM"], boolean=True
     )
