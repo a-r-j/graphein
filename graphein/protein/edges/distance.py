@@ -7,8 +7,8 @@
 from __future__ import annotations
 
 import itertools
-from itertools import combinations
-from typing import Dict, List, Optional, Tuple, Union
+from itertools import combinations, product
+from typing import Dict, List, Optional, Tuple, Union, Iterable
 
 import networkx as nx
 import numpy as np
@@ -16,7 +16,7 @@ import pandas as pd
 from loguru import logger as log
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import pdist, squareform
-from sklearn.neighbors import kneighbors_graph
+from sklearn.neighbors import kneighbors_graph, NearestNeighbors
 
 from graphein.protein.resi_atoms import (
     AA_RING_ATOMS,
@@ -41,6 +41,9 @@ from graphein.protein.resi_atoms import (
     VDW_RADII,
 )
 from graphein.protein.utils import filter_dataframe
+
+
+INFINITE_DIST = 10_000.  # np.inf leads to errors in some cases
 
 
 def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
@@ -73,6 +76,69 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     eucl_dists.columns = pdb_df.index
 
     return eucl_dists
+
+
+def filter_distmat(
+    pdb_df: pd.DataFrame,
+    distmat: pd.DataFrame,
+    exclude_edges: Iterable[str],
+    inplace: bool = True
+) -> pd.DataFrame:
+    """
+    Filter distance matrix in place based on edge types to exclude.
+
+    :param pdb_df: Data frame representing a PDB graph.
+    :type pdb_df: pd.DataFrame
+    :param distmat: Pairwise-distance matrix between all nodes
+    :type pdb_df: pd.DataFrame
+    :param exclude_edges: Supported values: `inter`, `intra`
+        - `inter` removes inter-connections between nodes of the same chain.
+        - `intra` removes intra-connections between nodes of different chains.
+    :type exclude_edges: Iterable[str]
+    :param inplace: False to create a deep copy.
+    :type inplace: bool
+    :return: Modified pairwise-distance matrix between all nodes.
+    :rtype: pd.DataFrame
+    """
+    # Process input argument values
+    supported_exclude_edges_vals = ['inter', 'intra']
+    for val in exclude_edges:
+        if val not in supported_exclude_edges_vals:
+            raise ValueError(f'Unknown `exclude_edges` value \'{val}\'.')
+    if not inplace:
+        distmat = distmat.copy(deep=True)
+
+    # Prepare
+    chain_to_nodes = pdb_df.groupby('chain_id')['node_id'].apply(list).to_dict()
+    node_id_to_int = dict(zip(pdb_df['node_id'], pdb_df.index))
+    chain_to_nodes = {
+        ch: [node_id_to_int[n] for n in nodes]
+        for ch, nodes in chain_to_nodes.items()
+    }
+
+    # Construct indices of edges to exclude
+    edges_to_excl = []
+    if 'intra' in exclude_edges:
+        for nodes in chain_to_nodes.values():
+            edges_to_excl.extend(list(combinations(nodes, 2)))
+    if 'inter' in exclude_edges:
+        for nodes0, nodes1 in combinations(chain_to_nodes.values(), 2):
+            edges_to_excl.extend(list(product(nodes0, nodes1)))
+
+    # Filter distance matrix based on indices of edges to exclude
+    if len(exclude_edges):
+        row_idx_to_excl, col_idx_to_excl = zip(*edges_to_excl)
+        distmat.iloc[row_idx_to_excl, col_idx_to_excl] = INFINITE_DIST
+        distmat.iloc[col_idx_to_excl, row_idx_to_excl] = INFINITE_DIST
+
+    return distmat
+
+
+def add_edge(G, n1, n2, kind_name):
+    if G.has_edge(n1, n2):
+        G.edges[n1, n2]['kind'].add(kind_name)
+    else:
+        G.add_edge(n1, n2, kind={kind_name})
 
 
 def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
@@ -387,10 +453,7 @@ def add_aromatic_interactions(
         for n1, n2 in interacting_resis:
             assert G.nodes[n1]["residue_name"] in AROMATIC_RESIS
             assert G.nodes[n2]["residue_name"] in AROMATIC_RESIS
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("aromatic")
-            else:
-                G.add_edge(n1, n2, kind={"aromatic"})
+            add_edge(G, n1, n2, "aromatic")
 
 
 def add_aromatic_sulphur_interactions(
@@ -433,11 +496,8 @@ def add_aromatic_sulphur_interactions(
             condition2 = resi1 in PI_RESIS and resi2 in SULPHUR_RESIS
 
             if (condition1 or condition2) and resi1 != resi2:
-                if G.has_edge(resi1, resi2):
-                    G.edges[resi1, resi2]["kind"].add("aromatic_sulphur")
-                else:
-                    G.add_edge(resi1, resi2, kind={"aromatic_sulphur"})
-                    
+                add_edge(G, resi1, resi2, "aromatic_sulphur")
+
 
 def add_cation_pi_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
@@ -477,10 +537,7 @@ def add_cation_pi_interactions(
             condition2 = resi1 in PI_RESIS and resi2 in CATION_RESIS
 
             if (condition1 or condition2) and resi1 != resi2:
-                if G.has_edge(resi1, resi2):
-                    G.edges[resi1, resi2]["kind"].add("cation_pi")
-                else:
-                    G.add_edge(resi1, resi2, kind={"cation_pi"})
+                add_edge(G, resi1, resi2, "cation_pi")
 
 
 def add_vdw_interactions(
@@ -625,10 +682,7 @@ def add_pi_stacking_interactions(
                 or n2_centroid_angle >= 45
             ):
                 continue
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("pi_stacking")
-            else:
-                G.add_edge(n1, n2, kind={"pi_stacking"})
+            add_edge(G, n1, n2, "pi_stacking")
 
 
 def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
@@ -692,10 +746,7 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
                 or n2_centroid_angle >= 45
             ):
                 continue
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("t_stacking")
-            else:
-                G.add_edge(n1, n2, kind={"t_stacking"})
+            add_edge(G, n1, n2, "t_stacking")
 
 
 def add_backbone_carbonyl_carbonyl_interactions(
@@ -866,10 +917,7 @@ def add_delaunay_triangulation(
         for n1, n2 in combinations(nodes, 2):
             if n1 not in G.nodes or n2 not in G.nodes:
                 continue
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("delaunay")
-            else:
-                G.add_edge(n1, n2, kind={"delaunay"})
+            add_edge(G, n1, n2, "delaunay")
 
 
 def add_distance_threshold(
@@ -913,10 +961,8 @@ def add_distance_threshold(
 
         if not (condition_1 and condition_2):
             count += 1
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("distance_threshold")
-            else:
-                G.add_edge(n1, n2, kind={"distance_threshold"})
+            add_edge(G, n1, n2, "distance_threshold")
+
     log.info(
         f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
             removed by LIN)"
@@ -973,10 +1019,7 @@ def add_distance_window(
 
         if not (condition_1 and condition_2):
             count += 1
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add(f"distance_window_{min}_{max}")
-            else:
-                G.add_edge(n1, n2, kind={f"distance_window_{min}_{max}"})
+            add_edge(G, n1, n2, f"distance_window_{min}_{max}")
     log.info(
         f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
             removed by LIN)"
@@ -991,20 +1034,17 @@ def add_fully_connected_edges(G: nx.Graph):
     :type G: nx.Graph
     """
     for n1, n2 in itertools.product(G.nodes(), G.nodes()):
-        if G.has_edge(n1, n2):
-            G.edges[n1, n2]["kind"].add("fully_connected")
-        else:
-            G.add_edge(n1, n2, kind={"fully_connected"})
+        add_edge(G, n1, n2, f"fully_connected")
 
 
+# TODO Support for directed edges
 def add_k_nn_edges(
     G: nx.Graph,
-    long_interaction_threshold: int,
+    long_interaction_threshold: int = 0,
     k: int = 5,
-    mode: str = "connectivity",
-    metric: str = "minkowski",
-    p: int = 2,
-    include_self: Union[bool, str] = False,
+    exclude_edges: Iterable[str] = (),
+    exclude_self_loops: bool = True,
+    kind_name: str = 'knn'
 ):
     """
     Adds edges to nodes based on K nearest neighbours. Long interaction
@@ -1018,25 +1058,16 @@ def add_k_nn_edges(
     :type long_interaction_threshold: int
     :param k: Number of neighbors for each sample.
     :type k: int
-    :param mode: Type of returned matrix: ``"connectivity"`` will return the
-        connectivity matrix with ones and zeros, and ``"distance"`` will return
-        the distances between neighbors according to the given metric.
-    :type mode: str
-    :param metric: The distance metric used to calculate the k-Neighbors for
-        each sample point. The ``DistanceMetric`` class gives a list of
-        available metrics. The default distance is ``"euclidean"``
-        (``"minkowski"`` metric with the ``p`` param equal to ``2``).
-    :type metric: str
-    :param p: Power parameter for the Minkowski metric. When ``p = 1``, this is
-        equivalent to using ``manhattan_distance`` (l1), and
-        ``euclidean_distance`` (l2) for ``p = 2``. For arbitrary ``p``,
-        ``minkowski_distance`` (l_p) is used. Default is ``2`` (euclidean).
-    :type p: int
-    :param include_self: Whether or not to mark each sample as the first nearest
-        neighbor to itself. If ``"auto"``, then ``True`` is used for
-        ``mode="connectivity"`` and ``False`` for ``mode="distance"``.
-        Default is ``False``.
-    :type include_self: Union[bool, str]
+    :param exclude_edges: Types of edges to exclude. Supported values are
+        `inter` and `intra`.
+        - `inter` removes inter-connections between nodes of the same chain.
+        - `intra` removes intra-connections between nodes of different chains.
+    :type exclude_edges: Iterable[str].
+    :param exclude_self_loops: Whether or not to mark each sample as the first
+        nearest neighbor to itself.
+    :type exclude_self_loops: Union[bool, str]
+    :param kind_name: Name for kind of edges in networkx graph.
+    :type kind_name: str
     :return: Graph with knn-based edges added
     :rtype: nx.Graph
     """
@@ -1045,14 +1076,21 @@ def add_k_nn_edges(
     )
     dist_mat = compute_distmat(pdb_df)
 
-    nn = kneighbors_graph(
-        X=dist_mat,
-        n_neighbors=k,
-        mode=mode,
-        metric=metric,
-        p=p,
-        include_self=include_self,
-    )
+    # Filter edges
+    dist_mat = filter_distmat(pdb_df, dist_mat, exclude_edges)
+
+    # Add self-loops if specified
+    if not exclude_self_loops:
+        k -= 1
+        for n1, n2 in zip(G.nodes(), G.nodes()):
+            add_edge(G, n1, n2, kind_name)
+    if k == 0:
+        return
+
+    # Run k-NN search
+    neigh = NearestNeighbors(n_neighbors=k, metric='precomputed')
+    neigh.fit(dist_mat)
+    nn = neigh.kneighbors_graph()
 
     # Create iterable of node indices
     outgoing = np.repeat(np.array(range(len(G.graph["pdb_df"]))), k)
@@ -1082,10 +1120,7 @@ def add_k_nn_edges(
         # If not on same chain add edge or
         # If on same chain and separation is sufficient add edge
         if condition_1 or condition_2:
-            if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("k_nn")
-            else:
-                G.add_edge(n1, n2, kind={"k_nn"})
+            add_edge(G, n1, n2, kind_name)
 
 
 def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
