@@ -1079,9 +1079,18 @@ def add_k_nn_edges(
     :return: Graph with knn-based edges added
     :rtype: nx.Graph
     """
+    # Prepare dataframe
     pdb_df = filter_dataframe(
         G.graph["pdb_df"], "node_id", list(G.nodes()), True
     )
+    if (
+        pdb_df['x_coord'].isna().sum() or
+        pdb_df['y_coord'].isna().sum() or
+        pdb_df['z_coord'].isna().sum()
+    ):
+        raise ValueError('Coordinates contain a NaN value.')
+
+    # Construct distance matrix
     dist_mat = compute_distmat(pdb_df)
 
     # Filter edges
