@@ -126,7 +126,7 @@ def filter_distmat(
             edges_to_excl.extend(list(product(nodes0, nodes1)))
 
     # Filter distance matrix based on indices of edges to exclude
-    if len(exclude_edges):
+    if len(edges_to_excl):
         row_idx_to_excl, col_idx_to_excl = zip(*edges_to_excl)
         distmat.iloc[row_idx_to_excl, col_idx_to_excl] = INFINITE_DIST
         distmat.iloc[col_idx_to_excl, row_idx_to_excl] = INFINITE_DIST
