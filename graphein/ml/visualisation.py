@@ -42,7 +42,7 @@ def plot_pyg_data(
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
     node_size_multiplier: float = 20.0,
-    node_size_feature: str = 'degree',
+    node_size_feature: str = "degree",
     label_node_ids: bool = True,
     node_colour_map=plt.cm.plasma,
     edge_colour_map=plt.cm.plasma,
