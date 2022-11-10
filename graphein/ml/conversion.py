@@ -264,7 +264,9 @@ class GraphFormatConvertor:
         G = nx.convert_node_labels_to_integers(G)
 
         # Construct Edge Index
-        edge_index = torch.LongTensor(list(G.edges)).t().contiguous().view(2,-1)
+        edge_index = (
+            torch.LongTensor(list(G.edges)).t().contiguous().view(2, -1)
+        )
 
         # Add node features
         node_feature_names = G.nodes(data=True)[0].keys()
@@ -280,7 +282,7 @@ class GraphFormatConvertor:
         for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
             for key, value in feat_dict.items():
                 key = str(key)
-                if key in self.columns or key == 'kind':
+                if key in self.columns or key == "kind":
                     if i == 0:
                         data[key] = []
                     data[key].append(value)
@@ -295,14 +297,14 @@ class GraphFormatConvertor:
             data["edge_index"] = edge_index
 
         # Split edge index by edge kind
-        kind_strs = np.array(list(map(lambda x: '_'.join(x), data['kind'])))
+        kind_strs = np.array(list(map(lambda x: "_".join(x), data["kind"])))
         for kind in set(kind_strs):
-            key = f'edge_index_{kind}'
+            key = f"edge_index_{kind}"
             if key in self.columns:
                 mask = kind_strs == kind
                 data[key] = edge_index[:, mask]
-        if 'kind' not in self.columns:
-            del data['kind']
+        if "kind" not in self.columns:
+            del data["kind"]
 
         # Convert everything possible to torch.Tensors
         for key, val in data.items():
