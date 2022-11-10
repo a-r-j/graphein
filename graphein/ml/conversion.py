@@ -264,31 +264,52 @@ class GraphFormatConvertor:
         G = nx.convert_node_labels_to_integers(G)
 
         # Construct Edge Index
-        edge_index = torch.LongTensor(list(G.edges)).t().contiguous()
+        edge_index = torch.LongTensor(list(G.edges)).t().contiguous().view(2,-1)
 
         # Add node features
+        node_feature_names = G.nodes(data=True)[0].keys()
         for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
             for key, value in feat_dict.items():
-                if str(key) in self.columns:
-                    data[str(key)] = (
-                        [value] if i == 0 else data[str(key)] + [value]
-                    )
+                key = str(key)
+                if key in self.columns:
+                    if i == 0:
+                        data[key] = []
+                    data[key].append(value)
 
         # Add edge features
         for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
             for key, value in feat_dict.items():
-                if str(key) in self.columns:
+                key = str(key)
+                if key in self.columns or key == 'kind':
                     if i == 0:
-                        data[str(key)] = []
-                    data[str(key)].append(list(value))
+                        data[key] = []
+                    data[key].append(value)
 
         # Add graph-level features
         for feat_name in G.graph:
             if str(feat_name) in self.columns:
-                data[str(feat_name)] = [G.graph[feat_name]]
+                if str(feat_name) not in node_feature_names:
+                    data[str(feat_name)] = [G.graph[feat_name]]
 
         if "edge_index" in self.columns:
-            data["edge_index"] = edge_index.view(2, -1)
+            data["edge_index"] = edge_index
+
+        # Split edge index by edge kind
+        kind_strs = np.array(list(map(lambda x: '_'.join(x), data['kind'])))
+        for kind in set(kind_strs):
+            key = f'edge_index_{kind}'
+            if key in self.columns:
+                mask = kind_strs == kind
+                data[key] = edge_index[:, mask]
+        if 'kind' not in self.columns:
+            del data['kind']
+
+        # Convert everything possible to torch.Tensors
+        for key, val in data.items():
+            try:
+                data[key] = torch.tensor(np.array(val))
+            except:
+                pass
 
         data = Data.from_dict(data)
         data.num_nodes = G.number_of_nodes()
