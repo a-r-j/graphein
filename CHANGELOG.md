@@ -23,6 +23,7 @@
 
 #### ML
 
+* [Bugfix] - [#234](https://github.com/a-r-j/graphein/pull/234) - Fixes bugs and improves `conversion.convert_nx_to_pyg` and `visualisation.plot_pyg_data`
 * [Feature] - [#208](https://github.com/a-r-j/graphein/pull/208) support for loading local pdb files by ``ProteinGraphDataset`` and ``InMemoryProteinGraphDataset``.
 
 >by adding a params:`pdb_paths` and set the `self.raw_dir` to the root path(`self.pdb_path`) of pdb_paths list (the root path should be only one, pdb files should be under the same folder).
