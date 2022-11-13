@@ -53,8 +53,6 @@ jobs:
         run: conda install -c salilab dssp
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Install PyTorchGeometric
-        run: conda install pyg -c pyg
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
       - name: Install Graphein
