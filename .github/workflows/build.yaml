@@ -44,7 +44,7 @@ jobs:
         uses: s-weigand/setup-conda@v1
         with:
           python-version: ${{ matrix.python-version }}
-          conda-channels: "conda-forge, salilab"
+          conda-channels: "conda-forge, salilab. pyg"
 
       #- name: Set up Python ${{ matrix.python-version }}
       #  uses: actions/setup-python@v2
@@ -58,6 +58,8 @@ jobs:
         run: conda install -c salilab dssp
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install PyTorchGeometric
+        run: conda install pyg -c pyg
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
       - name: Install Graphein
