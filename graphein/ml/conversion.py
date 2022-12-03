@@ -22,7 +22,7 @@ except ImportError:
         submodule="graphein.ml.conversion",
         package="torch",
         pip_install=True,
-        conda_channel="pytorch"
+        conda_channel="pytorch",
     )
 
 try:
