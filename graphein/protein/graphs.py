@@ -637,7 +637,7 @@ def construct_graph(
     edge_annotation_funcs: Optional[List[Callable]] = None,
     node_annotation_funcs: Optional[List[Callable]] = None,
     graph_annotation_funcs: Optional[List[Callable]] = None,
-    verbose: Optional[bool] = True,
+    verbose: bool = True,
 ) -> nx.Graph:
     """
     Constructs protein structure graph from a ``pdb_code`` or ``pdb_path``.
@@ -686,7 +686,7 @@ def construct_graph(
     :type graph_annotation_funcs: List[Callable]
     :param verbose: Controls the verbosity.
         Default is ``True``.
-    :type verbose: bool, optional
+    :type verbose: bool
     :return: Protein Structure Graph
     :rtype: nx.Graph
     """
