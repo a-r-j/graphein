@@ -7,11 +7,11 @@
 
 import pickle
 from pathlib import Path
-import pytest
 from typing import List
 
 import networkx as nx
 import numpy as np
+import pytest
 
 from graphein.protein.config import DSSPConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (
