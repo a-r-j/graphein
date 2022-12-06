@@ -447,7 +447,9 @@ def test_df_processing():
     def remove_hetatms(df: pd.DataFrame) -> pd.DataFrame:
         return df.loc[df["record_name"] == "ATOM"]
 
-    params_to_change = {"protein_df_processing_functions": [return_even_df, remove_hetatms]}
+    params_to_change = {
+        "protein_df_processing_functions": [return_even_df, remove_hetatms]
+    }
 
     config = ProteinGraphConfig(**params_to_change)
     config.dict()
