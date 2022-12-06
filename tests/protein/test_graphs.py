@@ -47,10 +47,10 @@ from graphein.protein.graphs import (
 )
 from graphein.protein.utils import is_tool
 
-
 DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
 
 DSSP_AVAILABLE = is_tool("mkdssp")
+
 
 def generate_graph():
     """Generate PDB network.
