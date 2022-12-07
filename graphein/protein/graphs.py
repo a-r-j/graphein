@@ -117,7 +117,9 @@ def read_pdb_to_dataframe(
     return pd.concat([atomic_df.df["ATOM"], atomic_df.df["HETATM"]])
 
 
-def label_node_id(df: pd.DataFrame, granularity: str, insertions: bool = False) -> pd.DataFrame:
+def label_node_id(
+    df: pd.DataFrame, granularity: str, insertions: bool = False
+) -> pd.DataFrame:
     """Assigns a ``node_id`` column to the atomic dataframe. Node IDs are of the
     form: ``"<CHAIN>:<RESIDUE_NAME>:<RESIDUE_NUMBER>:<ATOM_NAME>"`` for atomic
     graphs or ``"<CHAIN>:<RESIDUE_NAME>:<RESIDUE_NUMBER>"`` for residue graphs.
@@ -145,7 +147,7 @@ def label_node_id(df: pd.DataFrame, granularity: str, insertions: bool = False) 
         + ":"
         + df["residue_number"].apply(str)
     )
-    
+
     if insertions:
         df["node_id"] = df["node_id"] + ":" + df["insertion"].apply(str)
     df["residue_id"] = df["node_id"]
@@ -316,7 +318,9 @@ def process_dataframe(
         construction functions.
     :rtype: pd.DataFrame
     """
-    protein_df = label_node_id(protein_df, granularity=granularity, insertions=insertions)
+    protein_df = label_node_id(
+        protein_df, granularity=granularity, insertions=insertions
+    )
     # TODO: Need to properly define what "granularity" is supposed to do.
     atoms = filter_dataframe(
         protein_df,
@@ -396,7 +400,6 @@ def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return df.sort_values(
         by=["chain_id", "residue_number", "atom_number", "insertion"]
     )
-
 
 
 def select_chains(
