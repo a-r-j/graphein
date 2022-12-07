@@ -10,10 +10,10 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from loguru import logger as log
 import networkx as nx
 import numpy as np
 import torch
+from loguru import logger as log
 
 from graphein.utils.utils import import_message
 
@@ -292,7 +292,7 @@ class GraphFormatConvertor:
         for feat_name in G.graph:
             if str(feat_name) in self.columns:
                 if str(feat_name) not in node_feature_names:
-                    #data[str(feat_name)] = [G.graph[feat_name]]
+                    # data[str(feat_name)] = [G.graph[feat_name]]
                     data[str(feat_name)] = G.graph[feat_name]
         if "edge_index" in self.columns:
             data["edge_index"] = edge_index
