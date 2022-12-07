@@ -45,8 +45,11 @@ from graphein.protein.graphs import (
     construct_graphs_mp,
     read_pdb_to_dataframe,
 )
+from graphein.protein.utils import is_tool
 
 DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
+
+DSSP_AVAILABLE = is_tool("mkdssp")
 
 
 def generate_graph():
@@ -97,6 +100,7 @@ def test_construct_graph():
     assert len(peptide_bond_edges) == 570
 
 
+@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_construct_graph_with_dssp():
     """Makes sure protein graphs can be constructed with dssp
 
@@ -256,6 +260,7 @@ def test_distance_edges():
 
 
 # Featurisation tests
+@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_node_features():
     # Todo this test requires attention
     # Tests node featurisers for a residue graph:
@@ -377,6 +382,7 @@ def test_edges_do_not_add_nodes_for_chain_subset():
     assert len(g) == 219
 
 
+@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_secondary_structure_graphs():
     file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     config = ProteinGraphConfig(
@@ -413,6 +419,7 @@ def test_secondary_structure_graphs():
     ), "Multigraph should have same number of edges."
 
 
+@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_chain_graph():
     file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     config = ProteinGraphConfig(
