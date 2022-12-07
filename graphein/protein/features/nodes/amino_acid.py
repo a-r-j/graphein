@@ -208,7 +208,7 @@ def hydrogen_bond_donor(
         try:
             features = HYDROGEN_BOND_DONORS[res][atom]
         except KeyError:
-            try: # Handle insertions
+            try:  # Handle insertions
                 atom = node_id[-2]
                 features = HYDROGEN_BOND_DONORS[res][atom]
             except KeyError:
@@ -254,7 +254,7 @@ def hydrogen_bond_acceptor(
         try:
             features = HYDROGEN_BOND_ACCEPTORS[res][atom]
         except KeyError:
-            try: # Handle insertions
+            try:  # Handle insertions
                 atom = node_id[-2]
                 features = HYDROGEN_BOND_ACCEPTORS[res][atom]
             except KeyError:

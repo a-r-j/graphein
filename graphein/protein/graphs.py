@@ -383,7 +383,9 @@ def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     :return: Sorted protein dataframe.
     :rtype: pd.DataFrame
     """
-    return df.sort_values(by=["chain_id", "residue_number", "atom_number", "insertion"])
+    return df.sort_values(
+        by=["chain_id", "residue_number", "atom_number", "insertion"]
+    )
 
 
 def assign_node_id_to_dataframe(
@@ -584,7 +586,9 @@ def calculate_centroid_positions(
     :rtype: pd.DataFrame
     """
     centroids = (
-        atoms.groupby(["residue_number","chain_id","residue_name", "insertion"])
+        atoms.groupby(
+            ["residue_number", "chain_id", "residue_name", "insertion"]
+        )
         .mean()[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )

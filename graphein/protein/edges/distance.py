@@ -316,7 +316,6 @@ def add_disulfide_interactions(
         )
 
 
-
 def add_hydrogen_bond_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
