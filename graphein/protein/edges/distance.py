@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import itertools
 from itertools import combinations, product
-from typing import Dict, List, Optional, Tuple, Union, Iterable
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -16,7 +16,7 @@ import pandas as pd
 from loguru import logger as log
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import pdist, squareform
-from sklearn.neighbors import kneighbors_graph, NearestNeighbors
+from sklearn.neighbors import NearestNeighbors, kneighbors_graph
 
 from graphein.protein.resi_atoms import (
     AA_RING_ATOMS,
@@ -42,8 +42,7 @@ from graphein.protein.resi_atoms import (
 )
 from graphein.protein.utils import filter_dataframe
 
-
-INFINITE_DIST = 10_000.  # np.inf leads to errors in some cases
+INFINITE_DIST = 10_000.0  # np.inf leads to errors in some cases
 
 
 def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
@@ -82,7 +81,7 @@ def filter_distmat(
     pdb_df: pd.DataFrame,
     distmat: pd.DataFrame,
     exclude_edges: Iterable[str],
-    inplace: bool = True
+    inplace: bool = True,
 ) -> pd.DataFrame:
     """
     Filter distance matrix in place based on edge types to exclude.
@@ -101,16 +100,18 @@ def filter_distmat(
     :rtype: pd.DataFrame
     """
     # Process input argument values
-    supported_exclude_edges_vals = ['inter', 'intra']
+    supported_exclude_edges_vals = ["inter", "intra"]
     for val in exclude_edges:
         if val not in supported_exclude_edges_vals:
-            raise ValueError(f'Unknown `exclude_edges` value \'{val}\'.')
+            raise ValueError(f"Unknown `exclude_edges` value '{val}'.")
     if not inplace:
         distmat = distmat.copy(deep=True)
 
     # Prepare
-    chain_to_nodes = pdb_df.groupby('chain_id')['node_id'].apply(list).to_dict()
-    node_id_to_int = dict(zip(pdb_df['node_id'], pdb_df.index))
+    chain_to_nodes = (
+        pdb_df.groupby("chain_id")["node_id"].apply(list).to_dict()
+    )
+    node_id_to_int = dict(zip(pdb_df["node_id"], pdb_df.index))
     chain_to_nodes = {
         ch: [node_id_to_int[n] for n in nodes]
         for ch, nodes in chain_to_nodes.items()
@@ -118,10 +119,10 @@ def filter_distmat(
 
     # Construct indices of edges to exclude
     edges_to_excl = []
-    if 'intra' in exclude_edges:
+    if "intra" in exclude_edges:
         for nodes in chain_to_nodes.values():
             edges_to_excl.extend(list(combinations(nodes, 2)))
-    if 'inter' in exclude_edges:
+    if "inter" in exclude_edges:
         for nodes0, nodes1 in combinations(chain_to_nodes.values(), 2):
             edges_to_excl.extend(list(product(nodes0, nodes1)))
 
@@ -136,7 +137,7 @@ def filter_distmat(
 
 def add_edge(G, n1, n2, kind_name):
     if G.has_edge(n1, n2):
-        G.edges[n1, n2]['kind'].add(kind_name)
+        G.edges[n1, n2]["kind"].add(kind_name)
     else:
         G.add_edge(n1, n2, kind={kind_name})
 
@@ -1044,7 +1045,7 @@ def add_k_nn_edges(
     k: int = 5,
     exclude_edges: Iterable[str] = (),
     exclude_self_loops: bool = True,
-    kind_name: str = 'knn'
+    kind_name: str = "knn",
 ):
     """
     Adds edges to nodes based on K nearest neighbours. Long interaction
@@ -1088,7 +1089,7 @@ def add_k_nn_edges(
         return
 
     # Run k-NN search
-    neigh = NearestNeighbors(n_neighbors=k, metric='precomputed')
+    neigh = NearestNeighbors(n_neighbors=k, metric="precomputed")
     neigh.fit(dist_mat)
     nn = neigh.kneighbors_graph()
 
