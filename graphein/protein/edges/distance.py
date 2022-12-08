@@ -388,12 +388,10 @@ def add_ionic_interactions(
                 G.nodes[r1]["residue_name"] in POS_AA
                 and G.nodes[r2]["residue_name"] in NEG_AA
             )
-
             condition2 = (
                 G.nodes[r2]["residue_name"] in POS_AA
                 and G.nodes[r1]["residue_name"] in NEG_AA
             )
-
             is_ionic = condition1 or condition2
             if not is_ionic:
                 G.edges[r1, r2]["kind"].remove("ionic")
@@ -650,7 +648,6 @@ def add_pi_stacking_interactions(
         distmat.columns = aromatic_df["node_id"]
         distmat = distmat[distmat <= centroid_distance].fillna(0)
         indices = np.where(distmat > 0)
-
         interacting_resis = [
             (distmat.index[r], distmat.index[c])
             for r, c in zip(indices[0], indices[1])
@@ -659,7 +656,6 @@ def add_pi_stacking_interactions(
         for n1, n2 in interacting_resis:
             assert G.nodes[n1]["residue_name"] in PI_RESIS
             assert G.nodes[n2]["residue_name"] in PI_RESIS
-
             n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
                 ["x_coord", "y_coord", "z_coord"]
             ].values[0]
@@ -715,7 +711,6 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
         distmat.columns = aromatic_df["node_id"]
         distmat = distmat[distmat <= 7].fillna(0)
         indices = np.where(distmat > 0)
-
         interacting_resis = [
             (distmat.index[r], distmat.index[c])
             for r, c in zip(indices[0], indices[1])
@@ -724,7 +719,6 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
         for n1, n2 in interacting_resis:
             assert G.nodes[n1]["residue_name"] in PI_RESIS
             assert G.nodes[n2]["residue_name"] in PI_RESIS
-
             n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
                 ["x_coord", "y_coord", "z_coord"]
             ].values[0]
@@ -841,12 +835,10 @@ def add_salt_bridges(
                 G.nodes[r1]["residue_name"] in SALT_BRIDGE_ANIONS
                 and G.nodes[r2]["residue_name"] in SALT_BRIDGE_CATIONS
             )
-
             condition2 = (
                 G.nodes[r2]["residue_name"] in SALT_BRIDGE_ANIONS
                 and G.nodes[r1]["residue_name"] in SALT_BRIDGE_CATIONS
             )
-
             is_ionic = condition1 or condition2
             if not is_ionic:
                 G.edges[r1, r2]["kind"].remove("salt_bridge")
