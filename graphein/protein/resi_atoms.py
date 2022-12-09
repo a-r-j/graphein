@@ -157,6 +157,48 @@ Mapping of 3-letter non-standard amino acids codes to their one-letter form.
 See: http://ligand-expo.rcsb.org/
 """
 
+
+PROTEIN_ATOMS: List[str] = [
+    "N",
+    "CA",
+    "C",
+    "O",
+    "CB",
+    "OG",
+    "CG",
+    "CD1",
+    "CD2",
+    "CE1",
+    "CE2",
+    "CZ",
+    "OD1",
+    "ND2",
+    "CG1",
+    "CG2",
+    "CD",
+    "CE",
+    "NZ",
+    "OD2",
+    "OE1",
+    "NE2",
+    "OE2",
+    "OH",
+    "NE",
+    "NH1",
+    "NH2",
+    "OG1",
+    "SD",
+    "ND1",
+    "SG",
+    "NE1",
+    "CE3",
+    "CZ2",
+    "CZ3",
+    "CH2",
+    "OXT",
+]
+"""List of standard atom types present in protein structures."""
+
 BOND_TYPES: List[str] = [
     "hydrophobic",
     "disulfide",
