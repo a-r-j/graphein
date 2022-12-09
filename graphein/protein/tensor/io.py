@@ -22,15 +22,16 @@ except ImportError:
         submodules="graphein.protein.tensor",
         package="torch",
         conda_channel="pytorch",
-        pip_install=True
+        pip_install=True,
     )
+
 
 def protein_df_to_tensor(
     df: pd.DataFrame,
     atoms_to_keep: List[str] = PROTEIN_ATOMS,
     insertions: bool = False,
-    fill_value: float = 1e-5
-    ) -> AtomTensor:
+    fill_value: float = 1e-5,
+) -> AtomTensor:
     """
     Transforms a dataframe of a protein structure into a ``Length x Num_Atoms (default 37) x 3`` tensor.
 
@@ -47,15 +48,25 @@ def protein_df_to_tensor(
     """
     # Assign a residue ID.
     if "residue_id" not in df.columns:
-        df["residue_id"] = df["chain_id"] + ":" + df["residue_name"] + ":" + str(df["residue_number"])
+        df["residue_id"] = (
+            df["chain_id"]
+            + ":"
+            + df["residue_name"]
+            + ":"
+            + str(df["residue_number"])
+        )
         # Add insertion code if including insertions
         if insertions:
-            df["residue_id"] = df["residue_id"] + ":" + df["insertion"].astype(str)
+            df["residue_id"] = (
+                df["residue_id"] + ":" + df["insertion"].astype(str)
+            )
     num_residues = len(df["residue_id"].unique())
     df = df.loc[df["atom_name"].isin(atoms_to_keep)]
     residue_indices = pd.factorize(df["residue_id"])[0]
     atom_indices = df["atom_name"].map(lambda x: atoms_to_keep.index(x)).values
 
     positions = torch.ones((num_residues, len(atoms_to_keep), 3)) * fill_value
-    positions[residue_indices, atom_indices] = torch.tensor(df[["x_coord", "y_coord", "z_coord"]].values).float()
+    positions[residue_indices, atom_indices] = torch.tensor(
+        df[["x_coord", "y_coord", "z_coord"]].values
+    ).float()
     return positions
