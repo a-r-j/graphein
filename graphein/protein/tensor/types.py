@@ -7,8 +7,8 @@
 
 
 from typing import Union
-from torchtyping import TensorType
 
+from torchtyping import TensorType
 
 AtomTensor = TensorType[-1, 37, 3]
 
