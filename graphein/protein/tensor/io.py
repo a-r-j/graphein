@@ -28,7 +28,7 @@ except ImportError:
 def protein_df_to_tensor(
     df: pd.DataFrame,
     atoms_to_keep: List[str] = PROTEIN_ATOMS,
-    insertions: bool = False
+    insertions: bool = False,
     fill_value: float = 1e-5
     ) -> AtomTensor:
     """
