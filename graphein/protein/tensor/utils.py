@@ -1,5 +1,7 @@
 import torch
+
 from .types import AtomTensor
+
 
 def has_complete_backbone(
     x: AtomTensor,
@@ -18,7 +20,7 @@ def has_complete_backbone(
     :type x: graphein.protein.tensor.types.AtomTensor
     :param fill_value: Fill value used in the ``AtomTensor``. Default is ``1e-5``.
     :type fill_value: Float
-    :param backbone_indices: List of indices in dimension 1 of the AtomTensor 
+    :param backbone_indices: List of indices in dimension 1 of the AtomTensor
         to be checked. Defaults to ``[0, 1, 2, 3]`` for ``N, Ca, C, O`` in the
         default assignment.
     type backbone_indices: List[int].
@@ -28,4 +30,3 @@ def has_complete_backbone(
         return False
     else:
         return True
-
