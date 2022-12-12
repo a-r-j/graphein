@@ -7,8 +7,8 @@ from .types import AtomTensor
 def has_complete_backbone(
     x: AtomTensor,
     fill_value: float = 1e-5,
-    backbone_indices: List[int] = [0, 1, 2, 3]
-    ) -> bool:
+    backbone_indices: List[int] = [0, 1, 2, 3],
+) -> bool:
     """
     Checks a protein coordinate tensor (``L x Num Atoms (default 37) x 3``) for
     a complete backbone assignment.
