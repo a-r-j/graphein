@@ -1,3 +1,4 @@
+"""Utilities for working protein Protein Tensors."""
 import torch
 
 from .types import AtomTensor
@@ -26,7 +27,7 @@ def has_complete_backbone(
     type backbone_indices: List[int].
     """
     indices = torch.tensor(backbone_indices)
-    if torch.sum(x[:, indices] == fill_value) != 0
+    if torch.sum(x[:, indices] == fill_value) != 0:
         return False
     else:
         return True
