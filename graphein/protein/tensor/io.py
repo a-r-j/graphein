@@ -5,7 +5,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 from loguru import logging as log
@@ -17,6 +17,7 @@ from .types import AtomTensor
 
 try:
     import torch
+    import torch.nn.functional as F
 except ImportError:
     message = import_message(
         submodules="graphein.protein.tensor",
@@ -24,6 +25,49 @@ except ImportError:
         conda_channel="pytorch",
         pip_install=True,
     )
+
+
+def protein_df_to_chain_tensor(
+    df: pd.DataFrame,
+    chains_to_keep: Optional[List[str]] = None,
+    insertions: bool = False,
+    one_hot: bool = False,
+    dtype: torch.dtype = torch.int64,
+    device: torch.device = torch.device("cpu"),
+) -> torch.Tensor:
+    """Returns a tensor of chain IDs for a protein structure.
+
+    :param df: DataFrame of protein structure. Must have a column called ``"chain_id"``
+        (and ``insertion`` if the ``insertions=True``).
+    :type df: pd.DataFrame
+    :param chains_to_keep: List of chains to retain, defaults to ``None`` (all chains).
+    :type chains_to_keep: Optional[List[str]], optional
+    :param insertions: Whether or not to keep insertions, defaults to ``False``
+    :type insertions: bool, optional
+    :param one_hot: Whether or not to return a one-hot encoded tensor (``L x num_chains``).
+        If ``False`` an integer tensor is returned. Defaults to ``False``.
+    :type one_hot: bool, optional
+    :return: Onehot encoded or integer tensor indicating chain membership for each residue.
+    :rtype: torch.Tensor
+    """
+
+    # Select chains to keep from user input
+    if chains_to_keep is not None:
+        df = df.loc[df.chain_id.isin(chains_to_keep)]
+
+    # Keep or remove insertions
+    if insertions:
+        df = df.loc[df.insertion.isin(["", " "])]
+
+    # One-hot encode chain IDs
+    chains = pd.get_dummies(df.chain_id)
+    chains = torch.tensor(chains.values, dtype=dtype, device=device)
+
+    # Integers instead of one-hot
+    if not one_hot:
+        chains = torch.argmax(chains, dim=1)
+
+    return chains
 
 
 def protein_df_to_tensor(
