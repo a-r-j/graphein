@@ -8,13 +8,13 @@
 from __future__ import annotations
 
 import traceback
+from contextlib import nullcontext
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
-from contextlib import nullcontext
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
@@ -701,7 +701,7 @@ def construct_graph(
     # If no config is provided, use default
     if config is None:
         config = ProteinGraphConfig()
-    
+
     # Use progress tracking context if in verbose mode
     context = Progress(transient=True) if verbose else nullcontext
     with context as progress:
