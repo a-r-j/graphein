@@ -8,7 +8,7 @@
 from typing import List, Optional
 
 import pandas as pd
-from loguru import logging as log
+from loguru import logger as log
 
 from graphein.utils import import_message
 
