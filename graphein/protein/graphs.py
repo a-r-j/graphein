@@ -117,15 +117,26 @@ def read_pdb_to_dataframe(
     return pd.concat([atomic_df.df["ATOM"], atomic_df.df["HETATM"]])
 
 
-def label_node_id(df: pd.DataFrame, granularity: str) -> pd.DataFrame:
+def label_node_id(
+    df: pd.DataFrame, granularity: str, insertions: bool = False
+) -> pd.DataFrame:
     """Assigns a ``node_id`` column to the atomic dataframe. Node IDs are of the
     form: ``"<CHAIN>:<RESIDUE_NAME>:<RESIDUE_NUMBER>:<ATOM_NAME>"`` for atomic
     graphs or ``"<CHAIN>:<RESIDUE_NAME>:<RESIDUE_NUMBER>"`` for residue graphs.
 
+    If ``insertions=True``, the insertion code will be appended to the end of
+    the node_id (e.g. ``"<CHAIN>:<RESIDUE_NAME>:<RESIDUE_NUMBER>:<ATOM_NAME>:"``)
+
     :param df: Protein structure DataFrame.
     :type df: pd.DataFrame
-    :param granularity: Granularity of graph.
+    :param granularity: Granularity of graph. Atom-level,
+        residue (e.g. ``CA``) or ``centroids``. See:
+        :const:`~graphein.protein.config.GRAPH_ATOMS` and
+        :const:`~graphein.protein.config.GRANULARITY_OPTS`.
     :type granularity: str
+    :param insertions: Whether or not to include insertion codes in the node id.
+        Default is ``False``.
+    :type insertions: bool
     :return: Protein structure DataFrame with ``node_id`` column.
     :rtype: pd.DataFrame
     """
@@ -136,6 +147,9 @@ def label_node_id(df: pd.DataFrame, granularity: str) -> pd.DataFrame:
         + ":"
         + df["residue_number"].apply(str)
     )
+
+    if insertions:
+        df["node_id"] = df["node_id"] + ":" + df["insertion"].apply(str)
     df["residue_id"] = df["node_id"]
     if granularity == "atom":
         df["node_id"] = df["node_id"] + ":" + df["atom_name"]
@@ -304,7 +318,9 @@ def process_dataframe(
         construction functions.
     :rtype: pd.DataFrame
     """
-    protein_df = label_node_id(protein_df, granularity=granularity)
+    protein_df = label_node_id(
+        protein_df, granularity=granularity, insertions=insertions
+    )
     # TODO: Need to properly define what "granularity" is supposed to do.
     atoms = filter_dataframe(
         protein_df,
@@ -381,36 +397,9 @@ def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     :return: Sorted protein dataframe.
     :rtype: pd.DataFrame
     """
-    return df.sort_values(by=["chain_id", "residue_number", "atom_number"])
-
-
-def assign_node_id_to_dataframe(
-    protein_df: pd.DataFrame, granularity: str
-) -> pd.DataFrame:
-    """
-    Assigns the node ID back to the ``pdb_df`` dataframe
-
-    :param protein_df: Structure Dataframe
-    :type protein_df: pd.DataFrame
-    :param granularity: Granularity of graph. Atom-level,
-        residue (e.g. ``CA``) or ``centroids``. See:
-        :const:`~graphein.protein.config.GRAPH_ATOMS` and
-        :const:`~graphein.protein.config.GRANULARITY_OPTS`.
-    :type granularity: str
-    :return: Returns dataframe with added ``node_ids``
-    :rtype: pd.DataFrame
-    """
-    protein_df["node_id"] = (
-        protein_df["chain_id"].apply(str)
-        + ":"
-        + protein_df["residue_name"]
-        + ":"
-        + protein_df["residue_number"].apply(str)
+    return df.sort_values(
+        by=["chain_id", "residue_number", "atom_number", "insertion"]
     )
-    if granularity in {"atom", "rna_atom"}:
-        protein_df[
-            "node_id"
-        ] = f'{protein_df["node_id"]}:{protein_df["atom_name"]}'
 
 
 def select_chains(
@@ -580,7 +569,9 @@ def calculate_centroid_positions(
     :rtype: pd.DataFrame
     """
     centroids = (
-        atoms.groupby(["residue_number", "chain_id", "residue_name"])
+        atoms.groupby(
+            ["residue_number", "chain_id", "residue_name", "insertion"]
+        )
         .mean()[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )

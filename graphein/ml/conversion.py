@@ -18,6 +18,16 @@ from loguru import logger as log
 from graphein.utils.utils import import_message
 
 try:
+    import torch
+except ImportError:
+    import_message(
+        submodule="graphein.ml.conversion",
+        package="torch",
+        pip_install=True,
+        conda_channel="pytorch",
+    )
+
+try:
     import torch_geometric
     from torch_geometric.data import Data
 except ImportError:
