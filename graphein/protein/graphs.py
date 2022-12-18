@@ -14,6 +14,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import networkx as nx
 import numpy as np
 import pandas as pd
+from contextlib import nullcontext
 from Bio.PDB.Polypeptide import three_to_one
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
@@ -700,7 +701,10 @@ def construct_graph(
     # If no config is provided, use default
     if config is None:
         config = ProteinGraphConfig()
-    with Progress(transient=True) as progress:
+    
+    # Use progress tracking context if in verbose mode
+    context = Progress(transient=True) if verbose else nullcontext
+    with context as progress:
         if verbose:
             task1 = progress.add_task("Reading PDB file...", total=1)
             # Get name from pdb_file is no pdb_code is provided
@@ -745,13 +749,6 @@ def construct_graph(
 
         if verbose:
             task2 = progress.add_task("Processing PDB dataframe...", total=1)
-        # raw_df = label_node_id(raw_df, granularity=config.granularity)
-        # raw_df.df["ATOM"] = label_node_id(
-        #    raw_df.df["ATOM"], granularity=config.granularity
-        # )
-        # raw_df.df["HETATM"] = label_node_id(
-        #    raw_df.df["HETATM"], granularity=config.granularity
-        # )
         raw_df = sort_dataframe(raw_df)
         protein_df = process_dataframe(
             raw_df,
