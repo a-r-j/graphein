@@ -10,7 +10,7 @@ from typing import List, Optional
 import pandas as pd
 from loguru import logger as log
 
-from graphein.utils import import_message
+from graphein.utils.utils import import_message
 
 from ..resi_atoms import PROTEIN_ATOMS
 from .types import AtomTensor
