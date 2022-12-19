@@ -34,7 +34,3 @@ def test_dihedrals_to_rad():
 
     delta = ((delta + 2 * np.pi) / np.pi) % 2
     np.testing.assert_allclose(delta, torch.zeros_like(delta), atol=1e-5)
-
-
-test_torsion_to_rad()
-test_dihedrals_to_rad()
