@@ -1954,61 +1954,17 @@ BOND_LENGTHS: Dict[str, Dict[str, float]] = {
         "w_dt": 1.21,
     },
     "C-N": {"i_s": 1.42, "i_d": 1.32, "i_t": 1.14, "w_sd": 1.34, "w_dt": 1.20},
-    "C-O": {
-        "i_s": 1.41,
-        "i_d": 1.22,
-        "w_sd": 1.28,
-    },
-    "C-S": {
-        "i_s": 1.78,
-        "i_d": 1.68,
-        "w_sd": 1.70,
-    },
-    "C-Te": {
-        "i_s": 2.20,
-        "i_d": 1.80,
-        "w_sd": 2.10,
-    },
-    "N-N": {
-        "i_s": 1.40,
-        "i_d": 1.22,
-        "w_sd": 1.32,
-    },
-    "N-O": {
-        "i_s": 1.39,
-        "i_d": 1.22,
-        "w_sd": 1.25,
-    },
-    "N-P": {
-        "i_s": 1.69,
-        "i_d": 1.59,
-        "w_sd": 1.62,
-    },
-    "N-S": {
-        "i_s": 1.66,
-        "i_d": 1.54,
-        "w_sd": 1.58,
-    },
-    "N-Se": {
-        "i_s": 1.83,
-        "i_d": 1.79,
-        "w_sd": 1.80,
-    },
-    "O-P": {
-        "i_s": 1.60,
-        "i_d": 1.48,
-        "w_sd": 1.52,
-    },
-    "O-S": {
-        "i_s": 1.58,
-        "i_d": 1.45,
-        "w_sd": 1.54,
-    },
-    "P-P": {
-        "i_s": 2.23,
-        "i_d": 2.04,
-        "w_sd": 2.06,
-    },
+    "C-O": {"i_s": 1.41, "i_d": 1.22, "w_sd": 1.28,},
+    "C-S": {"i_s": 1.78, "i_d": 1.68, "w_sd": 1.70,},
+    "C-Te": {"i_s": 2.20, "i_d": 1.80, "w_sd": 2.10,},
+    "N-N": {"i_s": 1.40, "i_d": 1.22, "w_sd": 1.32,},
+    "N-O": {"i_s": 1.39, "i_d": 1.22, "w_sd": 1.25,},
+    "N-P": {"i_s": 1.69, "i_d": 1.59, "w_sd": 1.62,},
+    "N-S": {"i_s": 1.66, "i_d": 1.54, "w_sd": 1.58,},
+    "N-Se": {"i_s": 1.83, "i_d": 1.79, "w_sd": 1.80,},
+    "O-P": {"i_s": 1.60, "i_d": 1.48, "w_sd": 1.52,},
+    "O-S": {"i_s": 1.58, "i_d": 1.45, "w_sd": 1.54,},
+    "P-P": {"i_s": 2.23, "i_d": 2.04, "w_sd": 2.06,},
 }
 """Dictionary containing idealised single, double and triple bond lengths (``i_s``, ``i_d``, ``i_t``) and watersheds (``w_sd``, ``w_dt``),
 below which a bond is probably double/triple (e.g. ``triple`` < ``double`` < ``single``). All lengths are in Angstroms.
@@ -2057,3 +2013,58 @@ ATOMIC_MASSES: Dict[str, float] = {
     "S": 32.065,
 }
 """Dictionary of atomic masses for standard protein elements."""
+
+
+CHI_ANGLES_ATOMS: Dict[str, List[List[str]]] = {
+    "ALA": [],
+    # Chi5 in arginine is always 0 +- 5 degrees, so ignore it.
+    "ARG": [
+        ["N", "CA", "CB", "CG"],
+        ["CA", "CB", "CG", "CD"],
+        ["CB", "CG", "CD", "NE"],
+        ["CG", "CD", "NE", "CZ"],
+    ],
+    "ASN": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "OD1"]],
+    "ASP": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "OD1"]],
+    "CYS": [["N", "CA", "CB", "SG"]],
+    "SEC": [["N", "CA", "CB", "SE"]],
+    "GLN": [
+        ["N", "CA", "CB", "CG"],
+        ["CA", "CB", "CG", "CD"],
+        ["CB", "CG", "CD", "OE1"],
+    ],
+    "GLU": [
+        ["N", "CA", "CB", "CG"],
+        ["CA", "CB", "CG", "CD"],
+        ["CB", "CG", "CD", "OE1"],
+    ],
+    "GLY": [],
+    "HIS": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "ND1"]],
+    "ILE": [["N", "CA", "CB", "CG1"], ["CA", "CB", "CG1", "CD1"]],
+    "LEU": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "CD1"]],
+    "LYS": [
+        ["N", "CA", "CB", "CG"],
+        ["CA", "CB", "CG", "CD"],
+        ["CB", "CG", "CD", "CE"],
+        ["CG", "CD", "CE", "NZ"],
+    ],
+    "MET": [
+        ["N", "CA", "CB", "CG"],
+        ["CA", "CB", "CG", "SD"],
+        ["CB", "CG", "SD", "CE"],
+    ],
+    "PHE": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "CD1"]],
+    "PRO": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "CD"]],
+    "SER": [["N", "CA", "CB", "OG"]],
+    "THR": [["N", "CA", "CB", "OG1"]],
+    "TRP": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "CD1"]],
+    "TYR": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "CD1"]],
+    "VAL": [["N", "CA", "CB", "CG1"]],
+    "UNK": [],
+}
+"""Dictionary containing mapping of atoms to the chi angle used to compute them.
+
+The first nested list is chi1, the second chi2, etc.
+
+For residues with no chi angles (GLY, ALA), the list is empty.
+"""
