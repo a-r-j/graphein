@@ -50,6 +50,7 @@ def test_protein_df_to_tensor():  # sourcery skip: extract-duplicate-method
 
     # Backbone only
     atoms_to_keep = ["N", "CA", "C", "O"]
+    positions = protein_df_to_tensor(df, atoms_to_keep=atoms_to_keep)
     assert positions.shape[0] == len(df), "Incorrect number of residues."
     assert positions.shape[1] == 4, "Incorrect number of atoms."
     assert positions.shape[2] == 3, "Incorrect number of coordinates."
