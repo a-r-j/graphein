@@ -1,3 +1,8 @@
+### 1.6.0 - UNRELEASED
+
+#### New Features
+* [Metrics] - [#245](https://github.com/a-r-j/graphein/pull/221) Adds a selection of structural metrics relevant to protein structures.
+
 ### 1.5.3 - UNRELEASED
 
 #### Improvements
