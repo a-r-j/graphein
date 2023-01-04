@@ -11,6 +11,17 @@ from .sequence import get_atom_indices
 from .types import AtomTensor
 
 
+def has_nan(x: torch.Tensor) -> bool:
+    """Checks a tensor for NaN values.
+
+    :param x: Tensor to check
+    :type x: torch.Tensor
+    :return: Boolean indicating whether the tensor contains NaN values.
+    :rtype: bool
+    """
+    return x.isnan().any()
+
+
 def has_complete_backbone(
     x: AtomTensor,
     fill_value: float = 1e-5,
