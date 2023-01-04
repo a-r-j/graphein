@@ -1,11 +1,18 @@
 """Utilities for working with protein sequences."""
-from typing import Dict, List, Optional, Union
+from functools import lru_cache
+from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 import torch
 import torch.nn.functional as F
 
-from graphein.protein.resi_atoms import RESI_THREE_TO_1, STANDARD_AMINO_ACIDS
+from graphein.protein.resi_atoms import (
+    ATOM_NUMBERING_MODIFIED,
+    RESI_THREE_TO_1,
+    STANDARD_AMINO_ACIDS,
+    STANDARD_RESIDUE_ATOMS,
+)
+from graphein.protein.tensor.types import AtomTensor
 
 
 def get_sequence(
@@ -89,19 +96,22 @@ def residue_type_tensor(
 
     :param df: DataFrame of protein structure.
     :type df: pd.DataFrame
-    :param vocabulary: List of allowable residue types, defaults to graphein.protein.resi_atoms.STANDARD_AMINO_ACIDS
+    :param vocabulary: List of allowable residue types, defaults to
+        graphein.protein.resi_atoms.STANDARD_AMINO_ACIDS
     :type vocabulary: List[str], optional
-    :param three_to_one_mapping: Mapping from three letter to codes to one letter amino acid codes,
-        defaults to graphein.protein.RESI_THREE_TO_1
+    :param three_to_one_mapping: Mapping from three letter to codes to one
+        letter amino acid codes, defaults to graphein.protein.RESI_THREE_TO_1
     :type three_to_one_mapping: Dict[str, str], optional
-    :param one_hot: Whether to return a tensor of integers denoting residue type or whether to one-hot encode residue types,
-        defaults to ``False``.
+    :param one_hot: Whether to return a tensor of integers denoting residue
+        type or whether to one-hot encode residue types, defaults to ``False``.
     :type one_hot: bool, optional
-    :param insertions: Whether or not to include insertions, defaults to ``False``.
+    :param insertions: Whether or not to include insertions, defaults to
+        ``False``.
     :type insertions: bool, optional
     :param dtype: torch.dtype of tensor, defaults to ``torch.long``
     :type dtype: torch.dtype, optional
-    :param device: Device to create tensor on, defaults to ``torch.device("cpu")``
+    :param device: Device to create tensor on, defaults to
+        ``torch.device("cpu")``
     :type device: torch.device, optional
     :return: Tensor of residue types.
     :rtype: torch.Tensor
@@ -120,3 +130,68 @@ def residue_type_tensor(
     if one_hot:
         residues = F.one_hot(residues, num_classes=len(vocabulary))
     return residues
+
+
+@lru_cache(maxsize=1)
+def get_atom_indices(
+    invert: bool = False,
+) -> Union[Dict[str, Tuple[int, ...]], Dict[Tuple[int, ...], str]]:
+    """
+    Generates a dictionary mapping residue types to atom indices.
+
+    :param invert: If ``True``, inverts the dictionary so that the keys are the
+        atom indices and the values are the residue types, defaults to ``False``
+    :type invert: bool, optional
+    :return: Dictionary mapping residue types to atom indices or vice versa
+    :rtype: Union[Dict[str, Tuple[int, ...]], Dict[Tuple[int, ...], str]]
+    """
+    index_map = {
+        k: tuple(sorted([ATOM_NUMBERING_MODIFIED[i] for i in v]))
+        for k, v in STANDARD_RESIDUE_ATOMS.items()
+    }
+    if invert:
+        index_map = {v: k for k, v in index_map.items()}
+    return index_map
+
+
+def infer_residue_types(
+    x: AtomTensor, fill_value: float = 1e-5, return_sequence: bool = True
+) -> Union[str, List[str]]:
+    """
+    Infers residue types from atom tensor based on non-filled residues.
+
+    This function is not robust to structures with missing atoms.
+
+    :param x: Tensor of shape ``(N, Num Atoms, 3)`` where ``N`` is the number
+        of residues in the protein, ``Num Atoms`` is the number of atoms
+        selected (default is ``37``,
+        see: ref:`graphein.protein.resi_atoms.ATOM_NUMBERING`)
+    :type x: AtomTensor
+    :param fill_value: Fill value used to denote the absence of an atom in ``x``
+        , defaults to ``1e-5``.
+    :type fill_value: float, optional
+    :param return_sequence: If ``True``, returns the sequence. If ``False``,
+        returns a list of three-letter residue codes, defaults to ``True``.
+    :type return_sequence: bool, optional
+    :return: Sequence or list of three-letter residue codes
+    :rtype: Union[str, List[str]]
+    """
+    rmap: Dict[Tuple[int, ...], str] = get_atom_indices(invert=True)
+
+    def _get_index(y: torch.Tensor) -> str:
+        indices = (
+            torch.nonzero(torch.sum(y != fill_value, dim=1))
+            .squeeze(1)
+            .tolist()
+        )
+        # remove oxt if present
+        oxt_index = ATOM_NUMBERING_MODIFIED["OXT"]
+        indices = tuple(i for i in indices if i != oxt_index)
+        return rmap[indices]
+
+    seq = [_get_index(x[i, :, :]) for i in range(x.shape[0])]
+
+    if return_sequence:
+        seq = "".join([RESI_THREE_TO_1[res] for res in seq])
+
+    return seq
