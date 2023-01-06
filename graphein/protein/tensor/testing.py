@@ -1,7 +1,10 @@
 """Utilities for sanity checking protein tensors."""
+from functools import partial
 from typing import List, Tuple, Union
 
-import torch
+from loguru import logger as log
+
+from graphein.utils.utils import import_message
 
 from ..resi_atoms import (
     ATOM_NUMBERING_MODIFIED,
@@ -9,6 +12,17 @@ from ..resi_atoms import (
 )
 from .sequence import get_atom_indices
 from .types import AtomTensor
+
+try:
+    import torch
+except ImportError:
+    message = import_message(
+        "graphein.protein.tensor.testing",
+        "torch",
+        conda_channel="pytorch",
+        pip_install=True,
+    )
+    log.warning(message)
 
 
 def has_nan(x: torch.Tensor) -> bool:
@@ -20,6 +34,10 @@ def has_nan(x: torch.Tensor) -> bool:
     :rtype: bool
     """
     return x.isnan().any()
+
+
+assert_tensor_equal = partial(torch.testing.assert_close, rtol=0, atol=0)
+is_tensor_equal = partial(torch.allclose, rtol=0, atol=0)
 
 
 def has_complete_backbone(
