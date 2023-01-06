@@ -3,16 +3,29 @@ from functools import lru_cache
 from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
-import torch
-import torch.nn.functional as F
+from loguru import logger as log
 
-from graphein.protein.resi_atoms import (
+from graphein.utils.utils import import_message
+
+from ..resi_atoms import (
     ATOM_NUMBERING_MODIFIED,
     RESI_THREE_TO_1,
     STANDARD_AMINO_ACIDS,
     STANDARD_RESIDUE_ATOMS,
 )
-from graphein.protein.tensor.types import AtomTensor
+from .types import AtomTensor
+
+try:
+    import torch
+    import torch.nn.functional as F
+except ImportError:
+    message = import_message(
+        "graphein.protein.tensor.sequence",
+        "torch",
+        conda_channel="pytorch",
+        pip_install=True,
+    )
+    log.warning(message)
 
 
 def get_sequence(
