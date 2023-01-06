@@ -1,6 +1,13 @@
+### 1.6.0 - UNRELEASED
+
+#### Features
+
+* [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/221) Adds suite of utilities for working directly with tensor-based representations of proteins.
+
 ### 1.5.3 - UNRELEASED
 
 #### Improvements
+
 * [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
 
 #### Protein
