@@ -33,3 +33,5 @@ TorsionTensor = Union[TensorType[-1, 4], TensorType[-1, 8]]
 BackboneFrameTensor = TensorType[-1, 3, 3]
 
 ResidueFrameTensor = TensorType[3, 3]
+
+EdgeTensor = TensorType[2, -1]
