@@ -5,6 +5,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+import pytest
 from biopandas.pdb import PandasPdb
 
 from graphein.protein.tensor.io import (
@@ -13,12 +14,20 @@ from graphein.protein.tensor.io import (
 )
 from graphein.protein.tensor.sequence import get_residue_id
 
+try:
+    import torch
+
+    TORCH_AVAIL = True
+except ImportError:
+    TORCH_AVAIL = False
+
 
 def get_example_df():
     p = PandasPdb().fetch_pdb("3EIY")
     return p.df["ATOM"]
 
 
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
 def test_protein_df_to_chain_tensor():
     df = get_example_df()
     num_chains = len(df.chain_id.unique())
@@ -45,6 +54,7 @@ def test_protein_df_to_chain_tensor():
     assert chain.min() == 0, "Chain IDs are not zero-indexed."
 
 
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
 def test_protein_df_to_tensor():  # sourcery skip: extract-duplicate-method
     df = get_example_df()
 

@@ -6,45 +6,22 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 import numpy as np
-import torch
+import pytest
 
 from graphein.protein.tensor.geometry import (
-    angle_to_unit_circle,
-    dihedrals_to_rad,
     quaternion_to_matrix,
-    torsion_to_rad,
     whole_protein_kabsch,
 )
 
+try:
+    import torch
 
-def test_torsion_to_rad():
-    # Create dummy torsion angles in radians
-    angles = (torch.rand(10, 4) - 0.5) * 2 * 2 * np.pi
-    angles_emb = angle_to_unit_circle(angles)
-    angles_rads = torsion_to_rad(angles_emb)
-
-    delta = torch.abs(angles_rads - angles)
-
-    delta[delta.nonzero()] = torch.abs(delta[torch.nonzero(delta)] - 2 * np.pi)
-
-    delta = ((delta + 2 * np.pi) / np.pi) % 2
-    np.testing.assert_allclose(delta, torch.zeros_like(delta), atol=1e-5)
+    TORCH_AVAIL = True
+except ImportError:
+    TORCH_AVAIL = False
 
 
-def test_dihedrals_to_rad():
-    # Create dummy dihedral angles in radians
-    angles = (torch.rand(10, 3) - 0.5) * 2 * 2 * np.pi
-    angles_emb = angle_to_unit_circle(angles)
-    angles_rads = dihedrals_to_rad(angles_emb, concat=True)
-
-    delta = torch.abs(angles_rads - angles)
-
-    delta[delta.nonzero()] = torch.abs(delta[torch.nonzero(delta)] - 2 * np.pi)
-
-    delta = ((delta + 2 * np.pi) / np.pi) % 2
-    np.testing.assert_allclose(delta, torch.zeros_like(delta), atol=1e-5)
-
-
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
 def test_whole_protein_kabsch():
     # Compute the RMSD between the original and aligned coordinates
     def rmsd(x, y):
@@ -78,6 +55,3 @@ def test_whole_protein_kabsch():
     assert torch.allclose(
         coords_aligned, coords, atol=1e-6
     ), "Coords differ too much after alignment"
-
-
-test_whole_protein_kabsch()
