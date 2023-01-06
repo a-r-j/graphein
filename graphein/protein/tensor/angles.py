@@ -22,7 +22,6 @@ from .testing import has_nan
 def _extract_torsion_coords(
     coords: AtomTensor, res_types: List[str]
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    # batch: Batch) -> Tuple[torch.Tensor, torch.Tensor]:
     """Returns a (L*?) x 4 x 3 tensor of the coordinates of the atoms for each
     sidechain torsion angle.
 
@@ -171,18 +170,13 @@ def kappa(
     angles = np.pi - to_ang(
         ca_next.view(-1, 3), ca.view(-1, 3), ca_prev.view(-1, 3)
     )
-    print(angles.shape)
     # Zero pad first two and last two angles
     angles = F.pad(angles, (2, 2))
 
-    print(angles.shape)
     if not rad:
         angles = torch.rad2deg(angles)
 
     if sparse:
-        print(angles.shape)
-        print(mask.shape)
-
         angles = angles[mask]
 
     if embed:
@@ -260,6 +254,13 @@ def to_ang(a: CoordTensor, b: CoordTensor, c: CoordTensor) -> torch.Tensor:
     :return: Angle between vectors ab and bc in radians.
     :rtype: torch.Tensor
     """
+    if a.ndim == 1:
+        a = a.unsqueeze(0)
+    if b.ndim == 1:
+        b = b.unsqueeze(0)
+    if c.ndim == 1:
+        c = c.unsqueeze(0)
+
     ba = b - a
     bc = b - c
     return torch.acos(
@@ -335,6 +336,8 @@ def angle_to_unit_circle(x: torch.Tensor) -> torch.Tensor:
     :return: Tensor of angles encoded on a unit circle.
     :rtype: torch.Tensor
     """
+    if x.ndim == 1:
+        x = x.unsqueeze(0)
     cosines = torch.cos(x)
     sines = torch.sin(x)
     return rearrange([cosines, sines], "t h w -> h (w t)")
@@ -364,14 +367,18 @@ def _dihedral_angle(
     """
     eps = torch.tensor(eps, device=a.device)  # type: ignore
 
-    bc = F.normalize(b - c, dim=2)
-    n1 = torch.cross(F.normalize(a - b, dim=2), bc)
-    n2 = torch.cross(bc, F.normalize(c - d, dim=2))
-    x = (n1 * n2).sum(dim=2)
+    # bc = F.normalize(b - c, dim=2)
+    bc = F.normalize(b - c, dim=-1)
+    # n1 = torch.cross(F.normalize(a - b, dim=2), bc)
+    n1 = torch.cross(F.normalize(a - b, dim=-1), bc)
+    # n2 = torch.cross(bc, F.normalize(c - d, dim=2))
+    n2 = torch.cross(bc, F.normalize(c - d, dim=-1))
+    # x = (n1 * n2).sum(dim=2)
+    x = (n1 * n2).sum(dim=-1)
     x = torch.clamp(x, -1 + eps, 1 - eps)
     x[x.abs() < eps] = eps
 
-    y = (torch.cross(n1, bc) * n2).sum(dim=2)
+    y = (torch.cross(n1, bc) * n2).sum(dim=-1)
     return torch.atan2(y, x)
 
 
@@ -468,12 +475,12 @@ def torsion_to_rad(
     :rtype: Union[graphein.protein.tensor.types.TorsionTensor,
         Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
     """
-    ch1 = torch.atan2(x_torsion[:, 1], x_torsion[:, 0])
+    chi1 = torch.atan2(x_torsion[:, 1], x_torsion[:, 0])
     chi2 = torch.atan2(x_torsion[:, 3], x_torsion[:, 2])
     chi3 = torch.atan2(x_torsion[:, 5], x_torsion[:, 4])
     chi4 = torch.atan2(x_torsion[:, 7], x_torsion[:, 6])
 
     if concat:
-        return torch.stack([ch1, chi2, chi3, chi4], dim=1)
+        return torch.stack([chi1, chi2, chi3, chi4], dim=1)
 
-    return ch1, chi2, chi3, chi4
+    return chi1, chi2, chi3, chi4
