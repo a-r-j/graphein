@@ -3,10 +3,7 @@ import copy
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
-import torch
-import torch.nn.functional as F
-from einops import rearrange
-from torch_geometric.utils import to_dense_batch
+from loguru import logger as log
 
 from graphein.protein.resi_atoms import ATOM_NUMBERING, CHI_ANGLES_ATOMS
 from graphein.protein.tensor.types import (
@@ -15,8 +12,40 @@ from graphein.protein.tensor.types import (
     DihedralTensor,
     TorsionTensor,
 )
+from graphein.utils.utils import import_message
 
 from .testing import has_nan
+
+try:
+    from einops import rearrange
+except ImportError:
+    message = import_message(
+        "graphein.protein.tensor.angles",
+        "einops",
+        pip_install=True,
+    )
+
+try:
+    from torch_geometric.utils import to_dense_batch
+except ImportError:
+    message = import_message(
+        "graphein.protein.tensor.angles",
+        "torch_geometric",
+        "pyg",
+        pip_install=True,
+    )
+
+try:
+    import torch
+    import torch.nn.functional as F
+except ImportError:
+    message = import_message(
+        "graphein.protein.tensor.angles",
+        "torch",
+        conda_channel="pytorch",
+        pip_install=True,
+    )
+    log.warning(message)
 
 
 def _extract_torsion_coords(
