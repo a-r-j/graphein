@@ -40,7 +40,7 @@ except ImportError:
 
 def get_center(
     x: Union[AtomTensor, CoordTensor],
-    ca_only: bool = False,
+    ca_only: bool = True,
     fill_value: float = 1e-5,
 ) -> CoordTensor:
     """
@@ -66,14 +66,19 @@ def get_center(
 
 
 def center_protein(
-    x: Union[AtomTensor, CoordTensor], ca_only: bool, fill_value=1e-5
+    x: Union[AtomTensor, CoordTensor], ca_only: bool = True, fill_value=1e-5
 ) -> Union[AtomTensor, CoordTensor]:
     """
     Centers a protein in the coordinate system.
 
     :param x: Point Cloud to Center. Torch tensor of shape ``(Length , 3)`` or
         ``(Length, num atoms, 3)``.
-    :return: Torch tensor of shape ``(N,D)`` -- Centered Point Cloud
+    :param ca_only: If ``True``, only the C-alpha atoms will be used to compute
+        the center. Only relevant with AtomTensor inputs. Default is ``False``.
+    :type ca_only: bool
+    :param fill_value: Value used to denote missing atoms. Default is 1e-5.
+    :type fill_value: float
+    :return: Centered Point Cloud of same shape as input.
     :rtype: Union[graphein.protein.tensor.types.AtomTensor, graphein.protein.tensor.types.CoordTensor]
     """
     center = get_center(x, ca_only=ca_only, fill_value=fill_value)
