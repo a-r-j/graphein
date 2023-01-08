@@ -38,6 +38,55 @@ except ImportError:
     log.warning(message)
 
 
+def get_center(
+    x: Union[AtomTensor, CoordTensor],
+    ca_only: bool = False,
+    fill_value: float = 1e-5,
+) -> CoordTensor:
+    """
+    Returns the center of a protein.
+
+    :param x: Point Cloud to Center. Torch tensor of shape ``(Length , 3)`` or
+        ``(Length, num atoms, 3)``.
+    :param ca_only: If ``True``, only the C-alpha atoms will be used to compute
+        the center. Only relevant with AtomTensor inputs. Default is ``False``.
+    :type ca_only: bool
+    :param fill_value: Value used to denote missing atoms. Default is 1e-5.
+    :type fill_value: float
+    :return: Torch tensor of shape ``(N,D)`` -- Center of Point Cloud
+    :rtype: Union[graphein.protein.tensor.types.AtomTensor, graphein.protein.tensor.types.CoordTensor]
+    """
+    if x.ndim != 3:
+        return x.mean(dim=0)
+    if ca_only:
+        return get_c_alpha(x).mean(dim=0)
+
+    x_flat, _, _ = get_full_atom_coords(x, fill_value=fill_value)
+    return x_flat.mean(dim=0)
+
+
+def center_protein(
+    x: Union[AtomTensor, CoordTensor], ca_only: bool, fill_value=1e-5
+) -> Union[AtomTensor, CoordTensor]:
+    """
+    Centers a protein in the coordinate system.
+
+    :param x: Point Cloud to Center. Torch tensor of shape ``(Length , 3)`` or
+        ``(Length, num atoms, 3)``.
+    :return: Torch tensor of shape ``(N,D)`` -- Centered Point Cloud
+    :rtype: Union[graphein.protein.tensor.types.AtomTensor, graphein.protein.tensor.types.CoordTensor]
+    """
+    center = get_center(x, ca_only=ca_only, fill_value=fill_value)
+    # Mask missing atoms
+    fill_mask = torch.where(
+        x == fill_value, torch.tensor(1.0), torch.tensor(0.0)
+    )
+    centered = x - center
+    # Restore fill values
+    centered[fill_mask] = fill_value
+    return centered
+
+
 def whole_protein_kabsch(
     A: Union[AtomTensor, CoordTensor],
     B: Union[AtomTensor, CoordTensor],
@@ -68,16 +117,9 @@ def whole_protein_kabsch(
         multiplication from the right.
     :rtype: Union[graphein.protein.tensor.types.CoordTensor, Tuple[torch.Tensor, torch.Tensor]]
     """
-    if ca_only:
-        A = get_c_alpha(A)
-        B = get_c_alpha(B)
-    else:
-        A = get_full_atom_coords(A, fill_value=fill_value)
-        B = get_full_atom_coords(B, fill_value=fill_value)
-
     # Get center of mass
-    centroid_A = torch.mean(A, dim=0)
-    centroid_B = torch.mean(B, dim=0)
+    centroid_A = get_center(A, ca_only=ca_only, fill_value=fill_value)
+    centroid_B = get_center(B, ca_only=ca_only, fill_value=fill_value)
 
     AA = A - centroid_A
     BB = B - centroid_B

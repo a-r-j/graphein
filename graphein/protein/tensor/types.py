@@ -35,3 +35,5 @@ BackboneFrameTensor = TensorType[-1, 3, 3]
 ResidueFrameTensor = TensorType[3, 3]
 
 EdgeTensor = TensorType[2, -1]
+
+BackboneTensor = TensorType[-1, 4, 3]
