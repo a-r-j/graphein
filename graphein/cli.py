@@ -1,7 +1,7 @@
 """Command line interface for graphein."""
 import pathlib
+import pickle
 
-import networkx as nx
 import rich_click as click
 
 from graphein import __version__
@@ -49,7 +49,9 @@ def main(config_path, pdb_path, output_path):
 
     for path in pdb_paths:
         g = construct_graph(config=config, pdb_path=str(path))
-        nx.write_gpickle(g, str(output_path / f"{path.stem}.pickle"))
+
+        with open(str(output_path / f"{path.stem}.gpickle"), "wb") as f:
+            pickle.dump(g, f)
 
 
 if __name__ == "__main__":
