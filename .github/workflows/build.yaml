@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: [3.7, 3.8]
-        torch: [1.6.0, 1.7.0, 1.8.0, 1.9.0]
+        python-version: [3.8, 3.9, 3.10]
+        torch: [1.8.0, 1.9.0]
         include:
           - torch: 1.6.0
             torchvision: 0.7.0
@@ -44,7 +44,7 @@ jobs:
         uses: s-weigand/setup-conda@v1
         with:
           python-version: ${{ matrix.python-version }}
-          conda-channels: "conda-forge, salilab"
+          conda-channels: "conda-forge, salilab, pytorch, pyg"
 
       #- name: Set up Python ${{ matrix.python-version }}
       #  uses: actions/setup-python@v2
@@ -57,7 +57,8 @@ jobs:
       - name: Install DSSP
         run: conda install -c salilab dssp
       - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: conda install -c pytorch pytorch==${{matrix.torch}}
+        #run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install PyG
         run: conda install -c pyg pyg
       - name: Install BLAST
