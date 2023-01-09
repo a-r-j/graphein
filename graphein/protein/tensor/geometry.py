@@ -85,7 +85,7 @@ def center_protein(
     # Mask missing atoms
     fill_mask = torch.where(
         x == fill_value, torch.tensor(1.0), torch.tensor(0.0)
-    )
+    ).bool()
     centered = x - center
     # Restore fill values
     centered[fill_mask] = fill_value
