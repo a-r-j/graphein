@@ -7,7 +7,7 @@ import torch
 
 from ..resi_atoms import ATOM_NUMBERING, BB_BUILD_INFO, SC_BUILD_INFO
 from .angles import torsion_to_rad
-from .mpnerf import sn_nerf
+from .pnerf import sn_nerf
 from .types import AtomTensor, CoordTensor, TorsionTensor
 
 
