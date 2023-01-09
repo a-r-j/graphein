@@ -59,7 +59,7 @@ jobs:
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install PyG
-        run: conda install -c pyg pytorch-geometric
+        run: conda install -c pyg pyg
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
       - name: Install Graphein
