@@ -11,7 +11,7 @@ from ..resi_atoms import (
     STANDARD_AMINO_ACID_MAPPING_TO_1_3,
 )
 from .sequence import get_atom_indices
-from .types import AtomTensor
+from .types import AtomTensor, BackboneTensor, CoordTensor, ResidueTensor
 
 try:
     import torch
@@ -41,7 +41,7 @@ is_tensor_equal = partial(torch.allclose, rtol=0, atol=0)
 
 
 def has_complete_backbone(
-    x: AtomTensor,
+    x: Union[AtomTensor, BackboneTensor],
     fill_value: float = 1e-5,
     backbone_indices: List[int] = [0, 1, 2, 3],
 ) -> bool:
@@ -67,7 +67,7 @@ def has_complete_backbone(
 
 
 def has_complete_residue(
-    x: torch.Tensor, residue_type: str, fill_value: float = 1e-5
+    x: ResidueTensor, residue_type: str, fill_value: float = 1e-5
 ) -> bool:
     """Checks whether a residue has all of the requisite atoms.
 
@@ -122,3 +122,43 @@ def is_complete_structure(
         residues = list(residues)
 
     return all(has_complete_residue(x[i], residues[i]) for i in range(length))
+
+
+def random_atom_tensor(length: int = 64) -> AtomTensor:
+    """Returns a random tensor of shape ``length x 37 x 3``.
+
+
+    .. seealso:: :meth:`random_coord_tensor`
+
+    :param length: Length of random protein, defaults to ``64``
+    :type length: int, optional
+    :return: Random tensor of shape ``length x 37 x 3``
+    :rtype: AtomTensor
+    """
+    return torch.rand((length, 37, 3))
+
+
+def random_coord_tensor(length: int = 64) -> CoordTensor:
+    """Returns a random tensor of shape ``length x 3``.
+
+    .. seealso:: :meth:`random_atom_tensor`
+
+    :param length: Length of random coordinates, defaults to ``64``
+    :type length: int, optional
+    :return: Random tensor of shape ``length x 3``
+    :rtype: CoordTensor
+    """
+    return torch.rand((length, 3))
+
+
+def fill_missing_o_coords(x: AtomTensor):
+    raise NotImplementedError
+
+
+def fill_missing_backbone(
+    x: Union[AtomTensor, CoordTensor], fill_value: float = 1e-5
+) -> Union[AtomTensor, BackboneTensor]:
+    if has_complete_backbone(x, fill_value):
+        return x
+
+    raise NotImplementedError
