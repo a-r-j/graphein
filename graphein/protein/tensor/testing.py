@@ -152,6 +152,7 @@ def random_coord_tensor(length: int = 64) -> CoordTensor:
 
 
 def fill_missing_o_coords(x: AtomTensor):
+    # TODO
     raise NotImplementedError
 
 
@@ -160,5 +161,5 @@ def fill_missing_backbone(
 ) -> Union[AtomTensor, BackboneTensor]:
     if has_complete_backbone(x, fill_value):
         return x
-
+    # TODO
     raise NotImplementedError
