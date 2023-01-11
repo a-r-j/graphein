@@ -1,4 +1,9 @@
 """Utilities for working with protein sequences."""
+# Graphein
+# Author: Arian Jamasb <arian@jamasb.io>
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
+# Code Repository: https://github.com/a-r-j/graphein
 from functools import lru_cache
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -30,7 +35,7 @@ except ImportError:
 
 def get_sequence(
     df: pd.DataFrame,
-    chains: Optional[List[str]] = None,
+    chains: str = "all",
     insertions: bool = False,
     list_of_three: bool = False,
     three_to_one_map: Optional[str] = None,
@@ -44,17 +49,18 @@ def get_sequence(
     :type chains: Optional[List[str]], optional
     :param insertions: Whether or not to keep insertions, defaults to ``False``
     :type insertions: bool, optional
-    :param list_of_three: Whether or not to return a list of three letter codes. If ``False``,
-        returns the sequence as a one-letter code string. Defaults to ``False``.
+    :param list_of_three: Whether or not to return a list of three letter codes.
+        If ``False``, returns the sequence as a one-letter code string.
+        Defaults to ``False``.
     :type list_of_three: bool, optional
     :return: Amino acid sequence; either as list of three-letter codes
         (``["ALA", "GLY", "TRP"...]``; ``list_of_three=True``) or string
-        (``AGY..``; ``list_of_three=False``).
+        (``AGW..``; ``list_of_three=False``).
     :rtype: Union[str, List[str]]
     """
     # Select chains
-    if chains is not None:
-        df = df.loc[df.chain_id.isin(chains)]
+    if chains != "all":
+        df = df.loc[df.chain_id.isin(list(chains))]
 
     # Assign residues IDs
     if "residue_id" not in df.columns:
@@ -69,7 +75,10 @@ def get_sequence(
             df["residue_id"] = df.residue_id + ":" + df.insertion
 
     # Get residue from unique IDs
-    sequence = [res.split(":")[1] for res in df.residue_id.unique()]
+    if per_atom:
+        sequence = [res.split(":")[1] for res in df.residue_id]
+    else:
+        sequence = [res.split(":")[1] for res in df.residue_id.unique()]
 
     # Convert to one letter code
     if list_of_three:
@@ -81,7 +90,31 @@ def get_sequence(
         return "".join([RESI_THREE_TO_1[res] for res in sequence])
 
 
-def get_residue_id(df: pd.DataFrame, insertions: bool = False) -> List[str]:
+def get_residue_id(
+    df: pd.DataFrame, insertions: bool = False, unique: bool = True
+) -> List[str]:
+    """
+    Returns a list of residue IDs from a DataFrame of a protein structure.
+
+    Residue IDs are of the form: ``[chain_id:residue_name:residue_number]`` or
+    ``[chain_id:residue_name:residue_number:insertion_code]` if
+    ``insertions=True``
+
+    E.g.
+
+    ``["A:SER:1", "A:GLY:2", ...]`` or ``["A:SER:1:A", "A:GLY:2:", ...]``
+
+    :param df: DataFrame of protein structure to extract residue IDs from.
+    :type df: pd.DataFrame
+    :param insertions: Whether or not to include insertion codes in the residue
+        ID.
+    :param unique: Whether or not to return only unique residue IDs. If
+        ``False``, it returns a (repeated) ID for each atom in the protein. If
+        ``True`` we return the unique set of residue IDs. Default is ``True``.
+    :type unique: bool, optional
+    :return: List of residue IDs.
+    :rtype: List[str]
+    """
     if "residue_id" not in df.columns:
         df["residue_id"] = (
             df.chain_id
@@ -92,7 +125,7 @@ def get_residue_id(df: pd.DataFrame, insertions: bool = False) -> List[str]:
         )
         if insertions:
             df["residue_id"] = df.residue_id + ":" + df.insertion.astype(str)
-    return list(df.residue_id.unique())
+    return list(df.residue_id.unique()) if unique else list(df.residue_id)
 
 
 def residue_type_tensor(
@@ -113,7 +146,8 @@ def residue_type_tensor(
         graphein.protein.resi_atoms.STANDARD_AMINO_ACIDS
     :type vocabulary: List[str], optional
     :param three_to_one_mapping: Mapping from three letter to codes to one
-        letter amino acid codes, defaults to graphein.protein.RESI_THREE_TO_1
+        letter amino acid codes, defaults to
+        :ref:`graphein.protein.resi_atoms.RESI_THREE_TO_1`
     :type three_to_one_mapping: Dict[str, str], optional
     :param one_hot: Whether to return a tensor of integers denoting residue
         type or whether to one-hot encode residue types, defaults to ``False``.
@@ -129,7 +163,9 @@ def residue_type_tensor(
     :return: Tensor of residue types.
     :rtype: torch.Tensor
     """
-    residues = get_sequence(df, insertions=insertions, list_of_three=True)
+    residues = get_sequence(
+        df, insertions=insertions, list_of_three=True, per_atom=per_atom
+    )
 
     # Convert to one letter code
     residues = [three_to_one_mapping[res] for res in residues]
