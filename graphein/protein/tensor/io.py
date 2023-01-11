@@ -21,16 +21,25 @@ from ..graphs import (
     sort_dataframe,
 )
 from ..resi_atoms import PROTEIN_ATOMS
-from .sequence import get_residue_id
-from .types import AtomTensor, CoordTensor
+from .sequence import get_residue_id, get_sequence, residue_type_tensor
+from .types import AtomTensor
 
 try:
-    import torch
-    import torch.nn.functional as F
     from torch_geometric.data import Data
 except ImportError:
     message = import_message(
-        submodule="graphein.protein.tensor",
+        submodule="graphein.protein.tensor.io",
+        package="torch_geometric",
+        conda_channel="pyg",
+        pip_install=True,
+    )
+    log.warning(message)
+
+try:
+    import torch
+except ImportError:
+    message = import_message(
+        submodule="graphein.protein.tensor.io",
         package="torch",
         conda_channel="pytorch",
         pip_install=True,
@@ -43,13 +52,14 @@ def get_protein_length(df: pd.DataFrame, insertions: bool = False) -> int:
 
     Note for future development: this function may return incorrect results
     on raw PDB files containing insertions/altlocs. This should not be the case
-    for proteins processed by the Graphein pre-processing workflow. Caveat emptor.
+    for proteins processed by the Graphein pre-processing workflow. Caveat
+    emptor.
 
-    :param df: Protein DataFrame to get length of
+    :param df: Protein DataFrame to get length of.
     :type df: pd.DataFrame
-    :param insertions: Whether or not to include insertions in the length
+    :param insertions: Whether or not to include insertions in the length.
     :type insertions: bool
-    :return: Number of unique residues
+    :return: Number of unique residues.
     :rtype: int
     """
     # Get unique residues:
@@ -57,9 +67,9 @@ def get_protein_length(df: pd.DataFrame, insertions: bool = False) -> int:
         ids = (
             df["chain_id"]
             + ":"
-            + df["residue_type"]
+            + df["residue_name"]
             + ":"
-            + df["residue_number"]
+            + df["residue_number"].astype(str)
         )
         if insertions:
             df["residue_id"] = df.residue_id + ":" + df.insertion
@@ -80,6 +90,27 @@ def protein_to_pyg(
     model_index: int = 1,
     atom_types: List[str] = PROTEIN_ATOMS,
 ) -> Data:
+
+    # Get ID
+    if pdb_path is not None:
+        id = (
+            pdb_path.split("/")[-1] + "_" + chain_selection
+            if chain_selection != "all"
+            else pdb_path
+        )
+    elif pdb_code is not None:
+        id = (
+            pdb_code + "_" + chain_selection
+            if chain_selection != "all"
+            else pdb_code
+        )
+    elif uniprot_id is not None:
+        id = (
+            uniprot_id + "_" + chain_selection
+            if chain_selection != "all"
+            else uniprot_id
+        )
+
     df = read_pdb_to_dataframe(
         pdb_path=pdb_path,
         pdb_code=pdb_code,
@@ -107,10 +138,15 @@ def protein_to_pyg(
     if keep_insertions:
         df["residue_id"] = df.residue_id + ":" + df.insertion
 
-    from graphein.protein.tensor.sequence import residue_type_tensor
-
     return Data(
-        coords=protein_df_to_tensor(df, atoms_to_keep=atom_types),
+        x=protein_df_to_tensor(df, atoms_to_keep=atom_types),
+        residues=get_sequence(
+            df,
+            chains=chain_selection,
+            insertions=keep_insertions,
+            list_of_three=True,
+        ),
+        id=id,
         residue_id=get_residue_id(df),
         residue_type=residue_type_tensor(df),
         chains=protein_df_to_chain_tensor(df),
@@ -140,7 +176,7 @@ def protein_df_to_chain_tensor(
         (``L x num_chains``). If ``False`` an integer tensor is returned.
         Defaults to ``False``.
     :type one_hot: bool, optional
-    :return: Onehot encoded or integer tensor indicating chain membership for
+    :return: One hot encoded or integer tensor indicating chain membership for
         each residue.
     :rtype: torch.Tensor
     """
@@ -194,27 +230,12 @@ def protein_df_to_tensor(
     :returns: ``Length x Num_Atoms (default 37) x 3`` tensor.
     :rtype: graphein.protein.tensor.types.AtomTensor
     """
-    # Assign a residue ID.
-    # if "residue_id" not in df.columns:
-    #    df["residue_id"] = (
-    #        df["chain_id"]
-    #        + ":"
-    #        + df["residue_name"]
-    #        + ":"
-    #        + str(df["residue_number"])
-    #    )
-    # Add insertion code if including insertions
-    #    if insertions:
-    #        df["residue_id"] = (
-    #            df["residue_id"] + ":" + df["insertion"].astype(str)
-    #        )
-    res_ids = get_residue_id(df, insertions=insertions)
-    num_residues = len(df["residue_id"].unique())
+    num_residues = get_protein_length(df, insertions=insertions)
     df = df.loc[df["atom_name"].isin(atoms_to_keep)]
-    residue_indices = pd.factorize(df["residue_id"])[0]
+    residue_indices = pd.factorize(get_residue_id(df, unique=False))[0]
     atom_indices = df["atom_name"].map(lambda x: atoms_to_keep.index(x)).values
 
-    positions = torch.ones((num_residues, len(atoms_to_keep), 3)) * fill_value
+    positions = torch.zeros((num_residues, len(atoms_to_keep), 3)) + fill_value
     positions[residue_indices, atom_indices] = torch.tensor(
         df[["x_coord", "y_coord", "z_coord"]].values
     ).float()
