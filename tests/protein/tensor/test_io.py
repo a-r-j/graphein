@@ -79,8 +79,8 @@ def test_protein_df_to_tensor():  # sourcery skip: extract-duplicate-method
     assert positions.shape[0] == num_residues, "Incorrect number of residues."
     assert positions.shape[1] == 4, "Incorrect number of atoms."
     assert positions.shape[2] == 3, "Incorrect number of coordinates."
-    
-    
+
+
 def test_to_pdb():
     protein = Protein().from_pdb_code("4hhb")
     to_pdb(protein.x, "test.pdb")
@@ -89,14 +89,12 @@ def test_to_pdb():
     ppdb1 = PandasPdb().read_pdb("test.pdb")
     ppdb2 = PandasPdb().fetch_pdb("4hhb")
 
-
     assert_frame_equal(
         ppdb1.df["ATOM"][["x_coord", "y_coord", "z_coord"]][:50],
-        ppdb2.df["ATOM"][["x_coord", "y_coord", "z_coord"]][:50]
-        )
+        ppdb2.df["ATOM"][["x_coord", "y_coord", "z_coord"]][:50],
+    )
 
     assert_frame_equal(
         ppdb1.df["ATOM"][["atom_name", "residue_name", "element_symbol"]][:50],
-        ppdb2.df["ATOM"][["atom_name", "residue_name", "element_symbol"]][:50]
-        )
-
+        ppdb2.df["ATOM"][["atom_name", "residue_name", "element_symbol"]][:50],
+    )
