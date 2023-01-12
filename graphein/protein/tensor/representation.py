@@ -5,13 +5,14 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from loguru import logger as log
 
 from graphein.utils.utils import import_message
 
-from .types import AtomTensor, CoordTensor
+from .reconstruction import get_ideal_backbone_coords
+from .types import AtomTensor, BackboneFrameTensor, BackboneTensor, CoordTensor
 
 try:
     import torch
@@ -63,15 +64,20 @@ def get_c_alpha(x: AtomTensor, index: int = 1) -> CoordTensor:
     return x if x.ndim == 2 else x[:, index, :]
 
 
-def get_backbone(x: AtomTensor) -> AtomTensor:  # TODO
+def get_backbone(
+    x: AtomTensor, backbone_indices: List[int] = [0, 1, 2, 3]
+) -> BackboneTensor:
     """Returns tensor of backbone atoms: ``(L x 4 x 3)``
 
-    :param x: _description_
+    :param x: AtomTensor to extract backbone from
     :type x: AtomTensor
-    :return: _description_
-    :rtype: AtomTensor
+    :param backbone_indices: List of indices of ``[N, Ca, C, O]`` atoms (in
+        order).
+    :return: Tensor of backbone atoms.
+    :rtype: BackboneTensor
     """
-    raise NotImplementedError
+    indices = torch.tensor(backbone_indices, device=x.device)
+    return x[:, indices, :]
 
 
 def coarsen_sidechain(
@@ -111,3 +117,28 @@ def coarsen_sidechain(
         )
 
     return sidechain_points
+
+
+def get_backbone_frames(
+    x: Union[AtomTensor, BackboneTensor],
+    bb_indices: List[int] = [0, 1, 2, 4],
+) -> Tuple[BackboneFrameTensor, CoordTensor]:
+    """
+    Return the backbone frames from the atom tensor (tuple of rotation matrices
+    and alpha carbon positions).
+
+    .. note:: ``bb_indices`` should be in the order ``[N, Ca, C, Cb]``
+
+    :param x: Structure to get backbone rotation frames for
+    :type x: Union[AtomTensor, BackboneTensor]
+    :return: Tuple of RotationMatrices and Translations
+    """
+    from .geometry import kabsch
+
+    # Get idealised residues centered on CA at origin
+    bb = get_ideal_backbone_coords(x.shape[0], ca_center=True, device=x.device)
+    indices = torch.tensor(bb_indices, device=x.device)
+
+    return kabsch(
+        bb, x[:, indices, :], residue_wise=True, return_transformed=False
+    )

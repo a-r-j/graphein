@@ -59,17 +59,17 @@ def place_fourth_atom(
 
 
 def get_ideal_backbone_coords(
-    center: bool = False, device: torch.device = "cpu"
+    n: int = 1, ca_center: bool = True, device: torch.device = "cpu"
 ) -> torch.Tensor:
     """
-    Get idealized backbone (N, CA, C, CB) coordinates.
+    Get idealized backbone ``(N, CA, C, CB)`` coordinates.
 
     Adapted from the IgFold Implementation (which is under the John's
     Hopkins License):
     https://github.com/Graylab/IgFold/blob/main/igfold/utils/coordinates.py
 
-    :param center: if True the reference residue is centered on CA,
-        otherwise, center of mass is used. Defaults to False.
+    :param center: if ``True`` the reference residue is centered on CA,
+        otherwise, the center of mass is used. Defaults to ``True``.
     :type CA_centered: bool, optional
     :return: Idealized backbone coordinates
     :rtype: torch.Tensor
@@ -88,13 +88,13 @@ def get_ideal_backbone_coords(
 
     coords = torch.cat([N, A, C, B]).float()
 
-    if center:
+    if not ca_center:
         coords -= coords.mean(
             dim=0,
             keepdim=True,
         )
 
-    return coords
+    return coords.unsqueeze(0).repeat(n, 1, 1)
 
 
 def place_o_coords(coords: AtomTensor) -> AtomTensor:

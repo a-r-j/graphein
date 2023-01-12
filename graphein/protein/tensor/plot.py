@@ -45,10 +45,9 @@ def plot_dihedrals(
     :rtype: go.Figure
     """
     if dihedrals.shape[1] == 6 and to_rad:
-        phi, psi, omg = dihedrals_to_rad(dihedrals)
-        dihedrals = torch.stack([phi, psi, omg], dim=1)
+        dihedrals = dihedrals_to_rad(dihedrals, concat=True)
 
-    return px.imshow(dihedrals)  # , vmin=-np.pi, vmax=np.pi)
+    return px.imshow(dihedrals, aspect="auto")  # , vmin=-np.pi, vmax=np.pi)
 
 
 def plot_distance_matrix(
@@ -89,7 +88,7 @@ def plot_structure(
     :rtype: go.Figure
     """
 
-    mode = "lines" if lines else "lines+markers"
+    mode = "lines" if lines else "markers"
     if x.ndim == 2:
         fig = go.Figure()
         fig.add_trace(go.Scatter3d(x=x[:, 0], y=x[:, 1], z=x[:, 2], mode=mode))

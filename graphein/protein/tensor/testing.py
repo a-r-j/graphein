@@ -60,7 +60,9 @@ def has_complete_backbone(
     :param backbone_indices: List of indices in dimension 1 of the AtomTensor
         to be checked. Defaults to ``[0, 1, 2, 3]`` for ``N, Ca, C, O`` in the
         default assignment.
-    type backbone_indices: List[int].
+    :type backbone_indices: List[int].
+    :return: Boolean indicating whether the backbone is complete.
+    :rtype: bool
     """
     indices = torch.tensor(backbone_indices)
     return torch.sum(x[:, indices] == fill_value) == 0

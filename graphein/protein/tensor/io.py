@@ -5,9 +5,11 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
+import numpy as np
 import pandas as pd
+from biopandas.pdb import PandasPdb
 from loguru import logger as log
 
 from graphein.utils.utils import import_message
@@ -20,8 +22,14 @@ from ..graphs import (
     select_chains,
     sort_dataframe,
 )
-from ..resi_atoms import PROTEIN_ATOMS
-from .sequence import get_residue_id, get_sequence, residue_type_tensor
+from ..resi_atoms import ATOM_NUMBERING, ELEMENT_SYMBOL_MAP, PROTEIN_ATOMS
+from .representation import get_full_atom_coords
+from .sequence import (
+    get_residue_id,
+    get_sequence,
+    infer_residue_types,
+    residue_type_tensor,
+)
 from .types import AtomTensor
 
 try:
@@ -240,3 +248,166 @@ def protein_df_to_tensor(
         df[["x_coord", "y_coord", "z_coord"]].values
     ).float()
     return positions
+
+
+def to_dataframe(
+    x: AtomTensor,
+    fill_value: float = 1e-5,
+    residue_types: Optional[List[str]] = None,
+    chains: Optional[Union[List[Union[str, int]], torch.Tensor]] = None,
+    insertions: Optional[List[Union[str, float]]] = None,
+    b_factors: Optional[Union[List[float], torch.Tensor]] = None,
+    occupancy: Optional[Union[List[float], torch.Tensor]] = None,
+    charge: Optional[List[int]] = None,
+    alt_loc: Optional[List[Union[str, int]]] = None,
+    segment_id: Optional[List[Union[str, int]]] = None,
+    biopandas: bool = False,
+) -> Union[pd.DataFrame, PandasPdb]:
+    """Converts an ``AtomTensor`` to a DataFrame.
+
+    ``AtomTensors`` are not a full specification of a structure so missing values
+    can be manually provided as arguments - otherwise default values are used.
+
+    .. code-block:: python
+
+        import graphein.protein.tensor as gpt
+
+        protein = gpt.Protein().from_pdb_code("3eiy")
+        to_dataframe(protein.x)
+
+    .. seealso::
+
+        :class:`graphein.protein.tensor.types.AtomTensor`
+        :meth:`graphein.protein.tensor.io.to_pdb`
+        :meth:`graphein.protein.tensor.sequence.infer_residue_types`
+
+
+    :param x: AtomTensor to convert (Shape: ``num residues x 37 x 3``).
+    :type x: AtomTensor
+    :param fill_value: Fill value used to denote missing atoms in the
+    ``AtomTensor``, defaults to ``1e-5``.
+    :type fill_value: float, optional
+    :param residue_types: List of three-letter residue IDs (length: num residues
+        ), defaults to ``None`` (inferred from ``AtomTensor``; this may break
+        for incomplete structures with missing atoms.)
+    :type residue_types: Optional[List[str]], optional
+    :param chains: List or tensor of chain IDs, defaults to ``None`` (``"A"``
+        for all residues).
+    :type chains: Optional[Union[List[Union[str, int]], torch.Tensor]], optional
+    :param insertions: List of insertion codes, defaults to ``None`` (``""``).
+    :type insertions: Optional[List[Union[str, float]]], optional
+    :param b_factors: List or tensor of b factors (length: num residues),
+        defaults to ``None`` (``""``).
+    :type b_factors: Optional[List[Union[str, float]]], optional
+    :param occupancy: List or tensor of occupancy values (length: num residues),
+        defaults to ``None`` (``1.0``).
+    :type occupancy: Optional[List[Union[str, float]]], optional
+    :param charge: List or or tensor of atom charges, defaults to ``None``
+        (``"0"``).
+    :type charge: Optional[List[int]], optional
+    :param alt_loc: List or tensor of alt_loc codes, defaults to ``None``
+        (``""``)
+    :type alt_loc: Optional[List[Union[str, int]]], optional
+    :param segment_id: List or tensor of segment IDs, defaults to ``None``
+        (``""``).
+    :type segment_id: Optional[List[Union[str, int]]], optional
+    :param biopandas: Whether to return a ``pd.DataFrame`` or ``BioPandas``
+        ``PandasPdb`` object, defaults to ``False`` (``pd.DataFrame``).
+    :type biopandas: bool, optional
+    :return: ``DataFrame`` or ``PandasPdb object``.
+    :rtype: Union[pd.DataFrame, PandasPdb]
+    """
+    nz = (x - fill_value).nonzero()
+    nz = nz[torch.where(nz[:, 2] == 0)]
+    res_nums = nz[:, 0] + 1
+
+    atom_number = np.arange(1, len(res_nums) + 1)
+    map = {v: k for k, v in ATOM_NUMBERING.items()}
+    atom_type = nz[:, 1]
+    atom_type = [map[a.item()] for a in atom_type]
+
+    if residue_types is None:
+        residue_types = infer_residue_types(
+            x, fill_value=fill_value, return_sequence=False
+        )
+    if isinstance(residue_types, torch.Tensor):
+        print("warning - this is not properly implemented yet:(")
+    residue_types = [residue_types[a - 1] for a in res_nums]
+    element_symbols = [ELEMENT_SYMBOL_MAP[a] for a in atom_type]
+
+    chains = ["A"] * len(res_nums) if chains is None else chains[res_nums - 1]
+    if segment_id is None:
+        segment_id = [""] * len(res_nums)
+    if insertions is None:
+        insertions = [""] * len(res_nums)
+    if b_factors is None:
+        b_factors = [0.0] * len(res_nums)
+    if occupancy is None:
+        occupancy = [1.0] * len(res_nums)
+    if charge is None:
+        charge = [0] * len(res_nums)
+    if alt_loc is None:
+        alt_loc = [""] * len(res_nums)
+
+    blank_1 = [""] * len(res_nums)
+    blank_2 = [""] * len(res_nums)
+    blank_3 = [""] * len(res_nums)
+    blank_4 = [""] * len(res_nums)
+
+    # NB brittle, bad assumption; may break
+    record_names = ["ATOM" if i < 37 else "HETATM" for i in nz[:, 1]]
+    coords = get_full_atom_coords(x)[0]
+
+    out = {
+        "record_name": record_names,
+        "atom_number": atom_number,
+        "blank_1": blank_1,
+        "atom_name": atom_type,
+        "alt_loc": alt_loc,
+        "residue_name": residue_types,
+        "blank_2": blank_2,
+        "chain_id": chains,
+        "residue_number": res_nums,
+        "insertion": insertions,
+        "blank_3": blank_3,
+        "x_coord": coords[:, 0],
+        "y_coord": coords[:, 1],
+        "z_coord": coords[:, 2],
+        "occupancy": occupancy,
+        "b_factor": b_factors,
+        "blank_4": blank_4,
+        "segment_id": segment_id,
+        "element_symbol": element_symbols,
+        "charge": charge,
+        "line_idx": atom_number,
+    }
+    df = pd.DataFrame().from_dict(out)
+
+    if biopandas:
+        ppdb = PandasPdb()
+        ppdb.df["ATOM"] = df
+        return ppdb
+    return df
+
+
+def to_pdb(x: AtomTensor, out_path: str, gz: bool = False, **kwargs):
+    """
+    Writes an ``AtomTensor`` to a PDB file.
+
+    .. seealso::
+
+        :class:`graphein.protein.tensor.types.AtomTensor`
+        :meth:`graphein.protein.tensor.to_dataframe`
+
+    :param x: ``AtomTensor`` describing protein structure to write.
+    :type x: AtomTensor
+    :param out_path: Path to output pdb file.
+    :type out_path: str
+    :param gz: Whether to gzip out the ouput, defaults to ``False``.
+    :type gz: bool, optional
+    :param kwargs: Keyword args for :meth:`graphein.protein.tensor.to_dataframe`
+    """
+    df = to_dataframe(x, **kwargs)
+    ppdb = PandasPdb()
+    ppdb.df["ATOM"] = df
+    ppdb.to_pdb(path=out_path, gz=gz, append_newline=True)

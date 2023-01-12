@@ -300,6 +300,8 @@ def sn_nerf(
     This function has been optimized from the original nerf to be about 20% faster. It
     contains fewer normalization steps and total calculations than the original
     formulation. See https://doi.org/10.1002/jcc.20237 for details.
+
+
     Args:
         a (torch.float32 tensor): (3 x 1) tensor describing point a.
         b (torch.float32 tensor): (3 x 1) tensor describing point b.

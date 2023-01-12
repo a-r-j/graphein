@@ -236,7 +236,11 @@ def infer_residue_types(
         # remove oxt if present
         oxt_index = ATOM_NUMBERING_MODIFIED["OXT"]
         indices = tuple(i for i in indices if i != oxt_index)
-        return rmap[indices]
+        try:
+            identity = rmap[indices]
+        except KeyError:
+            identity = "UNK"
+        return identity
 
     seq = [_get_index(x[i, :, :]) for i in range(x.shape[0])]
 

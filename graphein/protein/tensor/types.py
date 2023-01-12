@@ -1,11 +1,15 @@
-"""Types for graphein.protein.tensor."""
+"""Types for graphein.protein.tensor.
+
+Graphein provides many types for commonly used tensors of specific shapes.
+"""
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import NewType, Union
+from typing import NewType, Optional, Union
 
+import torch
 from torchtyping import TensorType
 
 # Positions
@@ -198,3 +202,5 @@ EdgeTensor = NewType("EdgeTensor", TensorType[2, -1])
 
 
 ScalarTensor = NewType("ScalarTensor", TensorType[-1])
+
+OptTensor = NewType("OptTensor", Optional[torch.Tensor])

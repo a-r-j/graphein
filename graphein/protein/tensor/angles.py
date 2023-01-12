@@ -1,20 +1,20 @@
 """Utilities for computing various protein angles."""
+# Graphein
+# Author: Arian Jamasb <arian@jamasb.io>
+# License: MIT
+# Project Website: https://github.com/a-r-j/graphein
+# Code Repository: https://github.com/a-r-j/graphein
 import copy
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from loguru import logger as log
 
-from graphein.protein.resi_atoms import ATOM_NUMBERING, CHI_ANGLES_ATOMS
-from graphein.protein.tensor.types import (
-    AtomTensor,
-    CoordTensor,
-    DihedralTensor,
-    TorsionTensor,
-)
 from graphein.utils.utils import import_message
 
+from ..resi_atoms import ATOM_NUMBERING, CHI_ANGLES_ATOMS
 from .testing import has_nan
+from .types import AtomTensor, CoordTensor, DihedralTensor, TorsionTensor
 
 try:
     from einops import rearrange
@@ -51,11 +51,20 @@ except ImportError:
 def _extract_torsion_coords(
     coords: AtomTensor, res_types: List[str]
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Returns a (L*?) x 4 x 3 tensor of the coordinates of the atoms for each
-    sidechain torsion angle.
+    """Returns a ``(L*?) x 4 x 3`` tensor of the coordinates of the atoms for
+    each sidechain torsion angle. The first dimension will be larger than the
+    input as we flatten the array of torsion angles per residue.
 
-    Also returns a (L*?) x 1 indexing tensor to map back to each residue
+    Also returns a ``(L*?) x 1`` indexing tensor to map back to each residue
     (this is because we have variable numbers of torsion angles per residue).
+
+    :param coords: AtomTensor of shape ``(L*?, 37, 3)``
+    :type coords: AtomTensor
+    :param res_types: List of 3-letter residue types
+    :type res_types: List[str]
+    :return: Coordinates for computing each sidechain torsion angle
+        and indexing tensor.
+    :rtype: Tuple[torch.Tensor, torch.Tensor]
     """
     res_atoms = []
     idxs = []
@@ -176,6 +185,10 @@ def kappa(
     residues ``i-2``, ``i`` and ``i+2``. The first and last two angles are zero
     padded.
 
+    .. seealso::
+        :meth:`graphein.protein.tensor.angles.alpha`
+        :meth:`graphein.protein.tensor.angles.dihedrals`
+
     :param x: Tensor of atomic positions or tensor of CA positions.
     :type x: Union[AtomTensor, CoordTensor]
     :param ca_idx: If ``x`` is an AtomTensor, this is the index of the CA atoms
@@ -224,7 +237,12 @@ def alpha(
 ) -> torch.Tensor:
     """
     Computes virtual bond dihedral angle defined by four Ca atoms of residues
-    i-1, i, i+1, i+2. The first angle and last two angles are zero padded.
+    ``i-1``, ``i``, ``i+1``, ``i+2``. The first angle and last two angles are
+    zero padded.
+
+    .. seealso::
+        :meth:`graphein.protein.tensor.angles.kappa`
+        :meth:`graphein.protein.tensor.angles.dihedrals`
 
     :param x: Tensor of atomic positions or tensor of CA positions.
     :type x: Union[AtomTensor, CoordTensor]
@@ -334,7 +352,16 @@ def get_backbone_bond_lengths(x: AtomTensor) -> torch.Tensor:
 
 # @torch.jit.script
 def get_backbone_bond_angles(x: AtomTensor) -> torch.Tensor:
-    """Compute the bond angles between atoms."""
+    """Compute the bond angles between backbone atoms:
+        ``[C-N-Ca, N-Ca-C, Ca-C,N]``.
+
+    .. seealso:: :meth:`graphein.protein.tensor.angles.to_ang`
+
+    :param x: Tensor of atomic positions.
+    :type x: AtomTensor
+    :return: Tensor of backbone bond angles ``[L x 3]``.
+    :rtype: torch.Tensor
+    """
     n, a, c = x[:, 0, :], x[:, 1, :], x[:, 2, :]
 
     n_a_c = to_ang(n, a, c)
@@ -442,7 +469,6 @@ def dihedrals(
 
     phi[:, 1:] = _dihedral_angle(C_curr, N_next, Ca_next, C_next)
     psi[:, :-1] = _dihedral_angle(N_curr, Ca_curr, C_curr, N_next)
-    # psi[:, 1:] = _dihedral_angle(N_curr, Ca_curr, C_curr, N_next)
     omg[:, :-1] = _dihedral_angle(Ca_curr, C_curr, N_next, Ca_next)
 
     angles = torch.stack([phi, psi, omg], dim=2)
@@ -491,7 +517,7 @@ def torsion_to_rad(
 ]:
     """
     Converts sidechain torsions in
-    ``(sin(chi1), sin(ch1), cos(chi2), sin(chi2), ...)`` format to radians.
+    ``(sin(chi1), sin(chi1), cos(chi2), sin(chi2), ...)`` format to radians.
 
     :param x_torsion: Torsion tensor of shape ``(L, 8)``.
     :type x_torsion: graphein.protein.tensor.types.TorsionTensor
