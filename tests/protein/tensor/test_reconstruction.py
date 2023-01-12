@@ -7,7 +7,7 @@
 
 import pytest
 
-from graphein.protein.tensor.geometry import whole_protein_kabsch
+from graphein.protein.tensor.geometry import kabsch
 from graphein.protein.tensor.reconstruction import dist_mat_to_coords
 
 try:
@@ -27,6 +27,6 @@ def test_dist_mat_to_coords():
         d = torch.cdist(coords, coords)
         X = dist_mat_to_coords(d)
         assert torch.allclose(d, torch.cdist(X, X), atol=1e-4)
-        X_aligned = whole_protein_kabsch(X, coords)
+        X_aligned = kabsch(X, coords)
         assert torch.allclose(coords, X_aligned, atol=1e-4)
         return coords, X, X_aligned

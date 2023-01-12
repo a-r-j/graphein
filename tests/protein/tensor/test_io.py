@@ -5,12 +5,18 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+import os
+
 import pytest
 from biopandas.pdb import PandasPdb
+from pandas.testing import assert_frame_equal
 
+from graphein.protein.tensor import Protein
 from graphein.protein.tensor.io import (
     protein_df_to_chain_tensor,
     protein_df_to_tensor,
+    to_dataframe,
+    to_pdb,
 )
 from graphein.protein.tensor.sequence import get_residue_id
 
@@ -73,3 +79,24 @@ def test_protein_df_to_tensor():  # sourcery skip: extract-duplicate-method
     assert positions.shape[0] == num_residues, "Incorrect number of residues."
     assert positions.shape[1] == 4, "Incorrect number of atoms."
     assert positions.shape[2] == 3, "Incorrect number of coordinates."
+    
+    
+def test_to_pdb():
+    protein = Protein().from_pdb_code("4hhb")
+    to_pdb(protein.x, "test.pdb")
+    assert os.path.exists("test.pdb"), "File does not exist"
+
+    ppdb1 = PandasPdb().read_pdb("test.pdb")
+    ppdb2 = PandasPdb().fetch_pdb("4hhb")
+
+
+    assert_frame_equal(
+        ppdb1.df["ATOM"][["x_coord", "y_coord", "z_coord"]][:50],
+        ppdb2.df["ATOM"][["x_coord", "y_coord", "z_coord"]][:50]
+        )
+
+    assert_frame_equal(
+        ppdb1.df["ATOM"][["atom_name", "residue_name", "element_symbol"]][:50],
+        ppdb2.df["ATOM"][["atom_name", "residue_name", "element_symbol"]][:50]
+        )
+
