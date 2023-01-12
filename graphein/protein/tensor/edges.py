@@ -5,7 +5,7 @@ from loguru import logger as log
 
 from graphein.utils.utils import import_message
 
-from .types import EdgeTensor, OptTensor
+from .types import CoordTensor, EdgeTensor, OptTensor
 
 try:
     import torch
@@ -77,6 +77,15 @@ def radius_edges(
 ) -> EdgeTensor:
     r"""Computes graph edges to all points within a given distance.
 
+    .. code-block:: python
+
+            import torch
+            import graphein.protein.tensor
+
+            x = torch.Tensor([[-1, -1], [-1, 1], [1, -1], [1, 1]])
+            batch = torch.tensor([0, 0, 0, 0])
+            edge_index = gpt.radius_graph(x, r=1.5, batch=batch, loop=False)
+
     Args:
         x (Tensor): Node feature matrix
             :math:`\mathbf{X} \in \mathbb{R}^{N \times F}`.
@@ -95,16 +104,6 @@ def radius_edges(
             effect in case :obj:`batch` is not :obj:`None`, or the input lies
             on the GPU. (default: :obj:`1`)
 
-    :rtype: :class:`LongTensor`
-
-    .. code-block:: python
-
-        import torch
-        import graphein.protein.tensor
-
-        x = torch.Tensor([[-1, -1], [-1, 1], [1, -1], [1, 1]])
-        batch = torch.tensor([0, 0, 0, 0])
-        edge_index = gpt.radius_graph(x, r=1.5, batch=batch, loop=False)
     """
     return radius_graph(
         x,
@@ -127,6 +126,15 @@ def knn_edges(
 ) -> EdgeTensor:
     r"""Computes graph edges to the nearest :obj:`k` points.
 
+    .. code-block:: python
+
+        import torch
+        import graphein.protein.tensor as gpt
+
+        x = torch.Tensor([[-1, -1], [-1, 1], [1, -1], [1, 1]])
+        batch = torch.tensor([0, 0, 0, 0])
+        edge_index = gpt.knn_graph(x, k=2, batch=batch, loop=False)
+
     Args:
         x (Tensor): Node feature matrix
             :math:`\mathbf{X} \in \mathbb{R}^{N \times F}`.
@@ -145,17 +153,6 @@ def knn_edges(
         num_workers (int): Number of workers to use for computation. Has no
             effect in case :obj:`batch` is not :obj:`None`, or the input lies
             on the GPU. (default: :obj:`1`)
-
-    :rtype: :class:`LongTensor`
-
-    .. code-block:: python
-
-        import torch
-        import graphein.protein.tensor as gpt
-
-        x = torch.Tensor([[-1, -1], [-1, 1], [1, -1], [1, 1]])
-        batch = torch.tensor([0, 0, 0, 0])
-        edge_index = gpt.knn_graph(x, k=2, batch=batch, loop=False)
     """
     return knn_graph(
         x,
@@ -165,3 +162,23 @@ def knn_edges(
         flow=flow,
         num_workers=num_workers,
     )
+
+
+def edge_distances(x: CoordTensor, edge_index: EdgeTensor, p: float = 2):
+    """Computes the distances between edges
+
+    :param x: Node positions
+    :param edge_index: Edge indices
+    :param p: The norm degree. Can be negative. Default: ``2``.``
+    :returns: Edge distances
+    :rtype: torch.Tensor
+    """
+    return torch.pairwise_distance(x[edge_index[0]], x[edge_index[1]], p=p)
+
+
+def contact_map(x: CoordTensor) -> torch.Tensor:
+    """Computes the contact map for a set of coordinates
+
+    :param x: Node positions
+    """
+    return torch.cdist(x, x)

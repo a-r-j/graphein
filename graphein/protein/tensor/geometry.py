@@ -1,4 +1,6 @@
 """Utilities for manipulating protein geometry."""
+import copy
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -10,9 +12,22 @@ from loguru import logger as log
 
 from graphein.utils.utils import import_message
 
-from ..resi_atoms import CHI_ANGLES_ATOMS
+from ..resi_atoms import (
+    CHI_ANGLES_ATOMS,
+    IDEAL_BB_BOND_ANGLES,
+    IDEAL_BB_BOND_LENGTHS,
+)
+from .angles import get_backbone_bond_angles, get_backbone_bond_lengths
 from .representation import get_c_alpha, get_full_atom_coords
-from .types import AtomTensor, CoordTensor, QuaternionTensor, RotationTensor
+from .types import (
+    AtomTensor,
+    BackboneFrameTensor,
+    BackboneTensor,
+    CoordTensor,
+    QuaternionTensor,
+    RotationMatrix,
+    RotationMatrixTensor,
+)
 
 try:
     import torch
@@ -46,12 +61,24 @@ def get_center(
     """
     Returns the center of a protein.
 
+    .. code-block:: python
+        import torch
+
+        x = torch.rand((10, 37, 3))
+        get_center(x)
+
+
+    .. seealso::
+
+        :meth:`center_protein`
+
+
     :param x: Point Cloud to Center. Torch tensor of shape ``(Length , 3)`` or
         ``(Length, num atoms, 3)``.
     :param ca_only: If ``True``, only the C-alpha atoms will be used to compute
         the center. Only relevant with AtomTensor inputs. Default is ``False``.
     :type ca_only: bool
-    :param fill_value: Value used to denote missing atoms. Default is 1e-5.
+    :param fill_value: Value used to denote missing atoms. Default is )``1e-5)``.
     :type fill_value: float
     :return: Torch tensor of shape ``(N,D)`` -- Center of Point Cloud
     :rtype: Union[graphein.protein.tensor.types.AtomTensor, graphein.protein.tensor.types.CoordTensor]
@@ -69,14 +96,18 @@ def center_protein(
     x: Union[AtomTensor, CoordTensor], ca_only: bool = True, fill_value=1e-5
 ) -> Union[AtomTensor, CoordTensor]:
     """
-    Centers a protein in the coordinate system.
+    Centers a protein in the coordinate system at the origin.
+
+    .. seealso::
+
+        :meth:`get_center`
 
     :param x: Point Cloud to Center. Torch tensor of shape ``(Length , 3)`` or
         ``(Length, num atoms, 3)``.
     :param ca_only: If ``True``, only the C-alpha atoms will be used to compute
         the center. Only relevant with AtomTensor inputs. Default is ``False``.
     :type ca_only: bool
-    :param fill_value: Value used to denote missing atoms. Default is 1e-5.
+    :param fill_value: Value used to denote missing atoms. Default is ``1e-5``.
     :type fill_value: float
     :return: Centered Point Cloud of same shape as input.
     :rtype: Union[graphein.protein.tensor.types.AtomTensor, graphein.protein.tensor.types.CoordTensor]
@@ -92,13 +123,19 @@ def center_protein(
     return centered
 
 
-def whole_protein_kabsch(
+def kabsch(
     A: Union[AtomTensor, CoordTensor],
     B: Union[AtomTensor, CoordTensor],
     ca_only: bool = True,
+    residue_wise: bool = False,
     fill_value: float = 1e-5,
     return_transformed: bool = True,
-) -> Union[CoordTensor, Tuple[torch.Tensor, torch.Tensor]]:
+    allow_reflections: bool = False,
+) -> Union[
+    CoordTensor,
+    Tuple[BackboneFrameTensor, torch.Tensor],
+    Tuple[RotationMatrix, torch.Tensor],
+]:
     """
     Computes registration between two (2D or 3D) point clouds with known
     correspondences using Kabsch algorithm.
@@ -106,9 +143,11 @@ def whole_protein_kabsch(
     Registration occurs in the zero centered coordinate system, and then
     must be transported back.
 
-    See: https://en.wikipedia.org/wiki/Kabsch_algorithm
+    .. see:: https://en.wikipedia.org/wiki/Kabsch_algorithm
 
-    Based on implementation by Guillaume Bouvier (@bougui505):
+    .. note::
+
+        Based on implementation by Guillaume Bouvier (@bougui505):
         https://gist.github.com/bougui505/e392a371f5bab095a3673ea6f4976cc8
 
     :param A: Torch tensor of shape ``(N,D)`` -- Point Cloud to Align (source)
@@ -122,32 +161,49 @@ def whole_protein_kabsch(
         multiplication from the right.
     :rtype: Union[graphein.protein.tensor.types.CoordTensor, Tuple[torch.Tensor, torch.Tensor]]
     """
-    # Get center of mass
-    centroid_A = get_center(A, ca_only=ca_only, fill_value=fill_value)
-    centroid_B = get_center(B, ca_only=ca_only, fill_value=fill_value)
+
+    if residue_wise:
+        centroid_A = A[:, 1, :].view(-1, 1, 3)
+        centroid_B = B[:, 1, :].view(-1, 1, 3)
+    else:
+        # Get center of mass
+        centroid_A = get_center(A, ca_only=ca_only, fill_value=fill_value)
+        centroid_B = get_center(B, ca_only=ca_only, fill_value=fill_value)
 
     AA = A - centroid_A
     BB = B - centroid_B
 
     # Covariance matrix
-    H = AA.T @ BB
+    H = AA.mT @ BB if residue_wise else AA.T @ BB
     U, _, Vt = torch.svd(H)
 
-    # if (torch.det(U) * torch.det(Vt.T)) < 0.0:
-    #    print("Flipping!")
-    # Vt[:,-1] *= -1
+    if not allow_reflections:
+        with torch.no_grad():
+            if residue_wise:
+                sign_flip = torch.det(U) * torch.det(Vt.mH) < 0
+            else:
+                det = torch.det(U) * torch.det(Vt.T)
+                if det < 0.0:
+                    print("Flipping!")
+                    # Vt[-1, -1] *= -1
+        if residue_wise:
+            Vt_ = Vt.clone()
+            Vt_[sign_flip, -1, :] *= -1
 
-    R = Vt @ U.T
-    t = centroid_B - R @ centroid_A
+    R = Vt_ @ U.mT if residue_wise else Vt @ U.T
 
-    return R.mm(A.T).T + t.T if return_transformed else (R, t)
+    t = centroid_B if residue_wise else centroid_B - R @ centroid_A
+    if residue_wise:
+        return (R @ AA.mT).mT + t if return_transformed else (R, t)
+    else:
+        return R.mm(A.T).T + t.T if return_transformed else (R, t)
 
 
 # @torch.jit.script
 def _sqrt_positive_part(x: torch.Tensor) -> torch.Tensor:
     """
-    Returns torch.sqrt(torch.max(0, x))
-    but with a zero subgradient where x is 0.
+    Returns ``torch.sqrt(torch.max(0, x))`` but with a zero subgradient where
+    ``x`` is ``0``.
     """
     ret = torch.zeros_like(x)
     positive_mask = x > 0
@@ -155,13 +211,13 @@ def _sqrt_positive_part(x: torch.Tensor) -> torch.Tensor:
     return ret
 
 
-def matrix_to_quaternion(matrix: RotationTensor) -> QuaternionTensor:
+def matrix_to_quaternion(matrix: RotationMatrixTensor) -> QuaternionTensor:
     """
     Convert rotations given as rotation matrices to quaternions.
     Args:
-        matrix: Rotation matrices as tensor of shape (..., 3, 3).
+        matrix: Rotation matrices as tensor of shape ``(..., 3, 3)``.
     Returns:
-        quaternions with real part first, as tensor of shape (..., 4).
+        quaternions with real part first, as tensor of shape ``(..., 4)``.
     """
     if matrix.size(-1) != 3 or matrix.size(-2) != 3:
         raise ValueError(f"Invalid rotation matrix shape {matrix.shape}.")
@@ -223,16 +279,18 @@ def matrix_to_quaternion(matrix: RotationTensor) -> QuaternionTensor:
     ].reshape(batch_dim + (4,))
 
 
-def quaternion_to_matrix(quaternions: QuaternionTensor) -> RotationTensor:
+def quaternion_to_matrix(
+    quaternions: QuaternionTensor,
+) -> RotationMatrixTensor:
     """
     Convert rotations given as quaternions to rotation matrices.
 
     Args:
         quaternions: quaternions with real part first,
-            as tensor of shape (..., 4).
+            as tensor of shape ``(..., 4)``.
 
     Returns:
-        Rotation matrices as tensor of shape (..., 3, 3).
+        Rotation matrices as tensor of shape ``(..., 3, 3)``.
     """
     r, i, j, k = torch.unbind(quaternions, -1)
     # pyre-fixme[58]: `/` is not supported for operand types `float` and `Tensor`.
@@ -253,3 +311,62 @@ def quaternion_to_matrix(quaternions: QuaternionTensor) -> RotationTensor:
         -1,
     )
     return o.reshape(quaternions.shape[:-1] + (3, 3))
+
+
+def idealize_backbone(
+    x: Union[AtomTensor, BackboneTensor],
+    lr: float = 1e-3,
+    n_iter: int = 100,
+    inplace: bool = False,
+) -> BackboneTensor:
+    """Idealizes a protein backbone to more closely resemble idealised geometry.
+
+    Adaptation of an implementation by Sergey Ovchinnikov:
+    https://github.com/sokrypton/tf_proteins/blob/master/coord_to_dihedrals_tools.ipynb
+
+    :param x: Tensor representing the backbone (can include sidechain atoms but
+        these are not used).
+    :type x: Union[AtomTensor, BackboneTensor]
+    :param lr: Learning rate to use with the optimiser (Adam), defaults to
+        ``1e-3``.
+    :type lr: float, optional
+    :param n_iter: Number of optimisation steps to make, defaults to ``100``.
+    :type n_iter: int, optional
+    :return: BackboneTensor with idealised geometry.
+    :rtype: BackboneTensor
+    """
+    if not inplace:
+        x = copy.deepcopy(x)
+    x_constant = x
+    x.requires_grad = True
+
+    def mse(x, y):
+        return torch.mean((x - y) ** 2)
+
+    def ideal_loss(x, x_constant) -> torch.Tensor:
+        bl = get_backbone_bond_lengths(x)
+        ba = get_backbone_bond_angles(x)
+
+        loss_ideal = torch.sum(
+            torch.norm(
+                torch.tensor(IDEAL_BB_BOND_LENGTHS, device=bl.device) - bl,
+                dim=-1,
+            )
+        ) + torch.sum(
+            torch.norm(
+                torch.tensor(IDEAL_BB_BOND_ANGLES, device=ba.device) - ba
+            ),
+            dim=-1,
+        )
+        loss_ms = mse(x[:, :4, :], x_constant[:, :4, :])
+
+        return loss_ideal + loss_ms
+
+    opt = torch.optim.Adam([x], lr=lr)
+
+    for _ in range(n_iter):
+        loss = ideal_loss(x, x_constant)
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+    return x
