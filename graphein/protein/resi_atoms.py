@@ -299,6 +299,47 @@ ATOM_NUMBERING: Dict[str, int] = {
 }
 """Default ordering of atoms in (dimension 1 of) a protein structure tensor."""
 
+ELEMENT_SYMBOL_MAP: Dict[str, str] = {
+            "N": "N",
+            "CA": "C",
+            "C": "C",
+            "O": "O",
+            "CB": "C",
+            "OG": "O",
+            "CG": "C",
+            "CD1": "C",
+            "CD2": "C",
+            "CE1": "C",
+            "CE2": "C",
+            "CZ": "C",
+            "OD1": "O",
+            "ND2": "N",
+            "CG1": "C",
+            "CG2": "C",
+            "CD": "C",
+            "CE": "C",
+            "NZ": "N",
+            "OD2": "O",
+            "OE1": "O",
+            "NE2": "N",
+            "OE2": "O",
+            "OH": "O",
+            "NE": "N",
+            "NH1": "N",
+            "NH2": "N",
+            "OG1": "O",
+            "SD": "S",
+            "ND1": "N",
+            "SG": "S",
+            "NE1": "N",
+            "CE3": "C",
+            "CZ2": "C",
+            "CZ3": "C",
+            "CH2": "C",
+            "OXT": "O",
+}
+"""Maps PDB atom names to the element symbols."""
+
 ATOM_NUMBERING_MODIFIED: Dict[str, int] = {
     atom: i
     for i, atom in enumerate(
@@ -2283,6 +2324,21 @@ BB_BUILD_INFO: Dict[str, Dict[str, float]] = {
 Sourced from SideChainNet: https://github.com/jonathanking/sidechainnet/blob/master/sidechainnet/structure/build_info.py
 """
 
+
+IDEAL_BB_BOND_LENGTHS: List[float] = [1.523, 1.329, 1.458]
+"""Idealised backbone bond lengths. ``[Ca-C, C-N, N-Ca]``.
+
+.. seealso::
+    :ref:`graphein.protein.tensor.geometry.idealize_backbone
+"""
+
+IDEAL_BB_BOND_ANGLES: List[float] = [2.124, 1.941, 2.028]
+"""Idealised backbone bond angles. ``[C-N-Ca, N-Ca-C, Ca-C-N]``.
+
+
+.. seealso::
+    :ref:`graphein.protein.tensor.geometry.idealize_backbone
+"""
 
 SC_BUILD_INFO: Dict[str, Dict[str, List[Union[str, float]]]] = {
     "ALA": {
