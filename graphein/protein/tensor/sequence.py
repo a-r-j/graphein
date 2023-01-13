@@ -41,7 +41,8 @@ def get_sequence(
     three_to_one_map: Optional[str] = None,
     per_atom: bool = False,
 ) -> Union[str, List[str]]:
-    """Retrieves the amino acid sequence from a DataFrame of a protein structure.
+    """
+    Retrieves the amino acid sequence from a DataFrame of a protein structure.
 
     :param df: DataFrame of protein structure.
     :type df: pd.DataFrame
@@ -143,7 +144,7 @@ def residue_type_tensor(
     :param df: DataFrame of protein structure.
     :type df: pd.DataFrame
     :param vocabulary: List of allowable residue types, defaults to
-        graphein.protein.resi_atoms.STANDARD_AMINO_ACIDS
+        :ref:`graphein.protein.resi_atoms.STANDARD_AMINO_ACIDS`
     :type vocabulary: List[str], optional
     :param three_to_one_mapping: Mapping from three letter to codes to one
         letter amino acid codes, defaults to
@@ -209,12 +210,12 @@ def infer_residue_types(
     """
     Infers residue types from atom tensor based on non-filled residues.
 
-    This function is not robust to structures with missing atoms.
+    .. note:: This function is not robust to structures with missing atoms.
 
     :param x: Tensor of shape ``(N, Num Atoms, 3)`` where ``N`` is the number
         of residues in the protein, ``Num Atoms`` is the number of atoms
         selected (default is ``37``,
-        see: ref:`graphein.protein.resi_atoms.ATOM_NUMBERING`)
+        see: :ref:`graphein.protein.resi_atoms.ATOM_NUMBERING`)
     :type x: AtomTensor
     :param fill_value: Fill value used to denote the absence of an atom in ``x``
         , defaults to ``1e-5``.
