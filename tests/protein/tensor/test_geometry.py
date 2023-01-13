@@ -77,17 +77,14 @@ def test_idealise_backbone():
 
     ideal = protein.idealize_backbone(n_iter=100)
 
-    ideal_bl = IDEAL_BB_BOND_LENGTHS - get_backbone_bond_lengths(
-        ideal[:, :4, :]
-    )
-    true_bl = IDEAL_BB_BOND_LENGTHS - get_backbone_bond_lengths(
-        protein.x[:, :4, :]
-    )
+    IDEAL_BL = torch.tensor(IDEAL_BB_BOND_LENGTHS, device=protein.x.device)
+    IDEAL_BA = torch.tensor(IDEAL_BB_BOND_ANGLES, device=protein.x.device)
 
-    ideal_ba = IDEAL_BB_BOND_ANGLES - get_backbone_bond_angles(ideal[:, :4, :])
-    true_ba = IDEAL_BB_BOND_ANGLES - get_backbone_bond_angles(
-        protein.x[:, :4, :]
-    )
+    ideal_bl = IDEAL_BL - get_backbone_bond_lengths(ideal[:, :4, :])
+    true_bl = IDEAL_BL - get_backbone_bond_lengths(protein.x[:, :4, :])
+
+    ideal_ba = IDEAL_BA - get_backbone_bond_angles(ideal[:, :4, :])
+    true_ba = IDEAL_BA - get_backbone_bond_angles(protein.x[:, :4, :])
 
     assert torch.mean(torch.abs(ideal_ba)) < torch.mean(
         torch.abs(true_ba)
