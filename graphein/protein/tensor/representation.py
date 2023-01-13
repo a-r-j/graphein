@@ -60,6 +60,8 @@ def get_c_alpha(x: AtomTensor, index: int = 1) -> CoordTensor:
     :type x: graphein.protein.tensor.types.AtomTensor
     :param index: Index of C-alpha atom in dimension 1 of the AtomTensor.
     :type index: int
+
+    .. seealso:: :func:`get_backbone`
     """
     return x if x.ndim == 2 else x[:, index, :]
 

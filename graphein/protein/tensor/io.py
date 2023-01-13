@@ -98,6 +98,41 @@ def protein_to_pyg(
     model_index: int = 1,
     atom_types: List[str] = PROTEIN_ATOMS,
 ) -> Data:
+    """
+    Parses a protein (from either: a PDB code, PDB file or a UniProt ID 
+    (via AF2 database) to a PyTorch Geometric ``Data`` object.
+
+
+    .. code-block:: python
+        
+        import graphein.protein.tensor as gpt
+
+        # From PDB code
+        gpt.io.protein_to_pyg(pdb_code="3eiy")
+
+        # From PDB Path
+        gpt.io.protein_to_pyg(pdb_path="3eiy.pdb")
+
+        # From UniProt ID
+        gpt.io.protein_to_pyg(pdb_path="Q5VSL9")
+
+
+    :param pdb_path: Path to PDB file. Default is ``None``.
+    :param pdb_code: PDB accesion code. Default is ``None``.
+    :param uniprot_id: UniProt ID. Default is ``None``.
+    :param chain_selection: Selection of chains to include (e.g. ``"ABC"``) or
+        ``"all"``. Default is ``"all"``.
+    :param deprotonate: Whether or not to remove Hydrogens. Default is ``True``.
+    :param keep_insertions: Whether or not to keep insertions.
+    :param keep_hets: List of heteroatoms to include. E.g. ``["HOH"]``.
+    :param model_index: Index of model in models containing multiple structures.
+    :param atom_types: List of atom types to select. Default is: 
+        :const:`graphein.protein.resi_atoms.PROTEIN_ATOMS`
+    :returns: ``Data`` object with attributes: ``x`` (AtomTensor), ``residues``
+        (list of 3-letter residue codes), id (ID of protein), residue_id (E.g. 
+        ``"A:SER:1"``), residue_type (torch.Tensor), ``chains`` (torch.Tensor).
+    :rtype: torch_geometric.data.Data
+    """
 
     # Get ID
     if pdb_path is not None:
@@ -265,8 +300,9 @@ def to_dataframe(
 ) -> Union[pd.DataFrame, PandasPdb]:
     """Converts an ``AtomTensor`` to a DataFrame.
 
-    ``AtomTensors`` are not a full specification of a structure so missing values
-    can be manually provided as arguments - otherwise default values are used.
+    ``AtomTensors`` are not a full specification of a structure so missing 
+    values can be manually provided as arguments - otherwise default values are
+    used.
 
     .. code-block:: python
 
@@ -397,7 +433,7 @@ def to_pdb(x: AtomTensor, out_path: str, gz: bool = False, **kwargs):
     .. seealso::
 
         :class:`graphein.protein.tensor.types.AtomTensor`
-        :meth:`graphein.protein.tensor.to_dataframe`
+        :func:`graphein.protein.tensor.to_dataframe`
 
     :param x: ``AtomTensor`` describing protein structure to write.
     :type x: AtomTensor
@@ -405,7 +441,7 @@ def to_pdb(x: AtomTensor, out_path: str, gz: bool = False, **kwargs):
     :type out_path: str
     :param gz: Whether to gzip out the ouput, defaults to ``False``.
     :type gz: bool, optional
-    :param kwargs: Keyword args for :meth:`graphein.protein.tensor.to_dataframe`
+    :param kwargs: Keyword args for :func:`graphein.protein.tensor.to_dataframe`
     """
     df = to_dataframe(x, **kwargs)
     ppdb = PandasPdb()

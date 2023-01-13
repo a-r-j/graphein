@@ -39,7 +39,7 @@ def plot_dihedrals(
 
     :param dihedrals: Tensor of Dihedral Angles
     :type dihedrals: graphein.protein.tensor.DihedralTensor
-    :param to_rad: Whether or not to convert to radians, defaults to True
+    :param to_rad: Whether or not to convert to radians, defaults to ``True``
     :type to_rad: bool, optional
     :returns: Plotly figure of dihedral angles (``px.imshow``)
     :rtype: go.Figure
@@ -54,7 +54,7 @@ def plot_distance_matrix(
     x: Union[CoordTensor, AtomTensor], **kwargs: Dict[str, Any]
 ) -> go.Figure:
     """
-    Plots a distance matrix of a ``CoordTensor`` or ``AtomTensor``.
+    Computes and plots a distance matrix of a ``CoordTensor`` or ``AtomTensor``.
 
     :param x: Tensor of structure to plot
     :type x: Union[CoordTensor, AtomTensor]
