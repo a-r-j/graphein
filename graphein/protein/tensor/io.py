@@ -99,12 +99,12 @@ def protein_to_pyg(
     atom_types: List[str] = PROTEIN_ATOMS,
 ) -> Data:
     """
-    Parses a protein (from either: a PDB code, PDB file or a UniProt ID 
+    Parses a protein (from either: a PDB code, PDB file or a UniProt ID
     (via AF2 database) to a PyTorch Geometric ``Data`` object.
 
 
     .. code-block:: python
-        
+
         import graphein.protein.tensor as gpt
 
         # From PDB code
@@ -126,10 +126,10 @@ def protein_to_pyg(
     :param keep_insertions: Whether or not to keep insertions.
     :param keep_hets: List of heteroatoms to include. E.g. ``["HOH"]``.
     :param model_index: Index of model in models containing multiple structures.
-    :param atom_types: List of atom types to select. Default is: 
+    :param atom_types: List of atom types to select. Default is:
         :const:`graphein.protein.resi_atoms.PROTEIN_ATOMS`
     :returns: ``Data`` object with attributes: ``x`` (AtomTensor), ``residues``
-        (list of 3-letter residue codes), id (ID of protein), residue_id (E.g. 
+        (list of 3-letter residue codes), id (ID of protein), residue_id (E.g.
         ``"A:SER:1"``), residue_type (torch.Tensor), ``chains`` (torch.Tensor).
     :rtype: torch_geometric.data.Data
     """
@@ -300,7 +300,7 @@ def to_dataframe(
 ) -> Union[pd.DataFrame, PandasPdb]:
     """Converts an ``AtomTensor`` to a DataFrame.
 
-    ``AtomTensors`` are not a full specification of a structure so missing 
+    ``AtomTensors`` are not a full specification of a structure so missing
     values can be manually provided as arguments - otherwise default values are
     used.
 
