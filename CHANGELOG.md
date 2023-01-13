@@ -1,10 +1,8 @@
-### 1.6.0 - UNRELEASED
+### 1.6.0dev - UNRELEASED
 
 #### Features
 
 * [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/221) Adds suite of utilities for working directly with tensor-based representations of proteins.
-
-### 1.5.3 - UNRELEASED
 
 #### Improvements
 
