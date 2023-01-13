@@ -50,7 +50,7 @@ def has_complete_backbone(
     a complete backbone assignment.
 
     If ``fill_value`` entries are found in the ``backbone_indices`` (dim 1) then
-    the backbone is not considered complete and we return ``False``. If no 
+    the backbone is not considered complete and we return ``False``. If no
     entries with the ``fill_value`` are found, we return ``True``.
 
     :param x: Atom Tensor to check backbone completeness.
@@ -64,8 +64,8 @@ def has_complete_backbone(
     :return: Boolean indicating whether the backbone is complete.
     :rtype: bool
 
-    .. seealso:: 
-    
+    .. seealso::
+
         :func:`graphein.protein.tensor.testing.has_complete_residue`
         :func:`graphein.protein.tensor.testing.is_complete_structure`
 
@@ -91,8 +91,8 @@ def has_complete_residue(
         atoms.
     :rtype: bool
 
-    .. seealso:: 
-    
+    .. seealso::
+
         :func:`graphein.protein.tensor.testing.has_complete_residue`
         :func:`graphein.protein.tensor.testing.is_complete_structure`
     """
@@ -116,9 +116,7 @@ def has_complete_residue(
 
 
 def is_complete_structure(
-    x: AtomTensor,
-    residues: Union[List[str], str],
-    fill_value: float = 1e-5
+    x: AtomTensor, residues: Union[List[str], str], fill_value: float = 1e-5
 ) -> bool:
     """Checks whether a protein structure has all of the requisite atoms.
 
@@ -134,7 +132,7 @@ def is_complete_structure(
     :rtype: bool
 
     .. seealso::
-        
+
         :func:`graphein.protein.tensor.sequence.infer_residue_types`
     """
     length = x.shape[0]
@@ -145,17 +143,18 @@ def is_complete_structure(
     if isinstance(residues, str):
         residues = list(residues)
 
-    return all(has_complete_residue(
-        x[i], residues[i], fill_value=fill_value
-        ) for i in range(length))
+    return all(
+        has_complete_residue(x[i], residues[i], fill_value=fill_value)
+        for i in range(length)
+    )
 
 
 def random_atom_tensor(length: int = 64) -> AtomTensor:
     """Returns a random tensor of shape ``length x 37 x 3``.
 
 
-    .. seealso:: 
-    
+    .. seealso::
+
         :func:`random_coord_tensor`
         :func:`graphein.protein.tensor.data.get_random_protein`
         :func:`graphein.protein.tensor.data.get_random_batch`
@@ -171,7 +170,7 @@ def random_atom_tensor(length: int = 64) -> AtomTensor:
 def random_coord_tensor(length: int = 64) -> CoordTensor:
     """Returns a random tensor of shape ``length x 3``.
 
-    .. seealso:: 
+    .. seealso::
         :func:`random_atom_tensor`
         :func:`graphein.protein.tensor.data.get_random_protein`
         :func:`graphein.protein.tensor.data.get_random_batch`
