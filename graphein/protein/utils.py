@@ -16,6 +16,7 @@ from urllib.request import urlopen
 
 import networkx as nx
 import pandas as pd
+import requests
 import wget
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
@@ -432,3 +433,38 @@ def is_tool(name: str) -> bool:
     :rtype: bool
     """
     return which(name) is not None
+
+
+def esmfold(sequence: str, out_path: Optional[str] = None, version: int = 1):
+    """Fold a protein sequence using the ESMFold model from the ESMFold server at
+    https://api.esmatlas.com/foldSequence/v1/pdb/.
+
+
+    Parameters
+    ----------
+    sequence : str
+        A protein sequence in one-letter code.
+    out_path : str, optional
+        Path to save the PDB file to. If `None`, the file is not saved.
+        Defaults to `None`.
+    version : int, optional
+        The version of the ESMFold model to use. Defaults to `1`.
+    Returns
+    --------
+    self
+    """
+    URL = f"https://api.esmatlas.com/foldSequence/v{version}/pdb/"
+
+    headers: Dict[str, str] = {
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+
+    cif = requests.post(URL, data=sequence, headers=headers).text
+    # append header
+    header = "\n".join(
+        [f"data_{sequence}", "#", f"_entry.id\t{sequence}", "#\n"]
+    )
+    cif = header + cif
+    if out_path is not None:
+        with open(out_path, "w") as f:
+            f.write(cif)
