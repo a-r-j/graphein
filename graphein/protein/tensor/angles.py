@@ -210,7 +210,10 @@ def kappa(
     ca_next = x[:, 4:, :]
 
     angles = np.pi - to_ang(
-        ca_next.view(-1, 3), ca.view(-1, 3), ca_prev.view(-1, 3)
+        # ca_next.view(-1, 3), ca.view(-1, 3), ca_prev.view(-1, 3)
+        ca_next,
+        ca,
+        ca_prev,
     )
     # Zero pad first two and last two angles
     angles = F.pad(angles, (2, 2))
@@ -311,7 +314,8 @@ def to_ang(a: CoordTensor, b: CoordTensor, c: CoordTensor) -> torch.Tensor:
     ba = b - a
     bc = b - c
     return torch.acos(
-        (ba * bc).sum(dim=1) / (torch.norm(ba, dim=1) * torch.norm(bc, dim=1))
+        (ba * bc).sum(dim=-1)
+        / (torch.norm(ba, dim=-1) * torch.norm(bc, dim=-1))
     )
 
 
