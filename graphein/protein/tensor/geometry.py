@@ -370,3 +370,28 @@ def idealize_backbone(
         loss.backward()
         opt.step()
     return x
+
+
+def apply_structural_noise(
+    x: Union[AtomTensor, CoordTensor],
+    magnitude: float = 0.1,
+    gaussian: bool = True,
+    return_transformed: bool = True,
+) -> Union[AtomTensor, CoordTensor]:
+    """
+    Generates random noise and adds it to the input tensor.
+
+    :param x: Input tensor
+    :param magnitude: Magnitude of the noise
+    :param gaussian: If ``True``, noise is sampled from a Gaussian distribution.
+        If ``False``, noise is sampled from a uniform distribution. Default is
+        ``True`` (gaussian).
+    :param return_transformed: If ``True``, returns the transformed (noised)
+        tensor. If ``False``, returns the noise tensor. Default is ``True``.
+    :return: Noised tensor or noise tensor
+    """
+    if gaussian:
+        noise = torch.randn_like(x, device=x.device) * magnitude
+    else:
+        noise = (torch.rand_like(x, device=x.device) - 0.5) * 2 * magnitude
+    return x + noise if return_transformed else noise
