@@ -1,4 +1,5 @@
 """Data and Batch Objects for working proteins in PyTorch Geometric"""
+import itertools
 import random
 
 # Graphein
@@ -25,7 +26,7 @@ from .angles import (
     sidechain_torsion,
 )
 from .edges import compute_edges, edge_distances
-from .geometry import idealize_backbone, kabsch
+from .geometry import apply_structural_noise, idealize_backbone, kabsch
 from .io import (
     protein_df_to_chain_tensor,
     protein_df_to_tensor,
@@ -609,7 +610,12 @@ class Protein(Data):
         """
         return sidechain_torsion(self.x, self.residues)
 
-    def kappa(self, cache: Optional[str] = None) -> torch.Tensor:
+    def kappa(
+        self,
+        cache: Optional[str] = None,
+        rad: bool = True,
+        embed: bool = True,
+    ) -> torch.Tensor:
         """
         Computes ``kappa`` virtual angle.
 
@@ -620,12 +626,14 @@ class Protein(Data):
             (not stored).
         :type cache: Optional[str]
         """
-        out = kappa(self.x)
+        out = kappa(self.x, rad=rad, embed=embed)
         if cache is not None:
             setattr(self, cache, out)
         return out
 
-    def alpha(self, cache: Optional[str] = None) -> torch.Tensor:
+    def alpha(
+        self, cache: Optional[str] = None, rad: bool = True, embed: bool = True
+    ) -> torch.Tensor:
         """
         Computes ``alpha`` virtual angle.
 
@@ -636,7 +644,7 @@ class Protein(Data):
             (not stored).
         :type cache: Optional[str]
         """
-        out = alpha(self.x)
+        out = alpha(self.x, rad=rad, embed=embed)
         if cache is not None:
             setattr(self, cache, out)
         return out
@@ -734,6 +742,9 @@ class Protein(Data):
         self, atoms: List[str] = ["N", "CA", "C", "O"], lines: bool = True
     ) -> go.Figure:
         """
+        Plots a 3D structure of the protein in Plotly. This can be logged to
+        WandB.
+
         .. code-block:: python
             import graphein.protein.tensor as gpt
             protein = gpt.Protein().from_pdb_code(pdb_code="3eiy")
@@ -745,7 +756,41 @@ class Protein(Data):
         .. seealso:: :meth:`graphein.protein.tensor.plot.plot_structure`
 
         """
-        return plot_structure(self.x, atoms=atoms, lines=lines)
+        residue_ids = self.residue_id if hasattr(self, "residue_id") else None
+        return plot_structure(
+            self.x, atoms=atoms, lines=lines, residue_ids=residue_ids
+        )
+
+    def apply_structural_noise(
+        self,
+        x: Optional[Union[AtomTensor, CoordTensor]] = None,
+        magnitude: float = 0.1,
+        gaussian: bool = True,
+        return_transformed: bool = True,
+        cache: Optional[str] = None,
+    ) -> Union[AtomTensor, CoordTensor]:
+        """
+        Applies noise to the structure of the protein.
+
+        .. see:: :func:`graphein.protein.tensor.geometry.apply_structural_noise`
+
+        :param x: Coordinates to apply noise to, defaults to ``None``. If
+            ``None`` (default), ``self.x`` is used.
+        :param cache: If provided, the result will be cached in the ``Protein``
+            under the provided string as the attribute name. Default is ``None``,
+            (not stored).
+        """
+        if x is None:
+            x = self.x
+        out = apply_structural_noise(
+            x,
+            magnitude=magnitude,
+            gaussian=gaussian,
+            return_transformed=return_transformed,
+        )
+        if cache is not None:
+            setattr(self, cache, out)
+        return out
 
 
 class ProteinBatch(Batch):
@@ -765,6 +810,7 @@ class ProteinBatch(Batch):
         return self
 
     def from_protein_list(self, proteins: List[Protein]):
+        # sourcery skip: class-extract-method
         proteins = [Protein().from_data(p) for p in proteins]
         batch = Batch.from_data_list(proteins)
         self.from_batch(batch)
@@ -1118,6 +1164,49 @@ class ProteinBatch(Batch):
                 if attr_self != attr_other:
                     return False
         return True
+
+    def plot_structure(
+        self,
+        index: Optional[int] = None,
+    ) -> go.Figure():
+
+        plots = self.apply(lambda x: x.plot_structure())
+        if index is not None:
+            plots = [plots[index]]
+        plots = [p._data for p in plots]
+        plot_data = list(itertools.chain.from_iterable(plots))
+        return go.Figure(data=plot_data)
+
+    def apply_structural_noise(
+        self,
+        x: Optional[Union[AtomTensor, CoordTensor]] = None,
+        magnitude: float = 0.1,
+        gaussian: bool = True,
+        return_transformed: bool = True,
+        cache: Optional[str] = None,
+    ) -> Union[AtomTensor, CoordTensor]:
+        """
+        Applies noise to the structure of the proteins in the batch.
+
+        .. see:: :func:`graphein.protein.tensor.geometry.apply_structural_noise`
+
+        :param x: Coordinates to apply noise to, defaults to ``None``. If
+            ``None`` (default), ``self.x`` is used.
+        :param cache: If provided, the result will be cached in the
+            ``ProteinBatch`` under the provided string as the attribute name.
+            Default is ``None``, (not stored).
+        """
+        if x is None:
+            x = self.x
+        out = apply_structural_noise(
+            x,
+            magnitude=magnitude,
+            gaussian=gaussian,
+            return_transformed=return_transformed,
+        )
+        if cache is not None:
+            setattr(self, cache, out)
+        return out
 
 
 def get_random_protein() -> "Protein":
