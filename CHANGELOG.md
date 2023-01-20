@@ -1,11 +1,11 @@
-### 1.6.0 - UNRELEASED
+### 1.6.0dev - UNRELEASED
 
 #### New Features
 * [Metrics] - [#245](https://github.com/a-r-j/graphein/pull/221) Adds a selection of structural metrics relevant to protein structures.
-
-### 1.5.3 - UNRELEASED
+* [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/221) Adds suite of utilities for working directly with tensor-based representations of proteins.
 
 #### Improvements
+
 * [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
 
 #### Protein

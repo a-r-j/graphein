@@ -1,4 +1,5 @@
 """Tests for graphein.cli"""
+import pickle
 import tempfile
 from pathlib import Path
 
@@ -22,7 +23,8 @@ def test_cli():
     result = runner.invoke(main, ["-p", file_path, "-o", Path(temp_dir.name)])
     assert result.exit_code == 0
 
-    G = nx.read_gpickle(Path(temp_dir.name) / f"{file_path.stem}.pickle")
+    with open(Path(temp_dir.name) / f"{file_path.stem}.gpickle", "rb") as f:
+        G = pickle.load(f)
     assert isinstance(G, nx.Graph)
     assert len(G) == 574
     # Check number of peptide bonds
