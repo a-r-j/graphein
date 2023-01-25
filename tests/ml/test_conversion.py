@@ -10,7 +10,15 @@ from graphein.protein.edges.distance import add_k_nn_edges
 from graphein.protein.features.nodes.amino_acid import amino_acid_one_hot
 from graphein.protein.graphs import construct_graph
 
+try:
+    import torch_geometric
 
+    PYG_AVAIL = True
+except ImportError:
+    PYG_AVAIL = False
+
+
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
 @pytest.mark.parametrize("pdb_code", ["10gs", "1bui", "1cw3"])
 def test_nx_to_pyg(pdb_code):
     # Construct graph of a multimer protein complex

@@ -13,8 +13,19 @@ from typing import List, Optional
 import networkx as nx
 import numpy as np
 import torch
+from loguru import logger as log
 
 from graphein.utils.utils import import_message
+
+try:
+    import torch
+except ImportError:
+    import_message(
+        submodule="graphein.ml.conversion",
+        package="torch",
+        pip_install=True,
+        conda_channel="pytorch",
+    )
 
 try:
     import torch_geometric
@@ -291,8 +302,8 @@ class GraphFormatConvertor:
         for feat_name in G.graph:
             if str(feat_name) in self.columns:
                 if str(feat_name) not in node_feature_names:
-                    data[str(feat_name)] = [G.graph[feat_name]]
-
+                    # data[str(feat_name)] = [G.graph[feat_name]]
+                    data[str(feat_name)] = G.graph[feat_name]
         if "edge_index" in self.columns:
             data["edge_index"] = edge_index
 
@@ -310,7 +321,8 @@ class GraphFormatConvertor:
         for key, val in data.items():
             try:
                 data[key] = torch.tensor(np.array(val))
-            except:
+            except Exception as e:
+                log.warning(e)
                 pass
 
         data = Data.from_dict(data)

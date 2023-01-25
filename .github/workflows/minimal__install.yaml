@@ -1,0 +1,43 @@
+name: minimal_install
+
+on:
+  push:
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+
+  pull_request:
+    paths-ignore:
+      - "README.md"
+      - "docs/*"
+      - "CHANGELOG.md"
+      - "CONTRIBUTORS.md"
+      - "CONTRIBUTING.md"
+      - "imgs/"
+
+jobs:
+  build_cpu:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9, 3.11]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        # See: https://github.com/marketplace/actions/setup-conda
+      - name: Setup anaconda
+        uses: s-weigand/setup-conda@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          conda-channels: "conda-forge"
+
+      - name: Install Graphein
+        run: pip install -e .
+      - name: Install Extras
+        run: pip install -r .requirements/extras.in
+      - name: Install Dev Dependencies
+        run: pip install -r .requirements/dev.in
+      - name: Run unit tests and generate coverage report
+        run: pytest .
+      - name: Test notebook execution
+        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/higher_order_graphs.ipynb" --ignore-glob="notebooks/protein_graph_analytics.ipynb" --ignore-glob="notebooks/subgraphing_tutorial.ipynb" --ignore-glob="notebooks/splitting_a_dataset.ipynb"

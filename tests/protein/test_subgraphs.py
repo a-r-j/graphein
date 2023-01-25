@@ -11,6 +11,7 @@ from typing import List
 
 import networkx as nx
 import numpy as np
+import pytest
 
 from graphein.protein.config import DSSPConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (
@@ -32,6 +33,9 @@ from graphein.protein.subgraphs import (
     extract_subgraph_from_secondary_structure,
     extract_surface_subgraph,
 )
+from graphein.protein.utils import is_tool
+
+DSSP_AVAILABLE = is_tool("mkdssp")
 
 
 def test_node_list_subgraphing():
@@ -314,6 +318,7 @@ def test_extract_k_hop_subgraph():
         assert n in s_g.nodes()
 
 
+@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_surface_subgraph():
     """Tests surface subgraph extraction."""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
@@ -333,6 +338,7 @@ def test_surface_subgraph():
             assert n in s_g.nodes(), print(n, d)
 
 
+@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_secondary_structure_subgraph():
     """Tests secondary subgraph extraction."""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
@@ -355,6 +361,7 @@ def test_secondary_structure_subgraph():
             assert n in s_g.nodes()
 
 
+@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_successful_pickle():
     """Tests subgraphs can be successfully pickled and unpickled"""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
