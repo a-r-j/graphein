@@ -6,7 +6,7 @@ loguru
 matplotlib>=3.4.3
 multipledispatch
 networkx
-numpy
+numpy<1.24.0
 pandas
 plotly
 pydantic
