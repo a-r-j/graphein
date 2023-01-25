@@ -140,7 +140,7 @@ STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
     "VAL": "V",
     "TRP": "W",
     "TYR": "Y",
-    "UNK": "X"
+    "UNK": "X",
 }
 """
 Mapping of 3-letter standard amino acids codes to their one-letter form.
