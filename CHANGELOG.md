@@ -1,11 +1,12 @@
 ### 1.5.3 - UNRELEASED
 
+
 #### Improvements
 * [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
 * [Logging] - [#242](https://github.com/a-r-j/graphein/pull/242) Adds control of protein graph construction logging. Resolves [#238](https://github.com/a-r-j/graphein/issues/238)
 
 #### Protein
-
+* [Bugfix] - [#254](https://github.com/a-r-j/graphein/pull/254) Fix peptide bond addition for all atom graphs.
 * [Bugfix] - [#223](https://github.com/a-r-j/graphein/pull/220) Fix handling of insertions in protein graphs. Insertions are now given IDs like: `A:SER:12:A`. Contribution by @manonreau.
 * [Bugfix] - [#226](https://github.com/a-r-j/graphein/pull/226) Catches failed AF2 structure downloads [#225](https://github.com/a-r-j/graphein/issues/225)
 * [Feature] - [#229](https://github.com/a-r-j/graphein/pull/220) Adds support for filtering KNN edges based on self-loops and chain membership. Contribution by @anton-bushuiev.
