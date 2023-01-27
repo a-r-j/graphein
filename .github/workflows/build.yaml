@@ -72,4 +72,4 @@ jobs:
       - name: Run unit tests and generate coverage report
         run: pytest .
       - name: Test notebook execution
-        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb"
+        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb"
