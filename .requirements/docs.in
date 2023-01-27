@@ -11,3 +11,4 @@ sphinx-inline-tabs
 sphinxext-opengraph
 sphinxcontrib-gtagjs
 ipython
+watermark
