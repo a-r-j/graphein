@@ -1,6 +1,8 @@
 """Data and Batch Objects for working proteins in PyTorch Geometric"""
 import itertools
 import random
+import traceback
+from functools import partial
 
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
@@ -12,9 +14,13 @@ from typing import Any, Callable, List, Optional, Tuple, Union
 import pandas as pd
 import plotly.graph_objects as go
 import torch
+import torch.nn.functional as F
 from biopandas.pdb import PandasPdb
+from loguru import logger as log
 from torch_geometric.data import Batch, Data
+from torch_geometric.data.separate import separate
 from torch_geometric.utils import unbatch, unbatch_edge_index
+from tqdm.contrib.concurrent import process_map
 
 from ..resi_atoms import PROTEIN_ATOMS
 from .angles import (
@@ -396,6 +402,14 @@ class Protein(Data):
         self.from_data(data)
         return self
 
+    def save(self, out_path: str):
+        """Save a ``Protein`` object to disk in tensor format.
+
+        :param out_path: Path to save Protein to.
+        :type out_path: str
+        """
+        torch.save(self, out_path)
+
     def edges(
         self,
         edge_type: str = "knn_10",
@@ -676,6 +690,15 @@ class Protein(Data):
             setattr(self, f"{cache}_t", out[1])
         return out
 
+    # Features
+    def amino_acid_one_hot(
+        self, num_types: int = 23, cache: Optional[str] = None
+    ) -> torch.Tensor:
+        out = F.one_hot(self.residue_type, num_classes=num_types)
+        if cache is not None:
+            setattr(self, cache, out)
+        return out
+
     # Testing
     def is_complete(self) -> bool:
         """
@@ -806,15 +829,24 @@ class ProteinBatch(Batch):
     ) -> "ProteinBatch":
         for key in batch.keys:
             setattr(self, key, getattr(batch, key))
+
+        if hasattr(batch, "_slice_dict"):
+            self._slice_dict = batch._slice_dict
+
+        if hasattr(batch, "_inc_dict"):
+            self._slice_dict = batch.__inc_dict
+
         self.fill_value = fill_value
         return self
 
-    def from_protein_list(self, proteins: List[Protein]):
+    @classmethod
+    def from_protein_list(cls, proteins: List[Protein]):
         # sourcery skip: class-extract-method
         proteins = [Protein().from_data(p) for p in proteins]
         batch = Batch.from_data_list(proteins)
-        self.from_batch(batch)
-        return self
+        # self.from_batch(batch)
+        # return self
+        return cls().from_batch(batch)
 
     def from_pdb_codes(
         self,
@@ -895,6 +927,14 @@ class ProteinBatch(Batch):
         for key in keys:
             setattr(batch, key, getattr(self, key))
         return batch
+
+    def save(self, out_path: str):
+        """Save a ``ProteinBatch`` object to disk in tensor format.
+
+        :param out_path: Path to save Protein to.
+        :type out_path: str
+        """
+        torch.save(self, out_path)
 
     # Representation
     def alpha_carbon(self, cache: Optional[str] = None) -> CoordTensor:
@@ -1038,7 +1078,7 @@ class ProteinBatch(Batch):
         """
         return has_complete_backbone(self.x, fill_value=self.fill_value)
 
-    def apply(
+    def protein_apply(
         self, func: Callable[["Protein"], Any], rebatch: bool = False
     ) -> Union["ProteinBatch", List[Any]]:
         """Applies a function ``func`` to each ``Protein`` in the batch and
@@ -1056,7 +1096,7 @@ class ProteinBatch(Batch):
             def single_plot(protein: gpt.Protein()):
                 return plot_structure(protein.x, lines=False)
 
-            plots = batch.apply(single_plot)
+            plots = batch.protein_apply(single_plot)
             plots[2]
 
 
@@ -1080,7 +1120,8 @@ class ProteinBatch(Batch):
         proteins = self.to_protein_list()
 
         out = [func(p) for p in proteins]
-        return ProteinBatch().from_data_list(out) if rebatch else out
+        # return ProteinBatch().from_data_list(out) if rebatch else out
+        return ProteinBatch.from_data_list(out) if rebatch else out
 
     def apply_to(self, func: Callable[["Protein"], Any], idx: int) -> Any:
         """Applies a function ``func`` to the ``Protein`` at index ``idx`` in
@@ -1108,7 +1149,19 @@ class ProteinBatch(Batch):
 
     def get_protein(self, idx: int) -> "Protein":
         """Returns the ``idx``th protein in the batch."""
-        return self.to_protein_list()[idx]
+        if not hasattr(self, "_slice_dict"):
+            try:
+                return self.to_protein_list()[idx]
+            except Exception as e:
+                raise e
+        return separate(
+            cls=Protein,
+            batch=self,
+            idx=idx,
+            slice_dict=self._slice_dict,
+            inc_dict=self._inc_dict,
+            decrement=True,
+        )
 
     def to_protein_list(self) -> List["Protein"]:
         """
@@ -1124,18 +1177,23 @@ class ProteinBatch(Batch):
         :returns: List of Proteins
         :rtype: List["Protein"]
         """
+        if hasattr(self, "_slice_dict"):
+            return [self.get_protein(i) for i in range(len(self))]
+
         proteins = [Protein() for _ in range(self.num_graphs)]
 
         # Iterate over attributes
         for k in self.keys:
+            print(k)
             # Get attribute
             attr = getattr(self, k)
-
             # Skip ptr
             if k == "ptr":
                 continue
             # Unbatch tensors
-            if isinstance(attr, torch.Tensor):
+            if isinstance(attr, torch.Tensor) and k != "fill_value":
+                if attr.shape[0] == len(proteins):
+                    temp = [attr[i] for i in range(len(proteins))]
                 try:
                     temp = unbatch(getattr(self, k), self.batch)
                 # Try unbatch edge index if unbatch fails
@@ -1145,7 +1203,7 @@ class ProteinBatch(Batch):
                 for i, p in enumerate(proteins):
                     setattr(p, k, temp[i])
             # Add batch list values to proteins in list
-            elif isinstance(attr, list):
+            elif isinstance(attr, list) or k == "fill_value":
                 for i, p in enumerate(proteins):
                     setattr(p, k, attr[i])
 
@@ -1170,12 +1228,41 @@ class ProteinBatch(Batch):
         index: Optional[int] = None,
     ) -> go.Figure():
 
-        plots = self.apply(lambda x: x.plot_structure())
+        plots = self.protein_apply(lambda x: x.plot_structure())
         if index is not None:
             plots = [plots[index]]
         plots = [p._data for p in plots]
         plot_data = list(itertools.chain.from_iterable(plots))
         return go.Figure(data=plot_data)
+
+    # Features
+    def amino_acid_one_hot(
+        self, num_types: int = 23, cache: Optional[str] = None
+    ) -> torch.Tensor:
+        out = F.one_hot(self.residue_type, num_classes=num_types)
+        if cache is not None:
+            setattr(self, cache, out)
+        return out
+
+    def edge_distances(
+        self,
+        x: CoordTensor,
+        edge_index: EdgeTensor,
+        p: float = 2,
+        cache: Optional[str] = None,
+    ) -> torch.Tensor:
+        """Computes the edges distances between nodes.
+
+        :param x: Node positions
+        :param edge_index: Edge indices
+        :param p: The norm degree. Can be negative. Default: ``2``.``
+        :returns: Edge distances
+        :rtype: torch.Tensor
+        """
+        out = edge_distances(x=x, edge_index=edge_index, p=p)
+        if cache is not None:
+            setattr(self, cache, out)
+        return out
 
     def apply_structural_noise(
         self,
@@ -1209,6 +1296,212 @@ class ProteinBatch(Batch):
         return out
 
 
+def to_protein(
+    pdb_path: Optional[str] = None,
+    pdb_code: Optional[str] = None,
+    uniprot_id: Optional[str] = None,
+    chain_selection: str = "all",
+    deprotonate: bool = True,
+    keep_insertions: bool = False,
+    keep_hets: List[str] = [],
+    model_index: int = 1,
+    atom_types: List[str] = PROTEIN_ATOMS,
+) -> "Protein":
+    """
+    Parses a protein (from either: a PDB code, PDB file or a UniProt ID
+    (via AF2 database) to a Graphein ``Protein`` object.
+
+
+    .. code-block:: python
+
+        import graphein.protein.tensor as gpt
+
+
+        # From PDB code
+        gpt.data.to_protein(pdb_code="3eiy", ...)
+
+        # From PDB Path
+        gpt.io.to_protein(pdb_path="3eiy.pdb", ...)
+
+        # From UniProt ID
+        gpt.io.to_protein(uniprot_id="Q5VSL9", ...)
+
+    .. seealso::
+
+        :func:`graphein.protein.tensor.io.protein_to_pyg`
+        :func:`graphein.protein.tensor.data.to_protein_mp`
+
+
+    :param pdb_path: Path to PDB file. Default is ``None``.
+    :param pdb_code: PDB accesion code. Default is ``None``.
+    :param uniprot_id: UniProt ID. Default is ``None``.
+    :param chain_selection: Selection of chains to include (e.g. ``"ABC"``) or
+        ``"all"``. Default is ``"all"``.
+    :param deprotonate: Whether or not to remove Hydrogens. Default is ``True``.
+    :param keep_insertions: Whether or not to keep insertions.
+    :param keep_hets: List of heteroatoms to include. E.g. ``["HOH"]``.
+    :param model_index: Index of model in models containing multiple structures.
+    :param atom_types: List of atom types to select. Default is:
+        :const:`graphein.protein.resi_atoms.PROTEIN_ATOMS`
+    :returns: ``Data`` object with attributes: ``x`` (AtomTensor), ``residues``
+        (list of 3-letter residue codes), id (ID of protein), residue_id (E.g.
+        ``"A:SER:1"``), residue_type (torch.Tensor), ``chains`` (torch.Tensor).
+    :rtype: Protein
+    """
+    data = protein_to_pyg(
+        pdb_path=pdb_path,
+        pdb_code=pdb_code,
+        uniprot_id=uniprot_id,
+        chain_selection=chain_selection,
+        keep_insertions=keep_insertions,
+        deprotonate=deprotonate,
+        keep_hets=keep_hets,
+        model_index=model_index,
+        atom_types=atom_types,
+    )
+    return Protein().from_data(data)
+
+
+def _mp_constructor(
+    args: Tuple[str, str],
+    deprotonate,
+    keep_insertions,
+    keep_hets,
+    model_index,
+    atom_types,
+    source: str,
+):
+    func = partial(
+        to_protein,
+        deprotonate=deprotonate,
+        keep_insertions=keep_insertions,
+        keep_hets=keep_hets,
+        model_index=model_index,
+        atom_types=atom_types,
+    )
+    try:
+        if source == "pdb_code":
+            return func(
+                pdb_code=args[0],
+                chain_selection=args[1],  # , model_index=args[2]
+            )
+        elif source == "pdb_path":
+            return func(
+                pdb_path=args[0],
+                chain_selection=args[1],  # , model_index=args[2]
+            )
+        elif source == "uniprot_id":
+            return func(
+                uniprot_id=args[0],
+                chain_selection=args[1],
+                # model_index=args[2],
+            )
+    except Exception as ex:
+        log.info(
+            f"Graph construction error (PDB={args[0]})! {traceback.format_exc()}"
+        )
+        log.info(ex)
+        return None
+
+
+def to_protein_mp(
+    pdb_paths: Optional[str] = None,
+    pdb_codes: Optional[str] = None,
+    uniprot_ids: Optional[str] = None,
+    chain_selections: Optional[List[str]] = None,
+    deprotonate: bool = True,
+    keep_insertions: bool = False,
+    keep_hets: List[str] = [],
+    model_index: int = 1,
+    atom_types: List[str] = PROTEIN_ATOMS,
+    num_cores: int = 16,
+) -> List["Protein"]:
+    """
+    Parallelised parsing of a list of proteins (from either: PDB codes, PDB
+    files or UniProt IDs (via AF2 database) to a Graphein ``Protein`` object
+    using multiprocessing.
+
+
+    .. code-block:: python
+
+        import graphein.protein.tensor as gpt
+
+        # From PDB codes
+        gpt.data.to_protein_mp(pdb_codes=["3eiy", "4hhb", ..., num_cores=8])
+
+        # From PDB Paths
+        gpt.io.to_protein_mp(pdb_paths=["3eiy.pdb", "4hhb.pdb", ...])
+
+        # From UniProt IDs
+        gpt.io.to_protein_mp(uniprot_ids=["Q5VSL9", ...])
+
+
+    .. seealso::
+
+        :func:`graphein.protein.tensor.io.protein_to_pyg`
+        :func:`graphein.protein.tensor.data.to_protein`
+
+
+    :param pdb_paths: Path to PDB file. Default is ``None``.
+    :param pdb_codes: PDB accesion code. Default is ``None``.
+    :param uniprot_ids: UniProt ID. Default is ``None``.
+    :param chain_selections: Selection of chains to include (e.g. ``"ABC"``) or
+        ``"all"``. Default is ``"all"``.
+    :param deprotonate: Whether or not to remove Hydrogens. Default is ``True``.
+    :param keep_insertions: Whether or not to keep insertions.
+    :param keep_hets: List of heteroatoms to include. E.g. ``["HOH"]``.
+    :param model_index: Index of model in models containing multiple structures.
+    :param atom_types: List of atom types to select. Default is:
+        :const:`graphein.protein.resi_atoms.PROTEIN_ATOMS`
+    :param num_cores: Number of cores to use for multiprocessing.
+    :returns: ``Data`` object with attributes: ``x`` (AtomTensor), ``residues``
+        (list of 3-letter residue codes), id (ID of protein), residue_id (E.g.
+        ``"A:SER:1"``), residue_type (torch.Tensor), ``chains`` (torch.Tensor).
+    :rtype: List[Protein]
+    """
+    assert (
+        pdb_codes is not None
+        or pdb_paths is not None
+        or uniprot_ids is not None
+    ), "Iterable of pdb codes, pdb paths or uniprot IDs required."
+
+    if pdb_codes is not None:
+        pdbs = pdb_codes
+        source = "pdb_code"
+
+    if pdb_paths is not None:
+        pdbs = pdb_paths
+        source = "pdb_path"
+
+    if uniprot_ids is not None:
+        pdbs = uniprot_ids
+        source = "uniprot_id"
+
+    if chain_selections is None:
+        chain_selections = ["all"] * len(pdbs)
+
+    # if model_indices is None:
+    #    model_indices = [1] * len(pdbs)
+
+    constructor = partial(
+        _mp_constructor,
+        source=source,
+        deprotonate=deprotonate,
+        keep_insertions=keep_insertions,
+        keep_hets=keep_hets,
+        model_index=model_index,
+        atom_types=atom_types,
+    )
+
+    return list(
+        process_map(
+            constructor,
+            [(pdb, chain_selections[i]) for i, pdb in enumerate(pdbs)],
+            max_workers=num_cores,
+        )
+    )
+
+
 def get_random_protein() -> "Protein":
     """Utility/testing function to get a random proteins."""
     pdbs = ["3eiy", "4hhb", "1a0q", "1hcn"]
@@ -1220,4 +1513,5 @@ def get_random_batch(num_proteins: int = 8) -> "ProteinBatch":
     """Utility/testing function to get a random batch of proteins."""
 
     proteins = [get_random_protein() for _ in range(num_proteins)]
-    return ProteinBatch().from_protein_list(proteins)
+    # return ProteinBatch().from_protein_list(proteins)
+    return ProteinBatch.from_protein_list(proteins)
