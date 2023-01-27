@@ -22,7 +22,13 @@ from ..graphs import (
     select_chains,
     sort_dataframe,
 )
-from ..resi_atoms import ATOM_NUMBERING, ELEMENT_SYMBOL_MAP, PROTEIN_ATOMS
+from ..resi_atoms import (
+    ATOM_NUMBERING,
+    ELEMENT_SYMBOL_MAP,
+    PROTEIN_ATOMS,
+    STANDARD_AMINO_ACID_MAPPING_TO_1_3,
+    STANDARD_AMINO_ACIDS,
+)
 from .representation import get_full_atom_coords
 from .sequence import (
     get_residue_id,
@@ -367,7 +373,10 @@ def to_dataframe(
             x, fill_value=fill_value, return_sequence=False
         )
     if isinstance(residue_types, torch.Tensor):
-        print("warning - this is not properly implemented yet:(")
+        residue_types = [
+            STANDARD_AMINO_ACID_MAPPING_TO_1_3[STANDARD_AMINO_ACIDS[a]]
+            for a in residue_types
+        ]
     residue_types = [residue_types[a - 1] for a in res_nums]
     element_symbols = [ELEMENT_SYMBOL_MAP[a] for a in atom_type]
 
