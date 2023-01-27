@@ -57,6 +57,37 @@ def get_obsolete_mapping() -> Dict[str, str]:
     return obs_dict
 
 
+def read_fasta(file_path: str) -> Dict[str, str]:
+    """
+    Reads a FASTA file and returns a dictionary mapping sequence names to
+    their identifiers.
+
+    :param file_path: Path to FASTA file.
+    :type file_path: str
+    :return: Dictionary mapping sequence names to their identifiers.
+    :rtype: Dict[str, str]
+    """
+    sequences = {}
+    current_sequence_name = None
+    current_sequence = ""
+
+    with open(file_path, "r") as file:
+        for line in file:
+            if line.startswith(">"):
+                if current_sequence_name:
+                    sequences[current_sequence_name] = current_sequence
+
+                current_sequence_name = line[1:].strip()
+                current_sequence = ""
+            else:
+                current_sequence += line.strip()
+
+        if current_sequence_name:
+            sequences[current_sequence_name] = current_sequence
+
+    return sequences
+
+
 def download_pdb_multiprocessing(
     pdb_codes: List[str],
     out_dir: Union[str, Path],
@@ -435,7 +466,12 @@ def is_tool(name: str) -> bool:
     return which(name) is not None
 
 
-def esmfold(sequence: str, out_path: Optional[str] = None, version: int = 1):
+def esmfold(
+    sequence: str,
+    out_path: Optional[str] = None,
+    version: int = 1,
+    format: str = "pdb",
+):
     """Fold a protein sequence using the ESMFold model from the ESMFold server at
     https://api.esmatlas.com/foldSequence/v1/pdb/.
 
@@ -453,7 +489,7 @@ def esmfold(sequence: str, out_path: Optional[str] = None, version: int = 1):
     --------
     self
     """
-    URL = f"https://api.esmatlas.com/foldSequence/v{version}/pdb/"
+    URL = f"https://api.esmatlas.com/foldSequence/v{version}/{format}/"
 
     headers: Dict[str, str] = {
         "Content-Type": "application/x-www-form-urlencoded",
