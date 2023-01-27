@@ -69,6 +69,8 @@ jobs:
         run: pip install -r .requirements/extras.in
       - name: Install Dev Dependencies
         run: pip install -r .requirements/dev.in
+      - name: Install doc dependencies
+        run: pip install -r .requirements/docs.in
       - name: Run unit tests and generate coverage report
         run: pytest .
       - name: Test notebook execution
