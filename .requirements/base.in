@@ -13,7 +13,7 @@ pydantic
 rich
 rich-click
 seaborn
-pyyaml>=5.1,<6.*;
+pyyaml>=5.1,<6.0
 scikit-learn
 scipy
 tqdm
