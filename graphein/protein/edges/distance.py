@@ -190,6 +190,23 @@ def add_sequence_distance_edges(
             (n, v) for n, v in G.nodes(data=True) if v["chain_id"] == chain_id
         ]
 
+        # Subset to only N and C atoms in the case of full-atom
+        # peptide bond addition
+        try:
+            if (
+                G.graph["config"].granularity == "atom"
+                and name == "peptide_bond"
+            ):
+                chain_residues = [
+                    (n, v)
+                    for n, v in chain_residues
+                    if v["atom_type"] in {"N", "C"}
+                ]
+        # If we don't don't find a config, assume it's a residue graph
+        # This is brittle
+        except KeyError:
+            continue
+
         # Iterate over every residue in chain
         for i, residue in enumerate(chain_residues):
             try:
