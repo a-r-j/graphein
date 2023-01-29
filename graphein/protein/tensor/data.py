@@ -834,9 +834,9 @@ class ProteinBatch(Batch):
             self._slice_dict = batch._slice_dict
 
         if hasattr(batch, "_inc_dict"):
-            self._slice_dict = batch._inc_dict
+            self._inc_dict = batch._inc_dict
 
-        self.fill_value = fill_value
+        # self.fill_value = fill_value
         return self
 
     @classmethod
