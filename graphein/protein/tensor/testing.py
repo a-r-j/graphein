@@ -8,7 +8,7 @@ from graphein.utils.utils import import_message
 
 from ..resi_atoms import (
     ATOM_NUMBERING_MODIFIED,
-    STANDARD_AMINO_ACID_MAPPING_TO_1_3,
+    STANDARD_AMINO_ACID_MAPPING_1_TO_3,
 )
 from .sequence import get_atom_indices
 from .types import AtomTensor, BackboneTensor, CoordTensor, ResidueTensor
