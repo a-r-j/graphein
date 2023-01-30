@@ -38,6 +38,6 @@ jobs:
       - name: Install Dev Dependencies
         run: pip install -r .requirements/dev.in
       - name: Run unit tests and generate coverage report
-        run: pytest .
+        run: pytest . --ignore-glob="tests/protein/tensor"
       - name: Test notebook execution
-        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/higher_order_graphs.ipynb" --ignore-glob="notebooks/protein_graph_analytics.ipynb" --ignore-glob="notebooks/subgraphing_tutorial.ipynb" --ignore-glob="notebooks/splitting_a_dataset.ipynb"
+        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/higher_order_graphs.ipynb" --ignore-glob="notebooks/protein_graph_analytics.ipynb" --ignore-glob="notebooks/subgraphing_tutorial.ipynb" --ignore-glob="notebooks/splitting_a_dataset.ipynb" --ignore-glob="notebooks/protein_tensors.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb"
