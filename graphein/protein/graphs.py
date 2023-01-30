@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import traceback
+from contextlib import nullcontext
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -628,6 +629,7 @@ def construct_graph(
     edge_annotation_funcs: Optional[List[Callable]] = None,
     node_annotation_funcs: Optional[List[Callable]] = None,
     graph_annotation_funcs: Optional[List[Callable]] = None,
+    verbose: bool = True,
 ) -> nx.Graph:
     """
     Constructs protein structure graph from a ``pdb_code`` or ``pdb_path``.
@@ -674,6 +676,9 @@ def construct_graph(
     :param graph_annotation_funcs: List of graph annotation function.
         Default is ``None``.
     :type graph_annotation_funcs: List[Callable]
+    :param verbose: Controls the verbosity.
+        Default is ``True``.
+    :type verbose: bool
     :return: Protein Structure Graph
     :rtype: nx.Graph
     """
@@ -687,13 +692,17 @@ def construct_graph(
     # If no config is provided, use default
     if config is None:
         config = ProteinGraphConfig()
-    with Progress(transient=True) as progress:
-        task1 = progress.add_task("Reading PDB file...", total=1)
-        # Get name from pdb_file is no pdb_code is provided
-        # if pdb_path and (pdb_code is None and uniprot_id is None):
-        #    pdb_code = get_protein_name_from_filename(pdb_path)
-        #    pdb_code = pdb_code if len(pdb_code) == 4 else None
-        progress.advance(task1)
+
+    # Use progress tracking context if in verbose mode
+    context = Progress(transient=True) if verbose else nullcontext
+    with context as progress:
+        if verbose:
+            task1 = progress.add_task("Reading PDB file...", total=1)
+            # Get name from pdb_file is no pdb_code is provided
+            # if pdb_path and (pdb_code is None and uniprot_id is None):
+            #    pdb_code = get_protein_name_from_filename(pdb_path)
+            #    pdb_code = pdb_code if len(pdb_code) == 4 else None
+            progress.advance(task1)
 
         # If config params are provided, overwrite them
         config.protein_df_processing_functions = (
@@ -728,14 +737,9 @@ def construct_graph(
             uniprot_id,
             model_index=model_index,
         )
-        task2 = progress.add_task("Processing PDB dataframe...", total=1)
-        # raw_df = label_node_id(raw_df, granularity=config.granularity)
-        # raw_df.df["ATOM"] = label_node_id(
-        #    raw_df.df["ATOM"], granularity=config.granularity
-        # )
-        # raw_df.df["HETATM"] = label_node_id(
-        #    raw_df.df["HETATM"], granularity=config.granularity
-        # )
+
+        if verbose:
+            task2 = progress.add_task("Processing PDB dataframe...", total=1)
         raw_df = sort_dataframe(raw_df)
         protein_df = process_dataframe(
             raw_df,
@@ -744,9 +748,11 @@ def construct_graph(
             insertions=config.insertions,
             keep_hets=config.keep_hets,
         )
-        progress.advance(task2)
 
-        task3 = progress.add_task("Initializing graph...", total=1)
+        if verbose:
+            progress.advance(task2)
+
+            task3 = progress.add_task("Initializing graph...", total=1)
         # Initialise graph with metadata
         g = initialise_graph_with_metadata(
             protein_df=protein_df,
@@ -765,15 +771,19 @@ def construct_graph(
         # Annotate additional node metadata
         if config.node_metadata_functions is not None:
             g = annotate_node_metadata(g, config.node_metadata_functions)
-        progress.advance(task3)
-        task4 = progress.add_task("Constructing edges...", total=1)
+
+        if verbose:
+            progress.advance(task3)
+            task4 = progress.add_task("Constructing edges...", total=1)
         # Compute graph edges
         g = compute_edges(
             g,
             funcs=config.edge_construction_functions,
             get_contacts_config=None,
         )
-        progress.advance(task4)
+
+        if verbose:
+            progress.advance(task4)
 
     # Annotate additional graph metadata
     if config.graph_metadata_functions is not None:
