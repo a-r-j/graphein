@@ -626,7 +626,7 @@ class ProteinGraphDataset(Dataset):
             if self.node_label_map:
                 labels = [self.node_label_map[idx] for idx in chunk]
                 for i, _ in enumerate(chunk):
-                    graphs[i].graph_y = labels[i]
+                    graphs[i].node_y = labels[i]
 
             data_list = graphs
 
@@ -662,8 +662,7 @@ class ProteinGraphDataset(Dataset):
             return torch.load(
                 os.path.join(
                     self.processed_dir,
-                    f"{self.structures[idx]}_\
-                        {self.chain_selection_map[idx]}.pt",
+                    f"{self.structures[idx]}_{self.chain_selection_map[idx]}.pt",
                 )
             )
         else:
