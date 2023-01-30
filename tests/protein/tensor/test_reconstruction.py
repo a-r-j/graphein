@@ -29,4 +29,3 @@ def test_dist_mat_to_coords():
         assert torch.allclose(d, torch.cdist(X, X), atol=1e-4)
         X_aligned = kabsch(X, coords)
         assert torch.allclose(coords, X_aligned, atol=1e-4)
-        return coords, X, X_aligned
