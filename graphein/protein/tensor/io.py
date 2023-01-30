@@ -26,7 +26,7 @@ from ..resi_atoms import (
     ATOM_NUMBERING,
     ELEMENT_SYMBOL_MAP,
     PROTEIN_ATOMS,
-    STANDARD_AMINO_ACID_MAPPING_TO_1_3,
+    STANDARD_AMINO_ACID_MAPPING_1_TO_3,
     STANDARD_AMINO_ACIDS,
 )
 from .representation import get_full_atom_coords
@@ -374,7 +374,7 @@ def to_dataframe(
         )
     if isinstance(residue_types, torch.Tensor):
         residue_types = [
-            STANDARD_AMINO_ACID_MAPPING_TO_1_3[STANDARD_AMINO_ACIDS[a]]
+            STANDARD_AMINO_ACID_MAPPING_1_TO_3[STANDARD_AMINO_ACIDS[a]]
             for a in residue_types
         ]
     residue_types = [residue_types[a - 1] for a in res_nums]
