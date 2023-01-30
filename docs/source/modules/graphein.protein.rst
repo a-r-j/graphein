@@ -1,8 +1,17 @@
 graphein.protein
 ================
 
+.. currentmodule:: graphein.protein
+
 Config
-------
+---------
+
+.. currentmodule:: graphein.protein.config
+
+
+.. autosummary::
+    :nosignatures:
+
 .. automodule:: graphein.protein.config
     :members:
 

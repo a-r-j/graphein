@@ -1,5 +1,5 @@
+"""Tests for graphein.ppi.graphs"""
 import bioservices
-import networkx as nx
 import pytest
 
 from graphein.ppi.config import PPIGraphConfig
@@ -42,8 +42,6 @@ def test_construct_graph():
         config=config,
     )
 
-    print(nx.info(g))
-
     # Check nodes and edges
     assert len(g.nodes()) == 8
     assert len(g.edges()) == 23
@@ -51,12 +49,12 @@ def test_construct_graph():
     # Check edge types are from string/biogrid
     # Check nodes are in our list
     for u, v, d in g.edges(data=True):
-        assert d["kind"].issubset(set(["string", "biogrid"]))
+        assert d["kind"].issubset({"string", "biogrid"})
         assert u in PROTEIN_LIST
         assert v in PROTEIN_LIST
 
     # Check sequence is defined if UniProt ID found
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         assert d["protein_id"] in PROTEIN_LIST
         if d["uniprot_ids"] is not None:
             for id in d["uniprot_ids"]:

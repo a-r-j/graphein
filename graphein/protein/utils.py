@@ -16,6 +16,7 @@ from urllib.request import urlopen
 
 import networkx as nx
 import pandas as pd
+import requests
 import wget
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
@@ -54,6 +55,37 @@ def get_obsolete_mapping() -> Dict[str, str]:
                 entry[3].lower().decode("utf-8")
             )
     return obs_dict
+
+
+def read_fasta(file_path: str) -> Dict[str, str]:
+    """
+    Reads a FASTA file and returns a dictionary mapping sequence names to
+    their identifiers.
+
+    :param file_path: Path to FASTA file.
+    :type file_path: str
+    :return: Dictionary mapping sequence names to their identifiers.
+    :rtype: Dict[str, str]
+    """
+    sequences = {}
+    current_sequence_name = None
+    current_sequence = ""
+
+    with open(file_path, "r") as file:
+        for line in file:
+            if line.startswith(">"):
+                if current_sequence_name:
+                    sequences[current_sequence_name] = current_sequence
+
+                current_sequence_name = line[1:].strip()
+                current_sequence = ""
+            else:
+                current_sequence += line.strip()
+
+        if current_sequence_name:
+            sequences[current_sequence_name] = current_sequence
+
+    return sequences
 
 
 def download_pdb_multiprocessing(
@@ -432,3 +464,43 @@ def is_tool(name: str) -> bool:
     :rtype: bool
     """
     return which(name) is not None
+
+
+def esmfold(
+    sequence: str,
+    out_path: Optional[str] = None,
+    version: int = 1,
+    format: str = "pdb",
+):
+    """Fold a protein sequence using the ESMFold model from the ESMFold server at
+    https://api.esmatlas.com/foldSequence/v1/pdb/.
+
+
+    Parameters
+    ----------
+    sequence : str
+        A protein sequence in one-letter code.
+    out_path : str, optional
+        Path to save the PDB file to. If `None`, the file is not saved.
+        Defaults to `None`.
+    version : int, optional
+        The version of the ESMFold model to use. Defaults to `1`.
+    Returns
+    --------
+    self
+    """
+    URL = f"https://api.esmatlas.com/foldSequence/v{version}/{format}/"
+
+    headers: Dict[str, str] = {
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+
+    cif = requests.post(URL, data=sequence, headers=headers).text
+    # append header
+    header = "\n".join(
+        [f"data_{sequence}", "#", f"_entry.id\t{sequence}", "#\n"]
+    )
+    cif = header + cif
+    if out_path is not None:
+        with open(out_path, "w") as f:
+            f.write(cif)

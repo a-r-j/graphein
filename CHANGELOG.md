@@ -1,7 +1,14 @@
-### 1.5.3 - UNRELEASED
+### 1.6.0dev - UNRELEASED
+
+#### New Features
+* [Metrics] - [#245](https://github.com/a-r-j/graphein/pull/221) Adds a selection of structural metrics relevant to protein structures.
+* [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/244) Adds suite of utilities for working directly with tensor-based representations of proteins (graphein.protein.tensor).
+* [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/244) Adds suite of utilities for working with ESMfold (graphein.protein.folding_utils).
+
 
 
 #### Improvements
+
 * [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
 * [Logging] - [#242](https://github.com/a-r-j/graphein/pull/242) Adds control of protein graph construction logging. Resolves [#238](https://github.com/a-r-j/graphein/issues/238)
 
@@ -13,6 +20,18 @@
 * [Bugfix] - [#229](https://github.com/a-r-j/graphein/pull/220) Fixes bug in KNN edge computation. Contribution by @anton-bushuiev.
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes edge metadata conversion to PyG. Contribution by @manonreau.
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes centroid atom grouping & avoids unnecessary edge computation where none are found. Contribution by @manonreau.
+
+
+#### Documentation
+* [Tensor Module] - [#244](https://github.com/a-r-j/graphein/pull/244) Documents new graphein.protein.tensor module.
+* [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) Updates to intersphinx maps
+
+
+#### Package
+* [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) CI now runs for python 3.8, 3.9 and torch 1.12.0 and 1.13.0
+* [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) Separate builds for core library and library with DL dependencies.
+* [Licence] - [#244](https://github.com/a-r-j/graphein/pull/244) Bump to 2023
+
 
 ### 1.5.2 - 19/9/2022
 
