@@ -184,7 +184,6 @@ def add_sequence_distance_edges(
     """
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
-
         # Find chain residues
         chain_residues = [
             (n, v) for n, v in G.nodes(data=True) if v["chain_id"] == chain_id
@@ -505,7 +504,7 @@ def add_aromatic_sulphur_interactions(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
 
-        for (a1, a2) in interacting_atoms:
+        for a1, a2 in interacting_atoms:
             resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
             resi2 = aromatic_sulphur_df.loc[a2, "node_id"]
 
@@ -546,7 +545,7 @@ def add_cation_pi_interactions(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
 
-        for (a1, a2) in interacting_atoms:
+        for a1, a2 in interacting_atoms:
             resi1 = cation_pi_df.loc[a1, "node_id"]
             resi2 = cation_pi_df.loc[a2, "node_id"]
 

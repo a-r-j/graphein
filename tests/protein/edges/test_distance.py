@@ -78,7 +78,7 @@ def test_nodes_are_strings(net):
 def test_add_hydrophobic_interactions(net):
     """Test the function add_hydrophobic_interactions_."""
     resis = get_edges_by_bond_type(net, "hydrophobic")
-    for (r1, r2) in resis:
+    for r1, r2 in resis:
         assert net.nodes[r1]["residue_name"] in HYDROPHOBIC_RESIS
         assert net.nodes[r2]["residue_name"] in HYDROPHOBIC_RESIS
 
@@ -87,7 +87,7 @@ def test_add_disulfide_interactions(net):
     """Test the function add_disulfide_interactions_."""
     resis = get_edges_by_bond_type(net, "disulfide")
 
-    for (r1, r2) in resis:
+    for r1, r2 in resis:
         assert net.nodes[r1]["residue_name"] == "CYS"
         assert net.nodes[r2]["residue_name"] == "CYS"
 
