@@ -10,16 +10,13 @@ import os
 import platform
 import subprocess
 import sys
-from typing import Any, Callable, Iterable, List, Optional
+from typing import Any, Callable, Iterable, List, Literal, Optional
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 import xarray as xr
 from Bio.Data.IUPACData import protein_letters_3to1
-
-from typing import Literal
-
 
 AggregationType: List["sum", "mean", "max", "min", "median"]
 """Types of aggregations for features."""
@@ -394,13 +391,13 @@ def ping(host: str) -> bool:
 
 def parse_aggregation_type(aggregation_type: AggregationType) -> Callable:
     """Returns an aggregation function by name
-    
+
     :param aggregation_type: One of: ``["max", "min", "mean", "median", "sum"]``.
     :type aggregration_type: AggregationType
     :returns: NumPy aggregation function.
     :rtype: Callable
     :raises ValueError: if aggregation type is not supported.
-     """
+    """
     if aggregation_type == "max":
         func = np.max
     elif aggregation_type == "min":
