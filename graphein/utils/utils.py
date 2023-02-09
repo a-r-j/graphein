@@ -10,7 +10,8 @@ import os
 import platform
 import subprocess
 import sys
-from typing import Any, Callable, Iterable, List, Literal, Optional
+from typing import Any, Callable, Iterable, List, Optional
+from typing_extensions import Literal
 
 import networkx as nx
 import numpy as np
