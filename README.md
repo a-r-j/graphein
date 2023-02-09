@@ -34,6 +34,7 @@ This package provides functionality for producing geometric representations of p
 
 |   |   |
 |---|---|
+| [Protein Tensor Module](http://graphein.ai/notebooks/protein_tensors.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/protein_tensors.ipynb)   |
 | [Constructing molecular graphs](http://graphein.ai/notebooks/molecule_tutorial.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/molecule_tutorial.ipynb)   |
 | [Ready-to-go Dataloaders for PyTorch Geometric](http://graphein.ai/notebooks/dataloader_tutorial.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/dataloader_tutorial.ipynb)   |
 | [Extracting subgraphs from protein graphs](http://graphein.ai/notebooks/subgraphing_tutorial.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/subgraphing_tutorial.ipynb)   |

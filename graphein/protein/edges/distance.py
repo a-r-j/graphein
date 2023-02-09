@@ -158,7 +158,7 @@ def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
         dist_mat = compute_distmat(G.graph["pdb_df"])
         G.graph["dist_mat"] = dist_mat
 
-    mat = np.where(nx.to_numpy_matrix(G), dist_mat, 0)
+    mat = np.where(nx.to_numpy_array(G), dist_mat, 0)
     node_map = {n: i for i, n in enumerate(G.nodes)}
     for u, v, d in G.edges(data=True):
         d["distance"] = mat[node_map[u], node_map[v]]
@@ -192,12 +192,20 @@ def add_sequence_distance_edges(
 
         # Subset to only N and C atoms in the case of full-atom
         # peptide bond addition
-        if G.graph["config"].granularity == "atom" and name == "peptide_bond":
-            chain_residues = [
-                (n, v)
-                for n, v in chain_residues
-                if v["atom_type"] in {"N", "C"}
-            ]
+        try:
+            if (
+                G.graph["config"].granularity == "atom"
+                and name == "peptide_bond"
+            ):
+                chain_residues = [
+                    (n, v)
+                    for n, v in chain_residues
+                    if v["atom_type"] in {"N", "C"}
+                ]
+        # If we don't don't find a config, assume it's a residue graph
+        # This is brittle
+        except KeyError:
+            continue
 
         # Iterate over every residue in chain
         for i, residue in enumerate(chain_residues):
