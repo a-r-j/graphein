@@ -412,6 +412,6 @@ def parse_aggregation_type(aggregation_type: AggregationType) -> Callable:
     else:
         raise ValueError(
             f"Unsupported aggregator: {aggregation_type}."
-            f" Please use min, max, mean, sum"
+            f" Please use min, max, mean, median, sum"
         )
     return func
