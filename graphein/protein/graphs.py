@@ -694,7 +694,7 @@ def construct_graph(
         config = ProteinGraphConfig()
 
     # Use progress tracking context if in verbose mode
-    context = Progress(transient=True) if verbose else nullcontext
+    context = Progress(transient=True) if verbose else nullcontext()
     with context as progress:
         if verbose:
             task1 = progress.add_task("Reading PDB file...", total=1)
