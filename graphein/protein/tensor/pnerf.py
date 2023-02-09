@@ -59,7 +59,6 @@ def dihedrals_to_coords(
     bond_lengths: Optional[torch.Tensor],
     bond_angles: Optional[torch.Tensor],
 ) -> AtomTensor:
-
     if dihedral.shape[-1] == 6:
         phi, psi, omg = dihedrals_to_rad(dihedral)
         # dihedrals = torch.stack([omg, phi, psi], dim=-1)  # This works

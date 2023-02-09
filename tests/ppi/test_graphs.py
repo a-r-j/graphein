@@ -30,6 +30,7 @@ def hgnc_available():
 
 HGNC_AVAILABLE = hgnc_available()
 
+
 # Test Graph Construction
 @pytest.mark.skipif(not HGNC_AVAILABLE, reason="HGNC not available")
 def test_construct_graph():
