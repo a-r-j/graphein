@@ -14,7 +14,7 @@ from typing import List, NamedTuple, Optional, Tuple
 from loguru import logger as log
 
 from graphein.protein.config import ProteinMeshConfig
-from graphein.utils.pymol import MolViewer
+from graphein.utils.pymol import HOST, PORT, MolViewer
 from graphein.utils.utils import import_message
 
 try:
@@ -146,9 +146,9 @@ def run_pymol_commands(
     :type commands: List[str]
     """
     if host is None:
-        host = os.environ.get("PYMOL_RPCHOST", "localhost")
+        host = HOST
     if port is None:
-        port = 9123
+        port = PORT
 
     pymol = MolViewer(host=host, port=port)
 
