@@ -18,6 +18,12 @@ import pandas as pd
 import xarray as xr
 from Bio.Data.IUPACData import protein_letters_3to1
 
+from typing import Literal
+
+
+AggregationType: List["sum", "mean", "max", "min", "median"]
+"""Types of aggregations for features."""
+
 
 def onek_encoding_unk(
     x: Iterable[Any], allowable_set: List[Any]
@@ -339,9 +345,9 @@ def import_message(
     :type submodule: str
     :param package: External package this submodule relies on.
     :type package: str
-    :param conda_channel: Conda channel package can be installed from, if at all. Defaults to None
+    :param conda_channel: Conda channel package can be installed from, if at all. Defaults to ``None``.
     :type conda_channel: str, optional
-    :param pip_install: Whether package can be installed via pip. Defaults to False
+    :param pip_install: Whether package can be installed via pip. Defaults to ``False``.
     :type pip_install: bool
     """
     is_conda = os.path.exists(os.path.join(sys.prefix, "conda-meta"))
@@ -373,7 +379,7 @@ def ping(host: str) -> bool:
 
     :param host: IP or hostname
     :type host: str
-    :returns: True if host responds to a ping request.
+    :returns: ``True`` if host responds to a ping request.
     :rtype: bool
     """
 
@@ -386,7 +392,15 @@ def ping(host: str) -> bool:
     return subprocess.call(command) == 0
 
 
-def parse_aggregation_type(aggregation_type):
+def parse_aggregation_type(aggregation_type: AggregationType) -> Callable:
+    """Returns an aggregation function by name
+    
+    :param aggregation_type: One of: ``["max", "min", "mean", "median", "sum"]``.
+    :type aggregration_type: AggregationType
+    :returns: NumPy aggregation function.
+    :rtype: Callable
+    :raises ValueError: if aggregation type is not supported.
+     """
     if aggregation_type == "max":
         func = np.max
     elif aggregation_type == "min":
