@@ -61,14 +61,15 @@ def aggregate_feature_over_chains(
     func = parse_aggregation_type(aggregation_type)
 
     G.graph[f"{feature_name}_{aggregation_type}"] = func(
-        [G.graph[f"{feature_name}_{c}"] for c in G.graph["chain_ids"]],
-        axis=0
+        [G.graph[f"{feature_name}_{c}"] for c in G.graph["chain_ids"]], axis=0
     )
     return G
 
 
 def aggregate_feature_over_residues(
-        G: nx.Graph, feature_name: str, aggregation_type: str,
+    G: nx.Graph,
+    feature_name: str,
+    aggregation_type: str,
 ) -> nx.Graph:
     """
     Performs aggregation of a given feature over chains in a graph to produce an aggregated value.
@@ -85,10 +86,10 @@ def aggregate_feature_over_residues(
     """
     func = parse_aggregation_type(aggregation_type)
 
-    for c in G.graph['chain_ids']:
+    for c in G.graph["chain_ids"]:
         chain_features = []
         for n in G.nodes:
-            if G.nodes[n]['chain_id'] == c:
+            if G.nodes[n]["chain_id"] == c:
                 chain_features.append(G.nodes[n][feature_name])
         G.graph[f"{feature_name}_{aggregation_type}_{c}"] = func(
             chain_features, axis=0
