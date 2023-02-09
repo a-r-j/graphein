@@ -9,6 +9,8 @@ from typing import Any, Callable, List
 import networkx as nx
 import numpy as np
 
+from graphein.utils.utils import parse_aggregation_type
+
 
 def compute_feature_over_chains(
     G: nx.Graph, func: Callable, feature_name: str
@@ -56,24 +58,41 @@ def aggregate_feature_over_chains(
     :return: Graph with new aggregated feature.
     :rtype: nx.Graph
     """
-
-    if aggregation_type == "max":
-        func = np.max
-    elif aggregation_type == "min":
-        func = np.min
-    elif aggregation_type == "mean":
-        func = np.mean
-    elif aggregation_type == "sum":
-        func = np.sum
-    else:
-        raise ValueError(
-            f"Unsupported aggregator: {aggregation_type}. Please use min, max, mean, sum"
-        )
+    func = parse_aggregation_type(aggregation_type)
 
     G.graph[f"{feature_name}_{aggregation_type}"] = func(
         [G.graph[f"{feature_name}_{c}"] for c in G.graph["chain_ids"]],
         axis=0
     )
+    return G
+
+
+def aggregate_feature_over_residues(
+        G: nx.Graph, feature_name: str, aggregation_type: str,
+) -> nx.Graph:
+    """
+    Performs aggregation of a given feature over chains in a graph to produce an aggregated value.
+
+    :param G: nx.Graph protein structure graph.
+    :type G: nx.Graph
+    :param feature_name: Name of feature to aggregate.
+    :type feature_name: str
+    :param aggregation_type: Type of aggregation to perform (``"min"``, ``"max"``, ``"mean"``, ``"sum"``).
+    :type aggregation_type: str
+    :raises ValueError: If ``aggregation_type`` is not one of ``"min"``, ``"max"``, ``"mean"``, ``"sum"``.
+    :return: Graph with new aggregated feature.
+    :rtype: nx.Graph
+    """
+    func = parse_aggregation_type(aggregation_type)
+
+    for c in G.graph['chain_ids']:
+        chain_features = []
+        for n in G.nodes:
+            if G.nodes[n]['chain_id'] == c:
+                chain_features.append(G.nodes[n][feature_name])
+        G.graph[f"{feature_name}_{aggregation_type}_{c}"] = func(
+            chain_features, axis=0
+        )
     return G
 
 

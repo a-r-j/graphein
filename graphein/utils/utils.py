@@ -384,3 +384,22 @@ def ping(host: str) -> bool:
     command = ["ping", param, "1", host]
 
     return subprocess.call(command) == 0
+
+
+def parse_aggregation_type(aggregation_type):
+    if aggregation_type == "max":
+        func = np.max
+    elif aggregation_type == "min":
+        func = np.min
+    elif aggregation_type == "mean":
+        func = np.mean
+    elif aggregation_type == "median":
+        func = np.median
+    elif aggregation_type == "sum":
+        func = np.sum
+    else:
+        raise ValueError(
+            f"Unsupported aggregator: {aggregation_type}."
+            f" Please use min, max, mean, sum"
+        )
+    return func
