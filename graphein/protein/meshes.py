@@ -49,12 +49,12 @@ def configure_pymol_session(
     :param config: :class:`~graphein.protein.config.ProteinMeshConfig` to use. Defaults to ``None`` which uses default config.
     :type config: graphein.protein.config.ProteinMeshConfig
     """
-    pymol = MolViewer()
-    pymol.delete("all")  # delete all objects from other sessions if necessary.
-
     # If no config is provided, use default
     if config is None:
         config = ProteinMeshConfig()
+
+    pymol = MolViewer(host=config.pymol_host, port=config.pymol_port)
+    pymol.delete("all")  # delete all objects from other sessions if necessary.
 
     # Start PyMol session
     pymol.start([config.pymol_command_line_options])
@@ -81,7 +81,9 @@ def get_obj_file(
     :return: returns path to ``.obj`` file (str)
     :rtype: str
     """
-    pymol = MolViewer()
+    if config is None:
+        config = ProteinMeshConfig()
+    pymol = MolViewer(host=config.pymol_host, port=config.pymol_port)
 
     check_for_pymol_installation()
 
@@ -105,12 +107,11 @@ def get_obj_file(
         f"{pdb_file[:-3]}obj" if pdb_file else out_dir + pdb_code + ".obj"
     )
 
-    if config is None:
-        config = ProteinMeshConfig()
-
     commands = parse_pymol_commands(config)
-    print(commands)
-    run_pymol_commands(commands)
+    log.info(commands)
+    run_pymol_commands(
+        commands, host=config.pymol_host, port=config.pymol_port
+    )
 
     # Save surface object as .obj
     pymol.do(f"save {file_name}")
@@ -135,14 +136,21 @@ def parse_pymol_commands(config: ProteinMeshConfig) -> List[str]:
         return config.pymol_commands
 
 
-def run_pymol_commands(commands: List[str]) -> None:
+def run_pymol_commands(
+    commands: List[str], host: Optional[str] = None, port: Optional[int] = None
+) -> None:
     """
     Runs Pymol Commands.
 
     :param commands: List of commands to pass to PyMol.
     :type commands: List[str]
     """
-    pymol = MolViewer()
+    if host is None:
+        host = os.environ.get("PYMOL_RPCHOST", "localhost")
+    if port is None:
+        port = 9123
+
+    pymol = MolViewer(host=host, port=port)
 
     for c in commands:
         log.debug(c)

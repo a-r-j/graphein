@@ -204,3 +204,5 @@ class ProteinMeshConfig(BaseModel):
 
     pymol_command_line_options: Optional[str] = "-cKq"
     pymol_commands: Optional[List[str]] = ["show surface"]
+    pymol_host: str = os.environ.get("PYMOL_RPCHOST", "localhost")
+    pymol_port: int = 9123
