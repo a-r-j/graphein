@@ -452,7 +452,6 @@ def dihedrals(
     ca_idx: int = 1,
     c_idx: int = 2,
 ) -> DihedralTensor:
-
     length = coords.shape[0]
 
     if batch is None:

@@ -1227,7 +1227,6 @@ class ProteinBatch(Batch):
         self,
         index: Optional[int] = None,
     ) -> go.Figure():
-
         plots = self.protein_apply(lambda x: x.plot_structure())
         if index is not None:
             plots = [plots[index]]
