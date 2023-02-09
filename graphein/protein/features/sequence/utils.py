@@ -71,7 +71,8 @@ def aggregate_feature_over_chains(
         )
 
     G.graph[f"{feature_name}_{aggregation_type}"] = func(
-        [G.graph[f"{feature_name}_{c}"] for c in G.graph["chain_ids"]]
+        [G.graph[f"{feature_name}_{c}"] for c in G.graph["chain_ids"]],
+        axis=0
     )
     return G
 
