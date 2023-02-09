@@ -96,7 +96,7 @@ def colour_nodes(
     if colour_by == "degree":
         # Get max number of edges connected to a single node
         edge_max = max(G.degree[i] for i in G.nodes())
-        colors = [colour_map(G.degree[i] / (edge_max+1)) for i in G.nodes()]
+        colors = [colour_map(G.degree[i] / (edge_max + 1)) for i in G.nodes()]
     elif colour_by == "seq_position":
         colors = [colour_map(i / n) for i in range(n)]
     elif colour_by == "chain":
@@ -173,7 +173,7 @@ def colour_edges(
         edge_types = set(nx.get_edge_attributes(G, colour_by).values())
         mapping = dict(zip(sorted(edge_types), count()))
         colors = [
-            colour_map(mapping[d[colour_by]] / (len(edge_types) +1))
+            colour_map(mapping[d[colour_by]] / (len(edge_types) + 1))
             for _, _, d in G.edges(data=True)
         ]
 
