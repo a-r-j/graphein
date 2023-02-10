@@ -10,8 +10,8 @@ from __future__ import annotations
 import traceback
 from contextlib import nullcontext
 from functools import partial
-from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
-
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing_extensions import Literal
 import networkx as nx
 import numpy as np
 import pandas as pd
