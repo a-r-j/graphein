@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, List, Literal, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel, validator
