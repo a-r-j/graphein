@@ -98,7 +98,7 @@ def get_obj_file(
     if out_dir is None:
         out_dir = "/tmp/"
 
-    configure_pymol_session()
+    configure_pymol_session(config)
 
     # Load structure
     pymol.load(pdb_file) if pdb_file else pymol.fetch(pdb_code)
