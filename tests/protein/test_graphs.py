@@ -3,6 +3,7 @@
 from functools import partial
 from pathlib import Path
 
+import numpy as np
 import networkx as nx
 import pytest
 
@@ -331,11 +332,12 @@ def test_sequence_features():
         assert f"molecular_weight_{chain}" in G.graph
 
 
-def test_insertion_handling():
+def test_insertion_and_alt_loc_handling():
     configs = {
         "granularity": "CA",
         "keep_hets": [],
         "insertions": False,
+        "alt_locs": False,
         "verbose": False,
         "node_metadata_functions": [meiler_embedding, expasy_protein_scale],
         "edge_construction_functions": [
@@ -357,6 +359,66 @@ def test_insertion_handling():
         g.graph["sequence_C"]
     ) + len(g.graph["sequence_D"]) + len(g.graph["sequence_E"]) == len(g)
     assert g.graph["coords"].shape[0] == len(g)
+
+
+def test_alt_loc_removal():
+    configs = {
+        "granularity": "CA",
+        "keep_hets": [],
+        "insertions": True,
+        "alt_locs": False,
+        "verbose": False,
+        "node_metadata_functions": [meiler_embedding, expasy_protein_scale],
+        "edge_construction_functions": [
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+            add_ionic_interactions,
+            add_aromatic_sulphur_interactions,
+            add_hydrophobic_interactions,
+            add_cation_pi_interactions,
+        ],
+    }
+
+    config = ProteinGraphConfig(**configs)
+
+    # This is a PDB with three altlocs
+    g = construct_graph(config=config, pdb_code="2VVI")
+
+    # Test altlocs are dropped
+    assert len(set(g.nodes())) == len(g.nodes())
+
+    # Test the one with the highest occupancy is left
+    # (only one is tested because other two altlocs are 50/50%)
+    assert np.array_equal(
+        g.nodes['A:CYS:195:']['coords'], [5.850, -9.326, -42.884]
+    )
+
+
+def test_alt_loc_handling_inclusion():
+    configs = {
+        "granularity": "CA",
+        "keep_hets": [],
+        "insertions": False,
+        "alt_locs": True,
+        "verbose": False,
+        "node_metadata_functions": [meiler_embedding, expasy_protein_scale],
+        "edge_construction_functions": [
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+            add_ionic_interactions,
+            add_aromatic_sulphur_interactions,
+            add_hydrophobic_interactions,
+            add_cation_pi_interactions,
+        ],
+    }
+
+    config = ProteinGraphConfig(**configs)
+
+    # This is a PDB with an altloc leading to different residues
+    g = construct_graph(config=config, pdb_code="1ALX")
+
+    # Test both are present
+    assert 'A:TYR:11' in g.nodes() and 'A:TRP:11' in g.nodes()
 
 
 def test_edges_do_not_add_nodes_for_chain_subset():
