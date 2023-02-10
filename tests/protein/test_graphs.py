@@ -3,8 +3,8 @@
 from functools import partial
 from pathlib import Path
 
-import numpy as np
 import networkx as nx
+import numpy as np
 import pytest
 
 from graphein.protein.config import DSSPConfig, ProteinGraphConfig
@@ -390,7 +390,7 @@ def test_alt_loc_removal():
     # Test the one with the highest occupancy is left
     # (only one is tested because other two altlocs are 50/50%)
     assert np.array_equal(
-        g.nodes['A:CYS:195:']['coords'], [5.850, -9.326, -42.884]
+        g.nodes["A:CYS:195:"]["coords"], [5.850, -9.326, -42.884]
     )
 
 
@@ -418,7 +418,7 @@ def test_alt_loc_inclusion():
     g = construct_graph(config=config, pdb_code="1ALX")
 
     # Test both are present
-    assert 'A:TYR:11' in g.nodes() and 'A:TRP:11' in g.nodes()
+    assert "A:TYR:11" in g.nodes() and "A:TRP:11" in g.nodes()
 
 
 def test_edges_do_not_add_nodes_for_chain_subset():

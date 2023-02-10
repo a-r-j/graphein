@@ -10,7 +10,7 @@ from __future__ import annotations
 import traceback
 from contextlib import nullcontext
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, Literal
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -238,7 +238,7 @@ def remove_alt_locs(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values("occupancy")
     duplicates = df.duplicated(
         subset=["chain_id", "residue_number", "atom_name", "insertion"],
-        keep="last"
+        keep="last",
     )
     df = df[~duplicates]
     df = df.sort_index()
@@ -247,7 +247,7 @@ def remove_alt_locs(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def remove_insertions(
-        df: pd.DataFrame, keep: Literal["first", "last"] = "first"
+    df: pd.DataFrame, keep: Literal["first", "last"] = "first"
 ) -> pd.DataFrame:
     """
     This function removes insertions from PDB DataFrames.
@@ -263,7 +263,8 @@ def remove_insertions(
     """
     # Catches unnamed insertions
     duplicates = df.duplicated(
-        subset=["chain_id", "residue_number", "atom_name", "alt_loc"], keep=keep
+        subset=["chain_id", "residue_number", "atom_name", "alt_loc"],
+        keep=keep,
     )
     df = df[~duplicates]
 
