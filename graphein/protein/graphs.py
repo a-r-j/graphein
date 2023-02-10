@@ -11,7 +11,7 @@ import traceback
 from contextlib import nullcontext
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-from typing_extensions import Literal
+
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -20,6 +20,7 @@ from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
+from typing_extensions import Literal
 
 from graphein.protein.config import (
     DSSPConfig,
