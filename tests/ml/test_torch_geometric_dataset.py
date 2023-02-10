@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 from numpy.testing import assert_array_equal
-from pandas.testing import assert_frame_equal
 
 import graphein.protein as gp
 from graphein.ml import GraphFormatConvertor
@@ -56,7 +55,6 @@ def test_list_dataset():
         assert d.node_id == graphs[i].node_id
         assert_array_equal(d.coords[0], graphs[i].coords[0])
         assert d.name == graphs[i].name
-        assert_frame_equal(d.dist_mat[0], graphs[i].dist_mat[0])
         assert d.num_nodes == graphs[i].num_nodes
     # Clean up
     shutil.rmtree(ROOT_DIR / "processed")

@@ -132,7 +132,6 @@ class GraphFormatConvertor:
                 columns = [
                     "edge_index",
                     "coords",
-                    "dist_mat",
                     "name",
                     "node_id",
                 ]
@@ -141,7 +140,6 @@ class GraphFormatConvertor:
                     "b_factor",
                     "chain_id",
                     "coords",
-                    "dist_mat",
                     "edge_index",
                     "kind",
                     "name",
@@ -302,7 +300,6 @@ class GraphFormatConvertor:
         for feat_name in G.graph:
             if str(feat_name) in self.columns:
                 if str(feat_name) not in node_feature_names:
-                    # data[str(feat_name)] = [G.graph[feat_name]]
                     data[str(feat_name)] = G.graph[feat_name]
         if "edge_index" in self.columns:
             data["edge_index"] = edge_index
