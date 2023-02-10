@@ -118,6 +118,8 @@ class ProteinGraphConfig(BaseModel):
     :type keep_hets: List[str]
     :param insertions: Controls whether or not insertions are allowed.
     :type insertions: bool
+    :param insertions: Controls whether or not alternative locations are allowed.
+    :type insertions: bool
     :param pdb_dir: Specifies path to download protein structures into.
     :type pdb_dir: pathlib.Path. Optional.
     :param verbose: Specifies verbosity of graph creation process.
@@ -152,6 +154,7 @@ class ProteinGraphConfig(BaseModel):
     granularity: Union[GraphAtoms, GranularityOpts] = "CA"
     keep_hets: List[str] = []
     insertions: bool = False
+    alt_locs: bool = False
     pdb_dir: Optional[Path] = None
     verbose: bool = False
     exclude_waters: bool = True
