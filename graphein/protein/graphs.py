@@ -222,7 +222,9 @@ def subset_structure_to_atom_type(
     )
 
 
-def remove_alt_locs(df: pd.DataFrame) -> pd.DataFrame:
+def remove_alt_locs(
+        df: pd.DataFrame, keep: str = "max_occupancy"
+) -> pd.DataFrame:
     """
     This function removes alternatively located atoms from PDB DataFrames
     (see https://proteopedia.org/wiki/index.php/Alternate_locations). Among the
@@ -231,17 +233,31 @@ def remove_alt_locs(df: pd.DataFrame) -> pd.DataFrame:
     :param df: Protein Structure dataframe to remove alternative located atoms
         from.
     :type df: pd.DataFrame
+    :param keep: Controls how to remove altlocs. Default is ``"max_occupancy"``.
+    :type keep: Literal["max_occupancy", "min_occupancy", "first", "last"]
     :return: Protein structure dataframe with alternative located atoms removed
     :rtype: pd.DataFrame
     """
-    # Catches alt_locs and leaves the ones with the greatest occupancies
-    df = df.sort_values("occupancy")
+    # Sort accordingly
+    if keep == "max_occupancy":
+        df = df.sort_values("occupancy")
+        keep = "last"
+    elif keep == "min_occupancy":
+        df = df.sort_values("occupancy")
+        keep = "first"
+    elif keep == "exclude":
+        keep = False
+
+    # Filter
     duplicates = df.duplicated(
         subset=["chain_id", "residue_number", "atom_name", "insertion"],
-        keep="last",
+        keep=keep,
     )
     df = df[~duplicates]
-    df = df.sort_index()
+
+    # Unsort
+    if keep in ["max_occupancy", "min_occupancy"]:
+        df = df.sort_index()
 
     return df
 
@@ -397,8 +413,8 @@ def process_dataframe(
     protein_df = atoms
 
     # Remove alt_loc residues
-    if not alt_locs:
-        protein_df = remove_alt_locs(protein_df)
+    if alt_locs != "include":
+        protein_df = remove_alt_locs(protein_df, keep=alt_locs)
 
     # Remove inserted residues
     if not insertions:

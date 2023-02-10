@@ -337,7 +337,7 @@ def test_insertion_and_alt_loc_handling():
         "granularity": "CA",
         "keep_hets": [],
         "insertions": False,
-        "alt_locs": False,
+        "alt_locs": "max_occupancy",
         "verbose": False,
         "node_metadata_functions": [meiler_embedding, expasy_protein_scale],
         "edge_construction_functions": [
@@ -361,12 +361,12 @@ def test_insertion_and_alt_loc_handling():
     assert g.graph["coords"].shape[0] == len(g)
 
 
-def test_alt_loc_removal():
+def test_alt_loc_exclusion():
     configs = {
         "granularity": "CA",
         "keep_hets": [],
         "insertions": True,
-        "alt_locs": False,
+        "alt_locs": "max_occupancy",
         "verbose": False,
         "node_metadata_functions": [meiler_embedding, expasy_protein_scale],
         "edge_construction_functions": [
@@ -387,11 +387,16 @@ def test_alt_loc_removal():
     # Test altlocs are dropped
     assert len(set(g.nodes())) == len(g.nodes())
 
-    # Test the one with the highest occupancy is left
-    # (only one is tested because other two altlocs are 50/50%)
-    assert np.array_equal(
-        g.nodes["A:CYS:195:"]["coords"], [5.850, -9.326, -42.884]
-    )
+    # Test the correct one is left
+    for opt, expected_coords in (
+        ("max_occupancy", [5.850, -9.326, -42.884]),
+        ("min_occupancy", [5.864, -9.355, -42.943]),
+        ("first", [5.850, -9.326, -42.884]),
+        ("last", [5.864, -9.355, -42.943]),
+    ):
+        config.alt_locs = opt
+        g = construct_graph(config=config, pdb_code="2VVI")
+        assert np.array_equal(g.nodes["A:CYS:195:"]["coords"], expected_coords)
 
 
 def test_alt_loc_inclusion():
@@ -419,6 +424,8 @@ def test_alt_loc_inclusion():
 
     # Test both are present
     assert "A:TYR:11" in g.nodes() and "A:TRP:11" in g.nodes()
+
+    # TODO Test on other PDBs where altlocs are of the same residues
 
 
 def test_edges_do_not_add_nodes_for_chain_subset():

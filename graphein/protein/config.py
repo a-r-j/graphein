@@ -9,10 +9,10 @@ from __future__ import annotations
 import os
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, Literal
 
 from deepdiff import DeepDiff
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing_extensions import Literal
 
 from graphein.protein.edges.distance import add_peptide_bonds
@@ -97,6 +97,9 @@ GraphAtoms = Literal[
 GranularityOpts = Literal["atom", "centroids"]
 """Allowable granularity options for nodes in the graph."""
 
+AltLocsOpts = Union[bool, Literal["max_occupancy", "min_occupancy", "first", "last", "exclude", "include"]]
+"""Allowable altlocs options for alternative locations handling."""
+
 
 class ProteinGraphConfig(BaseModel):
     """
@@ -118,8 +121,12 @@ class ProteinGraphConfig(BaseModel):
     :type keep_hets: List[str]
     :param insertions: Controls whether or not insertions are allowed.
     :type insertions: bool
-    :param insertions: Controls whether or not alternative locations are allowed.
-    :type insertions: bool
+    :param alt_locs: Controls whether or not alternative locations are allowed. The supported values are
+        ``"max_occupancy"``, ``"min_occupancy"``, ``"first"``, ``"last"``, ``"exclude"``. First two will leave altlocs
+        with the highest/lowest occupancies, next two will leave first/last in the PDB file ordering. The ``"exclude"``
+        value will drop them entirely amd ``"include"`` leave all of them. Additionally, boolean values are the aliases
+        for the latest options. Default is ``"max_occupancy"``.
+    :type alt_locs: AltLocsOpts
     :param pdb_dir: Specifies path to download protein structures into.
     :type pdb_dir: pathlib.Path. Optional.
     :param verbose: Specifies verbosity of graph creation process.
@@ -154,7 +161,7 @@ class ProteinGraphConfig(BaseModel):
     granularity: Union[GraphAtoms, GranularityOpts] = "CA"
     keep_hets: List[str] = []
     insertions: bool = True
-    alt_locs: bool = False
+    alt_locs: AltLocsOpts = "max_occupancy"
     pdb_dir: Optional[Path] = None
     verbose: bool = False
     exclude_waters: bool = True
@@ -174,6 +181,15 @@ class ProteinGraphConfig(BaseModel):
     # External Dependency configs
     get_contacts_config: Optional[GetContactsConfig] = None
     dssp_config: Optional[DSSPConfig] = None
+
+    @validator("alt_locs")
+    def convert_alt_locs_aliases(cls, v):
+        if v is True:
+            return "include"
+        elif v is False:
+            return "exclude"
+        else:
+            return v
 
     def __eq__(self, other: Any) -> bool:
         """Overwrites the BaseModel __eq__ function in order to check more specific cases (like partial functions)."""
