@@ -153,7 +153,7 @@ class ProteinGraphConfig(BaseModel):
 
     granularity: Union[GraphAtoms, GranularityOpts] = "CA"
     keep_hets: List[str] = []
-    insertions: bool = False
+    insertions: bool = True
     alt_locs: bool = False
     pdb_dir: Optional[Path] = None
     verbose: bool = False
