@@ -394,7 +394,7 @@ def test_alt_loc_removal():
     )
 
 
-def test_alt_loc_handling_inclusion():
+def test_alt_loc_inclusion():
     configs = {
         "granularity": "CA",
         "keep_hets": [],
