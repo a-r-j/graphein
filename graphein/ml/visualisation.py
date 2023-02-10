@@ -42,9 +42,10 @@ def plot_pyg_data(
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
     node_size_multiplier: float = 20.0,
+    node_size_feature: str = "degree",
     label_node_ids: bool = True,
     node_colour_map=plt.cm.plasma,
-    edge_color_map=plt.cm.plasma,
+    edge_colour_map=plt.cm.plasma,
     colour_nodes_by: str = "residue_name",
     colour_edges_by: Optional[str] = None,
 ) -> go.Figure:
@@ -75,15 +76,18 @@ def plot_pyg_data(
     :param node_size_multiplier: Scales node size by a constant. Node sizes
         reflect degree. Defaults to ``20.0``.
     :type node_size_multiplier: float
+    :param node_size_feature: Which feature to scale the node size by. Defaults
+        to ``degree``.
+    :type node_size_feature: str
     :param label_node_ids: bool indicating whether or not to plot ``node_id``
         labels. Defaults to ``True``.
     :type label_node_ids: bool
     :param node_colour_map: colour map to use for nodes. Defaults to
         ``plt.cm.plasma``.
     :type node_colour_map: plt.cm
-    :param edge_color_map: colour map to use for edges. Defaults to
+    :param edge_colour_map: colour map to use for edges. Defaults to
         ``plt.cm.plasma``.
-    :type edge_color_map: plt.cm
+    :type edge_colour_map: plt.cm
     :param colour_nodes_by: Specifies how to colour nodes. ``"degree"``,
         ``"seq_position"`` or a node feature.
     :type colour_nodes_by: str
@@ -100,7 +104,7 @@ def plot_pyg_data(
 
     # Add metadata
     nx_graph.name = x.name
-    nx_graph.graph["coords"] = x.coords[0]
+    nx_graph.graph["coords"] = x.coords
     nx_graph.graph["dist_mat"] = x.dist_mat
 
     # Assign coords and seq info to nodes
@@ -108,7 +112,7 @@ def plot_pyg_data(
         d["chain_id"] = x.node_id[i].split(":")[0]
         d["residue_name"] = x.node_id[i].split(":")[1]
         d["seq_position"] = x.node_id[i].split(":")[2]
-        d["coords"] = x.coords[0][i]
+        d["coords"] = x.coords[i]
         if node_colour_tensor is not None:
             d["colour"] = float(node_colour_tensor[i])
 
@@ -124,9 +128,10 @@ def plot_pyg_data(
         node_alpha,
         node_size_min,
         node_size_multiplier,
+        node_size_feature,
         label_node_ids,
         node_colour_map,
-        edge_color_map,
+        edge_colour_map,
         colour_nodes_by if node_colour_tensor is None else "colour",
         colour_edges_by if edge_colour_tensor is None else "colour",
     )

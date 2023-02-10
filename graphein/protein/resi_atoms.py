@@ -117,31 +117,41 @@ and ``"Z"`` denotes ``"GLX"`` which corresponds to``"GLU"`` (``"E"``) **or** ``"
 ``"X"`` denotes unknown (``"UNK"`` or sometimes ``"XAA"``).
 """
 
-STANDARD_AMINO_ACID_MAPPING_TO_1_3: Dict[str, str] = {
-    "A": "ALA",
-    "C": "CYS",
-    "D": "ASP",
-    "E": "GLU",
-    "F": "PHE",
-    "G": "GLY",
-    "H": "HIS",
-    "I": "ILE",
-    "K": "LYS",
-    "L": "LEU",
-    "M": "MET",
-    "N": "ASN",
-    "O": "PYL",
-    "P": "PRO",
-    "Q": "GLN",
-    "R": "ARG",
-    "S": "SER",
-    "T": "THR",
-    "U": "SEC",
-    "V": "VAL",
-    "W": "TRP",
-    "Y": "TYR",
-    "X": "UNK",
+STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
+    "ALA": "A",
+    "CYS": "C",
+    "ASP": "D",
+    "GLU": "E",
+    "PHE": "F",
+    "GLY": "G",
+    "HIS": "H",
+    "ILE": "I",
+    "LYS": "K",
+    "LEU": "L",
+    "MET": "M",
+    "ASN": "N",
+    "PYL": "O",
+    "PRO": "P",
+    "GLN": "Q",
+    "ARG": "R",
+    "SER": "S",
+    "THR": "T",
+    "SEC": "U",
+    "VAL": "V",
+    "TRP": "W",
+    "TYR": "Y",
+    "UNK": "X",
 }
+"""
+Mapping of 3-letter standard amino acids codes to their one-letter form.
+"""
+
+STANDARD_AMINO_ACID_MAPPING_1_TO_3 = {
+    v: k for k, v in STANDARD_AMINO_ACID_MAPPING_3_TO_1.items()
+}
+"""
+Mapping of 1-letter standard amino acids codes to their three-letter form.
+"""
 
 NON_STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
     "CGU": "E",
@@ -153,6 +163,16 @@ NON_STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
 }
 """
 Mapping of 3-letter non-standard amino acids codes to their one-letter form.
+
+See: http://ligand-expo.rcsb.org/
+"""
+
+
+NON_STANDARD_AMINO_ACID_MAPPING_1_TO_3 = {
+    v: k for k, v in NON_STANDARD_AMINO_ACID_MAPPING_3_TO_1.items()
+}
+"""
+Mapping of 1-letter non-standard amino acids codes to their three-letter form.
 
 See: http://ligand-expo.rcsb.org/
 """
@@ -386,6 +406,7 @@ ATOM_NUMBERING_MODIFIED: Dict[str, int] = {
     )
 }
 """Default Ordering of atoms (including non-standard residues) in (dimension 1 of) a protein structure tensor."""
+
 
 BOND_TYPES: List[str] = [
     "hydrophobic",

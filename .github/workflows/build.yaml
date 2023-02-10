@@ -45,7 +45,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           conda-channels: "conda-forge, salilab, pytorch, pyg"
-
       #- name: Set up Python ${{ matrix.python-version }}
       #  uses: actions/setup-python@v2
       #  with:

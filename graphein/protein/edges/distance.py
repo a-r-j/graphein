@@ -127,7 +127,7 @@ def filter_distmat(
             edges_to_excl.extend(list(product(nodes0, nodes1)))
 
     # Filter distance matrix based on indices of edges to exclude
-    if len(exclude_edges):
+    if len(edges_to_excl):
         row_idx_to_excl, col_idx_to_excl = zip(*edges_to_excl)
         distmat.iloc[row_idx_to_excl, col_idx_to_excl] = INFINITE_DIST
         distmat.iloc[col_idx_to_excl, row_idx_to_excl] = INFINITE_DIST
@@ -1087,9 +1087,18 @@ def add_k_nn_edges(
     :return: Graph with knn-based edges added
     :rtype: nx.Graph
     """
+    # Prepare dataframe
     pdb_df = filter_dataframe(
         G.graph["pdb_df"], "node_id", list(G.nodes()), True
     )
+    if (
+        pdb_df["x_coord"].isna().sum()
+        or pdb_df["y_coord"].isna().sum()
+        or pdb_df["z_coord"].isna().sum()
+    ):
+        raise ValueError("Coordinates contain a NaN value.")
+
+    # Construct distance matrix
     dist_mat = compute_distmat(pdb_df)
 
     # Filter edges
@@ -1100,6 +1109,12 @@ def add_k_nn_edges(
         k -= 1
         for n1, n2 in zip(G.nodes(), G.nodes()):
             add_edge(G, n1, n2, kind_name)
+
+    # Reduce k if number of nodes is less (to avoid sklearn error)
+    # Note: - 1 because self-loops are not included
+    if G.number_of_nodes() - 1 < k:
+        k = G.number_of_nodes() - 1
+
     if k == 0:
         return
 
@@ -1114,6 +1129,9 @@ def add_k_nn_edges(
     interacting_nodes = list(zip(outgoing, incoming))
     log.info(f"Found: {len(interacting_nodes)} KNN edges")
     for a1, a2 in interacting_nodes:
+        if dist_mat.loc[a1, a2] == INFINITE_DIST:
+            continue
+
         # Get nodes IDs from indices
         n1 = G.graph["pdb_df"].loc[a1, "node_id"]
         n2 = G.graph["pdb_df"].loc[a2, "node_id"]

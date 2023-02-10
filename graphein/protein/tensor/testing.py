@@ -8,7 +8,7 @@ from graphein.utils.utils import import_message
 
 from ..resi_atoms import (
     ATOM_NUMBERING_MODIFIED,
-    STANDARD_AMINO_ACID_MAPPING_TO_1_3,
+    STANDARD_AMINO_ACID_MAPPING_1_TO_3,
 )
 from .sequence import get_atom_indices
 from .types import AtomTensor, BackboneTensor, CoordTensor, ResidueTensor
@@ -97,7 +97,7 @@ def has_complete_residue(
         :func:`graphein.protein.tensor.testing.is_complete_structure`
     """
     if len(residue_type) == 1:
-        residue_type = STANDARD_AMINO_ACID_MAPPING_TO_1_3[residue_type]
+        residue_type = STANDARD_AMINO_ACID_MAPPING_1_TO_3[residue_type]
     true_residue_indices = get_atom_indices()[residue_type]
 
     def _get_index(y: torch.Tensor) -> Tuple[int, ...]:
