@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union, Literal
+from typing import Any, Callable, List, Literal, Optional, Union
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel, validator
@@ -97,7 +97,12 @@ GraphAtoms = Literal[
 GranularityOpts = Literal["atom", "centroids"]
 """Allowable granularity options for nodes in the graph."""
 
-AltLocsOpts = Union[bool, Literal["max_occupancy", "min_occupancy", "first", "last", "exclude", "include"]]
+AltLocsOpts = Union[
+    bool,
+    Literal[
+        "max_occupancy", "min_occupancy", "first", "last", "exclude", "include"
+    ],
+]
 """Allowable altlocs options for alternative locations handling."""
 
 

@@ -223,7 +223,7 @@ def subset_structure_to_atom_type(
 
 
 def remove_alt_locs(
-        df: pd.DataFrame, keep: str = "max_occupancy"
+    df: pd.DataFrame, keep: str = "max_occupancy"
 ) -> pd.DataFrame:
     """
     This function removes alternatively located atoms from PDB DataFrames
