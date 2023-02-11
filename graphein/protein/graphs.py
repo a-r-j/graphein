@@ -688,7 +688,12 @@ def construct_graph(
     :rtype: nx.Graph
     """
 
-    if pdb_code is None and pdb_path is None and uniprot_id is None and df is None:
+    if (
+        pdb_code is None
+        and pdb_path is None
+        and uniprot_id is None
+        and df is None
+    ):
         raise ValueError(
             "Either a PDB ID, UniProt ID, a dataframe or a path to a local PDB file"
             " must be specified to construct a graph"
