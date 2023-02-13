@@ -622,6 +622,7 @@ def construct_graph(
     pdb_path: Optional[str] = None,
     uniprot_id: Optional[str] = None,
     pdb_code: Optional[str] = None,
+    df: Optional[pd.DataFrame] = None,
     chain_selection: str = "all",
     model_index: int = 1,
     df_processing_funcs: Optional[List[Callable]] = None,
@@ -632,7 +633,8 @@ def construct_graph(
     verbose: bool = True,
 ) -> nx.Graph:
     """
-    Constructs protein structure graph from a ``pdb_code`` or ``pdb_path``.
+    Constructs protein structure graph from a ``pdb_code``, ``pdb_path``,
+    ``uniprot_id`` or a BioPandas DataFrame containing ``ATOM`` data.
 
     Users can provide a :class:`~graphein.protein.config.ProteinGraphConfig`
     object to specify construction parameters.
@@ -655,6 +657,9 @@ def construct_graph(
     :param uniprot_id: UniProt accession ID to build graph from AlphaFold2DB.
         Default is ``None``.
     :type uniprot_id: str, optional
+    :param df: Pandas dataframe containing ATOM data to build graph from.
+        Default is ``None``.
+    :type df: pd.DataFrame, optional
     :param chain_selection: String of polypeptide chains to include in graph.
         E.g ``"ABDF"`` or ``"all"``. Default is ``"all"``.
     :type chain_selection: str
@@ -683,9 +688,14 @@ def construct_graph(
     :rtype: nx.Graph
     """
 
-    if pdb_code is None and pdb_path is None and uniprot_id is None:
+    if (
+        pdb_code is None
+        and pdb_path is None
+        and uniprot_id is None
+        and df is None
+    ):
         raise ValueError(
-            "Either a PDB ID, UniProt ID or a path to a local PDB file"
+            "Either a PDB ID, UniProt ID, a dataframe or a path to a local PDB file"
             " must be specified to construct a graph"
         )
 
@@ -698,10 +708,6 @@ def construct_graph(
     with context as progress:
         if verbose:
             task1 = progress.add_task("Reading PDB file...", total=1)
-            # Get name from pdb_file is no pdb_code is provided
-            # if pdb_path and (pdb_code is None and uniprot_id is None):
-            #    pdb_code = get_protein_name_from_filename(pdb_path)
-            #    pdb_code = pdb_code if len(pdb_code) == 4 else None
             progress.advance(task1)
 
         # If config params are provided, overwrite them
@@ -730,13 +736,15 @@ def construct_graph(
             if config.edge_metadata_functions is None
             else config.edge_metadata_functions
         )
-
-        raw_df = read_pdb_to_dataframe(
-            pdb_path,
-            pdb_code,
-            uniprot_id,
-            model_index=model_index,
-        )
+        if df is None:
+            raw_df = read_pdb_to_dataframe(
+                pdb_path,
+                pdb_code,
+                uniprot_id,
+                model_index=model_index,
+            )
+        else:
+            raw_df = df
 
         if verbose:
             task2 = progress.add_task("Processing PDB dataframe...", total=1)
