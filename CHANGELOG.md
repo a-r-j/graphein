@@ -13,6 +13,7 @@
 * [Logging] - [#242](https://github.com/a-r-j/graphein/pull/242) Adds control of protein graph construction logging. Resolves [#238](https://github.com/a-r-j/graphein/issues/238)
 
 #### Protein
+* [Feature] - [#264](https://github.com/a-r-j/graphein/pull/264) Adds entrypoint to `graphein.protein.graphs.construct_graph` for passing in a BioPandas dataframe directly.
 * [Feature] - [#229](https://github.com/a-r-j/graphein/pull/220) Adds support for filtering KNN edges based on self-loops and chain membership. Contribution by @anton-bushuiev.
 * [Feature] - [#234](https://github.com/a-r-j/graphein/pull/234) Adds support for aggregating node features over residues (`graphein.protein.features.sequence.utils.aggregate_feature_over_residues`).
 * [Bugfix] - [#234](https://github.com/a-r-j/graphein/pull/234) fixes use of nullcontext in silent graph construction.
