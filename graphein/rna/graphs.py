@@ -355,7 +355,6 @@ def construct_graph(
     # TODO Docstring
 
     if pdb_path is not None or pdb_code is not None:
-
         return construct_rna_graph_3d(
             config=config,
             name=name,

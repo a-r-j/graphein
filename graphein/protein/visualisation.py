@@ -192,7 +192,7 @@ def colour_nodes(
     if colour_by == "degree":
         # Get max number of edges connected to a single node
         edge_max = max(G.degree[i] for i in G.nodes())
-        colors = [colour_map(G.degree[i] / edge_max) for i in G.nodes()]
+        colors = [colour_map(G.degree[i] / (edge_max + 1)) for i in G.nodes()]
     elif colour_by == "seq_position":
         colors = [colour_map(i / n) for i in range(n)]
     elif colour_by == "chain":
@@ -200,7 +200,7 @@ def colour_nodes(
         chain_colours = dict(
             zip(chains, list(colour_map(1 / len(chains), 1, len(chains))))
         )
-        colors = [chain_colours[d["chain_id"]] for n, d in G.nodes(data=True)]
+        colors = [chain_colours[d["chain_id"]] for _, d in G.nodes(data=True)]
     elif colour_by == "plddt":
         levels: List[str] = ["Very High", "Confident", "Low", "Very Low"]
         mapping = dict(zip(sorted(levels), count()))
@@ -269,7 +269,7 @@ def colour_edges(
         edge_types = set(nx.get_edge_attributes(G, colour_by).values())
         mapping = dict(zip(sorted(edge_types), count()))
         colors = [
-            colour_map(mapping[d[colour_by]] / len(edge_types))
+            colour_map(mapping[d[colour_by]] / (len(edge_types) + 1))
             for _, _, d in G.edges(data=True)
         ]
 
@@ -524,7 +524,6 @@ def plot_protein_structure_graph(
 
     # 3D network plot
     with plt.style.context(plot_style):
-
         fig = plt.figure(figsize=figsize)
         ax = Axes3D(fig, auto_add_to_figure=True)
 
@@ -718,23 +717,17 @@ def plot_distance_matrix(
             title = "Distance matrix"
 
     if use_plotly:
-        fig = px.imshow(
+        return px.imshow(
             dist_mat,
             x=x_range,
             y=y_range,
             labels=dict(color="Distance"),
             title=title,
         )
-    else:
-        if show_residue_labels:
-            tick_labels = x_range
-        else:
-            tick_labels = []
-        fig = sns.heatmap(
-            dist_mat, xticklabels=tick_labels, yticklabels=tick_labels
-        ).set(title=title)
-
-    return fig
+    tick_labels = x_range if show_residue_labels else []
+    return sns.heatmap(
+        dist_mat, xticklabels=tick_labels, yticklabels=tick_labels
+    ).set(title=title)
 
 
 def plot_distance_landscape(
@@ -829,6 +822,7 @@ def asteroid_plot(
     node_size_min: float = 20,
     node_size_multiplier: float = 10,
 ) -> Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]:
+    # sourcery skip: remove-unnecessary-else, swap-if-else-branches
     """Plots a k-hop subgraph around a node as concentric shells.
 
     Radius of each point is proportional to the degree of the node
@@ -902,8 +896,7 @@ def asteroid_plot(
                 return_as_rgba=True,
             )
             show_legend_bools = [
-                (True if x not in edge_colors[:i] else False)
-                for i, x in enumerate(edge_colors)
+                x not in edge_colors[:i] for i, x in enumerate(edge_colors)
             ]
             edge_trace = []
             for i, (u, v) in enumerate(subgraph.edges()):
@@ -972,15 +965,15 @@ def asteroid_plot(
         )
 
         data = edge_trace + [node_trace] if show_edges else [node_trace]
-        fig = go.Figure(
+        return go.Figure(
             data=data,
             layout=go.Layout(
-                title=title if title else f'Asteroid Plot - {g.graph["name"]}',
+                title=title or f'Asteroid Plot - {g.graph["name"]}',
                 width=width,
                 height=height,
                 titlefont_size=16,
                 legend=dict(yanchor="top", y=1, xanchor="left", x=1.10),
-                showlegend=True if show_legend else False,
+                showlegend=show_legend,
                 hovermode="closest",
                 margin=dict(b=20, l=5, r=5, t=40),
                 xaxis=dict(
@@ -991,7 +984,6 @@ def asteroid_plot(
                 ),
             ),
         )
-        return fig
     else:
         nx.draw_shell(subgraph, nlist=shells, with_labels=show_labels)
 
@@ -1081,7 +1073,7 @@ def plot_chord_diagram(
         ================  ==================  ===============================
     :type kwargs: Dict[str, Any]
     """
-    mat = nx.adjacency_matrix(g)
+    mat = nx.adjacency_matrix(g).todense()
     names = list(g.nodes)
     if show_names:
         if g.graph["node_type"] == "chain":

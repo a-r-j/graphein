@@ -1,4 +1,5 @@
 """Functions for working with Protein Structure Graphs. Based on tests written by Eric Ma in PIN Library"""
+import copy
 from functools import partial
 
 # %%
@@ -9,15 +10,20 @@ from functools import partial
 # Code Repository: https://github.com/a-r-j/graphein
 from pathlib import Path
 
+import networkx as nx
+import pandas as pd
 import pytest
 
 import graphein.protein as gp
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
+    INFINITE_DIST,
+    add_k_nn_edges,
     add_salt_bridges,
     add_sequence_distance_edges,
     add_vdw_clashes,
     add_vdw_interactions,
+    filter_distmat,
     get_edges_by_bond_type,
     get_ring_atoms,
     get_ring_centroids,
@@ -72,7 +78,7 @@ def test_nodes_are_strings(net):
 def test_add_hydrophobic_interactions(net):
     """Test the function add_hydrophobic_interactions_."""
     resis = get_edges_by_bond_type(net, "hydrophobic")
-    for (r1, r2) in resis:
+    for r1, r2 in resis:
         assert net.nodes[r1]["residue_name"] in HYDROPHOBIC_RESIS
         assert net.nodes[r2]["residue_name"] in HYDROPHOBIC_RESIS
 
@@ -81,7 +87,7 @@ def test_add_disulfide_interactions(net):
     """Test the function add_disulfide_interactions_."""
     resis = get_edges_by_bond_type(net, "disulfide")
 
-    for (r1, r2) in resis:
+    for r1, r2 in resis:
         assert net.nodes[r1]["residue_name"] == "CYS"
         assert net.nodes[r2]["residue_name"] == "CYS"
 
@@ -184,7 +190,7 @@ def test_add_peptide_bonds():
     G = construct_graph(pdb_path=str(file_path))
 
     for u, v in G.edges():
-        assert abs(int(u.split(":")[-1]) - int(v.split(":")[-1])) == 1
+        assert abs(int(u.split(":")[2]) - int(v.split(":")[2])) == 1
 
 
 def test_add_sequence_distance_edges():
@@ -199,7 +205,7 @@ def test_add_sequence_distance_edges():
         )
         G = construct_graph(pdb_path=str(file_path), config=config)
         for u, v in G.edges():
-            assert abs(int(u.split(":")[-1]) - int(v.split(":")[-1])) == d
+            assert abs(int(u.split(":")[2]) - int(v.split(":")[2])) == d
 
 
 def test_salt_bridge_interactions():
@@ -312,3 +318,113 @@ def test_vdw_clashes():
         assert (
             d["distance"] < rad1 + rad2
         ), f"Vdw clash distance is too long: {d['distance']}"
+
+
+def test_filter_distmat():
+    pdb_df = pd.DataFrame(
+        {
+            "node_id": ["A:HIS:1", "A:TYR:2", "B:ALA:3"],
+            "chain_id": ["A", "A", "B"],
+        }
+    )
+
+    distmat = pd.DataFrame([[0.0, 1.0, 2.0], [1.0, 0.0, 2.0], [2.0, 2.0, 0.0]])
+
+    exclude_edges_vals = [["intra"], ["inter"]]
+    expected_distmats = [
+        pd.DataFrame(
+            [
+                [0.0, INFINITE_DIST, 2.0],
+                [INFINITE_DIST, 0.0, 2.0],
+                [2.0, 2.0, 0.0],
+            ]
+        ),
+        pd.DataFrame(
+            [
+                [0.0, 1.0, INFINITE_DIST],
+                [1.0, 0.0, INFINITE_DIST],
+                [INFINITE_DIST, INFINITE_DIST, 0.0],
+            ]
+        ),
+    ]
+
+    for vals, distmat_expected in zip(exclude_edges_vals, expected_distmats):
+        distmat_out = filter_distmat(pdb_df, distmat, vals, False)
+        pd.testing.assert_frame_equal(distmat_expected, distmat_out)
+
+
+def test_add_k_nn_edges():
+    pdb_df = pd.DataFrame(
+        {
+            "residue_number": [1, 2, 3, 4],
+            "node_id": ["A:HIS:1", "A:TYR:2", "B:ALA:3", "B:ALA:4"],
+            "chain_id": ["A", "A", "B", "B"],
+            "x_coord": [1.0, 2.0, 4.0, 8.0],
+            "y_coord": [0.0, 0.0, 0.0, 0.0],
+            "z_coord": [0.0, 0.0, 0.0, 0.0],
+        }
+    )
+    g_empty = nx.empty_graph(pdb_df["node_id"])
+    g_empty.graph["pdb_df"] = pdb_df
+    args_edges_pairs = [
+        (
+            dict(k=1),
+            [
+                ("A:HIS:1", "A:TYR:2"),
+                ("A:TYR:2", "B:ALA:3"),
+                ("B:ALA:3", "B:ALA:4"),
+            ],
+        ),
+        (
+            dict(k=2),
+            [
+                ("A:HIS:1", "A:TYR:2"),
+                ("A:HIS:1", "B:ALA:3"),
+                ("A:TYR:2", "B:ALA:3"),
+                ("A:TYR:2", "B:ALA:4"),
+                ("B:ALA:3", "B:ALA:4"),
+            ],
+        ),
+        (
+            dict(k=1, exclude_edges=["intra"]),
+            [
+                ("A:HIS:1", "B:ALA:3"),
+                ("A:TYR:2", "B:ALA:3"),
+                ("A:TYR:2", "B:ALA:4"),
+            ],
+        ),
+        (
+            dict(k=1, exclude_edges=["inter"]),
+            [
+                ("A:HIS:1", "A:TYR:2"),
+                ("B:ALA:3", "B:ALA:4"),
+            ],
+        ),
+        (
+            dict(k=2, exclude_edges=["intra"], exclude_self_loops=False),
+            [
+                ("A:HIS:1", "B:ALA:3"),
+                ("A:TYR:2", "B:ALA:3"),
+                ("A:TYR:2", "B:ALA:4"),
+                ("A:HIS:1", "A:HIS:1"),
+                ("A:TYR:2", "A:TYR:2"),
+                ("B:ALA:3", "B:ALA:3"),
+                ("B:ALA:4", "B:ALA:4"),
+            ],
+        ),
+        (
+            dict(k=1, exclude_edges=["intra"], exclude_self_loops=False),
+            [
+                ("A:HIS:1", "A:HIS:1"),
+                ("A:TYR:2", "A:TYR:2"),
+                ("B:ALA:3", "B:ALA:3"),
+                ("B:ALA:4", "B:ALA:4"),
+            ],
+        ),
+    ]
+
+    for args, edges_expected in args_edges_pairs:
+        g = copy.deepcopy(g_empty)
+        add_k_nn_edges(g, **args)
+        edges_real = list(g.edges())
+        assert set(edges_real) == set(edges_expected)

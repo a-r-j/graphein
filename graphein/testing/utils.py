@@ -126,11 +126,11 @@ def edge_data_equal(
     if not edges_equal(g, h):
         log.info("Edge lists do not match")
         return False
-    for (u, v) in g.edges():
+    for u, v in g.edges():
         if not compare_exact(g.edges[u, v], h.edges[u, v]):
             log.info(f"Edge {u}-{v} (graph g) features do not match graph h")
             return False
-    for (u, v) in h.edges():
+    for u, v in h.edges():
         if not compare_exact(g.edges[u, v], h.edges[u, v]):
             log.info(f"Edge {u}-{v} (graph h) features do not match graph g")
             return False

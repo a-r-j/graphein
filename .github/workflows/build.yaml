@@ -16,26 +16,26 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: [3.7, 3.8]
-        torch: [1.6.0, 1.7.0, 1.8.0, 1.9.0]
-        include:
-          - torch: 1.6.0
-            torchvision: 0.7.0
-          - torch: 1.7.0
-            torchvision: 0.8.1
-          - torch: 1.8.0
-            torchvision: 0.9.0
-          - torch: 1.9.0
-            torchvision: 0.10.0
-          - torch: 1.8.0
-            torchvision: 0.9.0
-            python-version: 3.9
-          - torch: 1.9.0
-            torchvision: 0.10.0
-            python-version: 3.8
-          - torch: 1.9.0
-            torchvision: 0.10.0
-            python-version: 3.9
+        python-version: [3.8, 3.9]
+        torch: [1.12.0, 1.13.0]
+        #include:
+        #  - torch: 1.6.0
+        #    torchvision: 0.7.0
+        #  - torch: 1.7.0
+        #    torchvision: 0.8.1
+        #  - torch: 1.8.0
+        #    torchvision: 0.9.0
+        #  - torch: 1.9.0
+        #    torchvision: 0.10.0
+        #  - torch: 1.8.0
+        #    torchvision: 0.9.0
+        #    python-version: 3.9
+        #  - torch: 1.9.0
+        #    torchvision: 0.10.0
+        #    python-version: 3.8
+        #  - torch: 1.9.0
+        #    torchvision: 0.10.0
+        #    python-version: 3.9
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -44,8 +44,7 @@ jobs:
         uses: s-weigand/setup-conda@v1
         with:
           python-version: ${{ matrix.python-version }}
-          conda-channels: "conda-forge, salilab"
-
+          conda-channels: "conda-forge, salilab, pytorch, pyg"
       #- name: Set up Python ${{ matrix.python-version }}
       #  uses: actions/setup-python@v2
       #  with:
@@ -57,7 +56,10 @@ jobs:
       - name: Install DSSP
         run: conda install -c salilab dssp
       - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: conda install -c pytorch pytorch==${{matrix.torch}} cpuonly
+        #run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install PyG
+        run: conda install -c pyg pyg
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
       - name: Install Graphein
@@ -66,7 +68,9 @@ jobs:
         run: pip install -r .requirements/extras.in
       - name: Install Dev Dependencies
         run: pip install -r .requirements/dev.in
+      - name: Install doc dependencies
+        run: pip install -r .requirements/docs.in
       - name: Run unit tests and generate coverage report
         run: pytest .
       - name: Test notebook execution
-        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb"
+        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb"

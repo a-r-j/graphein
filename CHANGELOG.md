@@ -1,12 +1,52 @@
-### 1.5.3 - UNRELEASED
+### 1.6.0dev - UNRELEASED
+
+#### New Features
+* [Metrics] - [#245](https://github.com/a-r-j/graphein/pull/221) Adds a selection of structural metrics relevant to protein structures.
+* [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/244) Adds suite of utilities for working directly with tensor-based representations of proteins (graphein.protein.tensor).
+* [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/244) Adds suite of utilities for working with ESMfold (graphein.protein.folding_utils).
+
+
 
 #### Improvements
+
 * [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
+* [Logging] - [#242](https://github.com/a-r-j/graphein/pull/242) Adds control of protein graph construction logging. Resolves [#238](https://github.com/a-r-j/graphein/issues/238)
 
 #### Protein
+* [Feature] - [#264](https://github.com/a-r-j/graphein/pull/264) Adds entrypoint to `graphein.protein.graphs.construct_graph` for passing in a BioPandas dataframe directly.
+* [Feature] - [#229](https://github.com/a-r-j/graphein/pull/220) Adds support for filtering KNN edges based on self-loops and chain membership. Contribution by @anton-bushuiev.
+* [Feature] - [#234](https://github.com/a-r-j/graphein/pull/234) Adds support for aggregating node features over residues (`graphein.protein.features.sequence.utils.aggregate_feature_over_residues`).
+* [Bugfix] - [#234](https://github.com/a-r-j/graphein/pull/234) fixes use of nullcontext in silent graph construction.
+* [Bugfix] - [#234](https://github.com/a-r-j/graphein/pull/234) Fixes division by zero errors for edge colouring in visualisation.
+* [Bugfix] - [#254](https://github.com/a-r-j/graphein/pull/254) Fix peptide bond addition for all atom graphs.
+* [Bugfix] - [#223](https://github.com/a-r-j/graphein/pull/220) Fix handling of insertions in protein graphs. Insertions are now given IDs like: `A:SER:12:A`. Contribution by @manonreau.
+* [Bugfix] - [#226](https://github.com/a-r-j/graphein/pull/226) Catches failed AF2 structure downloads [#225](https://github.com/a-r-j/graphein/issues/225)
 
+* [Bugfix] - [#229](https://github.com/a-r-j/graphein/pull/220) Fixes bug in KNN edge computation. Contribution by @anton-bushuiev.
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes edge metadata conversion to PyG. Contribution by @manonreau.
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes centroid atom grouping & avoids unnecessary edge computation where none are found. Contribution by @manonreau.
+
+
+#### ML
+* [Bugfix] - [#234](https://github.com/a-r-j/graphein/pull/234) - Fixes bugs and improves `conversion.convert_nx_to_pyg` and `visualisation.plot_pyg_data`. Removes distance matrix (`dist_mat`) from defualt set of features converted to tensor.
+
+#### Utils
+* [Improvement] - [#234](https://github.com/a-r-j/graphein/pull/234) - Adds `parse_aggregation_type` to retrieve aggregation functions.
+
+#### Constants
+* [Improvement] - [#234](https://github.com/a-r-j/graphein/pull/234) - Adds 1 to 3 mappings to `graphein.protein.resi_atoms`.
+
+
+#### Documentation
+* [Tensor Module] - [#244](https://github.com/a-r-j/graphein/pull/244) Documents new graphein.protein.tensor module.
+* [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) Updates to intersphinx maps
+
+
+#### Package
+* [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) CI now runs for python 3.8, 3.9 and torch 1.12.0 and 1.13.0
+* [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) Separate builds for core library and library with DL dependencies.
+* [Licence] - [#244](https://github.com/a-r-j/graphein/pull/244) Bump to 2023
+
 
 ### 1.5.2 - 19/9/2022
 
