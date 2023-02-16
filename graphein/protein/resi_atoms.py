@@ -15,10 +15,10 @@ We also include mappings of covalent radii and bond lengths for the amino acids 
 
 
 from typing import Dict, List, Union
-from typing_extensions import Literal
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from typing_extensions import Literal
 
 BACKBONE_ATOMS: List[str] = ["N", "CA", "C", "O"]
 """Atoms present in Amino Acid Backbones."""
@@ -1094,7 +1094,7 @@ HYDROPHOBICITY_TYPE = Literal["kd", "ww", "hh", "mf", "tt"]
 """Supported hydrophobicity types. See :const:`~graphein.protein.resi_atoms.HYDROPHOBICITY_SCALES` for further details."""
 
 HYDROPHOBICITY_SCALES: Dict[str, Dict[str, float]] = {
-    "kd": { # kdHydrophobicity (a) 
+    "kd": {  # kdHydrophobicity (a)
         "ILE": 4.5,
         "VAL": 4.2,
         "LEU": 3.8,
@@ -1116,7 +1116,7 @@ HYDROPHOBICITY_SCALES: Dict[str, Dict[str, float]] = {
         "LYS": -3.9,
         "ARG": -4.5,
     },
-    "ww": { # wwHydrophobicity (b)
+    "ww": {  # wwHydrophobicity (b)
         "ILE": 0.31,
         "VAL": -0.07,
         "LEU": 0.56,
@@ -1138,7 +1138,7 @@ HYDROPHOBICITY_SCALES: Dict[str, Dict[str, float]] = {
         "LYS": -0.99,
         "ARG": -0.81,
     },
-    "hh": { # hhHydrophobicity (c)
+    "hh": {  # hhHydrophobicity (c)
         "ILE": -0.60,
         "VAL": -0.31,
         "LEU": -0.55,
@@ -1160,7 +1160,7 @@ HYDROPHOBICITY_SCALES: Dict[str, Dict[str, float]] = {
         "LYS": 2.71,
         "ARG": 2.58,
     },
-    "mf": { # mfHydrophobicity (d)
+    "mf": {  # mfHydrophobicity (d)
         "ILE": -1.56,
         "VAL": -0.78,
         "LEU": -1.81,
@@ -1182,8 +1182,8 @@ HYDROPHOBICITY_SCALES: Dict[str, Dict[str, float]] = {
         "LYS": 5.39,
         "ARG": 3.71,
     },
-    "tt": { # ttHydrophobicity (e)
-       "ILE": 1.97,
+    "tt": {  # ttHydrophobicity (e)
+        "ILE": 1.97,
         "VAL": 1.46,
         "LEU": 1.82,
         "PHE": 1.98,
@@ -1202,18 +1202,18 @@ HYDROPHOBICITY_SCALES: Dict[str, Dict[str, float]] = {
         "ASP": -3.27,
         "ASN": -1.62,
         "LYS": -3.46,
-        "ARG": -2.57, 
-    }
+        "ARG": -2.57,
+    },
 }
 """
-Set of (5) dictionaries that map amino acid 3-letter codes to their hydrophobicity. 
+Set of (5) dictionaries that map amino acid 3-letter codes to their hydrophobicity.
 
-The scales included are from Chimera (UCSF) https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/midas/hydrophob.html 
+The scales included are from Chimera (UCSF) https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/midas/hydrophob.html
 and are as follows:
 
     * kdHydrophobicity
-        (a) A simple method for displaying the hydropathic character of a protein. Kyte J, Doolittle RF. J Mol Biol. 1982 May 5;157(1):105-32. 
-        https://www.ncbi.nlm.nih.gov/pubmed/7108955 
+        (a) A simple method for displaying the hydropathic character of a protein. Kyte J, Doolittle RF. J Mol Biol. 1982 May 5;157(1):105-32.
+        https://www.ncbi.nlm.nih.gov/pubmed/7108955
 
     * wwHydrophobicity
         (b) Experimentally determined hydrophobicity scale for proteins at membrane interfaces. Wimley WC, White SH. Nat Struct Biol. 1996 Oct;3(10):842-8.
@@ -1223,17 +1223,17 @@ and are as follows:
         (c) Recognition of transmembrane helices by the endoplasmic reticulum translocon. Hessa T, Kim H, Bihlmaier K, Lundin C, Boekel J, Andersson H, Nilsson I, White SH, von Heijne G. Nature. 2005 Jan 27;433(7024):377-81, supplementary data.
         https://www.ncbi.nlm.nih.gov/pubmed/15674282
 
-        In this scale, negative values indicate greater hydrophobicity. 
+        In this scale, negative values indicate greater hydrophobicity.
 
     * mfHydrophobicity
         (d)  Side-chain hydrophobicity scale derived from transmembrane protein folding into lipid bilayers. Moon CP, Fleming KG. Proc Natl Acad Sci USA. 2011 Jun 21;108(25):10174-7, supplementary data.
-        https://www.ncbi.nlm.nih.gov/pubmed/21606332 
+        https://www.ncbi.nlm.nih.gov/pubmed/21606332
 
         In this scale, negative values indicate greater hydrophobicity.
-    
+
     * ttHydrophobicity
         (e) An amino acid “transmembrane tendency” scale that approaches the theoretical limit to accuracy for prediction of transmembrane helices: relationship to biological hydrophobicity. Zhao G, London E. Protein Sci. 2006 Aug;15(8):1987-2001.
-        https://www.ncbi.nlm.nih.gov/pubmed/16877712 
+        https://www.ncbi.nlm.nih.gov/pubmed/16877712
 """
 
 ISOELECTRIC_POINTS: Dict[str, float] = {

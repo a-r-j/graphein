@@ -431,7 +431,7 @@ def get_graph_attribute_names(g: nx.Graph) -> List[str]:
     """
     return list(g.graph.keys())
 
-  
+
 def parse_aggregation_type(aggregation_type: AggregationType) -> Callable:
     """Returns an aggregation function by name
 
@@ -457,4 +457,3 @@ def parse_aggregation_type(aggregation_type: AggregationType) -> Callable:
             f" Please use min, max, mean, median, sum"
         )
     return func
-
