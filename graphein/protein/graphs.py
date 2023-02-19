@@ -493,6 +493,13 @@ def initialise_graph_with_metadata(
             sequence = protein_df.loc[protein_df["chain_id"] == c][
                 "residue_name"
             ].str.cat()
+        elif granularity == "atom":
+            protein_df = protein_df.loc[protein_df["atom_name"] == "CA"]
+            sequence = (
+                protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
+                .apply(three_to_one_with_mods)
+                .str.cat()
+            )
         else:
             sequence = (
                 protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
