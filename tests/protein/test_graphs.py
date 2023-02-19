@@ -330,31 +330,31 @@ def test_sequence_features():
         assert f"biovec_embedding_{chain}" in G.graph
         assert f"molecular_weight_{chain}" in G.graph
 
+
 # Checks that the sequence is extracted correctly from PDB file
 def test_graph_sequence_feature():
-
-    pdb_dir = Path(__file__).parent / "test_data" 
+    pdb_dir = Path(__file__).parent / "test_data"
     pdb = "4hhb"
 
     g_atom = construct_graph(
         pdb_code=pdb,
         config=ProteinGraphConfig(
             pdb_dir=pdb_dir,
-            granularity="atom", # atomistic 
-        )
+            granularity="atom",  # atomistic
+        ),
     )
     g_res = construct_graph(
         pdb_code=pdb,
         config=ProteinGraphConfig(
             pdb_dir=pdb_dir,
-            granularity="CA", # residue
-        )
+            granularity="CA",  # residue
+        ),
     )
 
-    for c in g_atom.graph['chain_ids']:
-    # assert sequences are equal
-        assert g_atom.graph[f'sequence_{c}'] == g_atom.graph[f'sequence_{c}']
-        
+    for c in g_atom.graph["chain_ids"]:
+        # assert sequences are equal
+        assert g_atom.graph[f"sequence_{c}"] == g_atom.graph[f"sequence_{c}"]
+
 
 def test_insertion_handling():
     configs = {
