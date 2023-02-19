@@ -4,13 +4,12 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import logging
 
 import networkx as nx
 import numpy as np
-import pandas as pd
+from loguru import logger as log
 
-from graphein.protein.utils import filter_dataframe
+from graphein.protein.utils import compute_rgroup_dataframe, filter_dataframe
 
 
 def add_sidechain_vector(
@@ -18,10 +17,12 @@ def add_sidechain_vector(
 ):
     """Adds vector from node to average position of sidechain atoms.
 
-    We compute the mean of the sidechain atoms for each node. For this we use the ``rgroup_df`` dataframe.
-    If the graph does not contain the ``rgroup_df`` dataframe, we compute it from the ``raw_pdb_df``.
-    If scale, we scale the vector to the unit vector. If reverse is True,
-    we reverse the vector (``sidechain - node``). If reverse is false (default) we compute (``node - sidechain``).
+    We compute the mean of the sidechain atoms for each node. For this we use
+    the ``rgroup_df`` dataframe. If the graph does not contain the ``rgroup_df``
+    dataframe, we compute it from the ``raw_pdb_df``. If ``scale``, we scale
+    the vector to the unit vector. If ``reverse`` is ``True``, we reverse the
+    vector (``sidechain - node``). If reverse is false (default) we compute
+    (``node - sidechain``).
 
     :param g: Graph to add vector to.
     :type g: nx.Graph
@@ -63,13 +64,15 @@ def add_sidechain_vector(
 def add_beta_carbon_vector(
     g: nx.Graph, scale: bool = True, reverse: bool = False
 ):
-    """Adds vector from node (typically alpha carbon) to position of beta carbon.
+    """Adds vector from node (typically alpha carbon) to position of beta
+    carbon.
 
-    Glycine does not have a beta carbon, so we set it to ``np.array([0, 0, 0])``.
-    We extract the position of the beta carbon from the unprocessed atomic PDB dataframe.
-    For this we use the ``raw_pdb_df`` dataframe.
-    If scale, we scale the vector to the unit vector. If reverse is True,
-    we reverse the vector (``C beta - node``). If reverse is false (default) we compute (``node - C beta``).
+    Glycine does not have a beta carbon, so we set it to
+    ``np.array([0, 0, 0])``. We extract the position of the beta carbon from the
+    unprocessed atomic PDB dataframe. For this we use the ``raw_pdb_df``
+    DataFrame. If ``scale``, we scale the vector to the unit vector. If
+    ``reverse`` is ``True``, we reverse the vector (``C beta - node``).
+    If ``reverse`` is ``False`` (default) we compute (``node - C beta``).
 
     :param g: Graph to add vector to.
     :type g: nx.Graph
@@ -115,9 +118,11 @@ def add_sequence_neighbour_vector(
     """Computes vector from node to adjacent node in sequence.
     Typically used with ``CA`` (alpha carbon) graphs.
 
-    If ``n_to_c`` is ``True`` (default), we compute the vectors from the N terminus to the C terminus (canonical direction).
-    If ``reverse`` is ``False`` (default), we compute ``Node_i - Node_{i+1}``.
-    If ``reverse is ``True``, we compute ``Node_{i+1} - Node_i``.
+    If ``n_to_c`` is ``True`` (default), we compute the vectors from the N
+    terminus to the C terminus (canonical direction). If ``reverse`` is
+    ``False`` (default), we compute ``Node_i - Node_{i+1}``. If ``reverse is
+    ``True``, we compute ``Node_{i+1} - Node_i``.
+
     :param g: Graph to add vector to.
     :type g: nx.Graph
     :param scale: Scale vector to unit vector. Defaults to ``True``.
@@ -130,7 +135,6 @@ def add_sequence_neighbour_vector(
     suffix = "n_to_c" if n_to_c else "c_to_n"
     # Iterate over every chain
     for chain_id in g.graph["chain_ids"]:
-
         # Find chain residues
         chain_residues = [
             (n, v) for n, v in g.nodes(data=True) if v["chain_id"] == chain_id

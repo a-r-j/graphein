@@ -1,8 +1,99 @@
+### 1.6.0dev - UNRELEASED
+
+#### New Features
+* [Metrics] - [#245](https://github.com/a-r-j/graphein/pull/221) Adds a selection of structural metrics relevant to protein structures.
+* [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/244) Adds suite of utilities for working directly with tensor-based representations of proteins (graphein.protein.tensor).
+* [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/244) Adds suite of utilities for working with ESMfold (graphein.protein.folding_utils).
+
+
+
+#### Improvements
+
+* [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
+* [Logging] - [#242](https://github.com/a-r-j/graphein/pull/242) Adds control of protein graph construction logging. Resolves [#238](https://github.com/a-r-j/graphein/issues/238)
+
+#### Protein
+* [Feature] - [#264](https://github.com/a-r-j/graphein/pull/264) Adds entrypoint to `graphein.protein.graphs.construct_graph` for passing in a BioPandas dataframe directly.
+* [Feature] - [#229](https://github.com/a-r-j/graphein/pull/220) Adds support for filtering KNN edges based on self-loops and chain membership. Contribution by @anton-bushuiev.
+* [Feature] - [#234](https://github.com/a-r-j/graphein/pull/234) Adds support for aggregating node features over residues (`graphein.protein.features.sequence.utils.aggregate_feature_over_residues`).
+* [Bugfix] - [#234](https://github.com/a-r-j/graphein/pull/234) fixes use of nullcontext in silent graph construction.
+* [Bugfix] - [#234](https://github.com/a-r-j/graphein/pull/234) Fixes division by zero errors for edge colouring in visualisation.
+* [Bugfix] - [#254](https://github.com/a-r-j/graphein/pull/254) Fix peptide bond addition for all atom graphs.
+* [Bugfix] - [#223](https://github.com/a-r-j/graphein/pull/220) Fix handling of insertions in protein graphs. Insertions are now given IDs like: `A:SER:12:A`. Contribution by @manonreau.
+* [Bugfix] - [#226](https://github.com/a-r-j/graphein/pull/226) Catches failed AF2 structure downloads [#225](https://github.com/a-r-j/graphein/issues/225)
+
+* [Bugfix] - [#229](https://github.com/a-r-j/graphein/pull/220) Fixes bug in KNN edge computation. Contribution by @anton-bushuiev.
+* [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes edge metadata conversion to PyG. Contribution by @manonreau.
+* [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes centroid atom grouping & avoids unnecessary edge computation where none are found. Contribution by @manonreau.
+
+
+#### ML
+* [Bugfix] - [#234](https://github.com/a-r-j/graphein/pull/234) - Fixes bugs and improves `conversion.convert_nx_to_pyg` and `visualisation.plot_pyg_data`. Removes distance matrix (`dist_mat`) from defualt set of features converted to tensor.
+
+#### Utils
+* [Improvement] - [#234](https://github.com/a-r-j/graphein/pull/234) - Adds `parse_aggregation_type` to retrieve aggregation functions.
+
+#### Constants
+* [Improvement] - [#234](https://github.com/a-r-j/graphein/pull/234) - Adds 1 to 3 mappings to `graphein.protein.resi_atoms`.
+
+
+#### Documentation
+* [Tensor Module] - [#244](https://github.com/a-r-j/graphein/pull/244) Documents new graphein.protein.tensor module.
+* [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) Updates to intersphinx maps
+
+
+#### Package
+* [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) CI now runs for python 3.8, 3.9 and torch 1.12.0 and 1.13.0
+* [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) Separate builds for core library and library with DL dependencies.
+* [Licence] - [#244](https://github.com/a-r-j/graphein/pull/244) Bump to 2023
+
+
+### 1.5.2 - 19/9/2022
+
+#### Protein
+
+* [Bugfix] - [#206](https://github.com/a-r-j/graphein/pull/206) Fixes `KeyError` when using `graphein.protein.edges.distance.node_coords`
+* [Bugfix] - Includes missing data files in `MANIFEST.in` #205
+
+#### GRN
+
+* [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) - Resolves SSL issues with RegNetwork.
+
+#### ML
+
+* [Feature] - [#208](https://github.com/a-r-j/graphein/pull/208) support for loading local pdb files by ``ProteinGraphDataset`` and ``InMemoryProteinGraphDataset``.
+
+>by adding a params:`pdb_paths` and set the `self.raw_dir` to the root path(`self.pdb_path`) of pdb_paths list (the root path should be only one, pdb files should be under the same folder).
+>
+> it allows loading pdb files from the `self.pdb_path` instead of loading from `self.raw`.
+> If you wish to download from af2 or pdb, just set `pdb_paths` to `None` and it goes back to the former version.
+
+#### CI
+
+* [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) explicitly installs `jupyter_contrib_nbextensions` in Docker.
+
 ### 1.5.1
 
-#### Changes
+#### Protein
 
-* #187 updates sequence retrieval due to UniProt API changes.
+* [Feature] - [#186](https://github.com/a-r-j/graphein/pull/186) adds support for scaling node sizes in plots by a computed feature. Contribution by @cimranm
+* [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) adds support for parallelised download from the PDB.
+* [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) adds support for: van der waals interactions, vdw clashes, pi-stacking interactions, t_stacking interactions, backbone carbonyl-carbonyl interactions, salt bridges
+* [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) adds a `residue_id` column to PDB dfs to enable easier accounting in atom graphs.
+* [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) refactors torch geometric datasets to use parallelised download for faster dataset preparation.
+
+#### Bugfixes
+
+* [Patch] - [#187](https://github.com/a-r-j/graphein/pull/187) updates sequence retrieval due to UniProt API changes.
+* [Patch] - [#189](https://github.com/a-r-j/graphein/pull/189) fixes bug where chains and PDB identifiers were not properly aligned in `ml.ProteinGraphDataset`.
+* [Patch] - [#201](https://github.com/a-r-j/graphein/pull/201) Adds missing `MSE` to `graphein.protein.resi_atoms.RESI_NAMES`, `graphein.protein.resi_atoms.RESI_THREE_TO_1`. [#200](https://github.com/a-r-j/graphein/issues/200)
+* [Patch] - [#201](https://github.com/a-r-j/graphein/pull/201) Fixes bug where check for same-chain always evaluates as False. [#199](https://github.com/a-r-j/graphein/issues/199)
+* [Patch] - [#201](https://github.com/a-r-j/graphein/pull/201) Fixes bug where deprotonation would only remove hydrogens based on `atom_name` rather than `element_symbol`. [#198](https://github.com/a-r-j/graphein/issues/198)
+* [Patch] - [#201](https://github.com/a-r-j/graphein/pull/201) Fixes bug in ProteinGraphDataset input validation.
+
+#### Breaking Changes
+
+* [#189](https://github.com/a-r-j/graphein/pull/189/) refactors PDB download util. Now returns path to download file, does not accept a config object but instead receives the output directory path directly.
 
 ### 1.5.0
 

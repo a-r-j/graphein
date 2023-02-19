@@ -14,7 +14,7 @@ import networkx as nx
 import pandas as pd
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 
-from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_TO_1_3
+from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
 from graphein.protein.utils import is_tool, save_pdb_df_to_pdb
 
 DSSP_COLS = [
@@ -121,7 +121,7 @@ def add_dssp_df(
 
     dssp_dict = parse_dssp_df(dssp_dict)
     # Convert 1 letter aa code to 3 letter
-    dssp_dict["aa"] = dssp_dict["aa"].map(STANDARD_AMINO_ACID_MAPPING_TO_1_3)
+    dssp_dict["aa"] = dssp_dict["aa"].map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
 
     # Resolve UNKs
     dssp_dict.loc[dssp_dict["aa"] == "UNK", "aa"] = (

@@ -42,9 +42,7 @@ RUN conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 RUN conda install -c pytorch3d pytorch3d
 RUN conda install -c dglteam dgl
 RUN conda install -c salilab dssp
-
 RUN conda install -c conda-forge ipywidgets
-RUN jupyter nbextension enable --py widgetsnbextension
 
 RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace('.',''))") \
     && export TORCH=$(python -c "import torch; print(torch.__version__)") \
@@ -54,6 +52,8 @@ RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace
     && pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir \
     && pip install torch-geometric --no-cache-dir
 
+RUN pip install jupyter_contrib_nbextensions
+RUN jupyter nbextension enable --py widgetsnbextension
 
 # Testing
 # docker-compose -f docker-compose.cpu.yml up -d --build

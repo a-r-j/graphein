@@ -135,7 +135,7 @@ class UploadCommand(Command):
 
 setup(
     name="graphein",
-    version="1.5.0rc1",
+    version="1.5.2",
     # versioneer.get_version(),
     # cmdclass=versioneer.get_cmdclass(),
     description="Protein & Interactomic Graph Construction for Machine Learning",
@@ -166,6 +166,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Scientific/Engineering",
     ],
     # $ setup.py publish support.

@@ -12,7 +12,7 @@ from graphein.utils.utils import *
 from .testing import *
 
 __author__ = "Arian Jamasb <arian@jamasb.io>"
-__version__ = "1.5.0rc1"
+__version__ = "1.6.0"
 
 
 logger.configure(
@@ -20,3 +20,15 @@ logger.configure(
         {"sink": RichHandler(rich_tracebacks=True), "format": "{message}"}
     ]
 )
+
+
+def verbose(enabled: bool = False):
+    """Enable/Disable logging.
+
+    :param enabled: Whether or not to enable logging, defaults to ``False``.
+    :type enabled: bool, optional
+    """
+    if not enabled:
+        logger.disable("graphein")
+    else:
+        logger.enable("graphein")
