@@ -494,12 +494,12 @@ def initialise_graph_with_metadata(
                 "residue_name"
             ].str.cat()
         elif granularity == "atom":
-            protein_df = protein_df.loc[protein_df["atom_name"] == "CA"]
             sequence = (
-                protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
+                protein_df.loc[(protein_df["chain_id"] == c) & (protein_df["atom_name"] == "CA")]["residue_name"]
                 .apply(three_to_one_with_mods)
                 .str.cat()
             )
+            protein_df.loc[protein_df["chain_id"] == c]
         else:
             sequence = (
                 protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
