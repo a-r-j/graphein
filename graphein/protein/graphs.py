@@ -502,7 +502,6 @@ def initialise_graph_with_metadata(
                 .apply(three_to_one_with_mods)
                 .str.cat()
             )
-            protein_df.loc[protein_df["chain_id"] == c]
         else:
             sequence = (
                 protein_df.loc[protein_df["chain_id"] == c]["residue_name"]
