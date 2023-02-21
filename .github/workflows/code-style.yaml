@@ -5,7 +5,7 @@ on: [push]
 jobs:
   black:
     name: "Ensure black compliance"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-latest"
 
     steps:
       - name: Checkout repository
