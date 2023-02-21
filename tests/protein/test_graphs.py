@@ -353,7 +353,7 @@ def test_graph_sequence_feature():
 
     for c in g_atom.graph["chain_ids"]:
         # assert sequences are equal
-        assert g_atom.graph[f"sequence_{c}"] == g_atom.graph[f"sequence_{c}"]
+        assert g_atom.graph[f"sequence_{c}"] == g_res.graph[f"sequence_{c}"]
 
 
 def test_insertion_handling():
