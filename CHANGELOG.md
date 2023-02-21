@@ -26,6 +26,8 @@
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes edge metadata conversion to PyG. Contribution by @manonreau.
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes centroid atom grouping & avoids unnecessary edge computation where none are found. Contribution by @manonreau.
 
+* [Bugfix] - [#268](https://github.com/a-r-j/graphein/pull/268) Fixes 'sequence' metadata feature for atomistic graphs, removing duplicate residues.  Contribution by @kamurani.
+
 
 #### ML
 * [Bugfix] - [#234](https://github.com/a-r-j/graphein/pull/234) - Fixes bugs and improves `conversion.convert_nx_to_pyg` and `visualisation.plot_pyg_data`. Removes distance matrix (`dist_mat`) from defualt set of features converted to tensor.
