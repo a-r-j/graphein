@@ -8,16 +8,16 @@ import pandas as pd
 import wget
 from loguru import logger as log
 
-from graphein.protein.utils import read_fasta
+from graphein.protein.utils import download_pdb_multiprocessing, read_fasta
 
 
 class PDBManager:
     def __init__(self, root_dir="."):
         self.root_dir = Path(root_dir)
-        self.download()
+        self.download_metadata()
         self.df = self.parse()
 
-    def download(self):
+    def download_metadata(self):
         self._download_ligand_map()
         self._download_source_map()
         self._download_exp_type()
@@ -395,3 +395,30 @@ class PDBManager:
         if update:
             self.df = df
         return df
+
+    def download(
+        self,
+        out_dir=".",
+        overwrite: bool = False,
+        max_workers: int = 8,
+        chunksize: int = 32,
+    ):
+        """Downloads PDB files in current selection.
+
+        :param out_dir: Output directory, defaults to ""
+        :type out_dir: str, optional
+        :param overwrite: Overwrite existing files, defaults to False
+        :type overwrite: bool, optional
+        :param max_workers: Number of processes to use, defaults to 8
+        :type max_workers: int, optional
+        :param chunksize: Chunk size for each worker, defaults to 32
+        :type chunksize: int, optional
+        """
+        log.info(f"Downloading {len(self.unique_pdbs)} PDB files...")
+        download_pdb_multiprocessing(
+            self.unique_pdbs,
+            out_dir,
+            overwrite=overwrite,
+            max_workers=max_workers,
+            chunksize=chunksize,
+        )
