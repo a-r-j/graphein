@@ -1,6 +1,7 @@
 import gzip
 import os
 import shutil
+import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -8,7 +9,11 @@ import pandas as pd
 import wget
 from loguru import logger as log
 
-from graphein.protein.utils import download_pdb_multiprocessing, read_fasta
+from graphein.protein.utils import (
+    download_pdb_multiprocessing,
+    is_tool,
+    read_fasta,
+)
 
 
 class PDBManager:
@@ -16,6 +21,7 @@ class PDBManager:
         self.root_dir = Path(root_dir)
         self.download_metadata()
         self.df = self.parse()
+        self.source = self.df.copy()
 
     def download_metadata(self):
         self._download_ligand_map()
@@ -405,13 +411,13 @@ class PDBManager:
     ):
         """Downloads PDB files in current selection.
 
-        :param out_dir: Output directory, defaults to ""
+        :param out_dir: Output directory, defaults to ``"."``
         :type out_dir: str, optional
-        :param overwrite: Overwrite existing files, defaults to False
+        :param overwrite: Overwrite existing files, defaults to ``False``.
         :type overwrite: bool, optional
-        :param max_workers: Number of processes to use, defaults to 8
+        :param max_workers: Number of processes to use, defaults to ``8``.
         :type max_workers: int, optional
-        :param chunksize: Chunk size for each worker, defaults to 32
+        :param chunksize: Chunk size for each worker, defaults to ``32``.
         :type chunksize: int, optional
         """
         log.info(f"Downloading {len(self.unique_pdbs)} PDB files...")
@@ -422,3 +428,65 @@ class PDBManager:
             max_workers=max_workers,
             chunksize=chunksize,
         )
+
+    def reset(self) -> pd.DataFrame:
+        """Reset the DataFrame to the original source.
+
+        :return: DataFrame.
+        :rtype: pd.DataFrame
+        """
+        self.df = self.source.copy()
+        return self.df
+
+    def cluster(
+        self,
+        min_seq_id: float = 0.3,
+        coverage: float = 0.8,
+        update: bool = False,
+    ) -> pd.DataFrame:
+        """Cluster sequences in selection using MMseqs2.
+
+        :param min_seq_id: Sequence id, defaults to ``0.3``
+        :type min_seq_id: float, optional
+        :param coverage: Coverage, defaults to ``0.8``
+        :type coverage: float, optional
+        :param update: Whether to update the selection to the representative
+            sequences, defaults to ``False``.
+        :type update: bool, optional
+        :return: DataFrame of representative sequences.
+        :rtype: pd.DataFrame
+        """
+        # write fasta
+        self.to_fasta("pdb.fasta")
+        if not is_tool("mmseqs"):
+            log.error(
+                "MMseqs2 not found. Please install it: conda install -c conda-forge -c bioconda mmseqs2"
+            )
+
+        cmd = f"mmseqs easy-cluster pdb.fasta pdb_cluster tmp --min-seq-id {min_seq_id} -c {coverage} --cov-mode 1"
+        log.info(f"Clustering with: {cmd}")
+        subprocess.run(cmd.split())
+        log.info("Clustering done!")
+
+        df = self.from_fasta(ids="chain", filename="pdb_cluster_rep_seq.fasta")
+        if update:
+            self.df = df
+        return df
+
+    def from_fasta(self, ids: str, filename: str) -> pd.DataFrame:
+        """Create a selection from a fasta file.
+
+        :param ids: Whether the FASTA is indexed by chains (i.e. ``3eiy_A``)
+            or PDB ids (``3eiy``).
+        :type ids: str
+        :param filename: Name of FASTA file.
+        :type filename: str
+        :return: DataFrame of selected proteins.
+        :rtype: pd.DataFrame
+        """
+        fasta = read_fasta(filename)
+        seq_ids = list(fasta.keys())
+        if ids == "chain":
+            return self.source.loc[self.source.id.isin(seq_ids)]
+        elif ids == "pdb":
+            return self.source.loc[self.source.pdb.isin(seq_ids)]
