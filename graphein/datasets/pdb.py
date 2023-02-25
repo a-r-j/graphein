@@ -17,13 +17,30 @@ from graphein.protein.utils import (
 
 
 class PDBManager:
+    """A utility for creating selections of experimental PDB structures."""
     def __init__(
-        self,
-        root_dir: str = ".",
-        splits: Optional[List[str]] = None,
-        split_ratios: Optional[List[float]] = None,
-        assign_leftover_rows_to_split_n: int = 0,
-    ):
+            self,
+            root_dir: str = ".",
+            splits: Optional[List[str]] = None,
+            split_ratios: Optional[List[float]] = None,
+            assign_leftover_rows_to_split_n: int = 0
+        ):
+        """Instantiate a selection of experimental PDB structures.
+        
+        :param root_dir: The directory in which to store all PDB entries,
+            defaults to ``"."``.
+        :type root_dir: str, optional
+        :param splits: A list of names corresponding to each dataset split,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param split_ratios: Proportions into which to split the current
+            selection of PDB entries, defaults to ``None``.
+        :type split_ratios: Optional[List[float]], optional
+        :param assign_leftover_rows_to_split_n: Index of the split to which
+            to assign any rows remaining after creation of new dataset splits,
+            defaults to ``0``.
+        :type assign_leftover_rows_to_split_n: int, optional
+        """
         self.root_dir = Path(root_dir)
         self.download_metadata()
         self.df = self.parse()
@@ -685,5 +702,9 @@ if __name__ == "__main__":
         splits=["train", "val", "test"],
         split_ratios=[0.8, 0.1, 0.1],
     )
+
     cluster_dfs = pdb_manager.cluster()
-    print(cluster_dfs)
+    print(f"cluster_dfs: {cluster_dfs}")
+
+    time_split_dfs = pdb_manager.split_by_time()
+    print(f"time_split_dfs: {time_split_dfs}")
