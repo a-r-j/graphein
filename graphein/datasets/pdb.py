@@ -706,6 +706,3 @@ if __name__ == "__main__":
 
     cluster_dfs = pdb_manager.cluster()
     print(f"cluster_dfs: {cluster_dfs}")
-
-    time_split_dfs = pdb_manager.split_by_time()
-    print(f"time_split_dfs: {time_split_dfs}")
