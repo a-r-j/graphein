@@ -42,13 +42,31 @@ class PDBManager:
             defaults to ``0``.
         :type assign_leftover_rows_to_split_n: int, optional
         """
+        # Arguments
         self.root_dir = Path(root_dir)
+
+        # Constants
+        self.pdb_sequences_url = "https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz"
+        self.ligand_map_url = "http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd"
+        self.source_map_url = "https://files.wwpdb.org/pub/pdb/derived_data/index/source.idx"
+        self.resolution_url = "https://files.wwpdb.org/pub/pdb/derived_data/index/resolu.idx"
+        self.pdb_entry_type_url = "https://files.wwpdb.org/pub/pdb/derived_data/pdb_entry_type.txt"
+
+        self.pdb_seqres_archive_filename = Path(self.pdb_sequences_url).name
+        self.pdb_seqres_filename = Path(self.pdb_seqres_archive_filename).stem
+        self.ligand_map_filename = Path(self.ligand_map_url).name
+        self.source_map_filename = Path(self.source_map_url).name
+        self.resolution_filename = Path(self.resolution_url).name
+        self.pdb_entry_type_filename = Path(self.pdb_entry_type_url).name
+
+        self.list_columns = ["ligands"]
+
+        # Data
         self.download_metadata()
         self.df = self.parse()
         self.source = self.df.copy()
 
-        self.list_columns = ["ligands"]
-
+        # Splits
         self.splits_provided = splits is not None and split_ratios is not None
         if self.splits_provided:
             assert len(set(splits)) == len(splits)
@@ -126,90 +144,66 @@ class PDBManager:
         return self.df.resolution.max()
 
     def _download_pdb_sequences(self):
-        # Download
-        if not os.path.exists(self.root_dir / "pdb_seqres.txt.gz"):
+        # Download https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
+        if not os.path.exists(self.root_dir / self.pdb_seqres_archive_filename):
             log.info("Downloading PDB sequences")
-            wget.download(
-                "https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz"
-            )
+            wget.download(self.pdb_sequences_url)
             log.info("Downloaded sequences")
 
-        # Unzip
-        if not os.path.exists(self.root_dir / "pdb_seqres.txt"):
+        # Unzip all collected sequences
+        if not os.path.exists(self.root_dir / self.pdb_seqres_filename):
             log.info("Unzipping PDB sequences")
-            with gzip.open(self.root_dir / "pdb_seqres.txt.gz", "rb") as f_in:
-                with open(self.root_dir / "pdb_seqres.txt", "wb") as f_out:
+            with gzip.open(self.root_dir / self.pdb_seqres_archive_filename, "rb") as f_in:
+                with open(self.root_dir / self.pdb_seqres_filename, "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
             log.info("Unzipped sequences")
 
     def _download_ligand_map(self):
-        if not os.path.exists(self.root_dir / "cc-to-pdb.tdd"):
+        # http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd
+        if not os.path.exists(self.root_dir / self.ligand_map_filename):
             log.info("Downloading ligand map")
-            wget.download(
-                "http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd"
-            )
+            wget.download(self.ligand_map_url)
             log.info("Downloaded ligand map")
 
     def _download_source_map(self):
-        if not os.path.exists(self.root_dir / "source.idx"):
+        # https://files.wwpdb.org/pub/pdb/derived_data/index/source.idx
+        if not os.path.exists(self.root_dir / self.source_map_filename):
             log.info("Downloading source map")
-            wget.download(
-                "https://files.wwpdb.org/pub/pdb/derived_data/index/source.idx"
-            )
+            wget.download()
             log.info("Downloaded source map")
-
-    def _download_exp_type(self):
-        # https://files.wwpdb.org/pub/pdb/derived_data/pdb_entry_type.txt
-        if not os.path.exists(self.root_dir / "pdb_entry_type.txt"):
-            log.info("Downloading experiment type map")
-            wget.download(
-                "https://files.wwpdb.org/pub/pdb/derived_data/pdb_entry_type.txt"
-            )
-            log.info("Downloaded experiment type map")
 
     def _download_resolution(self):
         # https://files.wwpdb.org/pub/pdb/derived_data/index/resolu.idx
-        if not os.path.exists(self.root_dir / "resolu.idx"):
+        if not os.path.exists(self.root_dir / self.resolution_filename):
             log.info("Downloading resolution map")
-            wget.download(
-                "https://files.wwpdb.org/pub/pdb/derived_data/index/resolu.idx"
-            )
+            wget.download(self.resolution_url)
             log.info("Downloaded resolution map")
 
-    def _parse_resolution(self) -> Dict[str, float]:
-        """Parse the PDB resolutions for all PDB records.
+    def _download_exp_type(self):
+        # https://files.wwpdb.org/pub/pdb/derived_data/pdb_entry_type.txt
+        if not os.path.exists(self.root_dir / self.pdb_entry_type_filename):
+            log.info("Downloading experiment type map")
+            wget.download(self.pdb_entry_type_url)
+            log.info("Downloaded experiment type map")
+    
+    def _parse_ligand_map(self) -> Dict[str, List[str]]:
+        """Parse the ligand maps for all PDB records.
 
-        :return: Dictionary of PDB resolutions with their
-            corresponding values.
-        :rtype: Dict[str, float]
+        :return: Dictionary of PDB entries with their
+            corresponding ligand map values.
+        :rtype: Dict[str, List[str]]
         """
-        res = {}
-        with open(self.root_dir / "resolu.idx") as f:
+        ligand_map = {}
+        with open(self.root_dir / self.ligand_map_filename) as f:
             for line in f:
                 line = line.strip()
                 params = line.split()
-                if not params or len(params) != 3:
-                    continue
-                pdb = params[0]
-                resolution = params[2]
-                try:
-                    res[pdb.lower()] = float(resolution)
-                except ValueError:
-                    continue
-        return res
-
-    def _parse_experiment_type(self) -> Dict[str, str]:
-        """Parse the experiment types for all PDB records.
-
-        :return: Dictionary of PDB entries with their
-            corresponding experiment types.
-        :rtype: Dict[str, str]
-        """
-        df = pd.read_csv(
-            self.root_dir / "pdb_entry_type.txt", sep="\t", header=None
-        )
-        df.dropna(inplace=True)
-        return pd.Series(df[2].values, index=df[0]).to_dict()
+                ligand_map[params[0]] = params[1:]
+        inv = {}
+        for k, v in ligand_map.items():
+            for x in v:
+                inv.setdefault(x, []).append(str(k))
+        return inv
 
     def _parse_source_map(self) -> Dict[str, str]:
         """Parse the source maps for all PDB records.
@@ -218,8 +212,8 @@ class PDBManager:
             corresponding source map values.
         :rtype: Dict[str, str]
         """
-        map = {}
-        with open("source.idx") as f:
+        source_map = {}
+        with open(self.source_map_filename) as f:
             for line in f:
                 line = line.strip()
                 params = line.split()
@@ -233,13 +227,88 @@ class PDBManager:
                     "Sun",
                 }:
                     continue
-                map[params[0].lower()] = " ".join(params[1:])
+                source_map[params[0].lower()] = " ".join(params[1:])
 
-        del map["protein"]
-        del map["idcode"]
-        del map["------"]
-        return map
+        del source_map["protein"]
+        del source_map["idcode"]
+        del source_map["------"]
+        return source_map
+    
+    def _parse_resolution(self) -> Dict[str, float]:
+        """Parse the PDB resolutions for all PDB records.
 
+        :return: Dictionary of PDB resolutions with their
+            corresponding values.
+        :rtype: Dict[str, float]
+        """
+        res = {}
+        with open(self.root_dir / self.resolution_filename) as f:
+            for line in f:
+                line = line.strip()
+                params = line.split()
+                if not params or len(params) != 3:
+                    continue
+                pdb = params[0]
+                resolution = params[2]
+                try:
+                    res[pdb.lower()] = float(resolution)
+                except ValueError:
+                    continue
+        return res
+    
+    def _parse_experiment_type(self) -> Dict[str, str]:
+        """Parse the experiment types for all PDB records.
+
+        :return: Dictionary of PDB entries with their
+            corresponding experiment types.
+        :rtype: Dict[str, str]
+        """
+        df = pd.read_csv(
+            self.root_dir / self.pdb_entry_type_filename, sep="\t", header=None
+        )
+        df.dropna(inplace=True)
+        return pd.Series(df[2].values, index=df[0]).to_dict()
+
+    def parse(self) -> pd.DataFrame:
+        """Parse all PDB sequence records.
+
+        :return: DataFrame containing PDB sequence entries
+            with their corresponding metadata.
+        :rtype: pd.DataFrame
+        """
+        fasta = read_fasta(self.pdb_seqres_filename)
+
+        # Iterate over fasta and parse metadata
+        records = []
+        for k, v in fasta.items():
+            seq = v
+            params = k.split()
+            pdb_id = params[0]
+            pdb = params[0].split("_")[0]
+            chain = params[0].split("_")[1]
+            length = int(params[2].split(":")[1])
+            molecule_type = params[1].split(":")[1]
+            name = " ".join(params[3:])
+            record = {
+                "id": pdb_id,
+                "pdb": pdb,
+                "chain": chain,
+                "length": length,
+                "molecule_type": molecule_type,
+                "name": name,
+                "sequence": seq,
+            }
+            records.append(record)
+
+        df = pd.DataFrame.from_records(records)
+        df["ligands"] = df.pdb.map(self._parse_ligand_map())
+        df["ligands"] = df["ligands"].fillna("").apply(list)
+        df["source"] = df.pdb.map(self._parse_source_map())
+        df["resolution"] = df.pdb.map(self._parse_resolution())
+        df["experiment_type"] = df.pdb.map(self._parse_experiment_type())
+
+        return df
+    
     def sample(
         self,
         n: Optional[int] = None,
@@ -265,64 +334,6 @@ class PDBManager:
         df = self.df.sample(n=n, frac=frac, replace=replace)
         if update:
             self.df = df
-        return df
-
-    def _parse_ligand_map(self) -> Dict[str, List[str]]:
-        """Parse the ligand maps for all PDB records.
-
-        :return: Dictionary of PDB entries with their
-            corresponding ligand map values.
-        :rtype: Dict[str, List[str]]
-        """
-        map = {}
-        with open(self.root_dir / "cc-to-pdb.tdd") as f:
-            for line in f:
-                line = line.strip()
-                params = line.split()
-                map[params[0]] = params[1:]
-        inv = {}
-        for k, v in map.items():
-            for x in v:
-                inv.setdefault(x, []).append(str(k))
-        return inv
-
-    def parse(self) -> pd.DataFrame:
-        """Parse all PDB sequence records.
-
-        :return: DataFrame containing PDB sequence entries
-            with their corresponding metadata.
-        :rtype: pd.DataFrame
-        """
-        fasta = read_fasta("pdb_seqres.txt")
-
-        # Iterate over fasta and parse metadata
-        records = []
-        for k, v in fasta.items():
-            seq = v
-            params = k.split()
-            id = params[0]
-            pdb = params[0].split("_")[0]
-            chain = params[0].split("_")[1]
-            length = int(params[2].split(":")[1])
-            molecule_type = params[1].split(":")[1]
-            name = " ".join(params[3:])
-            record = {
-                "id": id,
-                "pdb": pdb,
-                "chain": chain,
-                "length": length,
-                "molecule_type": molecule_type,
-                "name": name,
-                "sequence": seq,
-            }
-            records.append(record)
-
-        df = pd.DataFrame.from_records(records)
-        df["ligands"] = df.pdb.map(self._parse_ligand_map())
-        df["ligands"] = df["ligands"].fillna("").apply(list)
-        df["source"] = df.pdb.map(self._parse_source_map())
-        df["resolution"] = df.pdb.map(self._parse_resolution())
-        df["experiment_type"] = df.pdb.map(self._parse_experiment_type())
         return df
 
     def molecule_type(
@@ -556,7 +567,7 @@ class PDBManager:
             split_sizes[assign_leftover_rows_to_split_n] += num_remaining_rows
 
         # Without replacement, randomly shuffle rows within the input DataFrame
-        df_sampled = df.sample(frac=1.0, random_state=random_state)
+        df_sampled = df.sample(frac=1.0, replace=False, random_state=random_state)
 
         # Split DataFrames
         start_idx = 0
@@ -601,6 +612,58 @@ class PDBManager:
         )
         return merged_df_split
 
+    def split_clusters(
+        self,
+        df: pd.DataFrame,
+        force_process_splits: bool = False,
+        update: bool = False,
+    ) -> Dict[str, pd.DataFrame]:
+        """Split clusters derived by MMseqs2.
+
+        :param df: DataFrame containing the clusters derived by MMseqs2.
+        :type df: pd.DataFrame
+        :param force_process_splits: Whether to forcibly (re)process splits,
+            defaults to ``False``.
+        :type force_process_splits: bool, optional
+        :param update: Whether to update the selection to the representative
+            sequences, defaults to ``False``.
+        :type update: bool, optional
+
+        :return: A Dictionary of split names mapping to DataFrames of
+            randomly-split representative sequences.
+        :rtype: Dict[str, pd.DataFrame]
+        """
+        df_splits = self.df_splits
+
+        # Split clusters
+        all_splits_exist = all(
+            [self.df_splits[split] is not None for split in self.df_splits]
+        )
+        if not all_splits_exist or force_process_splits:
+            log.info(
+                f"Randomly splitting clusters into ratios: {' '.join([str(r) for r in self.split_ratios])}"
+            )
+            df_splits = self.split_df_proportionally(
+                df,
+                self.splits,
+                self.split_ratios,
+                self.assign_leftover_rows_to_split_n,
+            )
+            log.info("Done splitting clusters!")
+
+        # Update splits
+        for split in self.splits:
+            if update:
+                df_split = df_splits[split]
+                if self.df_splits[split] is not None:
+                    self.df_splits[split] = self.merge_df_splits(
+                        self.df_splits[split], df_split
+                    )
+                else:
+                    self.df_splits[split] = df_split
+
+        return df_splits
+
     def cluster(
         self,
         min_seq_id: float = 0.3,
@@ -624,7 +687,7 @@ class PDBManager:
         :return: Either a single DataFrame of representative sequences or a
             Dictionary of split names mapping to DataFrames of randomly-split
             representative sequences.
-        :rtype: Union[pd.DataFrame, List[pd.DataFrame]]
+        :rtype: Union[pd.DataFrame, Dict[str, pd.DataFrame]]
         """
         # Write fasta
         self.to_fasta("pdb.fasta")
@@ -647,33 +710,7 @@ class PDBManager:
 
         # Split fasta
         if self.splits_provided:
-            df_splits = self.df_splits
-            all_splits_exist = all(
-                [self.df_splits[split] is not None for split in self.df_splits]
-            )
-            if not all_splits_exist or force_process_splits:
-                log.info(
-                    f"Randomly splitting clusters into ratios: {' '.join([str(r) for r in self.split_ratios])}"
-                )
-                df_splits = self.split_df_proportionally(
-                    df,
-                    self.splits,
-                    self.split_ratios,
-                    self.assign_leftover_rows_to_split_n,
-                )
-                log.info("Done splitting clusters!")
-
-            # Update splits
-            for split in self.splits:
-                if update:
-                    df_split = df_splits[split]
-                    if self.df_splits[split] is not None:
-                        self.df_splits[split] = self.merge_df_splits(
-                            self.df_splits[split], df_split
-                        )
-                    else:
-                        self.df_splits[split] = df_split
-
+            df_splits = self.split_clusters(df, force_process_splits, update)
             return df_splits
 
         return df
