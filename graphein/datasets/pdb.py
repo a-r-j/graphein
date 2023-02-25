@@ -46,11 +46,21 @@ class PDBManager:
         self.root_dir = Path(root_dir)
 
         # Constants
-        self.pdb_sequences_url = "https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz"
-        self.ligand_map_url = "http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd"
-        self.source_map_url = "https://files.wwpdb.org/pub/pdb/derived_data/index/source.idx"
-        self.resolution_url = "https://files.wwpdb.org/pub/pdb/derived_data/index/resolu.idx"
-        self.pdb_entry_type_url = "https://files.wwpdb.org/pub/pdb/derived_data/pdb_entry_type.txt"
+        self.pdb_sequences_url = (
+            "https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz"
+        )
+        self.ligand_map_url = (
+            "http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd"
+        )
+        self.source_map_url = (
+            "https://files.wwpdb.org/pub/pdb/derived_data/index/source.idx"
+        )
+        self.resolution_url = (
+            "https://files.wwpdb.org/pub/pdb/derived_data/index/resolu.idx"
+        )
+        self.pdb_entry_type_url = (
+            "https://files.wwpdb.org/pub/pdb/derived_data/pdb_entry_type.txt"
+        )
 
         self.pdb_seqres_archive_filename = Path(self.pdb_sequences_url).name
         self.pdb_seqres_filename = Path(self.pdb_seqres_archive_filename).stem
@@ -145,7 +155,9 @@ class PDBManager:
 
     def _download_pdb_sequences(self):
         # Download https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
-        if not os.path.exists(self.root_dir / self.pdb_seqres_archive_filename):
+        if not os.path.exists(
+            self.root_dir / self.pdb_seqres_archive_filename
+        ):
             log.info("Downloading PDB sequences")
             wget.download(self.pdb_sequences_url)
             log.info("Downloaded sequences")
@@ -153,8 +165,12 @@ class PDBManager:
         # Unzip all collected sequences
         if not os.path.exists(self.root_dir / self.pdb_seqres_filename):
             log.info("Unzipping PDB sequences")
-            with gzip.open(self.root_dir / self.pdb_seqres_archive_filename, "rb") as f_in:
-                with open(self.root_dir / self.pdb_seqres_filename, "wb") as f_out:
+            with gzip.open(
+                self.root_dir / self.pdb_seqres_archive_filename, "rb"
+            ) as f_in:
+                with open(
+                    self.root_dir / self.pdb_seqres_filename, "wb"
+                ) as f_out:
                     shutil.copyfileobj(f_in, f_out)
             log.info("Unzipped sequences")
 
@@ -185,7 +201,7 @@ class PDBManager:
             log.info("Downloading experiment type map")
             wget.download(self.pdb_entry_type_url)
             log.info("Downloaded experiment type map")
-    
+
     def _parse_ligand_map(self) -> Dict[str, List[str]]:
         """Parse the ligand maps for all PDB records.
 
@@ -233,7 +249,7 @@ class PDBManager:
         del source_map["idcode"]
         del source_map["------"]
         return source_map
-    
+
     def _parse_resolution(self) -> Dict[str, float]:
         """Parse the PDB resolutions for all PDB records.
 
@@ -255,7 +271,7 @@ class PDBManager:
                 except ValueError:
                     continue
         return res
-    
+
     def _parse_experiment_type(self) -> Dict[str, str]:
         """Parse the experiment types for all PDB records.
 
@@ -308,7 +324,7 @@ class PDBManager:
         df["experiment_type"] = df.pdb.map(self._parse_experiment_type())
 
         return df
-    
+
     def sample(
         self,
         n: Optional[int] = None,
@@ -567,7 +583,9 @@ class PDBManager:
             split_sizes[assign_leftover_rows_to_split_n] += num_remaining_rows
 
         # Without replacement, randomly shuffle rows within the input DataFrame
-        df_sampled = df.sample(frac=1.0, replace=False, random_state=random_state)
+        df_sampled = df.sample(
+            frac=1.0, replace=False, random_state=random_state
+        )
 
         # Split DataFrames
         start_idx = 0
