@@ -18,15 +18,16 @@ from graphein.protein.utils import (
 
 class PDBManager:
     """A utility for creating selections of experimental PDB structures."""
+
     def __init__(
-            self,
-            root_dir: str = ".",
-            splits: Optional[List[str]] = None,
-            split_ratios: Optional[List[float]] = None,
-            assign_leftover_rows_to_split_n: int = 0
-        ):
+        self,
+        root_dir: str = ".",
+        splits: Optional[List[str]] = None,
+        split_ratios: Optional[List[float]] = None,
+        assign_leftover_rows_to_split_n: int = 0,
+    ):
         """Instantiate a selection of experimental PDB structures.
-        
+
         :param root_dir: The directory in which to store all PDB entries,
             defaults to ``"."``.
         :type root_dir: str, optional
