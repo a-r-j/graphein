@@ -148,3 +148,16 @@ datasets/examples/*
 *.zip
 datasets/regnetwork/human
 notebooks/lightning_logs
+cc-to-pdb.tdd
+pdb.fasta
+pdb_cluster_all_seqs.fasta
+pdb_cluster_cluster.tsv
+pdb_cluster_rep_seq.fasta
+pdb_entry_type.txt
+pdb_seqres.txt
+pdb_seqres.txt.gz
+resolu.idx
+source.idx
+
+# Local test directories
+tmp/
