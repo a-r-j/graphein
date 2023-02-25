@@ -2,13 +2,12 @@ import gzip
 import os
 import shutil
 import subprocess
-import wget
-
-import pandas as pd
-
-from loguru import logger as log
 from pathlib import Path
 from typing import Dict, List, Optional, Union
+
+import pandas as pd
+import wget
+from loguru import logger as log
 
 from graphein.protein.utils import (
     download_pdb_multiprocessing,
@@ -19,12 +18,12 @@ from graphein.protein.utils import (
 
 class PDBManager:
     def __init__(
-            self,
-            root_dir: str = ".",
-            splits: Optional[List[str]] = None,
-            split_ratios: Optional[List[float]] = None,
-            assign_leftover_rows_to_split_n: int = 0
-        ):
+        self,
+        root_dir: str = ".",
+        splits: Optional[List[str]] = None,
+        split_ratios: Optional[List[float]] = None,
+        assign_leftover_rows_to_split_n: int = 0,
+    ):
         self.root_dir = Path(root_dir)
         self.download_metadata()
         self.df = self.parse()
@@ -42,7 +41,9 @@ class PDBManager:
             self.split_ratios = split_ratios
             self.df_splits = {split: None for split in splits}
 
-            self.assign_leftover_rows_to_split_n = assign_leftover_rows_to_split_n
+            self.assign_leftover_rows_to_split_n = (
+                assign_leftover_rows_to_split_n
+            )
 
     def download_metadata(self):
         """Download all PDB metadata."""
@@ -502,14 +503,14 @@ class PDBManager:
         """
         self.df = self.source.copy()
         return self.df
-    
+
     def split_df_proportionally(
         self,
         df: pd.DataFrame,
         splits: List[str],
         split_ratios: List[float],
-        assign_leftover_rows_to_split_n: int = 0, 
-        random_state: int = 42
+        assign_leftover_rows_to_split_n: int = 0,
+        random_state: int = 42,
     ) -> Dict[str, pd.DataFrame]:
         """Split the provided DataFrame iteratively according to given proportions.
 
@@ -538,7 +539,7 @@ class PDBManager:
 
         # Without replacement, randomly shuffle rows within the input DataFrame
         df_sampled = df.sample(frac=1.0, random_state=random_state)
-    
+
         # Split DataFrames
         start_idx = 0
         df_splits = {}
@@ -551,16 +552,20 @@ class PDBManager:
 
         # Ensure there are no duplicated rows between splits
         all_rows = pd.concat([df_splits[split] for split in splits])
-        assert len(all_rows) == len(df), "Number of rows changed during split operations."
-        assert len(all_rows.drop(self.list_columns, axis=1).drop_duplicates()) == len(df), "Duplicate rows found in splits."
+        assert len(all_rows) == len(
+            df
+        ), "Number of rows changed during split operations."
+        assert len(
+            all_rows.drop(self.list_columns, axis=1).drop_duplicates()
+        ) == len(df), "Duplicate rows found in splits."
 
         return df_splits
-    
+
     def merge_df_splits(
         self,
         first_df_split: pd.DataFrame,
         second_df_split: pd.DataFrame,
-        df_primary_key: str = "id"
+        df_primary_key: str = "id",
     ) -> pd.DataFrame:
         """Reconcile an existing DataFrame split with a new split.
 
@@ -573,7 +578,9 @@ class PDBManager:
         :return: Merged DataFrame split.
         :rtype: pd.DataFrame
         """
-        merged_df_split = pd.merge(first_df_split, second_df_split, how="inner", on=[df_primary_key])
+        merged_df_split = pd.merge(
+            first_df_split, second_df_split, how="inner", on=[df_primary_key]
+        )
         return merged_df_split
 
     def cluster(
@@ -581,7 +588,7 @@ class PDBManager:
         min_seq_id: float = 0.3,
         coverage: float = 0.8,
         force_process_splits: bool = False,
-        update: bool = False
+        update: bool = False,
     ) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
         """Cluster sequences in selection using MMseqs2.
 
@@ -623,11 +630,18 @@ class PDBManager:
         # Split fasta
         if self.splits_provided:
             df_splits = self.df_splits
-            all_splits_exist = all([self.df_splits[split] is not None for split in self.df_splits])
+            all_splits_exist = all(
+                [self.df_splits[split] is not None for split in self.df_splits]
+            )
             if not all_splits_exist or force_process_splits:
-                log.info(f"Randomly splitting clusters into ratios: {' '.join([str(r) for r in self.split_ratios])}")
+                log.info(
+                    f"Randomly splitting clusters into ratios: {' '.join([str(r) for r in self.split_ratios])}"
+                )
                 df_splits = self.split_df_proportionally(
-                    df, self.splits, self.split_ratios, self.assign_leftover_rows_to_split_n
+                    df,
+                    self.splits,
+                    self.split_ratios,
+                    self.assign_leftover_rows_to_split_n,
                 )
                 log.info("Done splitting clusters!")
 
@@ -636,12 +650,14 @@ class PDBManager:
                 if update:
                     df_split = df_splits[split]
                     if self.df_splits[split] is not None:
-                        self.df_splits[split] = self.merge_df_splits(self.df_splits[split], df_split)
+                        self.df_splits[split] = self.merge_df_splits(
+                            self.df_splits[split], df_split
+                        )
                     else:
                         self.df_splits[split] = df_split
 
             return df_splits
-        
+
         return df
 
     def from_fasta(self, ids: str, filename: str) -> pd.DataFrame:
@@ -667,7 +683,7 @@ if __name__ == "__main__":
     pdb_manager = PDBManager(
         root_dir=".",
         splits=["train", "val", "test"],
-        split_ratios=[0.8, 0.1, 0.1]
+        split_ratios=[0.8, 0.1, 0.1],
     )
     cluster_dfs = pdb_manager.cluster()
     print(cluster_dfs)
