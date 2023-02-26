@@ -628,7 +628,9 @@ class PDBManager:
         paths = []
         for k, v in tqdm(df.items()):
             in_file = os.path.join(self.pdb_dir, f"{k}.pdb")
-            paths.append(extract_chains_to_file(in_file, v, out_dir=self.pdb_dir))
+            paths.append(
+                extract_chains_to_file(in_file, v, out_dir=self.pdb_dir)
+            )
 
         # Flatten list of paths
         return [Path(num) for sublist in paths for num in sublist]
