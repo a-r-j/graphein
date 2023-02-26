@@ -10,9 +10,11 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 import wget
 from loguru import logger as log
+from tqdm import tqdm
 
 from graphein.protein.utils import (
     download_pdb_multiprocessing,
+    extract_chains_to_file,
     is_tool,
     read_fasta,
 )
@@ -66,6 +68,10 @@ class PDBManager:
         self.pdb_deposition_date_url = (
             "https://files.wwpdb.org/pub/pdb/derived_data/index/entries.idx"
         )
+
+        self.pdb_dir = self.root_dir / "pdb"
+        if not os.path.exists(self.pdb_dir):
+            os.makedirs(self.pdb_dir)
 
         self.pdb_seqres_archive_filename = Path(self.pdb_sequences_url).name
         self.pdb_seqres_filename = Path(self.pdb_seqres_archive_filename).stem
@@ -122,6 +128,15 @@ class PDBManager:
         :rtype: List[str]
         """
         return self.df.pdb.unique().tolist()
+
+    @property
+    def num_chains(self) -> int:
+        """Return the number of chains in the dataset.
+
+        :return: Number of chains.
+        :rtype: int
+        """
+        return len(self.df)
 
     @property
     def longest_chain(self) -> int:
@@ -583,6 +598,41 @@ class PDBManager:
             chunksize=chunksize,
         )
 
+    def write_chains(self) -> List[Path]:
+        """Writes chains in current selection to disk. E.g. we create a file of
+        the form ``4hbb_A.pdb`` for chain ``A`` of PDB file ``4hhb.pdb``.
+
+        If the PDB files are not contained in ``self.pdb_dir``, they are
+        downloaded.
+
+        :return: List of paths to written files.
+        :rtype: List[Path]
+        """
+        # Get dictionary of PDB code : List[Chains]
+        df = self.df.groupby("pdb")["chain"].agg(list).to_dict()
+
+        # Check we have all source PDB files
+        downloaded = os.listdir(self.pdb_dir)
+        downloaded = [f for f in downloaded if f.endswith(".pdb")]
+
+        if to_download := [
+            k for k in df.keys() if f"{k}.pdb" not in downloaded
+        ]:
+            log.info(f"Downloading {len(to_download)} PDB files")
+            download_pdb_multiprocessing(
+                to_download, self.pdb_dir, overwrite=True
+            )
+
+        # Iterate over dictionary and write chains to separate files
+        log.info("Extracting chains...")
+        paths = []
+        for k, v in tqdm(df.items()):
+            in_file = os.path.join(self.pdb_dir, f"{k}.pdb")
+            paths.append(extract_chains_to_file(in_file, v, out_dir=self.pdb_dir))
+
+        # Flatten list of paths
+        return [Path(num) for sublist in paths for num in sublist]
+
     def reset(self) -> pd.DataFrame:
         """Reset the dataset to the original DataFrame source.
 
@@ -744,7 +794,6 @@ class PDBManager:
         :param update: Whether to update the selection to the representative
             sequences, defaults to ``False``.
         :type update: bool, optional
-
         :return: Either a single DataFrame of representative sequences or a
             Dictionary of split names mapping to DataFrames of randomly-split
             representative sequences.
@@ -771,9 +820,7 @@ class PDBManager:
 
         # Split fasta
         if self.splits_provided:
-            df_splits = self.split_clusters(df, force_process_splits, update)
-            return df_splits
-
+            return self.split_clusters(df, force_process_splits, update)
         return df
 
     def from_fasta(self, ids: str, filename: str) -> pd.DataFrame:
@@ -803,4 +850,5 @@ if __name__ == "__main__":
     )
 
     cluster_dfs = pdb_manager.cluster()
+    print(f"cluster_dfs: {cluster_dfs}")
     print(f"cluster_dfs: {cluster_dfs}")
