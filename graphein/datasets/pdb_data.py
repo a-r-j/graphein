@@ -2,17 +2,16 @@ import gzip
 import os
 import shutil
 import subprocess
-import wget
+from datetime import datetime
+from io import StringIO
+from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
-
-from datetime import datetime
-from io import StringIO
+import wget
 from loguru import logger as log
-from pathlib import Path
 from tqdm import tqdm
-from typing import Dict, List, Optional, Union
 
 from graphein.protein.utils import (
     download_pdb_multiprocessing,
@@ -85,7 +84,9 @@ class PDBManager:
         self.source_map_filename = Path(self.source_map_url).name
         self.resolution_filename = Path(self.resolution_url).name
         self.pdb_entry_type_filename = Path(self.pdb_entry_type_url).name
-        self.pdb_deposition_date_filename = Path(self.pdb_deposition_date_url).name
+        self.pdb_deposition_date_filename = Path(
+            self.pdb_deposition_date_url
+        ).name
 
         self.list_columns = ["ligands"]
 
@@ -95,7 +96,7 @@ class PDBManager:
         self.source = self.df.copy()
 
         # Splits
-        self.splits_provided = splits is not None 
+        self.splits_provided = splits is not None
         if self.splits_provided:
             assert len(set(splits)) == len(splits)
             self.splits = splits
@@ -114,14 +115,19 @@ class PDBManager:
                 last_frame_index = len(split_time_frames) - 1
                 for frame_index in range(len(split_time_frames)):
                     frame = split_time_frames[frame_index]
-                    frames_are_backwards_sequential = (
-                        frame_index == 0 or (frame_index > 0 and frame > split_time_frames[frame_index - 1])
+                    frames_are_backwards_sequential = frame_index == 0 or (
+                        frame_index > 0
+                        and frame > split_time_frames[frame_index - 1]
                     )
                     frames_are_forwards_sequential = (
-                        (frame_index < last_frame_index and frame < split_time_frames[frame_index + 1]) or frame_index == last_frame_index
-                    )
+                        frame_index < last_frame_index
+                        and frame < split_time_frames[frame_index + 1]
+                    ) or frame_index == last_frame_index
                     frames_are_sequential = all(
-                        [frames_are_backwards_sequential, frames_are_forwards_sequential]
+                        [
+                            frames_are_backwards_sequential,
+                            frames_are_forwards_sequential,
+                        ]
                     )
                 assert len(splits) == len(split_time_frames)
                 assert frames_are_sequential
@@ -239,7 +245,7 @@ class PDBManager:
             log.info("Downloading resolution map...")
             wget.download(self.resolution_url)
             log.info("Downloaded resolution map")
-    
+
     def _download_entry_metadata(self):
         if not os.path.exists(self.root_dir / "entries.idx"):
             log.info("Downloading entry metadata...")
@@ -352,7 +358,7 @@ class PDBManager:
         df.id = df.id.str.lower()
         df.date = pd.to_datetime(df.date)
         return pd.Series(df["date"].values, index=df["id"]).to_dict()
-    
+
     def _parse_experiment_type(self) -> Dict[str, str]:
         """Parse the experiment types for all PDB records.
 
@@ -474,7 +480,7 @@ class PDBManager:
         if update:
             self.df = df
         return df
-    
+
     def longer_than(self, length: int, update: bool = False) -> pd.DataFrame:
         """Select molecules longer than a given length.
 
@@ -512,7 +518,9 @@ class PDBManager:
             self.df = df
         return df
 
-    def resolution_higher_than_or_equal_to(self, resolution: int, update: bool = False) -> pd.DataFrame:
+    def resolution_higher_than_or_equal_to(
+        self, resolution: int, update: bool = False
+    ) -> pd.DataFrame:
         """Select molecules with a resolution higher than or equal to the given value.
 
         Conventions for PDB resolution values are used, where a lower resolution
@@ -533,7 +541,9 @@ class PDBManager:
             self.df = df
         return df
 
-    def resolution_lower_than_or_equal_to(self, resolution: int, update: bool = False) -> pd.DataFrame:
+    def resolution_lower_than_or_equal_to(
+        self, resolution: int, update: bool = False
+    ) -> pd.DataFrame:
         """Select molecules with a resolution lower than or equal to the given value.
 
         Conventions for PDB resolution values are used, where a higher resolution
@@ -917,7 +927,7 @@ class PDBManager:
             return self.split_clusters(df, update)
 
         return df
-    
+
     def split_df_into_time_frames(
         self,
         df: pd.DataFrame,
@@ -942,23 +952,30 @@ class PDBManager:
         for split_index in range(len(splits)):
             split = splits[split_index]
             end_datetime = split_time_frames[split_index]
-            df_split = df.loc[(df.deposition_date >= start_datetime) & (df.deposition_date < end_datetime)]
+            df_split = df.loc[
+                (df.deposition_date >= start_datetime)
+                & (df.deposition_date < end_datetime)
+            ]
             df_splits[split] = df_split
             start_datetime = end_datetime
 
         # Identify any remaining rows
         start_datetime = end_datetime
         end_datetime = df.deposition_date.max()
-        num_remaining_rows = df.loc[(df.deposition_date >= start_datetime) & (df.deposition_date <= end_datetime)].shape[0]
+        num_remaining_rows = df.loc[
+            (df.deposition_date >= start_datetime)
+            & (df.deposition_date <= end_datetime)
+        ].shape[0]
 
         # Ensure there are no duplicated rows between splits
         all_rows = pd.concat([df_splits[split] for split in splits])
-        assert len(all_rows) == len(
-            df
-        ) - num_remaining_rows, "Number of rows changed during split operations."
-        assert len(
-            all_rows.drop(self.list_columns, axis=1).drop_duplicates()
-        ) == len(df) - num_remaining_rows, "Duplicate rows found in splits."
+        assert (
+            len(all_rows) == len(df) - num_remaining_rows
+        ), "Number of rows changed during split operations."
+        assert (
+            len(all_rows.drop(self.list_columns, axis=1).drop_duplicates())
+            == len(df) - num_remaining_rows
+        ), "Duplicate rows found in splits."
 
         return df_splits
 
@@ -990,9 +1007,7 @@ class PDBManager:
                 {' '.join([str(f) for f in self.split_time_frames])}"
         )
         df_splits = self.split_df_into_time_frames(
-            df,
-            self.splits,
-            self.split_time_frames
+            df, self.splits, self.split_time_frames
         )
         log.info("Done splitting sequences")
 
@@ -1013,9 +1028,7 @@ class PDBManager:
         return df_splits
 
     def filter_by_deposition_date(
-        self,
-        max_deposition_date: np.datetime64,
-        update: bool = False
+        self, max_deposition_date: np.datetime64, update: bool = False
     ) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
         """
         Select molecules deposited on or before a given date.
@@ -1032,14 +1045,16 @@ class PDBManager:
         :rtype: Union[pd.DataFrame, Dict[str, pd.DataFrame]]
         """
         # Drop missing deposition dates
-        df = self.df.dropna().loc[self.df.deposition_date < max_deposition_date]
+        df = self.df.dropna().loc[
+            self.df.deposition_date < max_deposition_date
+        ]
         if update:
             self.df = df
 
         # Split sequences
         if self.splits_provided:
             return self.split_by_deposition_date(df, update)
-        
+
         return df
 
     def from_fasta(self, ids: str, filename: str) -> pd.DataFrame:
@@ -1070,8 +1085,8 @@ if __name__ == "__main__":
         split_time_frames=[
             np.datetime64("2022-01-01"),
             np.datetime64("2022-05-01"),
-            np.datetime64("2023-01-01")
-        ]
+            np.datetime64("2023-01-01"),
+        ],
     )
 
     pdb_manager.molecule_type(type="protein", update=True)
