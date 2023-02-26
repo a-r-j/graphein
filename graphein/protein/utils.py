@@ -504,3 +504,42 @@ def esmfold(
     if out_path is not None:
         with open(out_path, "w") as f:
             f.write(cif)
+
+
+def extract_chains_to_file(
+    pdb_file: str, chains: List[str], out_dir: str
+) -> List[str]:
+    """Extracts chains from a PDB file to separate files.
+
+    .. code-block::python
+
+        extract_chains_to_file("4hhb.pdb", ["A", "B"], ".")
+
+    This will create new files ``./4hhb_A.pdb`` and ``./4hhb_B.pdb``.
+
+
+    :param pdb_file: PDB file
+    :type pdb_file: str
+    :param chains: List of chains to extract
+    :type chains: List[str]
+    :param out_file: Directory of output files
+    :type out_file: str
+    :return: List of output file paths
+    :rtype: List[str]
+    """
+    fname = os.path.basename(pdb_file)
+    fname = fname.split(".")[0]
+
+    ppdb = PandasPdb().read_pdb(pdb_file)
+
+    out_files = []
+    for chain in chains:
+        out_path = os.path.join(out_dir, f"{fname}_{chain}.pdb")
+        out_files.append(out_path)
+        df = ppdb.df["ATOM"].loc[ppdb.df["ATOM"]["chain_id"] == chain]
+        out_df = PandasPdb()
+        out_df.df["ATOM"] = df
+        out_df.to_pdb(
+            path=out_path, records=None, gz=False, append_newline=True
+        )
+    return out_files
