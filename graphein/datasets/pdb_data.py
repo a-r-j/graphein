@@ -726,7 +726,7 @@ class PDBManager:
             download_pdb_multiprocessing(
                 to_download, self.pdb_dir, overwrite=True
             )
-            log.info(f"Done downloading PDB files")
+            log.info("Done downloading PDB files")
 
         # Iterate over dictionary and write chains to separate files
         log.info("Extracting chains...")
@@ -853,8 +853,6 @@ class PDBManager:
         split_ratios_provided = self.split_ratios is not None
         assert split_ratios_provided
 
-        df_splits = self.df_splits
-
         # Split clusters
         log.info(
             f"Randomly splitting clusters into ratios: {' '.join([str(r) for r in self.split_ratios])}..."
@@ -877,9 +875,7 @@ class PDBManager:
                     )
                 else:
                     self.df_splits[split] = df_split
-
-        if update:
-            df_splits = self.df_splits
+                df_splits[split] = self.df_splits[split]
 
         return df_splits
 
@@ -999,8 +995,6 @@ class PDBManager:
         split_time_frames_provided = self.split_time_frames is not None
         assert split_time_frames_provided
 
-        df_splits = self.df_splits
-
         # Split sequences
         log.info(
             f"Splitting sequences into time frames: \
@@ -1021,9 +1015,7 @@ class PDBManager:
                     )
                 else:
                     self.df_splits[split] = df_split
-
-        if update:
-            df_splits = self.df_splits
+                df_splits[split] = self.df_splits[split]
 
         return df_splits
 
