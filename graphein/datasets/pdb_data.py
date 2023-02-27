@@ -1029,14 +1029,13 @@ class PDBManager:
 
         # Merge DataFrame splits
         merge_columns = [
-            c for c in first_df_split.columns.to_list()
-            if "split" not in c
+            c for c in first_df_split.columns.to_list() if "split" not in c
         ]
         merged_df_split = pd.merge(
             first_df_split.drop("split", axis=1),
             second_df_split.drop("split", axis=1),
             how="inner",
-            on=merge_columns
+            on=merge_columns,
         )
 
         # Coerce tuple columns back into list columns
