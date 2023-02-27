@@ -211,7 +211,9 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return splits_df.resolution.min()
 
-    def get_worst_resolution(self, splits: Optional[List[str]] = None) -> float:
+    def get_worst_resolution(
+        self, splits: Optional[List[str]] = None
+    ) -> float:
         """Return the worst resolution in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -224,7 +226,9 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return splits_df.resolution.max()
 
-    def get_experiment_types(self, splits: Optional[List[str]] = None) -> List[str]:
+    def get_experiment_types(
+        self, splits: Optional[List[str]] = None
+    ) -> List[str]:
         """Return list of different experiment types in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -237,7 +241,9 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return splits_df.experiment_type.unique()
 
-    def get_molecule_types(self, splits: Optional[List[str]] = None) -> List[str]:
+    def get_molecule_types(
+        self, splits: Optional[List[str]] = None
+    ) -> List[str]:
         """Return list of different molecule types in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -250,7 +256,9 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return splits_df.molecule_type.unique()
 
-    def get_molecule_names(self, splits: Optional[List[str]] = None) -> List[str]:
+    def get_molecule_names(
+        self, splits: Optional[List[str]] = None
+    ) -> List[str]:
         """Return list of molecule names in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -540,9 +548,7 @@ class PDBManager:
         return df
 
     def get_splits(
-        self,
-        splits: Optional[List[str]] = None,
-        source: bool = False
+        self, splits: Optional[List[str]] = None, source: bool = False
     ) -> pd.DataFrame:
         """Return DataFrame entries belonging to the splits given.
 
@@ -557,11 +563,7 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         df = self.source if source else self.df
-        splits_df = (
-            df.loc[df.split.isin(splits)]
-            if splits is not None
-            else df
-        )
+        splits_df = df.loc[df.split.isin(splits)] if splits is not None else df
         assert len(splits_df) > 0, "Requested splits must be non-empty."
         return splits_df
 
@@ -569,7 +571,7 @@ class PDBManager:
         self,
         type: str = "protein",
         splits: Optional[List[str]] = None,
-        update: bool = False
+        update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules by molecule type. [`protein`, `dna`, `rna`]
 
@@ -596,7 +598,7 @@ class PDBManager:
         self,
         type: str = "diffraction",
         splits: Optional[List[str]] = None,
-        update: bool = False
+        update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules by experiment type. [`diffraction`, `NMR`, `EM`, `other`]
 
@@ -670,7 +672,7 @@ class PDBManager:
         self,
         length: int,
         splits: Optional[List[str]] = None,
-        update: bool = False
+        update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules longer than a given length.
 
@@ -692,7 +694,7 @@ class PDBManager:
         self,
         length: int,
         splits: Optional[List[str]] = None,
-        update: bool = False
+        update: bool = False,
     ) -> pd.DataFrame:
         """
         Select molecules shorter than a given length.
@@ -715,7 +717,7 @@ class PDBManager:
         self,
         length: int,
         splits: Optional[List[str]] = None,
-        update: bool = False
+        update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules equal to a given length.
 
@@ -763,7 +765,7 @@ class PDBManager:
         self,
         resolution: int,
         splits: Optional[List[str]] = None,
-        update: bool = False
+        update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules with a resolution better than or equal to the given value.
 
@@ -793,7 +795,7 @@ class PDBManager:
         self,
         resolution: int,
         splits: Optional[List[str]] = None,
-        update: bool = False
+        update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules with a resolution worse than or equal to the given value.
 
@@ -823,7 +825,7 @@ class PDBManager:
         self,
         ligand: str,
         splits: Optional[List[str]] = None,
-        update: bool = False
+        update: bool = False,
     ) -> pd.DataFrame:
         """
         Select molecules that contain a given ligand.
@@ -849,7 +851,7 @@ class PDBManager:
         ligands: List[str],
         splits: Optional[List[str]] = None,
         inverse: bool = False,
-        update: bool = False
+        update: bool = False,
     ):
         """Select molecules that contain all ligands in the provided list.
 
@@ -885,9 +887,7 @@ class PDBManager:
         return df
 
     def remove_non_standard_alphabet_sequences(
-        self,
-        splits: Optional[List[str]] = None,
-        update: bool = False
+        self, splits: Optional[List[str]] = None, update: bool = False
     ):
         """
         Remove sequences with non-standard characters.
@@ -1022,7 +1022,7 @@ class PDBManager:
             for list_column in self.list_columns:
                 if list_column in df_split.columns:
                     df_split[list_column] = df_split[list_column].apply(list)
-                
+
         # Track split names
         merged_df_split["split"] = split
         return merged_df_split
@@ -1300,7 +1300,7 @@ class PDBManager:
             if self.splits_provided
             else df
         )
-    
+
     def reset(self) -> pd.DataFrame:
         """Reset the dataset to the original DataFrame source.
 
@@ -1309,7 +1309,7 @@ class PDBManager:
         """
         self.df = self.source.copy()
         return self.df
-    
+
     def download(
         self,
         out_dir=".",
@@ -1332,7 +1332,9 @@ class PDBManager:
         :param chunksize: Chunk size for each worker, defaults to ``32``.
         :type chunksize: int, optional
         """
-        log.info(f"Downloading {len(self.get_unique_pdbs(splits))} PDB files...")
+        log.info(
+            f"Downloading {len(self.get_unique_pdbs(splits))} PDB files..."
+        )
         download_pdb_multiprocessing(
             self.get_unique_pdbs(splits),
             out_dir,
@@ -1381,10 +1383,7 @@ class PDBManager:
         return [Path(num) for sublist in paths for num in sublist]
 
     def from_fasta(
-        self,
-        ids: str,
-        filename: str,
-        splits: Optional[List[str]] = None
+        self, ids: str, filename: str, splits: Optional[List[str]] = None
     ) -> pd.DataFrame:
         """Create a selection from a FASTA file.
 
@@ -1411,13 +1410,12 @@ class PDBManager:
             raise ValueError(
                 "Invalid parameter ids. Must be 'chain' or 'pdb'."
             )
-        
+
     def to_chain_sequence_mapping_dict(
-        self,
-        splits: Optional[List[str]]
+        self, splits: Optional[List[str]]
     ) -> Dict[str, str]:
         """Return a dictionary of sequences indexed by chains.
-        
+
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
@@ -1478,7 +1476,7 @@ if __name__ == "__main__":
     pdb_manager.molecule_type(type="protein", update=True)
     pdb_manager.experiment_type(type="diffraction", update=True)
     pdb_manager.resolution_better_than_or_equal_to(2.0, update=True)
-    
+
     print(f"num_unique_pdbs: {pdb_manager.get_num_unique_pdbs()}")
     print(f"best_resolution: {pdb_manager.get_best_resolution()}")
     print(f"cluster_dfs: {pdb_manager.cluster(update=True)}")
