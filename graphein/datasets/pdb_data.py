@@ -185,6 +185,35 @@ class PDBManager:
         :rtype: float
         """
         return self.df.resolution.max()
+    
+    @property
+    def experiment_types(self) -> List[str]:
+        """Return list of different experiment types in the dataset.
+
+        :return: List of experiment types.
+        :rtype: List[str]
+        """
+        return self.df.experiment_type.unique()
+
+    @property
+    def molecule_types(self) -> List[str]:
+        """
+        Returns list of different molecule types in the dataset.
+
+        :return: List of molecule types.
+        :rtype: List[str]
+        """
+        return self.df.molecule_type.unique()
+
+    @property
+    def molecule_names(self) -> List[str]:
+        """Returns list of molecule names in the dataset.
+
+        :return: List of molecule names.
+        :rtype: List[str]
+        """
+        return self.df.name.unique()
+
 
     def _frames_are_sequential(
         self, split_time_frames: List[np.datetime64]
