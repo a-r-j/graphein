@@ -1244,8 +1244,8 @@ class PDBManager:
     def from_fasta(self, ids: str, filename: str) -> pd.DataFrame:
         """Create a selection from a FASTA file.
 
-        :param ids: One of ``"chain"`` or ``"pdb"``. Whether the FASTA is
-            indexed by chains (i.e., ``3eiy_A``) or PDB ids (``3eiy``).
+        :param ids: One of ``"chain"`` or ``"pdb"``. i.e., Whether the
+            FASTA is indexed by chains (i.e., ``3eiy_A``) or PDB ids (``3eiy``).
         :type ids: str
         :param filename: Name of FASTA file.
         :type filename: str
