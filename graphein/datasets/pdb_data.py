@@ -532,7 +532,7 @@ class PDBManager:
         if update:
             self.df = df
         return df
-    
+
     def compare_length(
         self,
         length: int,
@@ -573,7 +573,9 @@ class PDBManager:
             self.df = df
         return df
 
-    def length_longer_than(self, length: int, update: bool = False) -> pd.DataFrame:
+    def length_longer_than(
+        self, length: int, update: bool = False
+    ) -> pd.DataFrame:
         """Select molecules longer than a given length.
 
         :param length: Minimum length of molecule.
@@ -587,7 +589,9 @@ class PDBManager:
         """
         return self.compare_length(length, "greater", update)
 
-    def length_shorter_than(self, length: int, update: bool = False) -> pd.DataFrame:
+    def length_shorter_than(
+        self, length: int, update: bool = False
+    ) -> pd.DataFrame:
         """
         Select molecules shorter than a given length.
 
@@ -602,7 +606,9 @@ class PDBManager:
         """
         return self.compare_length(length, "less", update)
 
-    def length_equal_to(self, length: int, update: bool = False) -> pd.DataFrame:
+    def length_equal_to(
+        self, length: int, update: bool = False
+    ) -> pd.DataFrame:
         """Select molecules equal to a given length.
 
         :param length: Exact length of molecule.
@@ -615,7 +621,7 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         return self.compare_length(length, "equal", update)
-    
+
     def oligomeric(
         self,
         oligomer: int = 1,
