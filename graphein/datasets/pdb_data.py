@@ -860,7 +860,6 @@ class PDBManager:
         first_df_split: pd.DataFrame,
         second_df_split: pd.DataFrame,
         split: str,
-        df_primary_key: str = "id",
     ) -> pd.DataFrame:
         """Reconcile an existing DataFrame split with a new split.
 
@@ -870,15 +869,27 @@ class PDBManager:
         :type second_df_split: pd.DataFrame
         :param split: Name of DataFrame split.
         :type split: str
-        :param df_primary_key: Primary column name, defaults to ``"id"``.
-        :type df_primary_key: str, optional
 
         :return: Merged DataFrame split.
         :rtype: pd.DataFrame
         """
+        # Coerce list columns into tuple columns
+        # Ref: https://stackoverflow.com/questions/45991496/merging-dataframes-with-unhashable-columns
+        for df_split in [first_df_split, second_df_split]:
+            for list_column in self.list_columns:
+                if list_column in df_split.columns:
+                    df_split[list_column] = df_split[list_column].apply(tuple)
+        # Merge DataFrame splits
+        merge_columns = first_df_split.columns.to_list()
         merged_df_split = pd.merge(
-            first_df_split, second_df_split, how="inner", on=[df_primary_key]
+            first_df_split, second_df_split, how="inner", on=merge_columns
         )
+        # Coerce tuple columns back into list columns
+        for df_split in [first_df_split, second_df_split]:
+            for list_column in self.list_columns:
+                if list_column in df_split.columns:
+                    df_split[list_column] = df_split[list_column].apply(list)
+        # Track split names
         merged_df_split["split"] = split
         return merged_df_split
 
