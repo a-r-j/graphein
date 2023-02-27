@@ -98,7 +98,9 @@ class PDBManager:
         # Splits
         self.splits_provided = splits is not None
         if self.splits_provided:
-            assert len(set(splits)) == len(splits), f"Split names must be unique: {splits}."
+            assert len(set(splits)) == len(
+                splits
+            ), f"Split names must be unique: {splits}."
             self.splits = splits
             self.df_splits = {split: None for split in splits}
             self.assign_leftover_rows_to_split_n = (
@@ -106,13 +108,21 @@ class PDBManager:
             )
             # Sequence-based ratio splits
             if split_ratios is not None:
-                assert len(splits) == len(split_ratios), f"Number of splits ({splits}) must match number of split ratios ({split_ratios})."
-                assert sum(split_ratios) == 1.0, f"Split ratios must sum to 1.0: {split_ratios}."
+                assert len(splits) == len(
+                    split_ratios
+                ), f"Number of splits ({splits}) must match number of split ratios ({split_ratios})."
+                assert (
+                    sum(split_ratios) == 1.0
+                ), f"Split ratios must sum to 1.0: {split_ratios}."
                 self.split_ratios = split_ratios
             # Time-based splits
             if split_time_frames is not None:
-                assert len(splits) == len(split_time_frames), f"Number of splits ({splits}) must match number of split time frames ({split_time_frames})."
-                assert self._frames_are_sequential(split_time_frames), f"Split time frames must be sequential: {split_time_frames}."
+                assert len(splits) == len(
+                    split_time_frames
+                ), f"Number of splits ({splits}) must match number of split time frames ({split_time_frames})."
+                assert self._frames_are_sequential(
+                    split_time_frames
+                ), f"Split time frames must be sequential: {split_time_frames}."
                 self.split_time_frames = split_time_frames
 
     def download_metadata(self):
@@ -839,8 +849,12 @@ class PDBManager:
         :return: Dictionary of DataFrame splits.
         :rtype: Dict[str, pd.DataFrame]
         """
-        assert len(splits) == len(split_ratios), f"Number of splits ({len(splits)}) must match number of split ratios ({len(split_ratios)})"
-        assert sum(split_ratios) == 1, f"Split ratios must sum to 1, got {sum(split_ratios)} ({split_ratios})"
+        assert len(splits) == len(
+            split_ratios
+        ), f"Number of splits ({len(splits)}) must match number of split ratios ({len(split_ratios)})"
+        assert (
+            sum(split_ratios) == 1
+        ), f"Split ratios must sum to 1, got {sum(split_ratios)} ({split_ratios})"
 
         # Calculate the size of each split
         split_sizes = [int(len(df) * ratio) for ratio in split_ratios]
@@ -1063,8 +1077,12 @@ class PDBManager:
         :return: Dictionary of DataFrame splits.
         :rtype: Dict[str, pd.DataFrame]
         """
-        assert len(splits) == len(split_time_frames), f"Number of splits ({len(splits)}) must match number of time frames ({len(split_time_frames)})."
-        assert self._frames_are_sequential(split_time_frames), "Time frames must be sequential."
+        assert len(splits) == len(
+            split_time_frames
+        ), f"Number of splits ({len(splits)}) must match number of time frames ({len(split_time_frames)})."
+        assert self._frames_are_sequential(
+            split_time_frames
+        ), "Time frames must be sequential."
 
         # Split DataFrames
         start_datetime = df.deposition_date.min()
@@ -1124,7 +1142,9 @@ class PDBManager:
         :rtype: Dict[str, pd.DataFrame]
         """
         split_time_frames_provided = self.split_time_frames is not None
-        assert split_time_frames_provided, "Split time frames must be provided."
+        assert (
+            split_time_frames_provided
+        ), "Split time frames must be provided."
 
         # Split sequences
         time_frames = " ".join([str(f) for f in self.split_time_frames])
