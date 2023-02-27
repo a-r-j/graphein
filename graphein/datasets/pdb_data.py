@@ -1211,8 +1211,8 @@ class PDBManager:
     def from_fasta(self, ids: str, filename: str) -> pd.DataFrame:
         """Create a selection from a FASTA file.
 
-        :param ids: Whether the FASTA is indexed by chains (i.e., ``3eiy_A``)
-            or PDB ids (``3eiy``).
+        :param ids: One of ``"chain"`` or ``"pdb"``. Whether the FASTA is
+            indexed by chains (i.e., ``3eiy_A``) or PDB ids (``3eiy``).
         :type ids: str
         :param filename: Name of FASTA file.
         :type filename: str
@@ -1226,6 +1226,8 @@ class PDBManager:
             return self.source.loc[self.source.id.isin(seq_ids)]
         elif ids == "pdb":
             return self.source.loc[self.source.pdb.isin(seq_ids)]
+        else:
+            raise ValueError("Invalid parameter ids. Must be 'chain' or 'pdb'.")
 
     def to_csv(self, fname: str):
         """Write the selection to a CSV file.
