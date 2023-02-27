@@ -1235,7 +1235,9 @@ class PDBManager:
         :param fname: Path to CSV file.
         :type fname: str
         """
-        log.info(f"Writing selection ({len(self.df)} chains) to CSV file: {fname}")
+        log.info(
+            f"Writing selection ({len(self.df)} chains) to CSV file: {fname}"
+        )
 
         self.df.to_csv(fname, index=False)
 
