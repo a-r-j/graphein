@@ -357,7 +357,9 @@ class PDBManager:
         """Download PDB entry metadata from
         https://files.wwpdb.org/pub/pdb/derived_data/index/entries.idx.
         """
-        if not os.path.exists(self.root_dir / self.pdb_deposition_date_filename):
+        if not os.path.exists(
+            self.root_dir / self.pdb_deposition_date_filename
+        ):
             log.info("Downloading entry metadata...")
             wget.download(self.pdb_deposition_date_url)
             log.info("Downloaded entry metadata")
