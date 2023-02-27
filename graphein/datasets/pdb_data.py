@@ -185,7 +185,7 @@ class PDBManager:
         :rtype: float
         """
         return self.df.resolution.max()
-    
+
     @property
     def experiment_types(self) -> List[str]:
         """Return list of different experiment types in the dataset.
@@ -213,7 +213,6 @@ class PDBManager:
         :rtype: List[str]
         """
         return self.df.name.unique()
-
 
     def _frames_are_sequential(
         self, split_time_frames: List[np.datetime64]
