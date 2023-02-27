@@ -187,19 +187,19 @@ class PDBManager:
         return self.df.length.min()
 
     @property
-    def highest_resolution(self) -> float:
-        """Return the highest resolution in the dataset.
+    def best_resolution(self) -> float:
+        """Return the best resolution in the dataset.
 
-        :return: Highest resolution.
+        :return: Best resolution.
         :rtype: float
         """
         return self.df.resolution.min()
 
     @property
-    def lowest_resolution(self) -> float:
-        """Return the lowest resolution in the dataset.
+    def worst_resolution(self) -> float:
+        """Return the worst resolution in the dataset.
 
-        :return: Lowest resolution.
+        :return: Worst resolution.
         :rtype: float
         """
         return self.df.resolution.max()
@@ -518,15 +518,15 @@ class PDBManager:
             self.df = df
         return df
 
-    def resolution_higher_than_or_equal_to(
+    def resolution_better_than_or_equal_to(
         self, resolution: int, update: bool = False
     ) -> pd.DataFrame:
-        """Select molecules with a resolution higher than or equal to the given value.
+        """Select molecules with a resolution better than or equal to the given value.
 
         Conventions for PDB resolution values are used, where a lower resolution
-        value indicates a higher resolution for a molecule overall.
+        value indicates a better resolution for a molecule overall.
 
-        :param resolution: Minimum resolution of molecule.
+        :param resolution: Worst molecule resolution allowed.
         :type resolution: int
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
@@ -541,15 +541,15 @@ class PDBManager:
             self.df = df
         return df
 
-    def resolution_lower_than_or_equal_to(
+    def resolution_worse_than_or_equal_to(
         self, resolution: int, update: bool = False
     ) -> pd.DataFrame:
-        """Select molecules with a resolution lower than or equal to the given value.
+        """Select molecules with a resolution worse than or equal to the given value.
 
         Conventions for PDB resolution values are used, where a higher resolution
-        value indicates a lower resolution for a molecule overall.
+        value indicates a worse resolution for a molecule overall.
 
-        :param resolution: Maximum resolution of molecule.
+        :param resolution: Best molecule resolution allowed.
         :type resolution: int
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
@@ -1083,7 +1083,7 @@ if __name__ == "__main__":
 
     pdb_manager.molecule_type(type="protein", update=True)
     pdb_manager.experiment_type(type="diffraction", update=True)
-    pdb_manager.resolution_higher_than_or_equal_to(2.0, update=True)
+    pdb_manager.resolution_better_than_or_equal_to(2.0, update=True)
 
     print(f"cluster_dfs: {pdb_manager.cluster(update=True)}")
     print(
