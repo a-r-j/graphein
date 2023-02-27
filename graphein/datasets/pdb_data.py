@@ -1197,6 +1197,16 @@ class PDBManager:
         elif ids == "pdb":
             return self.source.loc[self.source.pdb.isin(seq_ids)]
 
+    def to_csv(self, fname: str):
+        """Write the selection to a CSV file.
+
+        :param fname: Path to CSV file.
+        :type fname: str
+        """
+        log.info(f"Writing selection ({len(self.df)} chains) to CSV file: {fname}")
+
+        self.df.to_csv(fname, index=False)
+
 
 if __name__ == "__main__":
     pdb_manager = PDBManager(
