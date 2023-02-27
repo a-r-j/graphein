@@ -973,8 +973,13 @@ class PDBManager:
         min_seq_id: float = 0.3,
         coverage: float = 0.8,
         update: bool = False,
+        cluster_fname: Optional[str] = None,
+        overwrite: bool = False,
     ) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
         """Cluster sequences in selection using MMseqs2.
+
+        By default, the clusters are stored in a file named:
+        ``f"pdb_cluster_rep_seq_id_{min_seq_id}_c_{coverage}.fasta"``.
 
         :param min_seq_id: Sequence identity, defaults to ``0.3``.
         :type min_seq_id: float, optional
@@ -983,35 +988,51 @@ class PDBManager:
         :param update: Whether to update the selection to the representative
             sequences, defaults to ``False``.
         :type update: bool, optional
+        :param cluster_fname: Custom name for cluster file,
+            defaults to ``None``.
         :return: Either a single DataFrame of representative sequences or a
             Dictionary of split names mapping to DataFrames of randomly-split
             representative sequences.
         :rtype: Union[pd.DataFrame, Dict[str, pd.DataFrame]]
         """
-        # Write fasta
-        self.to_fasta("pdb.fasta")
-        if not is_tool("mmseqs"):
-            log.error(
-                "MMseqs2 not found. Please install it: conda install -c conda-forge -c bioconda mmseqs2"
-            )
+        # Build name of cluster file
+        if cluster_fname is None:
+            cluster_fname = f"pdb_cluster_rep_seq_id_{min_seq_id}_c_{coverage}.fasta"
 
-        # Create clusters
-        if not os.path.exists("pdb_cluster_rep_seq.fasta"):
-            cmd = f"mmseqs easy-cluster pdb.fasta pdb_cluster tmp --min-seq-id {min_seq_id} -c {coverage} --cov-mode 1"
-            log.info(f"Clustering with: {cmd}")
-            subprocess.run(cmd.split())
-            log.info("Done with clustering")
+        # Do clustering if overwriting or no clusters found
+        if not os.path.exists(self.root_dir / cluster_fname) or overwrite:
+            # Remove existing file if we are overwriting
+            if os.path.exists(self.root_dir / cluster_fname) and overwrite:
+                log.info(f"Overwriting. Removing old cluster file {self.root_dir / cluster_fname}")
+                os.remove(self.root_dir / cluster_fname)
+
+            # Create clusters
+            log.info("Creating clusters...")
+            # Write selection to fasta
+            log.info(f"Writing current selection ({len(self.df)} chains) to fasta...")
+            self.to_fasta(str(self.root_dir / "pdb.fasta"))
+            if not is_tool("mmseqs"):
+                log.error(
+                    "MMseqs2 not found. Please install it: conda install -c conda-forge -c bioconda mmseqs2"
+                )
+            else:
+                # Run MMSeqs
+                cmd = f"mmseqs easy-cluster pdb.fasta pdb_cluster tmp --min-seq-id {min_seq_id} -c {coverage} --cov-mode 1"
+                log.info(f"Clustering with: {cmd}")
+                subprocess.run(cmd.split())
+                os.rename("pdb_cluster_rep_seq.fasta", self.root_dir / cluster_fname)
+                log.info("Done clustering!")
+        # Otherwise, read from disk
+        elif os.path.exists(self.root_dir / cluster_fname):
+            log.info(f"Found existing clusters. Loading clusters from disk: {self.root_dir / cluster_fname}")
 
         # Read fasta
-        df = self.from_fasta(ids="chain", filename="pdb_cluster_rep_seq.fasta")
+        df = self.from_fasta(ids="chain", filename=str(self.root_dir / cluster_fname))
         if update:
             self.df = df
 
         # Split fasta
-        if self.splits_provided:
-            return self.split_clusters(df, update)
-
-        return df
+        return self.split_clusters(df, update) if self.splits_provided else df
 
     def split_df_into_time_frames(
         self,
