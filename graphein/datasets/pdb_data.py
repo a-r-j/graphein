@@ -133,95 +133,135 @@ class PDBManager:
         self._download_resolution()
         self._download_entry_metadata()
 
-    @property
-    def num_unique_pdbs(self) -> int:
+    def get_num_unique_pdbs(self, splits: Optional[List[str]] = None) -> int:
         """Return the number of unique PDB IDs in the dataset.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: Number of unique PDB IDs.
         :rtype: int
         """
-        return len(self.df.pdb.unique())
+        splits_df = self.get_splits(splits)
+        return len(splits_df.pdb.unique())
 
-    @property
-    def unique_pdbs(self) -> List[str]:
+    def get_unique_pdbs(self, splits: Optional[List[str]] = None) -> List[str]:
         """Return a list of unique PDB IDs in the dataset.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: List of unique PDB IDs.
         :rtype: List[str]
         """
-        return self.df.pdb.unique().tolist()
+        splits_df = self.get_splits(splits)
+        return splits_df.pdb.unique().tolist()
 
-    @property
-    def num_chains(self) -> int:
+    def get_num_chains(self, splits: Optional[List[str]] = None) -> int:
         """Return the number of chains in the dataset.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: Number of chains.
         :rtype: int
         """
-        return len(self.df)
+        splits_df = self.get_splits(splits)
+        return len(splits_df)
 
-    @property
-    def longest_chain(self) -> int:
+    def get_longest_chain(self, splits: Optional[List[str]] = None) -> int:
         """Return the length of the longest chain in the dataset.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: Length of the longest chain.
         :rtype: int
         """
-        return self.df.length.max()
+        splits_df = self.get_splits(splits)
+        return splits_df.length.max()
 
-    @property
-    def shortest_chain(self) -> int:
+    def get_shortest_chain(self, splits: Optional[List[str]] = None) -> int:
         """Return the length of the shortest chain in the dataset.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: Length of the shortest chain.
         :rtype: int
         """
-        return self.df.length.min()
+        splits_df = self.get_splits(splits)
+        return splits_df.length.min()
 
-    @property
-    def best_resolution(self) -> float:
+    def get_best_resolution(self, splits: Optional[List[str]] = None) -> float:
         """Return the best resolution in the dataset.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: Best resolution.
         :rtype: float
         """
-        return self.df.resolution.min()
+        splits_df = self.get_splits(splits)
+        return splits_df.resolution.min()
 
-    @property
-    def worst_resolution(self) -> float:
+    def get_worst_resolution(self, splits: Optional[List[str]] = None) -> float:
         """Return the worst resolution in the dataset.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: Worst resolution.
         :rtype: float
         """
-        return self.df.resolution.max()
+        splits_df = self.get_splits(splits)
+        return splits_df.resolution.max()
 
-    @property
-    def experiment_types(self) -> List[str]:
+    def get_experiment_types(self, splits: Optional[List[str]] = None) -> List[str]:
         """Return list of different experiment types in the dataset.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: List of experiment types.
         :rtype: List[str]
         """
-        return self.df.experiment_type.unique()
+        splits_df = self.get_splits(splits)
+        return splits_df.experiment_type.unique()
 
-    @property
-    def molecule_types(self) -> List[str]:
+    def get_molecule_types(self, splits: Optional[List[str]] = None) -> List[str]:
         """Return list of different molecule types in the dataset.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: List of molecule types.
         :rtype: List[str]
         """
-        return self.df.molecule_type.unique()
+        splits_df = self.get_splits(splits)
+        return splits_df.molecule_type.unique()
 
-    @property
-    def molecule_names(self) -> List[str]:
+    def get_molecule_names(self, splits: Optional[List[str]] = None) -> List[str]:
         """Return list of molecule names in the dataset.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: List of molecule names.
         :rtype: List[str]
         """
-        return self.df.name.unique()
+        splits_df = self.get_splits(splits)
+        return splits_df.name.unique()
 
     def _frames_are_sequential(
         self, split_time_frames: List[np.datetime64]
@@ -469,6 +509,7 @@ class PDBManager:
         self,
         n: Optional[int] = None,
         frac: Optional[float] = None,
+        splits: Optional[List[str]] = None,
         replace: bool = False,
         update: bool = False,
     ) -> pd.DataFrame:
@@ -478,6 +519,9 @@ class PDBManager:
         :type n: Optional[int], optional
         :param frac: Fraction of molecules to select, defaults to ``None``.
         :type frac: Optional[float], optional
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param replace: Whether or not to sample with replacement, defaults to
             ``False``.
         :type replace: bool, optional
@@ -488,18 +532,52 @@ class PDBManager:
         :return: DataFrame of sampled molecules.
         :rtype: pd.DataFrame
         """
-        df = self.df.sample(n=n, frac=frac, replace=replace)
+        splits_df = self.get_splits(splits)
+        df = splits_df.sample(n=n, frac=frac, replace=replace)
+
         if update:
             self.df = df
         return df
 
+    def get_splits(
+        self,
+        splits: Optional[List[str]] = None,
+        source: bool = False
+    ) -> pd.DataFrame:
+        """Return DataFrame entries belonging to the splits given.
+
+        :param split: Names of splits from which to select entries,
+            defaults to ``None``.
+        :type split: Optional[List[str]], optional
+        :param source: Whether to filter based on the source DataFrame,
+            defaults to ``False``.
+        :type source: bool, optional
+
+        :return: DataFrame of selected molecules.
+        :rtype: pd.DataFrame
+        """
+        df = self.source if source else self.df
+        splits_df = (
+            df.loc[df.split.isin(splits)]
+            if splits is not None
+            else df
+        )
+        assert len(splits_df) > 0, "Requested splits must be non-empty."
+        return splits_df
+
     def molecule_type(
-        self, type: str = "protein", update: bool = False
+        self,
+        type: str = "protein",
+        splits: Optional[List[str]] = None,
+        update: bool = False
     ) -> pd.DataFrame:
         """Select molecules by molecule type. [`protein`, `dna`, `rna`]
 
         :param type: Type of molecule, defaults to "protein".
         :type type: str, optional
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -507,19 +585,26 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        df = self.df.loc[self.df.molecule_type == type]
+        splits_df = self.get_splits(splits)
+        df = splits_df.loc[splits_df.molecule_type == type]
 
         if update:
             self.df = df
         return df
 
     def experiment_type(
-        self, type: str = "diffraction", update: bool = False
+        self,
+        type: str = "diffraction",
+        splits: Optional[List[str]] = None,
+        update: bool = False
     ) -> pd.DataFrame:
         """Select molecules by experiment type. [`diffraction`, `NMR`, `EM`, `other`]
 
         :param type: Experiment type of molecule, defaults to "diffraction".
         :type type: str, optional
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -527,7 +612,8 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        df = self.df.loc[self.df.experiment_type == type]
+        splits_df = self.get_splits(splits)
+        df = splits_df.loc[splits_df.experiment_type == type]
 
         if update:
             self.df = df
@@ -537,6 +623,7 @@ class PDBManager:
         self,
         length: int,
         comparison: str = "equal",
+        splits: Optional[List[str]] = None,
         update: bool = False,
     ):
         """Select molecules with a given length.
@@ -545,6 +632,10 @@ class PDBManager:
         :type length: int
         :param comparison: Comparison operator. One of ``"equal"``,
             ``"less"``, or ``"greater"``, defaults to ``"equal"``.
+        :type comparison: str, optional
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -552,17 +643,19 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
+        splits_df = self.get_splits(splits)
+
         if comparison == "equal":
-            df = self.df[
-                self.df.groupby("pdb")["pdb"].transform("size") == length
+            df = splits_df[
+                splits_df.groupby("pdb")["pdb"].transform("size") == length
             ]
         elif comparison == "less":
-            df = self.df[
-                self.df.groupby("pdb")["pdb"].transform("size") < length
+            df = splits_df[
+                splits_df.groupby("pdb")["pdb"].transform("size") < length
             ]
         elif comparison == "greater":
-            df = self.df[
-                self.df.groupby("pdb")["pdb"].transform("size") > length
+            df = splits_df[
+                splits_df.groupby("pdb")["pdb"].transform("size") > length
             ]
         else:
             raise ValueError(
@@ -574,12 +667,18 @@ class PDBManager:
         return df
 
     def length_longer_than(
-        self, length: int, update: bool = False
+        self,
+        length: int,
+        splits: Optional[List[str]] = None,
+        update: bool = False
     ) -> pd.DataFrame:
         """Select molecules longer than a given length.
 
         :param length: Minimum length of molecule.
         :type length: int
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -587,16 +686,22 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        return self.compare_length(length, "greater", update)
+        return self.compare_length(length, "greater", splits, update)
 
     def length_shorter_than(
-        self, length: int, update: bool = False
+        self,
+        length: int,
+        splits: Optional[List[str]] = None,
+        update: bool = False
     ) -> pd.DataFrame:
         """
         Select molecules shorter than a given length.
 
         :param length: Maximum length of molecule.
         :type length: int
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -604,15 +709,21 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        return self.compare_length(length, "less", update)
+        return self.compare_length(length, "less", splits, update)
 
     def length_equal_to(
-        self, length: int, update: bool = False
+        self,
+        length: int,
+        splits: Optional[List[str]] = None,
+        update: bool = False
     ) -> pd.DataFrame:
         """Select molecules equal to a given length.
 
         :param length: Exact length of molecule.
         :type length: int
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -620,12 +731,13 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        return self.compare_length(length, "equal", update)
+        return self.compare_length(length, "equal", splits, update)
 
     def oligomeric(
         self,
         oligomer: int = 1,
         comparison: str = "equal",
+        splits: Optional[List[str]] = None,
         update: bool = False,
     ):
         """Select molecules with a given oligmeric length.
@@ -634,6 +746,10 @@ class PDBManager:
         :type length: int
         :param comparison: Comparison operator. One of ``"equal"``,
             ``"less"``, or ``"greater"``, defaults to ``"equal"``.
+        :type comparison: str, optional
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -641,10 +757,13 @@ class PDBManager:
         :return: DataFrame of selected oligmers.
         :rtype: pd.DataFrame
         """
-        return self.compare_length(oligomer, comparison, update)
+        return self.compare_length(oligomer, comparison, splits, update)
 
     def resolution_better_than_or_equal_to(
-        self, resolution: int, update: bool = False
+        self,
+        resolution: int,
+        splits: Optional[List[str]] = None,
+        update: bool = False
     ) -> pd.DataFrame:
         """Select molecules with a resolution better than or equal to the given value.
 
@@ -653,6 +772,9 @@ class PDBManager:
 
         :param resolution: Worst molecule resolution allowed.
         :type resolution: int
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -660,14 +782,18 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        df = self.df.loc[self.df.resolution <= resolution]
+        splits_df = self.get_splits(splits)
+        df = splits_df.loc[splits_df.resolution <= resolution]
 
         if update:
             self.df = df
         return df
 
     def resolution_worse_than_or_equal_to(
-        self, resolution: int, update: bool = False
+        self,
+        resolution: int,
+        splits: Optional[List[str]] = None,
+        update: bool = False
     ) -> pd.DataFrame:
         """Select molecules with a resolution worse than or equal to the given value.
 
@@ -676,6 +802,9 @@ class PDBManager:
 
         :param resolution: Best molecule resolution allowed.
         :type resolution: int
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -683,13 +812,19 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        df = self.df.loc[self.df.resolution >= resolution]
+        splits_df = self.get_splits(splits)
+        df = splits_df.loc[splits_df.resolution >= resolution]
 
         if update:
             self.df = df
         return df
 
-    def has_ligand(self, ligand: str, update: bool = False) -> pd.DataFrame:
+    def has_ligand(
+        self,
+        ligand: str,
+        splits: Optional[List[str]] = None,
+        update: bool = False
+    ) -> pd.DataFrame:
         """
         Select molecules that contain a given ligand.
 
@@ -702,14 +837,19 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        df = self.df.loc[self.df.ligands.map(lambda x: ligand in x)]
+        splits_df = self.get_splits(splits)
+        df = splits_df.loc[splits_df.ligands.map(lambda x: ligand in x)]
 
         if update:
             self.df = df
         return df
 
     def has_ligands(
-        self, ligands: List[str], inverse: bool = False, update: bool = False
+        self,
+        ligands: List[str],
+        splits: Optional[List[str]] = None,
+        inverse: bool = False,
+        update: bool = False
     ):
         """Select molecules that contain all ligands in the provided list.
 
@@ -718,6 +858,9 @@ class PDBManager:
 
         :param ligand: List of ligands. (PDB ligand codes - http://ligand-expo.rcsb.org/)
         :type ligand: List[str]
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param inverse: Whether to inverse the selection, defaults to ``False``.
         :type inverse: bool, optional
         :param update: Whether to update the DataFrame in place, defaults to
@@ -727,44 +870,31 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
+        splits_df = self.get_splits(splits)
         if inverse:
-            df = self.df.loc[
-                self.df.ligands.map(lambda x: not set(ligands).issubset(x))
+            df = splits_df.loc[
+                splits_df.ligands.map(lambda x: not set(ligands).issubset(x))
             ]
         else:
-            df = self.df.loc[
-                self.df.ligands.map(lambda x: set(ligands).issubset(x))
+            df = splits_df.loc[
+                splits_df.ligands.map(lambda x: set(ligands).issubset(x))
             ]
 
         if update:
             self.df = df
         return df
 
-    def to_chain_sequence_mapping_dict(self) -> Dict[str, str]:
-        """Return a dictionary of sequences indexed by chains.
-
-        :return: Dictionary of chain-sequence mappings.
-        :rtype: Dict[str, str]
-        """
-        return (
-            self.df[["id", "sequence"]].set_index("id").to_dict()["sequence"]
-        )
-
-    def to_fasta(self, filename: str):
-        """Write the dataset to a FASTA file (indexed by chain id).
-
-        :param filename: Name of the output FASTA file.
-        :type filename: str
-        """
-        with open(filename, "w") as f:
-            for k, v in self.to_chain_sequence_mapping_dict().items():
-                f.write(f">{k}\n")
-                f.write(f"{v}\n")
-
-    def remove_non_standard_alphabet_sequences(self, update: bool = False):
+    def remove_non_standard_alphabet_sequences(
+        self,
+        splits: Optional[List[str]] = None,
+        update: bool = False
+    ):
         """
         Remove sequences with non-standard characters.
 
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
         :param update: Whether to update the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -772,88 +902,15 @@ class PDBManager:
         :return: DataFrame containing only sequences with standard characters.
         :rtype: pd.DataFrame
         """
-        df = self.df.loc[
-            self.df.sequence.map(
+        splits_df = self.get_splits(splits)
+        df = splits_df.loc[
+            splits_df.sequence.map(
                 lambda x: set(x).issubset(set("ACDEFGHIKLMNPQRSTVWY"))
             )
         ]
         if update:
             self.df = df
         return df
-
-    def download(
-        self,
-        out_dir=".",
-        overwrite: bool = False,
-        max_workers: int = 8,
-        chunksize: int = 32,
-    ):
-        """Download PDB files in the current selection.
-
-        :param out_dir: Output directory, defaults to ``"."``
-        :type out_dir: str, optional
-        :param overwrite: Overwrite existing files, defaults to ``False``.
-        :type overwrite: bool, optional
-        :param max_workers: Number of processes to use, defaults to ``8``.
-        :type max_workers: int, optional
-        :param chunksize: Chunk size for each worker, defaults to ``32``.
-        :type chunksize: int, optional
-        """
-        log.info(f"Downloading {len(self.unique_pdbs)} PDB files...")
-        download_pdb_multiprocessing(
-            self.unique_pdbs,
-            out_dir,
-            overwrite=overwrite,
-            max_workers=max_workers,
-            chunksize=chunksize,
-        )
-
-    def write_chains(self) -> List[Path]:
-        """Write chains in current selection to disk. e.g., we create a file
-        of the form ``4hbb_A.pdb`` for chain ``A`` of PDB file ``4hhb.pdb``.
-
-        If the PDB files are not contained in ``self.pdb_dir``, they are
-        downloaded.
-
-        :return: List of paths to written files.
-        :rtype: List[Path]
-        """
-        # Get dictionary of PDB code : List[Chains]
-        df = self.df.groupby("pdb")["chain"].agg(list).to_dict()
-
-        # Check we have all source PDB files
-        downloaded = os.listdir(self.pdb_dir)
-        downloaded = [f for f in downloaded if f.endswith(".pdb")]
-
-        to_download = [k for k in df.keys() if f"{k}.pdb" not in downloaded]
-        if len(to_download) > 0:
-            log.info(f"Downloading {len(to_download)} PDB files...")
-            download_pdb_multiprocessing(
-                to_download, self.pdb_dir, overwrite=True
-            )
-            log.info("Done downloading PDB files")
-
-        # Iterate over dictionary and write chains to separate files
-        log.info("Extracting chains...")
-        paths = []
-        for k, v in tqdm(df.items()):
-            in_file = os.path.join(self.pdb_dir, f"{k}.pdb")
-            paths.append(
-                extract_chains_to_file(in_file, v, out_dir=self.pdb_dir)
-            )
-        log.info("Done extracting chains")
-
-        # Flatten list of paths
-        return [Path(num) for sublist in paths for num in sublist]
-
-    def reset(self) -> pd.DataFrame:
-        """Reset the dataset to the original DataFrame source.
-
-        :return: The source dataset DataFrame.
-        :rtype: pd.DataFrame
-        """
-        self.df = self.source.copy()
-        return self.df
 
     def split_df_proportionally(
         self,
@@ -953,16 +1010,19 @@ class PDBManager:
             for list_column in self.list_columns:
                 if list_column in df_split.columns:
                     df_split[list_column] = df_split[list_column].apply(tuple)
+
         # Merge DataFrame splits
         merge_columns = first_df_split.columns.to_list()
         merged_df_split = pd.merge(
             first_df_split, second_df_split, how="inner", on=merge_columns
         )
+
         # Coerce tuple columns back into list columns
         for df_split in [first_df_split, second_df_split]:
             for list_column in self.list_columns:
                 if list_column in df_split.columns:
                     df_split[list_column] = df_split[list_column].apply(list)
+                
         # Track split names
         merged_df_split["split"] = split
         return merged_df_split
@@ -1240,8 +1300,92 @@ class PDBManager:
             if self.splits_provided
             else df
         )
+    
+    def reset(self) -> pd.DataFrame:
+        """Reset the dataset to the original DataFrame source.
 
-    def from_fasta(self, ids: str, filename: str) -> pd.DataFrame:
+        :return: The source dataset DataFrame.
+        :rtype: pd.DataFrame
+        """
+        self.df = self.source.copy()
+        return self.df
+    
+    def download(
+        self,
+        out_dir=".",
+        splits: Optional[List[str]] = None,
+        overwrite: bool = False,
+        max_workers: int = 8,
+        chunksize: int = 32,
+    ):
+        """Download PDB files in the current selection.
+
+        :param out_dir: Output directory, defaults to ``"."``
+        :type out_dir: str, optional
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param overwrite: Overwrite existing files, defaults to ``False``.
+        :type overwrite: bool, optional
+        :param max_workers: Number of processes to use, defaults to ``8``.
+        :type max_workers: int, optional
+        :param chunksize: Chunk size for each worker, defaults to ``32``.
+        :type chunksize: int, optional
+        """
+        log.info(f"Downloading {len(self.get_unique_pdbs(splits))} PDB files...")
+        download_pdb_multiprocessing(
+            self.get_unique_pdbs(splits),
+            out_dir,
+            overwrite=overwrite,
+            max_workers=max_workers,
+            chunksize=chunksize,
+        )
+
+    def write_chains(self, splits: Optional[List[str]] = None) -> List[Path]:
+        """Write chains in current selection to disk. e.g., we create a file
+        of the form ``4hbb_A.pdb`` for chain ``A`` of PDB file ``4hhb.pdb``.
+
+        If the PDB files are not contained in ``self.pdb_dir``, they are
+        downloaded.
+
+        :return: List of paths to written files.
+        :rtype: List[Path]
+        """
+        # Get dictionary of PDB code : List[Chains]
+        splits_df = self.get_splits(splits)
+        df = splits_df.groupby("pdb")["chain"].agg(list).to_dict()
+
+        # Check we have all source PDB files
+        downloaded = os.listdir(self.pdb_dir)
+        downloaded = [f for f in downloaded if f.endswith(".pdb")]
+
+        to_download = [k for k in df.keys() if f"{k}.pdb" not in downloaded]
+        if len(to_download) > 0:
+            log.info(f"Downloading {len(to_download)} PDB files...")
+            download_pdb_multiprocessing(
+                to_download, self.pdb_dir, overwrite=True
+            )
+            log.info("Done downloading PDB files")
+
+        # Iterate over dictionary and write chains to separate files
+        log.info("Extracting chains...")
+        paths = []
+        for k, v in tqdm(df.items()):
+            in_file = os.path.join(self.pdb_dir, f"{k}.pdb")
+            paths.append(
+                extract_chains_to_file(in_file, v, out_dir=self.pdb_dir)
+            )
+        log.info("Done extracting chains")
+
+        # Flatten list of paths
+        return [Path(num) for sublist in paths for num in sublist]
+
+    def from_fasta(
+        self,
+        ids: str,
+        filename: str,
+        splits: Optional[List[str]] = None
+    ) -> pd.DataFrame:
         """Create a selection from a FASTA file.
 
         :param ids: One of ``"chain"`` or ``"pdb"``. i.e., Whether the
@@ -1249,32 +1393,74 @@ class PDBManager:
         :type ids: str
         :param filename: Name of FASTA file.
         :type filename: str
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
         fasta = read_fasta(filename)
         seq_ids = list(fasta.keys())
+        splits_df = self.get_splits(splits, source=True)
         if ids == "chain":
-            return self.source.loc[self.source.id.isin(seq_ids)]
+            return splits_df.loc[splits_df.id.isin(seq_ids)]
         elif ids == "pdb":
-            return self.source.loc[self.source.pdb.isin(seq_ids)]
+            return splits_df.loc[splits_df.pdb.isin(seq_ids)]
         else:
             raise ValueError(
                 "Invalid parameter ids. Must be 'chain' or 'pdb'."
             )
+        
+    def to_chain_sequence_mapping_dict(
+        self,
+        splits: Optional[List[str]]
+    ) -> Dict[str, str]:
+        """Return a dictionary of sequences indexed by chains.
+        
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
-    def to_csv(self, fname: str):
+        :return: Dictionary of chain-sequence mappings.
+        :rtype: Dict[str, str]
+        """
+        splits_df = self.get_splits(splits)
+        return (
+            splits_df[["id", "sequence"]].set_index("id").to_dict()["sequence"]
+        )
+
+    def to_fasta(self, filename: str, splits: Optional[List[str]] = None):
+        """Write the dataset to a FASTA file (indexed by chain id).
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+
+        :param filename: Name of the output FASTA file.
+        :type filename: str
+        """
+        with open(filename, "w") as f:
+            for k, v in self.to_chain_sequence_mapping_dict(splits).items():
+                f.write(f">{k}\n")
+                f.write(f"{v}\n")
+
+    def to_csv(self, fname: str, splits: Optional[List[str]] = None):
         """Write the selection to a CSV file.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
 
         :param fname: Path to CSV file.
         :type fname: str
         """
+        splits_df = self.get_splits(splits)
         log.info(
-            f"Writing selection ({len(self.df)} chains) to CSV file: {fname}"
+            f"Writing selection ({len(splits_df)} chains) to CSV file: {fname}"
         )
 
-        self.df.to_csv(fname, index=False)
+        splits_df.to_csv(fname, index=False)
 
 
 if __name__ == "__main__":
@@ -1292,7 +1478,9 @@ if __name__ == "__main__":
     pdb_manager.molecule_type(type="protein", update=True)
     pdb_manager.experiment_type(type="diffraction", update=True)
     pdb_manager.resolution_better_than_or_equal_to(2.0, update=True)
-
+    
+    print(f"num_unique_pdbs: {pdb_manager.get_num_unique_pdbs()}")
+    print(f"best_resolution: {pdb_manager.get_best_resolution()}")
     print(f"cluster_dfs: {pdb_manager.cluster(update=True)}")
     print(
         f"time_frame_split_dfs: \
