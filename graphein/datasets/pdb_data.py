@@ -996,19 +996,25 @@ class PDBManager:
         """
         # Build name of cluster file
         if cluster_fname is None:
-            cluster_fname = f"pdb_cluster_rep_seq_id_{min_seq_id}_c_{coverage}.fasta"
+            cluster_fname = (
+                f"pdb_cluster_rep_seq_id_{min_seq_id}_c_{coverage}.fasta"
+            )
 
         # Do clustering if overwriting or no clusters found
         if not os.path.exists(self.root_dir / cluster_fname) or overwrite:
             # Remove existing file if we are overwriting
             if os.path.exists(self.root_dir / cluster_fname) and overwrite:
-                log.info(f"Overwriting. Removing old cluster file {self.root_dir / cluster_fname}")
+                log.info(
+                    f"Overwriting. Removing old cluster file {self.root_dir / cluster_fname}"
+                )
                 os.remove(self.root_dir / cluster_fname)
 
             # Create clusters
             log.info("Creating clusters...")
             # Write selection to fasta
-            log.info(f"Writing current selection ({len(self.df)} chains) to fasta...")
+            log.info(
+                f"Writing current selection ({len(self.df)} chains) to fasta..."
+            )
             self.to_fasta(str(self.root_dir / "pdb.fasta"))
             if not is_tool("mmseqs"):
                 log.error(
@@ -1019,14 +1025,20 @@ class PDBManager:
                 cmd = f"mmseqs easy-cluster pdb.fasta pdb_cluster tmp --min-seq-id {min_seq_id} -c {coverage} --cov-mode 1"
                 log.info(f"Clustering with: {cmd}")
                 subprocess.run(cmd.split())
-                os.rename("pdb_cluster_rep_seq.fasta", self.root_dir / cluster_fname)
+                os.rename(
+                    "pdb_cluster_rep_seq.fasta", self.root_dir / cluster_fname
+                )
                 log.info("Done clustering!")
         # Otherwise, read from disk
         elif os.path.exists(self.root_dir / cluster_fname):
-            log.info(f"Found existing clusters. Loading clusters from disk: {self.root_dir / cluster_fname}")
+            log.info(
+                f"Found existing clusters. Loading clusters from disk: {self.root_dir / cluster_fname}"
+            )
 
         # Read fasta
-        df = self.from_fasta(ids="chain", filename=str(self.root_dir / cluster_fname))
+        df = self.from_fasta(
+            ids="chain", filename=str(self.root_dir / cluster_fname)
+        )
         if update:
             self.df = df
 
