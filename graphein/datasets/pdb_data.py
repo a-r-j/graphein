@@ -1202,7 +1202,11 @@ class PDBManager:
             self.df = df
 
         # Split sequences
-        return self.split_by_deposition_date(df, update) if self.splits_provided else df
+        return (
+            self.split_by_deposition_date(df, update)
+            if self.splits_provided
+            else df
+        )
 
     def from_fasta(self, ids: str, filename: str) -> pd.DataFrame:
         """Create a selection from a FASTA file.
