@@ -532,8 +532,48 @@ class PDBManager:
         if update:
             self.df = df
         return df
+    
+    def compare_length(
+        self,
+        length: int,
+        comparison: str = "equal",
+        update: bool = False,
+    ):
+        """Select molecules with a given length.
 
-    def longer_than(self, length: int, update: bool = False) -> pd.DataFrame:
+        :param length: Length of molecule.
+        :type length: int
+        :param comparison: Comparison operator. One of ``"equal"``,
+            ``"less"``, or ``"greater"``, defaults to ``"equal"``.
+        :param update: Whether to modify the DataFrame in place, defaults to
+            ``False``.
+        :type update: bool, optional
+
+        :return: DataFrame of selected molecules.
+        :rtype: pd.DataFrame
+        """
+        if comparison == "equal":
+            df = self.df[
+                self.df.groupby("pdb")["pdb"].transform("size") == length
+            ]
+        elif comparison == "less":
+            df = self.df[
+                self.df.groupby("pdb")["pdb"].transform("size") < length
+            ]
+        elif comparison == "greater":
+            df = self.df[
+                self.df.groupby("pdb")["pdb"].transform("size") > length
+            ]
+        else:
+            raise ValueError(
+                "Comparison must be one of 'equal', 'less', or 'greater'."
+            )
+
+        if update:
+            self.df = df
+        return df
+
+    def length_longer_than(self, length: int, update: bool = False) -> pd.DataFrame:
         """Select molecules longer than a given length.
 
         :param length: Minimum length of molecule.
@@ -545,13 +585,9 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        df = self.df.loc[self.df.length > length]
+        return self.compare_length(length, "greater", update)
 
-        if update:
-            self.df = df
-        return df
-
-    def shorter_than(self, length: int, update: bool = False) -> pd.DataFrame:
+    def length_shorter_than(self, length: int, update: bool = False) -> pd.DataFrame:
         """
         Select molecules shorter than a given length.
 
@@ -564,11 +600,42 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        df = self.df.loc[self.df.length < length]
+        return self.compare_length(length, "less", update)
 
-        if update:
-            self.df = df
-        return df
+    def length_equal_to(self, length: int, update: bool = False) -> pd.DataFrame:
+        """Select molecules equal to a given length.
+
+        :param length: Exact length of molecule.
+        :type length: int
+        :param update: Whether to modify the DataFrame in place, defaults to
+            ``False``.
+        :type update: bool, optional
+
+        :return: DataFrame of selected molecules.
+        :rtype: pd.DataFrame
+        """
+        return self.compare_length(length, "equal", update)
+    
+    def oligomeric(
+        self,
+        oligomer: int = 1,
+        comparison: str = "equal",
+        update: bool = False,
+    ):
+        """Select molecules with a given oligmeric length.
+
+        :param length: Oligomeric length of molecule, defaults to ``1``.
+        :type length: int
+        :param comparison: Comparison operator. One of ``"equal"``,
+            ``"less"``, or ``"greater"``, defaults to ``"equal"``.
+        :param update: Whether to modify the DataFrame in place, defaults to
+            ``False``.
+        :type update: bool, optional
+
+        :return: DataFrame of selected oligmers.
+        :rtype: pd.DataFrame
+        """
+        return self.compare_length(oligomer, comparison, update)
 
     def resolution_better_than_or_equal_to(
         self, resolution: int, update: bool = False
@@ -611,46 +678,6 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         df = self.df.loc[self.df.resolution >= resolution]
-
-        if update:
-            self.df = df
-        return df
-
-    def oligomeric(
-        self,
-        oligomer: int = 1,
-        comparison: str = "equal",
-        update: bool = False,
-    ):
-        """Select molecules with a given oligmeric length.
-
-        :param length: Oligomeric length of molecule, defaults to ``1``.
-        :type length: int
-        :param comparison: Comparison operator. One of ``"equal"``,
-            ``"less"``, or ``"greater"``, defaults to ``"equal"``.
-        :param update: Whether to modify the DataFrame in place, defaults to
-            ``False``.
-        :type update: bool, optional
-
-        :return: DataFrame of selected oligmers.
-        :rtype: pd.DataFrame
-        """
-        if comparison == "equal":
-            df = self.df[
-                self.df.groupby("pdb")["pdb"].transform("size") == oligomer
-            ]
-        elif comparison == "less":
-            df = self.df[
-                self.df.groupby("pdb")["pdb"].transform("size") < oligomer
-            ]
-        elif comparison == "greater":
-            df = self.df[
-                self.df.groupby("pdb")["pdb"].transform("size") > oligomer
-            ]
-        else:
-            raise ValueError(
-                "Comparison must be one of 'equal', 'less', or 'greater'."
-            )
 
         if update:
             self.df = df
