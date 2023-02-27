@@ -1028,9 +1028,15 @@ class PDBManager:
                     df_split[list_column] = df_split[list_column].apply(tuple)
 
         # Merge DataFrame splits
-        merge_columns = first_df_split.columns.to_list()
+        merge_columns = [
+            c for c in first_df_split.columns.to_list()
+            if "split" not in c
+        ]
         merged_df_split = pd.merge(
-            first_df_split, second_df_split, how="inner", on=merge_columns
+            first_df_split.drop("split", axis=1),
+            second_df_split.drop("split", axis=1),
+            how="inner",
+            on=merge_columns
         )
 
         # Coerce tuple columns back into list columns
@@ -1485,7 +1491,7 @@ if __name__ == "__main__":
         split_time_frames=[
             np.datetime64("2022-01-01"),
             np.datetime64("2022-05-01"),
-            np.datetime64("2023-01-01"),
+            np.datetime64("2023-03-01"),
         ],
     )
 
@@ -1498,5 +1504,5 @@ if __name__ == "__main__":
     print(f"cluster_dfs: {pdb_manager.cluster(update=True)}")
     print(
         f"time_frame_split_dfs: \
-            {pdb_manager.filter_by_deposition_date(max_deposition_date=np.datetime64('2023-02-01'), update=True)}"
+            {pdb_manager.filter_by_deposition_date(max_deposition_date=np.datetime64('2023-03-01'), update=True)}"
     )
