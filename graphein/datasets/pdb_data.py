@@ -111,26 +111,8 @@ class PDBManager:
                 self.split_ratios = split_ratios
             # Time-based splits
             if split_time_frames is not None:
-                frames_are_sequential = True
-                last_frame_index = len(split_time_frames) - 1
-                for frame_index in range(len(split_time_frames)):
-                    frame = split_time_frames[frame_index]
-                    frames_are_backwards_sequential = frame_index == 0 or (
-                        frame_index > 0
-                        and frame > split_time_frames[frame_index - 1]
-                    )
-                    frames_are_forwards_sequential = (
-                        frame_index < last_frame_index
-                        and frame < split_time_frames[frame_index + 1]
-                    ) or frame_index == last_frame_index
-                    frames_are_sequential = all(
-                        [
-                            frames_are_backwards_sequential,
-                            frames_are_forwards_sequential,
-                        ]
-                    )
                 assert len(splits) == len(split_time_frames)
-                assert frames_are_sequential
+                assert self._frames_are_sequential(split_time_frames)
                 self.split_time_frames = split_time_frames
 
     def download_metadata(self):
@@ -203,6 +185,36 @@ class PDBManager:
         :rtype: float
         """
         return self.df.resolution.max()
+    
+    def _frames_are_sequential(self, split_time_frames: List[np.datetime64]) -> bool:
+        """Check if all provided frames are sequentially ordered.
+
+        :param split_time_frames: Time frames into which to split
+            selected PDB entries.
+        :type split_time_frames: List[np.datetime64]
+
+        :return: Whether all provided frames are sequentially ordered.
+        :rtype: bool
+        """
+        frames_are_sequential = True
+        last_frame_index = len(split_time_frames) - 1
+        for frame_index in range(len(split_time_frames)):
+            frame = split_time_frames[frame_index]
+            frames_are_backwards_sequential = frame_index == 0 or (
+                frame_index > 0
+                and frame > split_time_frames[frame_index - 1]
+            )
+            frames_are_forwards_sequential = (
+                frame_index < last_frame_index
+                and frame < split_time_frames[frame_index + 1]
+            ) or frame_index == last_frame_index
+            frames_are_sequential = all(
+                [
+                    frames_are_backwards_sequential,
+                    frames_are_forwards_sequential,
+                ]
+            )
+        return frames_are_sequential
 
     def _download_pdb_sequences(self):
         # Download https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
@@ -564,12 +576,13 @@ class PDBManager:
             self.df = df
         return df
 
-    def oligomeric(self, oligomer: int = 1, update: bool = False):
-        """
-        Select molecules with a given oligmeric length.
+    def oligomeric(self, oligomer: int = 1, comparison: str = "equal", update: bool = False):
+        """Select molecules with a given oligmeric length.
 
         :param length: Oligomeric length of molecule, defaults to ``1``.
         :type length: int
+        :param comparison: Comparison operator. One of ``"equal"``,
+            ``"less"``, or ``"greater"``, defaults to ``"equal"``.
         :param update: Whether to modify the DataFrame in place, defaults to
             ``False``.
         :type update: bool, optional
@@ -577,7 +590,22 @@ class PDBManager:
         :return: DataFrame of selected oligmers.
         :rtype: pd.DataFrame
         """
-        df = self.df.loc[self.df.length == oligomer]
+        if comparison == "equal":
+            df = self.df[
+                self.df.groupby("pdb")["pdb"].transform("size") == oligomer
+            ]
+        elif comparison == "less":
+            df = self.df[
+                self.df.groupby("pdb")["pdb"].transform("size") < oligomer
+            ]
+        elif comparison == "greater":
+            df = self.df[
+                self.df.groupby("pdb")["pdb"].transform("size") > oligomer
+            ]
+        else:
+            raise ValueError(
+                "Comparison must be one of 'equal', 'less', or 'greater'."
+            )
 
         if update:
             self.df = df
@@ -587,7 +615,7 @@ class PDBManager:
         """
         Select molecules that contain a given ligand.
 
-        :param ligand: Ligand to select. (PDB ligand code)
+        :param ligand: Ligand to select. (PDB ligand code - http://ligand-expo.rcsb.org/)
         :type ligand: str
         :param update: Whether to update the DataFrame in place, defaults to
             ``False``.
@@ -610,7 +638,7 @@ class PDBManager:
         If inverse is ``True``, selects molecules that do not have all the
         ligands in the list.
 
-        :param ligand: List of ligands. (PDB ligand codes)
+        :param ligand: List of ligands. (PDB ligand codes - http://ligand-expo.rcsb.org/)
         :type ligand: List[str]
         :param inverse: Whether to inverse the selection, defaults to ``False``.
         :type inverse: bool, optional
@@ -634,7 +662,7 @@ class PDBManager:
             self.df = df
         return df
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_chain_sequence_mapping_dict(self) -> Dict[str, str]:
         """Return a dictionary of sequences indexed by chains.
 
         :return: Dictionary of chain-sequence mappings.
@@ -651,11 +679,11 @@ class PDBManager:
         :type filename: str
         """
         with open(filename, "w") as f:
-            for k, v in self.to_dict().items():
+            for k, v in self.to_chain_sequence_mapping_dict().items():
                 f.write(f">{k}\n")
                 f.write(f"{v}\n")
 
-    def standard_alphabet(self, update: bool = False):
+    def remove_non_standard_alphabet_sequences(self, update: bool = False):
         """
         Remove sequences with non-standard characters.
 
@@ -719,9 +747,8 @@ class PDBManager:
         downloaded = os.listdir(self.pdb_dir)
         downloaded = [f for f in downloaded if f.endswith(".pdb")]
 
-        if to_download := [
-            k for k in df.keys() if f"{k}.pdb" not in downloaded
-        ]:
+        to_download = [k for k in df.keys() if f"{k}.pdb" not in downloaded]
+        if len(to_download) > 0:
             log.info(f"Downloading {len(to_download)} PDB files...")
             download_pdb_multiprocessing(
                 to_download, self.pdb_dir, overwrite=True
@@ -776,6 +803,9 @@ class PDBManager:
         :return: Dictionary of DataFrame splits.
         :rtype: Dict[str, pd.DataFrame]
         """
+        assert len(splits) == len(split_ratios)
+        assert sum(split_ratios) == 1
+
         # Calculate the size of each split
         split_sizes = [int(len(df) * ratio) for ratio in split_ratios]
 
@@ -807,6 +837,9 @@ class PDBManager:
         assert len(
             all_rows.drop(self.list_columns, axis=1).drop_duplicates()
         ) == len(df), "Duplicate rows found in splits."
+
+        df_split_sizes = ' '.join([str(df_splits[split].shape[0]) for split in df_splits])
+        log.info(f"Proportionally-derived dataset splits of sizes: {df_split_sizes}")
 
         return df_splits
 
@@ -942,6 +975,9 @@ class PDBManager:
         :return: Dictionary of DataFrame splits.
         :rtype: Dict[str, pd.DataFrame]
         """
+        assert len(splits) == len(split_time_frames)
+        assert self._frames_are_sequential(split_time_frames)
+
         # Split DataFrames
         start_datetime = df.deposition_date.min()
         df_splits = {}
@@ -972,6 +1008,9 @@ class PDBManager:
             len(all_rows.drop(self.list_columns, axis=1).drop_duplicates())
             == len(df) - num_remaining_rows
         ), "Duplicate rows found in splits."
+
+        df_split_sizes = ' '.join([str(df_splits[split].shape[0]) for split in df_splits])
+        log.info(f"Deposition date-derived dataset splits of sizes: {df_split_sizes}")
 
         return df_splits
 
