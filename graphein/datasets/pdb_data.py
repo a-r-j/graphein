@@ -132,6 +132,7 @@ class PDBManager:
         self._download_source_map()
         self._download_resolution()
         self._download_entry_metadata()
+        self._download_exp_type()
 
     def get_num_unique_pdbs(self, splits: Optional[List[str]] = None) -> int:
         """Return the number of unique PDB IDs in the dataset.
@@ -303,7 +304,9 @@ class PDBManager:
         return frames_are_sequential
 
     def _download_pdb_sequences(self):
-        # Download https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
+        """Download PDB sequences from
+        https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz.
+        """
         if not os.path.exists(
             self.root_dir / self.pdb_seqres_archive_filename
         ):
@@ -324,34 +327,45 @@ class PDBManager:
             log.info("Unzipped sequences")
 
     def _download_ligand_map(self):
-        # http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd
+        """Download ligand map from
+        http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd.
+        """
         if not os.path.exists(self.root_dir / self.ligand_map_filename):
             log.info("Downloading ligand map...")
             wget.download(self.ligand_map_url)
             log.info("Downloaded ligand map")
 
     def _download_source_map(self):
-        # https://files.wwpdb.org/pub/pdb/derived_data/index/source.idx
+        """Download source map from
+        https://files.wwpdb.org/pub/pdb/derived_data/index/source.idx.
+        """
         if not os.path.exists(self.root_dir / self.source_map_filename):
             log.info("Downloading source map...")
-            wget.download()
+            wget.download(self.source_map_url)
             log.info("Downloaded source map")
 
     def _download_resolution(self):
-        # https://files.wwpdb.org/pub/pdb/derived_data/index/resolu.idx
+        """Download source map from
+        https://files.wwpdb.org/pub/pdb/derived_data/index/resolu.idx.
+        """
         if not os.path.exists(self.root_dir / self.resolution_filename):
             log.info("Downloading resolution map...")
             wget.download(self.resolution_url)
             log.info("Downloaded resolution map")
 
     def _download_entry_metadata(self):
-        if not os.path.exists(self.root_dir / "entries.idx"):
+        """Download PDB entry metadata from
+        https://files.wwpdb.org/pub/pdb/derived_data/index/entries.idx.
+        """
+        if not os.path.exists(self.root_dir / self.pdb_deposition_date_filename):
             log.info("Downloading entry metadata...")
             wget.download(self.pdb_deposition_date_url)
             log.info("Downloaded entry metadata")
 
     def _download_exp_type(self):
-        # https://files.wwpdb.org/pub/pdb/derived_data/pdb_entry_type.txt
+        """Download PDB experiment metadata from
+        https://files.wwpdb.org/pub/pdb/derived_data/pdb_entry_type.txt.
+        """
         if not os.path.exists(self.root_dir / self.pdb_entry_type_filename):
             log.info("Downloading experiment type map...")
             wget.download(self.pdb_entry_type_url)
