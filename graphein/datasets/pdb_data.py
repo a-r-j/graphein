@@ -185,8 +185,10 @@ class PDBManager:
         :rtype: float
         """
         return self.df.resolution.max()
-    
-    def _frames_are_sequential(self, split_time_frames: List[np.datetime64]) -> bool:
+
+    def _frames_are_sequential(
+        self, split_time_frames: List[np.datetime64]
+    ) -> bool:
         """Check if all provided frames are sequentially ordered.
 
         :param split_time_frames: Time frames into which to split
@@ -201,8 +203,7 @@ class PDBManager:
         for frame_index in range(len(split_time_frames)):
             frame = split_time_frames[frame_index]
             frames_are_backwards_sequential = frame_index == 0 or (
-                frame_index > 0
-                and frame > split_time_frames[frame_index - 1]
+                frame_index > 0 and frame > split_time_frames[frame_index - 1]
             )
             frames_are_forwards_sequential = (
                 frame_index < last_frame_index
@@ -576,7 +577,12 @@ class PDBManager:
             self.df = df
         return df
 
-    def oligomeric(self, oligomer: int = 1, comparison: str = "equal", update: bool = False):
+    def oligomeric(
+        self,
+        oligomer: int = 1,
+        comparison: str = "equal",
+        update: bool = False,
+    ):
         """Select molecules with a given oligmeric length.
 
         :param length: Oligomeric length of molecule, defaults to ``1``.
@@ -838,8 +844,12 @@ class PDBManager:
             all_rows.drop(self.list_columns, axis=1).drop_duplicates()
         ) == len(df), "Duplicate rows found in splits."
 
-        df_split_sizes = ' '.join([str(df_splits[split].shape[0]) for split in df_splits])
-        log.info(f"Proportionally-derived dataset splits of sizes: {df_split_sizes}")
+        df_split_sizes = " ".join(
+            [str(df_splits[split].shape[0]) for split in df_splits]
+        )
+        log.info(
+            f"Proportionally-derived dataset splits of sizes: {df_split_sizes}"
+        )
 
         return df_splits
 
@@ -1009,8 +1019,12 @@ class PDBManager:
             == len(df) - num_remaining_rows
         ), "Duplicate rows found in splits."
 
-        df_split_sizes = ' '.join([str(df_splits[split].shape[0]) for split in df_splits])
-        log.info(f"Deposition date-derived dataset splits of sizes: {df_split_sizes}")
+        df_split_sizes = " ".join(
+            [str(df_splits[split].shape[0]) for split in df_splits]
+        )
+        log.info(
+            f"Deposition date-derived dataset splits of sizes: {df_split_sizes}"
+        )
 
         return df_splits
 
