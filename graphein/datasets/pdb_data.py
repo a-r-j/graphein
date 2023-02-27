@@ -405,6 +405,7 @@ class PDBManager:
             length = int(params[2].split(":")[1])
             molecule_type = params[1].split(":")[1]
             name = " ".join(params[3:])
+            split = "N/A"  # Assign rows to the null split
             record = {
                 "id": pdb_id,
                 "pdb": pdb,
@@ -413,6 +414,7 @@ class PDBManager:
                 "molecule_type": molecule_type,
                 "name": name,
                 "sequence": seq,
+                "split": split
             }
             records.append(record)
 
@@ -857,6 +859,7 @@ class PDBManager:
         self,
         first_df_split: pd.DataFrame,
         second_df_split: pd.DataFrame,
+        split: str,
         df_primary_key: str = "id",
     ) -> pd.DataFrame:
         """Reconcile an existing DataFrame split with a new split.
@@ -865,6 +868,8 @@ class PDBManager:
         :type first_df_split: pd.DataFrame
         :param second_df_split: New DataFrame split.
         :type second_df_split: pd.DataFrame
+        :param split: Name of DataFrame split.
+        :type split: str
         :param df_primary_key: Primary column name, defaults to ``"id"``.
         :type df_primary_key: str, optional
 
@@ -874,6 +879,7 @@ class PDBManager:
         merged_df_split = pd.merge(
             first_df_split, second_df_split, how="inner", on=[df_primary_key]
         )
+        merged_df_split["split"] = split
         return merged_df_split
 
     def split_clusters(
@@ -914,7 +920,7 @@ class PDBManager:
                 df_split = df_splits[split]
                 if self.df_splits[split] is not None:
                     self.df_splits[split] = self.merge_df_splits(
-                        self.df_splits[split], df_split
+                        self.df_splits[split], df_split, split
                     )
                 else:
                     self.df_splits[split] = df_split
@@ -1049,9 +1055,9 @@ class PDBManager:
         assert split_time_frames_provided
 
         # Split sequences
+        time_frames = ' '.join([str(f) for f in self.split_time_frames])
         log.info(
-            f"Splitting sequences into time frames: \
-                {' '.join([str(f) for f in self.split_time_frames])}"
+            f"Splitting sequences into time frames: {time_frames}"
         )
         df_splits = self.split_df_into_time_frames(
             df, self.splits, self.split_time_frames
@@ -1064,7 +1070,7 @@ class PDBManager:
                 df_split = df_splits[split]
                 if self.df_splits[split] is not None:
                     self.df_splits[split] = self.merge_df_splits(
-                        self.df_splits[split], df_split
+                        self.df_splits[split], df_split, split
                     )
                 else:
                     self.df_splits[split] = df_split
