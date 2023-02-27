@@ -414,7 +414,7 @@ class PDBManager:
                 "molecule_type": molecule_type,
                 "name": name,
                 "sequence": seq,
-                "split": split
+                "split": split,
             }
             records.append(record)
 
@@ -1055,10 +1055,8 @@ class PDBManager:
         assert split_time_frames_provided
 
         # Split sequences
-        time_frames = ' '.join([str(f) for f in self.split_time_frames])
-        log.info(
-            f"Splitting sequences into time frames: {time_frames}"
-        )
+        time_frames = " ".join([str(f) for f in self.split_time_frames])
+        log.info(f"Splitting sequences into time frames: {time_frames}")
         df_splits = self.split_df_into_time_frames(
             df, self.splits, self.split_time_frames
         )
