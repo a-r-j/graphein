@@ -1674,7 +1674,7 @@ class PDBManager:
             splits=splits,
             max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
         )
-        log.info(f"Done writing selection of PDB chains")
+        log.info("Done writing selection of PDB chains")
 
 
 if __name__ == "__main__":
