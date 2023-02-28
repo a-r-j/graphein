@@ -1545,9 +1545,13 @@ class PDBManager:
         """
         for key in pdb.df:
             if field in pdb.df[key]:
-                pdb.df[key] = pdb.df[key][
+                filtered_pdb = pdb.df[key][
                     pdb.df[key][field].isin(field_values)
                 ]
+                if "ATOM" in key:
+                    assert len(filtered_pdb) > 0, \
+                        "Filtered DataFrame must contain atoms."
+                pdb.df[key] = filtered_pdb
         return pdb
 
     def write_out_pdb_chain_groups(
@@ -1588,14 +1592,16 @@ class PDBManager:
             for _, entry in df_merged.iterrows():
                 pdb_code, chains = entry["pdb"], entry["chain"]
                 chains = chains[:max_num_chains_per_pdb_code]
-                input_pdb_filepath = Path(pdb_dir) / f"{pdb_code}.pdb"
-                pdb = PandasPdb().read_pdb(str(input_pdb_filepath))
 
+                input_pdb_filepath = Path(pdb_dir) / f"{pdb_code}.pdb"
                 output_pdb_filepath = split_dir / f"{pdb_code}.pdb"
-                pdb_chains = self.select_pdb_by_criterion(
-                    pdb, "chain_id", chains
-                )
-                pdb_chains.to_pdb(str(output_pdb_filepath))
+
+                if not os.path.exists(str(output_pdb_filepath)):
+                    pdb = PandasPdb().read_pdb(str(input_pdb_filepath))
+                    pdb_chains = self.select_pdb_by_criterion(
+                        pdb, "chain_id", chains
+                    )
+                    pdb_chains.to_pdb(str(output_pdb_filepath))
 
     def write_df_pdbs(
         self,
@@ -1684,21 +1690,24 @@ if __name__ == "__main__":
         splits=splits,
         split_ratios=[0.8, 0.1, 0.1],
         split_time_frames=[
-            np.datetime64("1990-01-01"),
-            np.datetime64("1995-01-01"),
-            np.datetime64("2000-01-01"),
+            np.datetime64("2020-01-01"),
+            np.datetime64("2021-01-01"),
+            np.datetime64("2023-03-01"),
         ],
     )
 
     pdb_manager.molecule_type(type="protein", update=True)
     pdb_manager.experiment_type(type="diffraction", update=True)
     pdb_manager.resolution_better_than_or_equal_to(2.0, update=True)
+    pdb_manager.length_longer_than(19, update=True)
+    pdb_manager.length_shorter_than(401, update=True)
 
     print(f"cluster_dfs: {pdb_manager.cluster(update=True)}")
     print(
         f"time_frame_split_dfs: \
-            {pdb_manager.filter_by_deposition_date(max_deposition_date=np.datetime64('2000-01-01'), update=True)}"
+            {pdb_manager.filter_by_deposition_date(max_deposition_date=np.datetime64('2023-03-01'), update=True)}"
     )
+
     print(f"num_unique_pdbs: {pdb_manager.get_num_unique_pdbs(splits=splits)}")
     print(f"best_resolution: {pdb_manager.get_best_resolution(splits=splits)}")
 
