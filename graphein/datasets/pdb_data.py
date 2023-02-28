@@ -1598,7 +1598,13 @@ class PDBManager:
                 output_pdb_filepath = split_dir / f"{pdb_code}.pdb"
 
                 if not os.path.exists(str(output_pdb_filepath)):
-                    pdb = PandasPdb().read_pdb(str(input_pdb_filepath))
+                    try:
+                        pdb = PandasPdb().read_pdb(str(input_pdb_filepath))
+                    except:
+                        log.info(
+                            f"Failed to load {str(input_pdb_filepath)}. Perhaps it is not longer available to download from the PDB?"
+                        )
+                        continue
                     pdb_chains = self.select_pdb_by_criterion(
                         pdb, "chain_id", chains
                     )
