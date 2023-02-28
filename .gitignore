@@ -148,6 +148,7 @@ datasets/examples/*
 *.zip
 datasets/regnetwork/human
 notebooks/lightning_logs
+pdb/
 cc-to-pdb.tdd
 entries.idx
 pdb_cluster_all_seqs.fasta

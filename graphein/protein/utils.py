@@ -169,7 +169,7 @@ def download_pdb(
         try:
             new_pdb = obs_map[pdb_code.lower()].lower()
             log.info(
-                "{pdb_code} is deprecated. Downloading {new_pdb} instead."
+                f"{pdb_code} is deprecated. Downloading {new_pdb} instead."
             )
             return download_pdb(new_pdb, out_dir, overwrite=overwrite)
         except KeyError:
@@ -197,8 +197,8 @@ def download_pdb(
     if strict:
         assert os.path.exists(
             out_dir / f"{pdb_code}.pdb"
-        ), "{pdb_code} download failed. Not found in {out_dir}"
-    log.info("{pdb_code} downloaded to {out_dir}")
+        ), f"{pdb_code} download failed. Not found in {out_dir}"
+    log.info(f"{pdb_code} downloaded to {out_dir}")
     return out_dir / f"{pdb_code}.pdb"
 
 

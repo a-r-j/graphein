@@ -2,10 +2,12 @@ import gzip
 import os
 import shutil
 import subprocess
+from biopandas.pdb import PandasPdb
 from datetime import datetime
 from io import StringIO
+from pandas.core.groupby.generic import DataFrameGroupBy
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -564,11 +566,17 @@ class PDBManager:
         return df
 
     def get_splits(
-        self, splits: Optional[List[str]] = None, source: bool = False
+        self,
+        splits: Optional[List[str]] = None,
+        df_splits: Optional[Dict[str, pd.DataFrame]] = None,
+        source: bool = False
     ) -> pd.DataFrame:
         """Return DataFrame entries belonging to the splits given.
 
         :param split: Names of splits from which to select entries,
+            defaults to ``None``.
+        :type split: Optional[List[str]], optional
+        :param split: Dictionary of split names mapping to split DataFrames,
             defaults to ``None``.
         :type split: Optional[List[str]], optional
         :param source: Whether to filter based on the source DataFrame,
@@ -579,7 +587,15 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         df = self.source if source else self.df
-        splits_df = df.loc[df.split.isin(splits)] if splits is not None else df
+        if splits is not None and len(splits) > 0:
+            df_splits = df_splits if df_splits is not None else self.df_splits
+            all_splits_df = pd.concat([df_splits[split] for split in splits])
+            assert len(all_splits_df) > 0, "Combined splits must be non-empty."
+        splits_df = (
+            all_splits_df.loc[all_splits_df.split.isin(splits)]
+            if splits is not None
+            else df
+        )
         assert len(splits_df) > 0, "Requested splits must be non-empty."
         return splits_df
 
@@ -641,6 +657,7 @@ class PDBManager:
         self,
         length: int,
         comparison: str = "equal",
+        compare_pdb_groups: bool = False,
         splits: Optional[List[str]] = None,
         update: bool = False,
     ):
@@ -651,6 +668,9 @@ class PDBManager:
         :param comparison: Comparison operator. One of ``"equal"``,
             ``"less"``, or ``"greater"``, defaults to ``"equal"``.
         :type comparison: str, optional
+        :param compare_pdb_groups: Whether to group chains by PDB codes
+            to track a PDB code's number of associated chains.
+        :type compare_pdb_groups: bool, optional
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
@@ -664,17 +684,23 @@ class PDBManager:
         splits_df = self.get_splits(splits)
 
         if comparison == "equal":
-            df = splits_df[
-                splits_df.groupby("pdb")["pdb"].transform("size") == length
-            ]
+            df = (
+                splits_df[splits_df.groupby("pdb")["pdb"].transform("size") == length]
+                if compare_pdb_groups
+                else splits_df[splits_df.length == length]
+            )
         elif comparison == "less":
-            df = splits_df[
-                splits_df.groupby("pdb")["pdb"].transform("size") < length
-            ]
+            df = (
+                splits_df[splits_df.groupby("pdb")["pdb"].transform("size") < length]
+                if compare_pdb_groups
+                else splits_df[splits_df.length < length]
+            )
         elif comparison == "greater":
-            df = splits_df[
-                splits_df.groupby("pdb")["pdb"].transform("size") > length
-            ]
+            df = (
+                splits_df[splits_df.groupby("pdb")["pdb"].transform("size") > length]
+                if compare_pdb_groups
+                else splits_df[splits_df.length > length]
+            )
         else:
             raise ValueError(
                 "Comparison must be one of 'equal', 'less', or 'greater'."
@@ -704,7 +730,7 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        return self.compare_length(length, "greater", splits, update)
+        return self.compare_length(length, "greater", False, splits, update)
 
     def length_shorter_than(
         self,
@@ -727,7 +753,7 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        return self.compare_length(length, "less", splits, update)
+        return self.compare_length(length, "less", False, splits, update)
 
     def length_equal_to(
         self,
@@ -749,7 +775,7 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        return self.compare_length(length, "equal", splits, update)
+        return self.compare_length(length, "equal", False, splits, update)
 
     def oligomeric(
         self,
@@ -775,7 +801,7 @@ class PDBManager:
         :return: DataFrame of selected oligmers.
         :rtype: pd.DataFrame
         """
-        return self.compare_length(oligomer, comparison, splits, update)
+        return self.compare_length(oligomer, comparison, True, splits, update)
 
     def resolution_better_than_or_equal_to(
         self,
@@ -985,12 +1011,12 @@ class PDBManager:
             start_idx = end_idx
 
         # Ensure there are no duplicated rows between splits
-        all_rows = pd.concat([df_splits[split] for split in splits])
-        assert len(all_rows) == len(
+        all_splits_df = pd.concat([df_splits[split] for split in splits])
+        assert len(all_splits_df) == len(
             df
         ), "Number of rows changed during split operations."
         assert len(
-            all_rows.drop(self.list_columns, axis=1).drop_duplicates()
+            all_splits_df.drop(self.list_columns, axis=1).drop_duplicates()
         ) == len(df), "Duplicate rows found in splits."
 
         df_split_sizes = " ".join(
@@ -1229,12 +1255,12 @@ class PDBManager:
         ].shape[0]
 
         # Ensure there are no duplicated rows between splits
-        all_rows = pd.concat([df_splits[split] for split in splits])
+        all_splits_df = pd.concat([df_splits[split] for split in splits])
         assert (
-            len(all_rows) == len(df) - num_remaining_rows
+            len(all_splits_df) == len(df) - num_remaining_rows
         ), "Number of rows changed during split operations."
         assert (
-            len(all_rows.drop(self.list_columns, axis=1).drop_duplicates())
+            len(all_splits_df.drop(self.list_columns, axis=1).drop_duplicates())
             == len(df) - num_remaining_rows
         ), "Duplicate rows found in splits."
 
@@ -1331,7 +1357,7 @@ class PDBManager:
         self.df = self.source.copy()
         return self.df
 
-    def download(
+    def download_pdbs(
         self,
         out_dir=".",
         splits: Optional[List[str]] = None,
@@ -1452,12 +1478,11 @@ class PDBManager:
     def to_fasta(self, filename: str, splits: Optional[List[str]] = None):
         """Write the dataset to a FASTA file (indexed by chain id).
 
+        :param filename: Name of the output FASTA file.
+        :type filename: str
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
-
-        :param filename: Name of the output FASTA file.
-        :type filename: str
         """
         with open(filename, "w") as f:
             for k, v in self.to_chain_sequence_mapping_dict(splits).items():
@@ -1467,12 +1492,11 @@ class PDBManager:
     def to_csv(self, fname: str, splits: Optional[List[str]] = None):
         """Write the selection to a CSV file.
 
+        :param fname: Path to CSV file.
+        :type fname: str
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
-
-        :param fname: Path to CSV file.
-        :type fname: str
         """
         splits_df = self.get_splits(splits)
         log.info(
@@ -1481,16 +1505,182 @@ class PDBManager:
 
         splits_df.to_csv(fname, index=False)
 
+    def merge_pdb_chain_groups(self, group: DataFrameGroupBy) -> pd.DataFrame:
+        """Combine groups of chains associated with the same PDB code.
+
+        :param group: A DataFrame group representing collections of
+            PDB codes with their associated chains.
+        :type group: DataFrameGroupBy
+
+        :return: Group of PDB codes and their associated chains as a DataFrame.
+        :rtype: pd.DataFrame
+        """
+        return pd.DataFrame({
+            "pdb": [group["pdb"].iloc[0]],
+            "chain": [group["chain"].tolist()]
+        })
+    
+    def select_pdb_by_criterion(
+        self,
+        pdb: PandasPdb,
+        field: str,
+        field_values: List[Any]
+    ) -> PandasPdb:
+        """Filter a PDB using a field selection.
+
+        :param pdb: The PDB object to filter by a field.
+        :type pdb: PandasPdb
+        :param field: The field by which to filter the PDB.
+        :type field: str
+        :param field_values: The field values by which to filter
+            the PDB.
+        :type field_values: List[Any]
+
+        :return: The filtered PDB object.
+        :rtype: PandasPdb
+        """
+        for key in pdb.df:
+            if field in pdb.df[key]:
+                pdb.df[key] = pdb.df[key][pdb.df[key][field].isin(field_values)]
+        return pdb
+
+    def write_out_pdb_chain_groups(
+        self,
+        df: pd.DataFrame,
+        pdb_dir: str,
+        out_dir: str,
+        split: str,
+        merge_fn: Callable,
+        max_num_chains_per_pdb_code: int = 1
+    ):
+        """Record groups of PDB codes and associated chains
+        as collated PDB files.
+
+        :param df: DataFrame containing the PDB codes and chains
+            to group and record.
+        :type df: pd.DataFrame
+        :param pdb_dir: Path to PDB input directory.
+        :type pdb_dir: str
+        :param out_dir: The root directory in which to store records.
+        :type out_dir: str
+        :param split: The split with which to store records.
+        :type split: str
+        :param merge_fn: The PDB code-chain grouping function to use.
+        :type merge_fn: Callable
+        :param max_num_chains_per_pdb_code: Maximum number of chains
+            to collate into a matching PDB file.
+        :type max_num_chains_per_pdb_code: int, optional
+        """
+        if len(df) > 0:
+            split_dir = Path(out_dir) / split
+            os.makedirs(str(split_dir), exist_ok=True)
+
+            df_sorted = df.sort_values("pdb")
+            df_merged = df_sorted.groupby("pdb").apply(merge_fn)
+            df_merged = df_merged.reset_index(drop=True)
+
+            for _, entry in df_merged.iterrows():
+                pdb_code, chains = entry["pdb"], entry["chain"]
+                chains = chains[:max_num_chains_per_pdb_code]
+                input_pdb_filepath = Path(pdb_dir) / f"{pdb_code}.pdb"
+                pdb = PandasPdb().read_pdb(str(input_pdb_filepath))
+
+                output_pdb_filepath = split_dir / f"{pdb_code}.pdb"
+                pdb_chains = self.select_pdb_by_criterion(pdb, "chain_id", chains)
+                pdb_chains.to_pdb(str(output_pdb_filepath))
+
+    def write_df_pdbs(
+        self,
+        pdb_dir: str,
+        df: pd.DataFrame,
+        out_dir: str = "collated_pdb",
+        splits: Optional[List[str]] = None,
+        max_num_chains_per_pdb_code: int = 1
+    ):
+        """Write the given selection as a collection of PDB files.
+
+        :param pdb_dir: Path to PDB input directory.
+        :type pdb_dir: str
+        :param df: DataFrame on which to perform the operation,
+            defaults to ``None``.
+        :type df: pd.DataFrame
+        :param out_dir: Name of directory in which to store
+            collated PDB files.
+        :type out_dir: str, optional
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param max_num_chains_per_pdb_code: Maximum number of chains
+            to collate into a matching PDB file.
+        :type max_num_chains_per_pdb_code: int, optional
+        """
+        out_dir = Path(pdb_dir) / out_dir
+        os.makedirs(str(out_dir), exist_ok=True)
+
+        if splits is not None:
+            for split in splits:
+                split_df = df.loc[df.split == split]
+                self.write_out_pdb_chain_groups(
+                    df=split_df,
+                    pdb_dir=pdb_dir,
+                    out_dir=str(out_dir),
+                    split=split,
+                    merge_fn=self.merge_pdb_chain_groups,
+                    max_num_chains_per_pdb_code=max_num_chains_per_pdb_code
+                )
+        else:
+            self.write_out_pdb_chain_groups(
+                df=df,
+                pdb_dir=pdb_dir,
+                out_dir=str(out_dir),
+                split="full",
+                merge_fn=self.merge_pdb_chain_groups,
+                max_num_chains_per_pdb_code=max_num_chains_per_pdb_code
+            )
+
+    def export_pdbs(
+        self,
+        pdb_dir: str,
+        splits: Optional[List[str]] = None,
+        max_num_chains_per_pdb_code: int = 1
+    ):
+        """Write the selection as a collection of PDB files.
+
+        :param pdb_dir: Path to PDB output directory.
+        :type pdb_dir: str
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param max_num_chains_per_pdb_code: Maximum number of chains
+            to collate into a matching PDB file.
+        :type max_num_chains_per_pdb_code: int, optional
+        """
+        split_dfs = self.get_splits(splits)
+        log.info(
+            f"Writing selection ({len(split_dfs)} PDB chains) to directory: {pdb_dir}"
+        )
+
+        self.write_df_pdbs(
+            pdb_dir,
+            split_dfs,
+            splits=splits,
+            max_num_chains_per_pdb_code=max_num_chains_per_pdb_code
+        )
+        log.info(
+            f"Done writing selection of PDB chains"
+        )
+
 
 if __name__ == "__main__":
+    splits = ["train", "val", "test"]
     pdb_manager = PDBManager(
         root_dir=".",
-        splits=["train", "val", "test"],
+        splits=splits,
         split_ratios=[0.8, 0.1, 0.1],
         split_time_frames=[
-            np.datetime64("2022-01-01"),
-            np.datetime64("2022-05-01"),
-            np.datetime64("2023-03-01"),
+            np.datetime64("1990-01-01"),
+            np.datetime64("1995-01-01"),
+            np.datetime64("2000-01-01"),
         ],
     )
 
@@ -1498,10 +1688,17 @@ if __name__ == "__main__":
     pdb_manager.experiment_type(type="diffraction", update=True)
     pdb_manager.resolution_better_than_or_equal_to(2.0, update=True)
 
-    print(f"num_unique_pdbs: {pdb_manager.get_num_unique_pdbs()}")
-    print(f"best_resolution: {pdb_manager.get_best_resolution()}")
     print(f"cluster_dfs: {pdb_manager.cluster(update=True)}")
     print(
         f"time_frame_split_dfs: \
-            {pdb_manager.filter_by_deposition_date(max_deposition_date=np.datetime64('2023-03-01'), update=True)}"
+            {pdb_manager.filter_by_deposition_date(max_deposition_date=np.datetime64('2000-01-01'), update=True)}"
+    )
+    print(f"num_unique_pdbs: {pdb_manager.get_num_unique_pdbs(splits=splits)}")
+    print(f"best_resolution: {pdb_manager.get_best_resolution(splits=splits)}")
+
+    pdb_manager.download_pdbs("./pdb", splits=splits)
+    pdb_manager.export_pdbs(
+        pdb_dir="./pdb",
+        splits=splits,
+        max_num_chains_per_pdb_code=3
     )
