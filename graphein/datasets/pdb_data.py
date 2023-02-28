@@ -2,17 +2,17 @@ import gzip
 import os
 import shutil
 import subprocess
-from biopandas.pdb import PandasPdb
 from datetime import datetime
 from io import StringIO
-from pandas.core.groupby.generic import DataFrameGroupBy
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
 import wget
+from biopandas.pdb import PandasPdb
 from loguru import logger as log
+from pandas.core.groupby.generic import DataFrameGroupBy
 from tqdm import tqdm
 
 from graphein.protein.utils import (
@@ -569,7 +569,7 @@ class PDBManager:
         self,
         splits: Optional[List[str]] = None,
         df_splits: Optional[Dict[str, pd.DataFrame]] = None,
-        source: bool = False
+        source: bool = False,
     ) -> pd.DataFrame:
         """Return DataFrame entries belonging to the splits given.
 
@@ -685,19 +685,25 @@ class PDBManager:
 
         if comparison == "equal":
             df = (
-                splits_df[splits_df.groupby("pdb")["pdb"].transform("size") == length]
+                splits_df[
+                    splits_df.groupby("pdb")["pdb"].transform("size") == length
+                ]
                 if compare_pdb_groups
                 else splits_df[splits_df.length == length]
             )
         elif comparison == "less":
             df = (
-                splits_df[splits_df.groupby("pdb")["pdb"].transform("size") < length]
+                splits_df[
+                    splits_df.groupby("pdb")["pdb"].transform("size") < length
+                ]
                 if compare_pdb_groups
                 else splits_df[splits_df.length < length]
             )
         elif comparison == "greater":
             df = (
-                splits_df[splits_df.groupby("pdb")["pdb"].transform("size") > length]
+                splits_df[
+                    splits_df.groupby("pdb")["pdb"].transform("size") > length
+                ]
                 if compare_pdb_groups
                 else splits_df[splits_df.length > length]
             )
@@ -1260,7 +1266,9 @@ class PDBManager:
             len(all_splits_df) == len(df) - num_remaining_rows
         ), "Number of rows changed during split operations."
         assert (
-            len(all_splits_df.drop(self.list_columns, axis=1).drop_duplicates())
+            len(
+                all_splits_df.drop(self.list_columns, axis=1).drop_duplicates()
+            )
             == len(df) - num_remaining_rows
         ), "Duplicate rows found in splits."
 
@@ -1515,16 +1523,12 @@ class PDBManager:
         :return: Group of PDB codes and their associated chains as a DataFrame.
         :rtype: pd.DataFrame
         """
-        return pd.DataFrame({
-            "pdb": [group["pdb"].iloc[0]],
-            "chain": [group["chain"].tolist()]
-        })
-    
+        return pd.DataFrame(
+            {"pdb": [group["pdb"].iloc[0]], "chain": [group["chain"].tolist()]}
+        )
+
     def select_pdb_by_criterion(
-        self,
-        pdb: PandasPdb,
-        field: str,
-        field_values: List[Any]
+        self, pdb: PandasPdb, field: str, field_values: List[Any]
     ) -> PandasPdb:
         """Filter a PDB using a field selection.
 
@@ -1541,7 +1545,9 @@ class PDBManager:
         """
         for key in pdb.df:
             if field in pdb.df[key]:
-                pdb.df[key] = pdb.df[key][pdb.df[key][field].isin(field_values)]
+                pdb.df[key] = pdb.df[key][
+                    pdb.df[key][field].isin(field_values)
+                ]
         return pdb
 
     def write_out_pdb_chain_groups(
@@ -1551,7 +1557,7 @@ class PDBManager:
         out_dir: str,
         split: str,
         merge_fn: Callable,
-        max_num_chains_per_pdb_code: int = 1
+        max_num_chains_per_pdb_code: int = 1,
     ):
         """Record groups of PDB codes and associated chains
         as collated PDB files.
@@ -1586,7 +1592,9 @@ class PDBManager:
                 pdb = PandasPdb().read_pdb(str(input_pdb_filepath))
 
                 output_pdb_filepath = split_dir / f"{pdb_code}.pdb"
-                pdb_chains = self.select_pdb_by_criterion(pdb, "chain_id", chains)
+                pdb_chains = self.select_pdb_by_criterion(
+                    pdb, "chain_id", chains
+                )
                 pdb_chains.to_pdb(str(output_pdb_filepath))
 
     def write_df_pdbs(
@@ -1595,7 +1603,7 @@ class PDBManager:
         df: pd.DataFrame,
         out_dir: str = "collated_pdb",
         splits: Optional[List[str]] = None,
-        max_num_chains_per_pdb_code: int = 1
+        max_num_chains_per_pdb_code: int = 1,
     ):
         """Write the given selection as a collection of PDB files.
 
@@ -1626,7 +1634,7 @@ class PDBManager:
                     out_dir=str(out_dir),
                     split=split,
                     merge_fn=self.merge_pdb_chain_groups,
-                    max_num_chains_per_pdb_code=max_num_chains_per_pdb_code
+                    max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
                 )
         else:
             self.write_out_pdb_chain_groups(
@@ -1635,14 +1643,14 @@ class PDBManager:
                 out_dir=str(out_dir),
                 split="full",
                 merge_fn=self.merge_pdb_chain_groups,
-                max_num_chains_per_pdb_code=max_num_chains_per_pdb_code
+                max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
             )
 
     def export_pdbs(
         self,
         pdb_dir: str,
         splits: Optional[List[str]] = None,
-        max_num_chains_per_pdb_code: int = 1
+        max_num_chains_per_pdb_code: int = 1,
     ):
         """Write the selection as a collection of PDB files.
 
@@ -1664,11 +1672,9 @@ class PDBManager:
             pdb_dir,
             split_dfs,
             splits=splits,
-            max_num_chains_per_pdb_code=max_num_chains_per_pdb_code
+            max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
         )
-        log.info(
-            f"Done writing selection of PDB chains"
-        )
+        log.info(f"Done writing selection of PDB chains")
 
 
 if __name__ == "__main__":
@@ -1698,7 +1704,5 @@ if __name__ == "__main__":
 
     pdb_manager.download_pdbs("./pdb", splits=splits)
     pdb_manager.export_pdbs(
-        pdb_dir="./pdb",
-        splits=splits,
-        max_num_chains_per_pdb_code=3
+        pdb_dir="./pdb", splits=splits, max_num_chains_per_pdb_code=3
     )
