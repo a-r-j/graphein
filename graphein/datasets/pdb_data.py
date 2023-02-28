@@ -1549,8 +1549,9 @@ class PDBManager:
                     pdb.df[key][field].isin(field_values)
                 ]
                 if "ATOM" in key:
-                    assert len(filtered_pdb) > 0, \
-                        "Filtered DataFrame must contain atoms."
+                    assert (
+                        len(filtered_pdb) > 0
+                    ), "Filtered DataFrame must contain atoms."
                 pdb.df[key] = filtered_pdb
         return pdb
 
