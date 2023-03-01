@@ -1600,7 +1600,7 @@ class PDBManager:
                 if not os.path.exists(str(output_pdb_filepath)):
                     try:
                         pdb = PandasPdb().read_pdb(str(input_pdb_filepath))
-                    except:
+                    except FileNotFoundError:
                         log.info(
                             f"Failed to load {str(input_pdb_filepath)}. Perhaps it is not longer available to download from the PDB?"
                         )
