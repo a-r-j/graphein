@@ -1590,7 +1590,7 @@ class PDBManager:
             df_merged = df_sorted.groupby("pdb").apply(merge_fn)
             df_merged = df_merged.reset_index(drop=True)
 
-            for _, entry in df_merged.iterrows():
+            for _, entry in tqdm(df_merged.iterrows()):
                 pdb_code, chains = entry["pdb"], entry["chain"]
                 chains = chains[:max_num_chains_per_pdb_code]
 
@@ -1706,7 +1706,7 @@ if __name__ == "__main__":
     pdb_manager.molecule_type(type="protein", update=True)
     pdb_manager.experiment_type(type="diffraction", update=True)
     pdb_manager.resolution_better_than_or_equal_to(2.0, update=True)
-    pdb_manager.length_longer_than(19, update=True)
+    pdb_manager.length_longer_than(40, update=True)
     pdb_manager.length_shorter_than(401, update=True)
 
     print(f"cluster_dfs: {pdb_manager.cluster(update=True)}")
