@@ -201,7 +201,7 @@ def hydrogen_bond_donor(
     :type return_array: bool
     """
     res = d["residue_name"]
-    if g.graph["config"].granularity == "atom": # Atomic graph
+    if g.graph["config"].granularity == "atom":  # Atomic graph
         atom = d["atom_type"]
         try:
             features = HYDROGEN_BOND_DONORS[res][atom]
@@ -242,13 +242,13 @@ def hydrogen_bond_acceptor(
     :type return_array: bool
     """
     res = d["residue_name"]
-    if g.graph["config"].granularity == "atom": # Atomic graph
+    if g.graph["config"].granularity == "atom":  # Atomic graph
         atom = d["atom_type"]
         try:
             features = HYDROGEN_BOND_ACCEPTORS[res][atom]
         except KeyError:
             features = 0
-    else: # Residue graph
+    else:  # Residue graph
         if res not in HYDROGEN_BOND_ACCEPTORS.keys():
             features = 0
         else:
