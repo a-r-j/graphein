@@ -557,11 +557,9 @@ def test_df_processing():
     config.dict()
 
     g1 = construct_graph(config=config, pdb_code="3eiy")
-    g2 = construct_graph(pdb_code="3eiy")
+    g2 = construct_graph(pdb_code="3eiy", granularity="atom")
 
     for n, d in g1.nodes(data=True):
-        assert (
-            n.split(":")[-1] % 2 == 0
-        ), "Only even residues should be present"
-
+        assert int(d["residue_numer"]) % 2 == 0, "Only even residues should be present"
+        
     assert len(g1) != len(g2), "Graphs should not be equal"
