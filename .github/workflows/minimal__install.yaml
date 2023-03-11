@@ -28,7 +28,7 @@ jobs:
         python-version: [3.7, 3.8, 3.9, 3.11]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         # See: https://github.com/marketplace/actions/setup-miniconda
       - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v2
