@@ -8,7 +8,7 @@
 
 
 #### Improvements
-
+* [Feature] = [#277](https://github.com/a-r-j/graphein/pull/227) Adds support for pathlib paths for protein graph creation. [#269](https://github.com/a-r-j/graphein/issues/269)
 * [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
 * [Logging] - [#242](https://github.com/a-r-j/graphein/pull/242) Adds control of protein graph construction logging. Resolves [#238](https://github.com/a-r-j/graphein/issues/238)
 
