@@ -21,6 +21,7 @@ from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
+from typing_extensions import Literal
 
 from graphein.protein.config import (
     DSSPConfig,
@@ -154,6 +155,11 @@ def label_node_id(
 
     if insertions:
         df["node_id"] = df["node_id"] + ":" + df["insertion"].apply(str)
+        # Replace trailing : for non insertions
+        df["node_id"] = df["node_id"].str.replace(":$", "")
+    # Add Alt Loc identifiers
+    df["node_id"] = df["node_id"] + ":" + df["alt_loc"].apply(str)
+    df["node_id"] = df["node_id"].str.replace(":$", "")
     df["residue_id"] = df["node_id"]
     if granularity == "atom":
         df["node_id"] = df["node_id"] + ":" + df["atom_name"]
@@ -225,7 +231,49 @@ def subset_structure_to_atom_type(
     )
 
 
-def remove_insertions(df: pd.DataFrame, keep: str = "first") -> pd.DataFrame:
+def remove_alt_locs(
+    df: pd.DataFrame, keep: str = "max_occupancy"
+) -> pd.DataFrame:
+    """
+    This function removes alternatively located atoms from PDB DataFrames
+    (see https://proteopedia.org/wiki/index.php/Alternate_locations). Among the
+    alternative locations the ones with the highest occupancies are left.
+
+    :param df: Protein Structure dataframe to remove alternative located atoms
+        from.
+    :type df: pd.DataFrame
+    :param keep: Controls how to remove altlocs. Default is ``"max_occupancy"``.
+    :type keep: Literal["max_occupancy", "min_occupancy", "first", "last"]
+    :return: Protein structure dataframe with alternative located atoms removed
+    :rtype: pd.DataFrame
+    """
+    # Sort accordingly
+    if keep == "max_occupancy":
+        df = df.sort_values("occupancy")
+        keep = "last"
+    elif keep == "min_occupancy":
+        df = df.sort_values("occupancy")
+        keep = "first"
+    elif keep == "exclude":
+        keep = False
+
+    # Filter
+    duplicates = df.duplicated(
+        subset=["chain_id", "residue_number", "atom_name", "insertion"],
+        keep=keep,
+    )
+    df = df[~duplicates]
+
+    # Unsort
+    if keep in ["max_occupancy", "min_occupancy"]:
+        df = df.sort_index()
+
+    return df
+
+
+def remove_insertions(
+    df: pd.DataFrame, keep: Literal["first", "last"] = "first"
+) -> pd.DataFrame:
     """
     This function removes insertions from PDB DataFrames.
 
@@ -234,24 +282,20 @@ def remove_insertions(df: pd.DataFrame, keep: str = "first") -> pd.DataFrame:
     :param keep: Specifies which insertion to keep. Options are ``"first"`` or
         ``"last"``.
         Default is ``"first"``
-    :type keep: str
+    :type keep: Literal["first", "last"]
     :return: Protein structure dataframe with insertions removed
     :rtype: pd.DataFrame
     """
     # Catches unnamed insertions
     duplicates = df.duplicated(
-        subset=["chain_id", "residue_number", "atom_name"], keep=keep
+        subset=["chain_id", "residue_number", "atom_name", "alt_loc"],
+        keep=keep,
     )
     df = df[~duplicates]
 
     # Catches explicit insertions
     df = filter_dataframe(
         df, by_column="insertion", list_of_values=[""], boolean=True
-    )
-
-    # Remove alt_locs
-    df = filter_dataframe(
-        df, by_column="alt_loc", list_of_values=["", "A"], boolean=True
     )
 
     return df
@@ -278,6 +322,7 @@ def process_dataframe(
     granularity: str = "centroids",
     chain_selection: str = "all",
     insertions: bool = False,
+    alt_locs: bool = False,
     deprotonate: bool = True,
     keep_hets: List[str] = [],
     verbose: bool = False,
@@ -306,6 +351,8 @@ def process_dataframe(
     :type granularity: str
     :param insertions: Whether or not to keep insertions.
     :param insertions: bool
+    :param alt_locs: Whether or not to keep alternatively located atoms.
+    :param alt_locs: bool
     :param deprotonate: Whether or not to remove hydrogen atoms (i.e.
         deprotonation).
     :type deprotonate: bool
@@ -375,6 +422,10 @@ def process_dataframe(
     protein_df = atoms
 
     # Remove alt_loc residues
+    if alt_locs != "include":
+        protein_df = remove_alt_locs(protein_df, keep=alt_locs)
+
+    # Remove inserted residues
     if not insertions:
         protein_df = remove_insertions(protein_df)
 
@@ -770,6 +821,7 @@ def construct_graph(
             chain_selection=chain_selection,
             granularity=config.granularity,
             insertions=config.insertions,
+            alt_locs=config.alt_locs,
             keep_hets=config.keep_hets,
         )
 
