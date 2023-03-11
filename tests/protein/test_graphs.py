@@ -550,7 +550,7 @@ def test_df_processing():
 
     params_to_change = {
         "protein_df_processing_functions": [return_even_df, remove_hetatms],
-        granularity="atom"
+        "granularity": "atom"
     }
 
     config = ProteinGraphConfig(**params_to_change)
