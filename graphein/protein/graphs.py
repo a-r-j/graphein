@@ -154,6 +154,9 @@ def label_node_id(
         df["node_id"] = df["node_id"] + ":" + df["insertion"].apply(str)
         # Replace trailing : for non insertions
         df["node_id"] = df["node_id"].str.replace(":$", "")
+    # Add Alt Loc identifiers
+    df["node_id"] = df["node_id"] + ":" +df["alt_loc"].apply(str)
+    df["node_id"] = df["node_id"].str.replace(":$", "")
     df["residue_id"] = df["node_id"]
     if granularity == "atom":
         df["node_id"] = df["node_id"] + ":" + df["atom_name"]
