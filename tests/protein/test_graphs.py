@@ -563,7 +563,7 @@ def test_df_processing():
 
     for n, d in g1.nodes(data=True):
         assert (
-            int(d["residue_numer"]) % 2 == 0
+            int(d["residue_number"]) % 2 == 0
         ), "Only even residues should be present"
 
     assert len(g1) != len(g2), "Graphs should not be equal"
