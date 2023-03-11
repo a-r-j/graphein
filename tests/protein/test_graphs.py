@@ -413,15 +413,15 @@ def test_alt_loc_exclusion():
     assert len(set(g.nodes())) == len(g.nodes())
 
     # Test the correct one is left
-    for opt, expected_coords in (
-        ("max_occupancy", [5.850, -9.326, -42.884]),
-        ("min_occupancy", [5.864, -9.355, -42.943]),
-        ("first", [5.850, -9.326, -42.884]),
-        ("last", [5.864, -9.355, -42.943]),
+    for opt, expected_coords, node_id in (
+        ("max_occupancy", [5.850, -9.326, -42.884], "A:CYS:195:A"),
+        ("min_occupancy", [5.864, -9.355, -42.943], "A:CYS:195:B"),
+        ("first", [5.850, -9.326, -42.884], "A:CYS:195:A"),
+        ("last", [5.864, -9.355, -42.943], "A:CYS:195:B"),
     ):
         config.alt_locs = opt
         g = construct_graph(config=config, pdb_code="2VVI")
-        assert np.array_equal(g.nodes["A:CYS:195"]["coords"], expected_coords)
+        assert np.array_equal(g.nodes[node_id]["coords"], expected_coords)
 
 
 def test_alt_loc_inclusion():
