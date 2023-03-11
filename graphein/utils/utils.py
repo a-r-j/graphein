@@ -112,7 +112,9 @@ def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
             try:
                 func(n, d)
             except (TypeError, AttributeError) as e:
-                raise type(e)(str(e) + "Please ensure that provided node metadata functions match the f(n: str, d: Dict) function signature, where n is the node ID and d is the node data dictionary "
+                raise type(e)(
+                    str(e)
+                    + "Please ensure that provided node metadata functions match the f(n: str, d: Dict) function signature, where n is the node ID and d is the node data dictionary "
                 ).with_traceback(sys.exc_info()[2])
     return G
 
