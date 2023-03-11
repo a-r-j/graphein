@@ -200,20 +200,22 @@ def hydrogen_bond_donor(
         returns a ``pd.Series``. Default is ``True``.
     :type return_array: bool
     """
-    node_id = n.split(":")
-    res = node_id[1]
+    res = d["residue_name"]
 
-    if len(node_id) == 4:  # Atomic graph
-        atom = node_id[-1]
+    # Hack to determine graph type
+    # If last ID component is atom type, assume graph is atomic
+    if n.split(":")[-1] == d["atom_type"]:
+        granularity = "atom"
+    else:
+        granularity = "residue"
+
+    if granularity == "atom":  # Atomic graph
+        atom = d["atom_type"]
         try:
             features = HYDROGEN_BOND_DONORS[res][atom]
         except KeyError:
-            try:  # Handle insertions
-                atom = node_id[-2]
-                features = HYDROGEN_BOND_DONORS[res][atom]
-            except KeyError:
-                features = 0
-    elif len(node_id) == 3:  # Residue graph
+            features = 0
+    else:  # Residue graph
         if res not in HYDROGEN_BOND_DONORS.keys():
             features = 0
         else:
@@ -247,19 +249,21 @@ def hydrogen_bond_acceptor(
         returns a ``pd.Series``. Default is ``True``.
     :type return_array: bool
     """
-    node_id = n.split(":")
-    res = node_id[1]
-    if len(node_id) == 4:  # Atomic graph
-        atom = node_id[-1]
+    res = d["residue_name"]
+    # Hack to determine graph type
+    # If last ID component is atom type, assume graph is atomic
+    if n.split(":")[-1] == d["atom_type"]:
+        granularity = "atom"
+    else:
+        granularity = "residue"
+
+    if granularity == "atom":  # Atomic graph
+        atom = d["atom_type"]
         try:
             features = HYDROGEN_BOND_ACCEPTORS[res][atom]
         except KeyError:
-            try:  # Handle insertions
-                atom = node_id[-2]
-                features = HYDROGEN_BOND_ACCEPTORS[res][atom]
-            except KeyError:
-                features = 0
-    elif len(node_id) == 3:  # Residue graph
+            features = 0
+    else:  # Residue graph
         if res not in HYDROGEN_BOND_ACCEPTORS.keys():
             features = 0
         else:

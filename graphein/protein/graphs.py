@@ -10,6 +10,7 @@ from __future__ import annotations
 import traceback
 from contextlib import nullcontext
 from functools import partial
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import networkx as nx
@@ -20,6 +21,7 @@ from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
+from typing_extensions import Literal
 
 from graphein.protein.config import (
     DSSPConfig,
@@ -66,7 +68,7 @@ def subset_structure_to_rna(
 
 
 def read_pdb_to_dataframe(
-    pdb_path: Optional[str] = None,
+    pdb_path: Optional[os.Pathlike] = None,
     pdb_code: Optional[str] = None,
     uniprot_id: Optional[str] = None,
     model_index: int = 1,
@@ -97,6 +99,8 @@ def read_pdb_to_dataframe(
         )
 
     if pdb_path is not None:
+        if isinstance(pdb_path, Path):
+            pdb_path = os.fsdecode(pdb_path)
         atomic_df = PandasPdb().read_pdb(pdb_path)
     elif uniprot_id is not None:
         atomic_df = PandasPdb().fetch_pdb(
@@ -145,6 +149,11 @@ def label_node_id(
 
     if insertions:
         df["node_id"] = df["node_id"] + ":" + df["insertion"].apply(str)
+        # Replace trailing : for non insertions
+        df["node_id"] = df["node_id"].str.replace(":$", "")
+    # Add Alt Loc identifiers
+    df["node_id"] = df["node_id"] + ":" + df["alt_loc"].apply(str)
+    df["node_id"] = df["node_id"].str.replace(":$", "")
     df["residue_id"] = df["node_id"]
     if granularity == "atom":
         df["node_id"] = df["node_id"] + ":" + df["atom_name"]
@@ -216,32 +225,70 @@ def subset_structure_to_atom_type(
     )
 
 
-def remove_insertions(df: pd.DataFrame, keep: str = "first") -> pd.DataFrame:
+def remove_alt_locs(
+    df: pd.DataFrame, keep: str = "max_occupancy"
+) -> pd.DataFrame:
+    """
+    This function removes alternatively located atoms from PDB DataFrames
+    (see https://proteopedia.org/wiki/index.php/Alternate_locations). Among the
+    alternative locations the ones with the highest occupancies are left.
+
+    :param df: Protein Structure dataframe to remove alternative located atoms
+        from.
+    :type df: pd.DataFrame
+    :param keep: Controls how to remove altlocs. Default is ``"max_occupancy"``.
+    :type keep: Literal["max_occupancy", "min_occupancy", "first", "last"]
+    :return: Protein structure dataframe with alternative located atoms removed
+    :rtype: pd.DataFrame
+    """
+    # Sort accordingly
+    if keep == "max_occupancy":
+        df = df.sort_values("occupancy")
+        keep = "last"
+    elif keep == "min_occupancy":
+        df = df.sort_values("occupancy")
+        keep = "first"
+    elif keep == "exclude":
+        keep = False
+
+    # Filter
+    duplicates = df.duplicated(
+        subset=["chain_id", "residue_number", "atom_name", "insertion"],
+        keep=keep,
+    )
+    df = df[~duplicates]
+
+    # Unsort
+    if keep in ["max_occupancy", "min_occupancy"]:
+        df = df.sort_index()
+
+    return df
+
+
+def remove_insertions(
+    df: pd.DataFrame, keep: Literal["first", "last"] = "first"
+) -> pd.DataFrame:
     """
     This function removes insertions from PDB DataFrames.
 
     :param df: Protein Structure dataframe to remove insertions from.
     :type df: pd.DataFrame
-    :param keep: Specifies which insertion to keep. Options are ``"first"``
-        or ``"last"``. Default is ``"first"``.
-    :type keep: str
+    :param keep: Specifies which insertion to keep. Options are ``"first"`` or
+        ``"last"``. Default is ``"first"``.
+    :type keep: Literal["first", "last"]
     :return: Protein structure dataframe with insertions removed
     :rtype: pd.DataFrame
     """
     # Catches unnamed insertions
     duplicates = df.duplicated(
-        subset=["chain_id", "residue_number", "atom_name"], keep=keep
+        subset=["chain_id", "residue_number", "atom_name", "alt_loc"],
+        keep=keep,
     )
     df = df[~duplicates]
 
     # Catches explicit insertions
     df = filter_dataframe(
         df, by_column="insertion", list_of_values=[""], boolean=True
-    )
-
-    # Remove alt_locs
-    df = filter_dataframe(
-        df, by_column="alt_loc", list_of_values=["", "A"], boolean=True
     )
 
     return df
@@ -269,6 +316,7 @@ def process_dataframe(
     granularity: str = "centroids",
     chain_selection: str = "all",
     insertions: bool = False,
+    alt_locs: bool = False,
     deprotonate: bool = True,
     keep_hets: List[str] = [],
     verbose: bool = False,
@@ -297,8 +345,10 @@ def process_dataframe(
     :type granularity: str
     :param insertions: Whether or not to keep insertions. Defaults to ``False``.
     :param insertions: bool
-    :param deprotonate: Whether or not to remove hydrogen atoms.
-        (i.e. deprotonation). Defaults to ``True``.
+    :param alt_locs: Whether or not to keep alternatively located atoms.
+    :param alt_locs: bool
+    :param deprotonate: Whether or not to remove hydrogen atoms (i.e.
+        deprotonation).
     :type deprotonate: bool
     :param keep_hets: Hetatoms to keep. Defaults to an empty list (``[]``).
         To keep a hetatom, pass it inside a list of hetatom names to keep.
@@ -366,6 +416,10 @@ def process_dataframe(
     protein_df = atoms
 
     # Remove alt_loc residues
+    if alt_locs != "include":
+        protein_df = remove_alt_locs(protein_df, keep=alt_locs)
+
+    # Remove inserted residues
     if not insertions:
         protein_df = remove_insertions(protein_df)
 
@@ -459,6 +513,8 @@ def initialise_graph_with_metadata(
     :return: Returns initial protein structure graph with metadata.
     :rtype: nx.Graph
     """
+    if pdb_path is not None and isinstance(pdb_path, Path):
+        pdb_path = os.fsdecode(pdb_path)
 
     # Get name for graph if no name was provided
     if name is None:
@@ -623,7 +679,7 @@ def compute_edges(
 def construct_graph(
     config: Optional[ProteinGraphConfig] = None,
     name: Optional[str] = None,
-    pdb_path: Optional[str] = None,
+    pdb_path: Optional[os.Pathlike] = None,
     uniprot_id: Optional[str] = None,
     pdb_code: Optional[str] = None,
     df: Optional[pd.DataFrame] = None,
@@ -702,6 +758,8 @@ def construct_graph(
             "Either a PDB ID, UniProt ID, a dataframe or a path to a local PDB file"
             " must be specified to construct a graph"
         )
+    if pdb_path is not None and isinstance(pdb_path, Path):
+        pdb_path = os.fsdecode(pdb_path)
 
     # If no config is provided, use default
     if config is None:
@@ -758,6 +816,7 @@ def construct_graph(
             chain_selection=chain_selection,
             granularity=config.granularity,
             insertions=config.insertions,
+            alt_locs=config.alt_locs,
             keep_hets=config.keep_hets,
             atom_df_processing_funcs=config.protein_df_processing_functions,
             hetatom_df_processing_funcs=config.protein_df_processing_functions,

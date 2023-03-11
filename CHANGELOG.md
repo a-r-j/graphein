@@ -8,13 +8,13 @@
 
 
 #### Improvements
-
+* [Feature] = [#277](https://github.com/a-r-j/graphein/pull/227) Adds support for pathlib paths for protein graph creation. [#269](https://github.com/a-r-j/graphein/issues/269)
 * [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
 * [Logging] - [#242](https://github.com/a-r-j/graphein/pull/242) Adds control of protein graph construction logging. Resolves [#238](https://github.com/a-r-j/graphein/issues/238)
 
 #### Protein
-
 * [Bugfix] - [#222]https://github.com/a-r-j/graphein/pull/222) Fixes entrypoint for user-defined `df_processing_funcs` ([#216](https://github.com/a-r-j/graphein/issues/216))
+* [Feature] = [#263](https://github.com/a-r-j/graphein/pull/263) Adds control of Alt Loc selection strategy. N.b. Default `ProteinGraphConfig` changed to include insertions by default (`insertions=True`) and `alt_locs="max_occupancy"`.
 * [Feature] - [#264](https://github.com/a-r-j/graphein/pull/264) Adds entrypoint to `graphein.protein.graphs.construct_graph` for passing in a BioPandas dataframe directly.
 * [Feature] - [#229](https://github.com/a-r-j/graphein/pull/220) Adds support for filtering KNN edges based on self-loops and chain membership. Contribution by @anton-bushuiev.
 * [Feature] - [#234](https://github.com/a-r-j/graphein/pull/234) Adds support for aggregating node features over residues (`graphein.protein.features.sequence.utils.aggregate_feature_over_residues`).
