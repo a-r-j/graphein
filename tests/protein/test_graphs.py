@@ -421,7 +421,7 @@ def test_alt_loc_exclusion():
     ):
         config.alt_locs = opt
         g = construct_graph(config=config, pdb_code="2VVI")
-        assert np.array_equal(g.nodes["A:CYS:195"]["coords"], expected_coords)
+        assert np.array_equal(g.nodes["A:CYS:195:B"]["coords"], expected_coords)
 
 
 def test_alt_loc_inclusion():
@@ -448,7 +448,8 @@ def test_alt_loc_inclusion():
     g = construct_graph(config=config, pdb_code="1ALX")
 
     # Test both are present
-    assert "A:TYR:11" in g.nodes() and "A:TRP:11" in g.nodes()
+    assert "A:TYR:11:A" in g.nodes() and "A:TRP:11:B" in g.nodes()
+    
 
     # TODO Test on other PDBs where altlocs are of the same residues
 
