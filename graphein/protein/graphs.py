@@ -10,6 +10,7 @@ from __future__ import annotations
 import traceback
 from contextlib import nullcontext
 from functools import partial
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import networkx as nx
@@ -66,7 +67,7 @@ def subset_structure_to_rna(
 
 
 def read_pdb_to_dataframe(
-    pdb_path: Optional[str] = None,
+    pdb_path: Optional[os.Pathlike] = None,
     pdb_code: Optional[str] = None,
     uniprot_id: Optional[str] = None,
     model_index: int = 1,
@@ -103,6 +104,8 @@ def read_pdb_to_dataframe(
         )
 
     if pdb_path is not None:
+        if isinstance(pdb_path, Path):
+            pdb_path = os.fsdecode(pdb_path)
         atomic_df = PandasPdb().read_pdb(pdb_path)
     elif uniprot_id is not None:
         atomic_df = PandasPdb().fetch_pdb(
@@ -465,6 +468,8 @@ def initialise_graph_with_metadata(
     :return: Returns initial protein structure graph with metadata.
     :rtype: nx.Graph
     """
+    if pdb_path is not None and isinstance(pdb_path, Path):
+        pdb_path = os.fsdecode(pdb_path)
 
     # Get name for graph if no name was provided
     if name is None:
@@ -628,7 +633,7 @@ def compute_edges(
 def construct_graph(
     config: Optional[ProteinGraphConfig] = None,
     name: Optional[str] = None,
-    pdb_path: Optional[str] = None,
+    pdb_path: Optional[os.Pathlike] = None,
     uniprot_id: Optional[str] = None,
     pdb_code: Optional[str] = None,
     df: Optional[pd.DataFrame] = None,
@@ -707,6 +712,8 @@ def construct_graph(
             "Either a PDB ID, UniProt ID, a dataframe or a path to a local PDB file"
             " must be specified to construct a graph"
         )
+    if pdb_path is not None and isinstance(pdb_path, Path):
+        pdb_path = os.fsdecode(pdb_path)
 
     # If no config is provided, use default
     if config is None:
