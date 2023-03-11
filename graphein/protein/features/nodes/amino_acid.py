@@ -201,7 +201,15 @@ def hydrogen_bond_donor(
     :type return_array: bool
     """
     res = d["residue_name"]
-    if g.graph["config"].granularity == "atom":  # Atomic graph
+
+    # Hack to determine graph type
+    # If last ID component is atom type, assume graph is atomic
+    if n.split(":")[-1] == d["atom_type"]:
+        granularity = "atom"
+    else:
+        granularity = "residue"
+
+    if granularity == "atom":  # Atomic graph
         atom = d["atom_type"]
         try:
             features = HYDROGEN_BOND_DONORS[res][atom]
@@ -242,7 +250,14 @@ def hydrogen_bond_acceptor(
     :type return_array: bool
     """
     res = d["residue_name"]
-    if g.graph["config"].granularity == "atom":  # Atomic graph
+    # Hack to determine graph type
+    # If last ID component is atom type, assume graph is atomic
+    if n.split(":")[-1] == d["atom_type"]:
+        granularity = "atom"
+    else:
+        granularity = "residue"
+
+    if granularity == "atom":  # Atomic graph
         atom = d["atom_type"]
         try:
             features = HYDROGEN_BOND_ACCEPTORS[res][atom]
