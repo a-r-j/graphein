@@ -135,7 +135,6 @@ def add_sequence_neighbour_vector(
     suffix = "n_to_c" if n_to_c else "c_to_n"
     # Iterate over every chain
     for chain_id in g.graph["chain_ids"]:
-
         # Find chain residues
         chain_residues = [
             (n, v) for n, v in g.nodes(data=True) if v["chain_id"] == chain_id

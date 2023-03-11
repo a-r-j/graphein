@@ -45,6 +45,7 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
    :hidden:
    :caption: Machine Learning
 
+   ml_protein_tensors
    datasets
    ml_examples
 
@@ -55,6 +56,7 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
    :caption: API Reference
 
    modules/graphein.protein
+   modules/graphein.protein.tensor
    modules/graphein.molecule
    modules/graphein.rna
    modules/graphein.ppi

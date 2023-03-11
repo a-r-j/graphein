@@ -127,7 +127,7 @@ def filter_distmat(
             edges_to_excl.extend(list(product(nodes0, nodes1)))
 
     # Filter distance matrix based on indices of edges to exclude
-    if len(exclude_edges):
+    if len(edges_to_excl):
         row_idx_to_excl, col_idx_to_excl = zip(*edges_to_excl)
         distmat.iloc[row_idx_to_excl, col_idx_to_excl] = INFINITE_DIST
         distmat.iloc[col_idx_to_excl, row_idx_to_excl] = INFINITE_DIST
@@ -158,7 +158,7 @@ def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
         dist_mat = compute_distmat(G.graph["pdb_df"])
         G.graph["dist_mat"] = dist_mat
 
-    mat = np.where(nx.to_numpy_matrix(G), dist_mat, 0)
+    mat = np.where(nx.to_numpy_array(G), dist_mat, 0)
     node_map = {n: i for i, n in enumerate(G.nodes)}
     for u, v, d in G.edges(data=True):
         d["distance"] = mat[node_map[u], node_map[v]]
@@ -184,11 +184,27 @@ def add_sequence_distance_edges(
     """
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
-
         # Find chain residues
         chain_residues = [
             (n, v) for n, v in G.nodes(data=True) if v["chain_id"] == chain_id
         ]
+
+        # Subset to only N and C atoms in the case of full-atom
+        # peptide bond addition
+        try:
+            if (
+                G.graph["config"].granularity == "atom"
+                and name == "peptide_bond"
+            ):
+                chain_residues = [
+                    (n, v)
+                    for n, v in chain_residues
+                    if v["atom_type"] in {"N", "C"}
+                ]
+        # If we don't don't find a config, assume it's a residue graph
+        # This is brittle
+        except KeyError:
+            continue
 
         # Iterate over every residue in chain
         for i, residue in enumerate(chain_residues):
@@ -488,7 +504,7 @@ def add_aromatic_sulphur_interactions(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
 
-        for (a1, a2) in interacting_atoms:
+        for a1, a2 in interacting_atoms:
             resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
             resi2 = aromatic_sulphur_df.loc[a2, "node_id"]
 
@@ -529,7 +545,7 @@ def add_cation_pi_interactions(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
 
-        for (a1, a2) in interacting_atoms:
+        for a1, a2 in interacting_atoms:
             resi1 = cation_pi_df.loc[a1, "node_id"]
             resi2 = cation_pi_df.loc[a2, "node_id"]
 
@@ -1071,9 +1087,18 @@ def add_k_nn_edges(
     :return: Graph with knn-based edges added
     :rtype: nx.Graph
     """
+    # Prepare dataframe
     pdb_df = filter_dataframe(
         G.graph["pdb_df"], "node_id", list(G.nodes()), True
     )
+    if (
+        pdb_df["x_coord"].isna().sum()
+        or pdb_df["y_coord"].isna().sum()
+        or pdb_df["z_coord"].isna().sum()
+    ):
+        raise ValueError("Coordinates contain a NaN value.")
+
+    # Construct distance matrix
     dist_mat = compute_distmat(pdb_df)
 
     # Filter edges
@@ -1084,6 +1109,12 @@ def add_k_nn_edges(
         k -= 1
         for n1, n2 in zip(G.nodes(), G.nodes()):
             add_edge(G, n1, n2, kind_name)
+
+    # Reduce k if number of nodes is less (to avoid sklearn error)
+    # Note: - 1 because self-loops are not included
+    if G.number_of_nodes() - 1 < k:
+        k = G.number_of_nodes() - 1
+
     if k == 0:
         return
 
@@ -1098,6 +1129,9 @@ def add_k_nn_edges(
     interacting_nodes = list(zip(outgoing, incoming))
     log.info(f"Found: {len(interacting_nodes)} KNN edges")
     for a1, a2 in interacting_nodes:
+        if dist_mat.loc[a1, a2] == INFINITE_DIST:
+            continue
+
         # Get nodes IDs from indices
         n1 = G.graph["pdb_df"].loc[a1, "node_id"]
         n2 = G.graph["pdb_df"].loc[a2, "node_id"]
