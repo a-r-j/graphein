@@ -549,7 +549,8 @@ def test_df_processing():
         return df.loc[df["record_name"] == "ATOM"]
 
     params_to_change = {
-        "protein_df_processing_functions": [return_even_df, remove_hetatms]
+        "protein_df_processing_functions": [return_even_df, remove_hetatms],
+        granularity="atom"
     }
 
     config = ProteinGraphConfig(**params_to_change)
