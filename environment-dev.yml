@@ -67,7 +67,6 @@ dependencies:
 - sphinx
 - tqdm
 - torchvision
-- versioneer
 - python-wget
 - xarray
 - deepdiff
