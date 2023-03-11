@@ -95,7 +95,7 @@ def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
 def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     """
-    Annotates nodes with metadata. Each function in ``funcs`` must take two arguments ``n`` and ``d``, where ``n`` is the node and ``d`` is the node data dictionary.
+    Annotates nodes with metadata. Each function in ``funcs`` must take two arguments ``n`` and ``d``, where ``n`` is the node and ``d`` is the node data dictionary. Some functions, like esm residue embeddings, should be used as graph metadata functions as they require access to the whole sequence.
 
     Additional parameters can be provided by using partial functions.
 
@@ -109,7 +109,11 @@ def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
     for func in funcs:
         for n, d in G.nodes(data=True):
-            func(n, d)
+            try:
+                func(n, d)
+            except (TypeError, AttributeError) as e:
+                raise type(e)(str(e) + "Please ensure that provided node metadata functions match the f(n: str, d: Dict) function signature, where n is the node ID and d is the node data dictionary "
+                ).with_traceback(sys.exc_info()[2])
     return G
 
 
