@@ -556,8 +556,10 @@ def test_df_processing():
     config = ProteinGraphConfig(**params_to_change)
     config.dict()
 
+    config2 = ProteinGraphConfig(granularity="atom")
+
     g1 = construct_graph(config=config, pdb_code="3eiy")
-    g2 = construct_graph(pdb_code="3eiy", granularity="atom")
+    g2 = construct_graph(config=config2, pdb_code="3eiy")
 
     for n, d in g1.nodes(data=True):
         assert (
