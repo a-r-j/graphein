@@ -129,7 +129,7 @@ class ProteinGraphConfig(BaseModel):
     :param alt_locs: Controls whether or not alternative locations are allowed. The supported values are
         ``"max_occupancy"``, ``"min_occupancy"``, ``"first"``, ``"last"``, ``"exclude"``. First two will leave altlocs
         with the highest/lowest occupancies, next two will leave first/last in the PDB file ordering. The ``"exclude"``
-        value will drop them entirely amd ``"include"`` leave all of them. Additionally, boolean values are the aliases
+        value will drop them entirely and ``"include"`` leave all of them. Additionally, boolean values are the aliases
         for the latest options. Default is ``"max_occupancy"``.
     :type alt_locs: AltLocsOpts
     :param pdb_dir: Specifies path to download protein structures into.
