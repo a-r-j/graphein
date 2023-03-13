@@ -146,7 +146,7 @@ setup(
         "changelog": "https://github.com/a-r-j/graphein/blob/master/CHANGELOG.md",
         "issue": "https://github.com/a-r-j/graphein/issues",
         "documentation": "https://graphein.ai/",
-        },
+    },
     packages=find_packages(),
     package_data={
         "": ["LICENSE.txt", "README.md", "requirements.txt", "*.csv"]

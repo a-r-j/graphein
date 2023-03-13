@@ -66,7 +66,7 @@ nbsphinx_require_js_path = (
 )
 nbsphinx_kernel_name = "graphein"
 nbsphinx_execute = "always"
-#nbsphinx_execute = "never"
+# nbsphinx_execute = "never"
 
 ogp_site_url = "https://graphein.ai/"
 ogp_image = "https://graphein.ai/_static/graphein.png"
