@@ -305,13 +305,15 @@ class GraphFormatConvertor:
             data["edge_index"] = edge_index
 
         # Split edge index by edge kind
-        kind_strs = np.array(list(map(lambda x: "_".join(x), data.get("kind",[]))))
+        kind_strs = np.array(
+            list(map(lambda x: "_".join(x), data.get("kind", [])))
+        )
         for kind in set(kind_strs):
             key = f"edge_index_{kind}"
             if key in self.columns:
                 mask = kind_strs == kind
                 data[key] = edge_index[:, mask]
-        if "kind" not in self.columns and data.get('kind'):
+        if "kind" not in self.columns and data.get("kind"):
             del data["kind"]
 
         # Convert everything possible to torch.Tensors
