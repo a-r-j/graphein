@@ -37,6 +37,9 @@
 #### Utils
 * [Improvement] - [#234](https://github.com/a-r-j/graphein/pull/234) - Adds `parse_aggregation_type` to retrieve aggregation functions.
 
+#### RNA
+* [Bugfix] - [#281](https://github.com/a-r-j/graphein/pull/234) - Bugfix for nx->PyG conversion for graphs containing edges without "kind" attributes. Contribution by @rg314.
+
 #### Constants
 * [Improvement] - [#234](https://github.com/a-r-j/graphein/pull/234) - Adds 1 to 3 mappings to `graphein.protein.resi_atoms`.
 
