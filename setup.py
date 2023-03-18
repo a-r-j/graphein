@@ -134,13 +134,19 @@ class UploadCommand(Command):
 
 setup(
     name="graphein",
-    version="1.5.2",
+    version="1.6.0",
     description="Protein & Interactomic Graph Construction for Machine Learning",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Arian Jamasb",
     author_email="arian@jamasb.io",
     url="https://github.com/a-r-j/graphein",
+    project_urls={
+        "homepage": "https://github.com/a-r-j/graphein",
+        "changelog": "https://github.com/a-r-j/graphein/blob/master/CHANGELOG.md",
+        "issue": "https://github.com/a-r-j/graphein/issues",
+        "documentation": "https://graphein.ai/",
+    },
     packages=find_packages(),
     package_data={
         "": ["LICENSE.txt", "README.md", "requirements.txt", "*.csv"]

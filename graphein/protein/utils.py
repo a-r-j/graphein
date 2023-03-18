@@ -90,7 +90,7 @@ def read_fasta(file_path: str) -> Dict[str, str]:
 
 def download_pdb_multiprocessing(
     pdb_codes: List[str],
-    out_dir: Union[str, Path],
+    out_dir: Union[str, Path],  # type: ignore
     overwrite: bool = False,
     strict: bool = False,
     max_workers: int = 16,

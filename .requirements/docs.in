@@ -12,3 +12,4 @@ sphinxext-opengraph
 sphinxcontrib-gtagjs
 ipython
 watermark
+sphinx_codeautolink
