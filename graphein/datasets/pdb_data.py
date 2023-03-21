@@ -1592,7 +1592,11 @@ class PDBManager:
 
             for _, entry in tqdm(df_merged.iterrows()):
                 pdb_code, chains = entry["pdb"], entry["chain"]
-                chains = chains[:max_num_chains_per_pdb_code]
+                chains = (
+                    chains
+                    if max_num_chains_per_pdb_code == -1
+                    else chains[:max_num_chains_per_pdb_code]
+                )
 
                 input_pdb_filepath = Path(pdb_dir) / f"{pdb_code}.pdb"
                 output_pdb_filepath = split_dir / f"{pdb_code}.pdb"
