@@ -1,3 +1,9 @@
+### 1.6.1 - UNRELEASED
+
+#### New Features
+* [PDBManager] - [#272](https://github.com/a-r-j/graphein/pull/221) Adds a utility for creating custom dataset splits from the PDB.
+
+
 ### 1.6.0dev - UNRELEASED
 
 #### New Features
