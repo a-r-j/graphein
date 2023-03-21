@@ -313,7 +313,7 @@ class PDBManager:
             self.root_dir / self.pdb_seqres_archive_filename
         ):
             log.info("Downloading PDB sequences...")
-            wget.download(self.pdb_sequences_url)
+            wget.download(self.pdb_sequences_url, out=str(self.root_dir))
             log.info("Downloaded sequences")
 
         # Unzip all collected sequences
@@ -334,7 +334,7 @@ class PDBManager:
         """
         if not os.path.exists(self.root_dir / self.ligand_map_filename):
             log.info("Downloading ligand map...")
-            wget.download(self.ligand_map_url)
+            wget.download(self.ligand_map_url, out=str(self.root_dir))
             log.info("Downloaded ligand map")
 
     def _download_source_map(self):
@@ -343,7 +343,7 @@ class PDBManager:
         """
         if not os.path.exists(self.root_dir / self.source_map_filename):
             log.info("Downloading source map...")
-            wget.download(self.source_map_url)
+            wget.download(self.source_map_url, out=str(self.root_dir))
             log.info("Downloaded source map")
 
     def _download_resolution(self):
@@ -352,7 +352,7 @@ class PDBManager:
         """
         if not os.path.exists(self.root_dir / self.resolution_filename):
             log.info("Downloading resolution map...")
-            wget.download(self.resolution_url)
+            wget.download(self.resolution_url, out=str(self.root_dir))
             log.info("Downloaded resolution map")
 
     def _download_entry_metadata(self):
@@ -363,7 +363,7 @@ class PDBManager:
             self.root_dir / self.pdb_deposition_date_filename
         ):
             log.info("Downloading entry metadata...")
-            wget.download(self.pdb_deposition_date_url)
+            wget.download(self.pdb_deposition_date_url, out=str(self.root_dir))
             log.info("Downloaded entry metadata")
 
     def _download_exp_type(self):
@@ -372,7 +372,7 @@ class PDBManager:
         """
         if not os.path.exists(self.root_dir / self.pdb_entry_type_filename):
             log.info("Downloading experiment type map...")
-            wget.download(self.pdb_entry_type_url)
+            wget.download(self.pdb_entry_type_url, out=str(self.root_dir))
             log.info("Downloaded experiment type map")
 
     def _parse_ligand_map(self) -> Dict[str, List[str]]:
@@ -402,7 +402,7 @@ class PDBManager:
         :rtype: Dict[str, str]
         """
         source_map = {}
-        with open(self.source_map_filename) as f:
+        with open(self.root_dir / self.source_map_filename) as f:
             for line in f:
                 line = line.strip()
                 params = line.split()
@@ -495,7 +495,7 @@ class PDBManager:
             with their corresponding metadata.
         :rtype: pd.DataFrame
         """
-        fasta = read_fasta(self.pdb_seqres_filename)
+        fasta = read_fasta(self.root_dir / self.pdb_seqres_filename)
 
         # Iterate over FASTA and parse metadata
         records = []
@@ -1454,7 +1454,7 @@ class PDBManager:
         :return: DataFrame of selected molecules.
         :rtype: pd.DataFrame
         """
-        fasta = read_fasta(filename)
+        fasta = read_fasta(self.root_dir / filename)
         seq_ids = list(fasta.keys())
         splits_df = self.get_splits(splits, source=True)
         if ids == "chain":
