@@ -80,7 +80,6 @@ class FoldCompDataset(Dataset):
         :return: List of raw file names
         :rtype: List[str]
         """
-        # return ["/../" + f for f in self.database_files]
         return [""]
 
     @property
@@ -144,14 +143,15 @@ class FoldCompDataset(Dataset):
         else:
             self.db = foldcomp.open(self.root / self.database)
 
+    @staticmethod
+    def _parse_dataframe(pdb_string: str) -> pd.DataFrame:
+        """Reads a PDB string into a Pandas dataframe."""
+        pdb: List[str] = pdb_string.split("\n")
+        return PandasPdb().read_pdb_from_list(pdb).df["ATOM"]
+
     def process_pdb(self, pdb_string: str, name: str) -> Union[Protein, Data]:
         """Process a PDB string into a Graphein Protein object."""
-
-        def parse_dataframe(pdb_string: str) -> pd.DataFrame:
-            pdb: List[str] = pdb_string.split("\n")
-            return PandasPdb().read_pdb_from_list(pdb).df["ATOM"]
-
-        df = parse_dataframe(pdb_string)
+        df = self.parse_dataframe(pdb_string)
         data = Protein().from_dataframe(df, id=name)
         if not self.use_graphein:
             data = data.to_data()
@@ -169,11 +169,3 @@ class FoldCompDataset(Dataset):
         name, pdb = self.db[idx]
 
         return self.process_pdb(pdb, name)
-
-
-if __name__ == "__main__":
-    ds = FoldCompDataset(
-        root=".", database="afdb_swissprot_v4", ids=None, fraction=0.1
-    )
-    print(len(ds))
-    print(ds)
