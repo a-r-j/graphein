@@ -6,3 +6,5 @@ rdkit
 selfies
 smilite
 einops
+foldcomp
+nest_asyncio
