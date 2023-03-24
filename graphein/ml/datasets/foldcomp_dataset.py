@@ -5,8 +5,6 @@ import shutil
 from pathlib import Path
 from typing import List, Optional, Union
 
-import foldcomp
-import nest_asyncio
 import pandas as pd
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
@@ -14,9 +12,26 @@ from torch_geometric.data import Data, Dataset
 from tqdm import tqdm
 
 from graphein.protein.tensor import Protein
+from graphein.utils.utils import import_message
 
-nest_asyncio.apply()
+try:
+    import foldcomp
+except ImportError:
+    message = import_message(
+        "graphein.ml.datasets.foldcomp", "foldcomp", None, True
+    )
+    log.warning(message)
 
+try:
+    import nest_asyncio
+
+    nest_asyncio.apply()
+except ImportError:
+    message = import_message(
+        "graphein.ml.datasets.foldcomp", "nest_asyncio", None, True
+    )
+    message += "You can safely ignore this message if you are not working in a Jupyter Notebook."
+    log.warning(message)
 
 DATABASE_TYPES: List[str] = [
     "afdb_swissprot_v4",
