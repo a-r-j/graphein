@@ -10,7 +10,7 @@ import os
 import random
 import shutil
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Callable, List, Optional, Union
 
 import pandas as pd
 from biopandas.pdb import PandasPdb
@@ -63,6 +63,9 @@ https://github.com/steineggerlab/foldcomp
 """
 
 
+GraphTransform = Callable[[Union[Data, Protein]], Union[Data, Protein]]
+
+
 class FoldCompDataset(Dataset):
     def __init__(
         self,
@@ -72,6 +75,7 @@ class FoldCompDataset(Dataset):
         exclude_ids: Optional[List[str]] = None,
         fraction: float = 1.0,
         use_graphein: bool = True,
+        transform: Optional[List[GraphTransform]] = None,
     ):
         """Dataset class for FoldComp databases.
 
@@ -91,6 +95,11 @@ class FoldCompDataset(Dataset):
         :param use_graphein: Whether or not to use Graphein's ``Protein``
             objects or to use standard PyG ``Data``, defaults to ``True``.
         :type use_graphein: bool, optional
+        :param transform: List of functions/transform that take in a
+            ``Data``/``Protein`` object and return a transformed version.
+            The data object will be transformed before every access.
+            (default: ``None``).
+        :type transform: Optional[List[GraphTransform]]
         """
         self.root = Path(root).resolve()
         if not os.path.exists(self.root):
@@ -100,6 +109,7 @@ class FoldCompDataset(Dataset):
         self.exclude_ids = exclude_ids
         self.fraction = fraction
         self.use_graphein = use_graphein
+        self.transform = transform
 
         _database_files = [
             "$db",
@@ -214,14 +224,21 @@ class FoldCompDataset(Dataset):
         """Returns length of the dataset"""
         return len(self.protein_to_idx)
 
-    def get(self, idx):
+    def get(self, idx) -> Union[Data, Protein]:
         """Retrieves a protein from the dataset. Can idx on either the protein
         ID or its index."""
         if isinstance(idx, str):
             idx = self.protein_to_idx[idx]
         name, pdb = self.db[idx]
 
-        return self.process_pdb(pdb, name)
+        out = self.process_pdb(pdb, name)
+
+        # Apply transforms, if any
+        if self.transform is not None:
+            for transform in self.transform:
+                out = transform(out)
+
+        return out
 
 
 class FoldCompLightningDataModule(L.LightningDataModule):
@@ -234,6 +251,7 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         train_split: Optional[Union[List[str], float]] = None,
         val_split: Optional[Union[List[str], float]] = None,
         test_split: Optional[Union[List[str], float]] = None,
+        transform: Optional[List[GraphTransform]] = None,
         num_workers: int = 4,
         pin_memory: bool = True,
     ) -> None:
@@ -258,6 +276,11 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         :param test_split: List of IDs or a float specifying fraction of  the
             dataset to use for training, defaults to ``None`` (whole dataset).
         :type test_split: Optional[Union[List[str], float]], optional
+        :param transform: List of functions/transform that take in a
+            ``Data``/``Protein`` object and return a transformed version.
+            The data object will be transformed before every access.
+            (default: ``None``).
+        :type transform: Optional[List[GraphTransform]]
         :param num_workers: Number of workers to use for data loading, defaults
             to ``4``.
         :type num_workers: int, optional
@@ -273,6 +296,7 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         self.train_split = train_split
         self.val_split = val_split
         self.test_split = test_split
+        self.transform = transform
         if (
             isinstance(train_split, float)
             and isinstance(val_split, float)
@@ -333,6 +357,7 @@ class FoldCompLightningDataModule(L.LightningDataModule):
             self.database,
             ids=data_split,
             use_graphein=self.use_graphein,
+            transform=self.transform,
         )
 
     def train_dataset(self):
