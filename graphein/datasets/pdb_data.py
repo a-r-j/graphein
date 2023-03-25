@@ -1561,11 +1561,11 @@ class PDBManager:
             ].to_list()
             if raise_error:
                 raise ValueError(
-                    f"You are exporting a selection that contains {sum(unavailable)} PDBs unavailable for download in PDB format: {unavailable}"
+                    f"You are exporting a selection that contains {len(unavailable)} PDBs unavailable for download in PDB format: {unavailable}"
                 )
             else:
                 log.warning(
-                    f"You are exporting a selection that contains {sum(unavailable)} PDBs unavailable for download in PDB format: {unavailable}"
+                    f"You are exporting a selection that contains {len(unavailable)} PDBs unavailable for download in PDB format: {unavailable}"
                 )
 
     def to_csv(self, fname: str, splits: Optional[List[str]] = None):
