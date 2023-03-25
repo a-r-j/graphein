@@ -139,9 +139,21 @@ class PDBManager:
         self._download_exp_type()
         self._download_pdb_availability()
 
-    @property
-    def unavailable_pdb_files(self) -> List[str]:
-        return self.df.loc[self.df.pdb_file_available == False, "pdb"].tolist()
+    def get_unavailable_pdb_files(
+        self, splits: Optional[List[str]] = None
+    ) -> List[str]:
+        """Returns a list of PDB files unavailable for download.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :return: List of PDB IDs.
+        :rtype: List[str]
+        """
+        splits_df = self.get_splits(splits)
+        return splits_df.loc[
+            splits_df.pdb_file_available == False, "pdb"
+        ].tolist()
 
     def get_num_unique_pdbs(self, splits: Optional[List[str]] = None) -> int:
         """Return the number of unique PDB IDs in the dataset.
@@ -629,6 +641,29 @@ class PDBManager:
         )
         assert len(splits_df) > 0, "Requested splits must be non-empty."
         return splits_df
+
+    def remove_unavailable_pdbs(
+        self, splits: Optional[List[str]] = None, update: bool = False
+    ) -> pd.DataFrame:
+        """
+        Removes PDB files that are not available for download from the
+        selection.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param update: Whether to modify the DataFrame in place, defaults to
+            ``False``.
+        :type update: bool, optional
+        :return: DataFrame of selected molecules available for download in PDB
+            format.
+        :rtype: pd.DataFrame
+        """
+        splits_df = self.get_splits(splits)
+        df = splits_df.loc[splits_df.pdb_file_available == True]
+        if update:
+            self.df = df
+        return df
 
     def molecule_type(
         self,
