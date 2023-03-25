@@ -75,6 +75,7 @@ class PDBManager:
         self.pdb_deposition_date_url = (
             "https://files.wwpdb.org/pub/pdb/derived_data/index/entries.idx"
         )
+        self.pdb_availability_url = "https://files.wwpdb.org/pub/pdb/compatible/pdb_bundle/pdb_bundle_index.txt"
 
         self.pdb_dir = self.root_dir / "pdb"
         if not os.path.exists(self.pdb_dir):
@@ -89,6 +90,7 @@ class PDBManager:
         self.pdb_deposition_date_filename = Path(
             self.pdb_deposition_date_url
         ).name
+        self.pdb_availability_filename = Path(self.pdb_availability_url).name
 
         self.list_columns = ["ligands"]
 
@@ -135,6 +137,11 @@ class PDBManager:
         self._download_resolution()
         self._download_entry_metadata()
         self._download_exp_type()
+        self._download_pdb_availability()
+
+    @property
+    def unavailable_pdb_files(self) -> List[str]:
+        return self.df.loc[self.df.pdb_file_available == False, "pdb"].tolist()
 
     def get_num_unique_pdbs(self, splits: Optional[List[str]] = None) -> int:
         """Return the number of unique PDB IDs in the dataset.
@@ -375,6 +382,15 @@ class PDBManager:
             wget.download(self.pdb_entry_type_url, out=str(self.root_dir))
             log.info("Downloaded experiment type map")
 
+    def _download_pdb_availability(self):
+        """Download PDB availability metadata from
+        https://files.wwpdb.org/pub/pdb/compatible/pdb_bundle/pdb_bundle_index.txt
+        """
+        if not os.path.exists(self.root_dir / self.pdb_availability_filename):
+            log.info("Downloading PDB availability map...")
+            wget.download(self.pdb_availability_url, out=str(self.root_dir))
+            log.info("Downloaded PDB availability map")
+
     def _parse_ligand_map(self) -> Dict[str, List[str]]:
         """Parse the ligand maps for all PDB records.
 
@@ -488,6 +504,19 @@ class PDBManager:
         df.dropna(inplace=True)
         return pd.Series(df[2].values, index=df[0]).to_dict()
 
+    def _parse_pdb_availability(self) -> Dict[str, bool]:
+        """Parse the PDB file availability for all PDB records.
+
+        :return: List of available PDB files for download from the RCSB PDB.
+        :rtype: List[str]
+        """
+        with open(self.root_dir / self.pdb_availability_filename, "r") as f:
+            ids = f.read().splitlines()
+        log.info(f"Found {len(ids)} PDB files unavailable for download.")
+        ids = {id: False for id in ids}
+        print(ids)
+        return ids
+
     def parse(self) -> pd.DataFrame:
         """Parse all PDB sequence records.
 
@@ -528,6 +557,8 @@ class PDBManager:
         df["resolution"] = df.pdb.map(self._parse_resolution())
         df["deposition_date"] = df.pdb.map(self._parse_entries())
         df["experiment_type"] = df.pdb.map(self._parse_experiment_type())
+        df["pdb_file_available"] = df.pdb.map(self._parse_pdb_availability())
+        df.pdb_file_available.fillna(True, inplace=True)
 
         return df
 
@@ -1398,18 +1429,28 @@ class PDBManager:
             chunksize=chunksize,
         )
 
-    def write_chains(self, splits: Optional[List[str]] = None) -> List[Path]:
+    def write_chains(
+        self, splits: Optional[List[str]] = None, force: bool = False
+    ) -> List[Path]:
         """Write chains in current selection to disk. e.g., we create a file
         of the form ``4hbb_A.pdb`` for chain ``A`` of PDB file ``4hhb.pdb``.
 
         If the PDB files are not contained in ``self.pdb_dir``, they are
         downloaded.
 
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param force: Whether to force downloads of selections containing
+            unavailable PDBs.
         :return: List of paths to written files.
         :rtype: List[Path]
         """
-        # Get dictionary of PDB code : List[Chains]
+
         splits_df = self.get_splits(splits)
+        if not force:
+            self._check_download_availability(splits_df, raise_error=True)
+        # Get dictionary of PDB code : List[Chains]
         df = splits_df.groupby("pdb")["chain"].agg(list).to_dict()
 
         # Check we have all source PDB files
@@ -1479,6 +1520,7 @@ class PDBManager:
         :rtype: Dict[str, str]
         """
         splits_df = self.get_splits(splits)
+        self._check_download_availability(splits_df, raise_error=False)
         return (
             splits_df[["id", "sequence"]].set_index("id").to_dict()["sequence"]
         )
@@ -1492,10 +1534,37 @@ class PDBManager:
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
         """
+        self._check_download_availability(
+            self.get_splits(splits), raise_error=False
+        )
         with open(filename, "w") as f:
             for k, v in self.to_chain_sequence_mapping_dict(splits).items():
                 f.write(f">{k}\n")
                 f.write(f"{v}\n")
+
+    @staticmethod
+    def _check_download_availability(df: pd.DataFrame, raise_error: bool):
+        """Check whether the selection contains PDBs that are not available
+        for download in PDB format.
+
+        :param df: DataFrame of selected molecules to check.
+        :type df: pd.DataFrame
+        :param raise_error: Whether to raise an error if unavailable PDBs are
+            found. Otherwise a warning is logged.
+        :type raise_error: bool
+        :raises ValueError: Raised if ``raise_error`` is ``True`` and
+            unavailable PDB files are found in ``df``.
+        """
+        if not all(df.pdb_file_available):
+            unavailable = df.loc[df.pdb_file_available == False, "pdb"]
+            if raise_error:
+                raise ValueError(
+                    f"You are exporting a selection that contains {sum(unavailable)} PDBs unavailable for download in PDB format: {unavailable}"
+                )
+            else:
+                log.warning(
+                    f"You are exporting a selection that contains {sum(unavailable)} PDBs unavailable for download in PDB format: {unavailable}"
+                )
 
     def to_csv(self, fname: str, splits: Optional[List[str]] = None):
         """Write the selection to a CSV file.
@@ -1507,6 +1576,7 @@ class PDBManager:
         :type splits: Optional[List[str]], optional
         """
         splits_df = self.get_splits(splits)
+        self._check_download_availability(splits_df, raise_error=False)
         log.info(
             f"Writing selection ({len(splits_df)} chains) to CSV file: {fname}"
         )
@@ -1519,7 +1589,6 @@ class PDBManager:
         :param group: A DataFrame group representing collections of
             PDB codes with their associated chains.
         :type group: DataFrameGroupBy
-
         :return: Group of PDB codes and their associated chains as a DataFrame.
         :rtype: pd.DataFrame
         """
@@ -1640,7 +1709,7 @@ class PDBManager:
         :type max_num_chains_per_pdb_code: int, optional
         """
         out_dir = Path(pdb_dir) / out_dir
-        os.makedirs(str(out_dir), exist_ok=True)
+        os.makedirs(out_dir, exist_ok=True)
 
         if splits is not None:
             for split in splits:
@@ -1648,7 +1717,7 @@ class PDBManager:
                 self.write_out_pdb_chain_groups(
                     df=split_df,
                     pdb_dir=pdb_dir,
-                    out_dir=str(out_dir),
+                    out_dir=out_dir,
                     split=split,
                     merge_fn=self.merge_pdb_chain_groups,
                     max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
@@ -1657,7 +1726,7 @@ class PDBManager:
             self.write_out_pdb_chain_groups(
                 df=df,
                 pdb_dir=pdb_dir,
-                out_dir=str(out_dir),
+                out_dir=out_dir,
                 split="full",
                 merge_fn=self.merge_pdb_chain_groups,
                 max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
@@ -1668,6 +1737,7 @@ class PDBManager:
         pdb_dir: str,
         splits: Optional[List[str]] = None,
         max_num_chains_per_pdb_code: int = 1,
+        force: bool = False,
     ):
         """Write the selection as a collection of PDB files.
 
@@ -1679,8 +1749,12 @@ class PDBManager:
         :param max_num_chains_per_pdb_code: Maximum number of chains
             to collate into a matching PDB file.
         :type max_num_chains_per_pdb_code: int, optional
+        :param force: Whether to raise an error if the download selection
+            contains PDBs which are not available in PDB format.
         """
         split_dfs = self.get_splits(splits)
+        if not force:
+            self._check_download_availability(split_dfs, raise_error=True)
         log.info(
             f"Writing selection ({len(split_dfs)} PDB chains) to directory: {pdb_dir}"
         )
