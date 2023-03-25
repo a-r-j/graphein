@@ -1556,7 +1556,9 @@ class PDBManager:
             unavailable PDB files are found in ``df``.
         """
         if not all(df.pdb_file_available):
-            unavailable = df.loc[df.pdb_file_available == False, "pdb"]
+            unavailable = df.loc[
+                df.pdb_file_available == False, "pdb"
+            ].to_list()
             if raise_error:
                 raise ValueError(
                     f"You are exporting a selection that contains {sum(unavailable)} PDBs unavailable for download in PDB format: {unavailable}"
