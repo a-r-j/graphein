@@ -12,6 +12,7 @@ Summaries
    :glob:
 
    notebooks/dataloader_tutorial.nblink
+   notebooks/foldcomp.nblink
    datasets/pscdb
    notebooks/pscdb_processing.nblink
    notebooks/pscdb_baselines.nblink
