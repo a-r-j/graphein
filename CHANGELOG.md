@@ -1,3 +1,9 @@
+### 1.6.1 - UNRELEASED
+
+#### New Features
+* [FoldComp Dataset] - [#284](https://github.com/a-r-j/graphein/pull/284) - Create ML datasets from FoldComp databases.
+
+
 ### 1.6.0dev - UNRELEASED
 
 #### New Features
