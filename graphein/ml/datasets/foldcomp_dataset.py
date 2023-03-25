@@ -6,6 +6,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 import asyncio
+import contextlib
 import os
 import random
 import shutil
@@ -155,8 +156,8 @@ class FoldCompDataset(Dataset):
             log.info("Download complete.")
             log.info("Moving files to raw directory...")
 
-            for f in self.raw_file_names:
-                shutil.move(f, self.root / f)
+            for f in self.database_files:
+                shutil.move(f, self.root)
         else:
             log.info(f"FoldComp database already downloaded: {self.root}.")
 
