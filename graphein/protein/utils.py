@@ -507,13 +507,13 @@ def esmfold(
 
 
 def extract_chains_to_file(
-    pdb_file: str, chains: List[str], out_dir: str
+    pdb_file: str, chains: List[str], out_dir: str, models: List[int] = [1]
 ) -> List[str]:
     """Extracts chains from a PDB file to separate files.
 
     .. code-block::python
 
-        extract_chains_to_file("4hhb.pdb", ["A", "B"], ".")
+        extract_chains_to_file("4hhb.pdb", ["A", "B"], ".", [1])
 
     This will create new files ``./4hhb_A.pdb`` and ``./4hhb_B.pdb``.
 
@@ -524,13 +524,16 @@ def extract_chains_to_file(
     :type chains: List[str]
     :param out_file: Directory of output files
     :type out_file: str
+    :param models: List of indices of models from which to extract chains,
+        defaults to ``[1]``.
+    :type models: List[int], optional
     :return: List of output file paths
     :rtype: List[str]
     """
     fname = os.path.basename(pdb_file)
     fname = fname.split(".")[0]
 
-    ppdb = PandasPdb().read_pdb(pdb_file)
+    ppdb = PandasPdb().read_pdb(pdb_file).get_models(models)
 
     out_files = []
     for chain in chains:

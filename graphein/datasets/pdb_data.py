@@ -1465,7 +1465,7 @@ class PDBManager:
         )
 
     def write_chains(
-        self, splits: Optional[List[str]] = None, force: bool = False
+        self, splits: Optional[List[str]] = None, models: List[int] = [1], force: bool = False
     ) -> List[Path]:
         """Write chains in current selection to disk. e.g., we create a file
         of the form ``4hbb_A.pdb`` for chain ``A`` of PDB file ``4hhb.pdb``.
@@ -1476,8 +1476,12 @@ class PDBManager:
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
+        :param models: List of indices of models from which to extract chains,
+            defaults to ``[1]``.
+        :type models: List[int], optional
         :param force: Whether to force downloads of selections containing
-            unavailable PDBs.
+            unavailable PDBs, defaults to ``False``.
+        :type force: bool, optional
         :return: List of paths to written files.
         :rtype: List[Path]
         """
@@ -1506,7 +1510,7 @@ class PDBManager:
         for k, v in tqdm(df.items()):
             in_file = os.path.join(self.pdb_dir, f"{k}.pdb")
             paths.append(
-                extract_chains_to_file(in_file, v, out_dir=self.pdb_dir)
+                extract_chains_to_file(in_file, v, out_dir=self.pdb_dir, models=models)
             )
         log.info("Done extracting chains")
 
@@ -1596,11 +1600,11 @@ class PDBManager:
             ].to_list()
             if raise_error:
                 raise ValueError(
-                    f"You are exporting a selection that contains {len(unavailable)} PDBs unavailable for download in PDB format: {unavailable}"
+                    f"You are exporting a selection that contains {len(unavailable)} PDB(s) unavailable for download in PDB format: {unavailable}"
                 )
             else:
                 log.warning(
-                    f"You are exporting a selection that contains {len(unavailable)} PDBs unavailable for download in PDB format: {unavailable}"
+                    f"You are exporting a selection that contains {len(unavailable)} PDB(s) unavailable for download in PDB format: {unavailable}"
                 )
 
     def to_csv(self, fname: str, splits: Optional[List[str]] = None):
