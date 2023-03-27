@@ -877,7 +877,7 @@ class PDBManager:
 
     def resolution_better_than_or_equal_to(
         self,
-        resolution: int,
+        resolution: float,
         splits: Optional[List[str]] = None,
         update: bool = False,
     ) -> pd.DataFrame:
