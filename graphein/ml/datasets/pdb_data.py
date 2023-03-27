@@ -1812,37 +1812,3 @@ class PDBManager:
             max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
         )
         log.info("Done writing selection of PDB chains")
-
-
-if __name__ == "__main__":
-    splits = ["train", "val", "test"]
-    pdb_manager = PDBManager(
-        root_dir=".",
-        splits=splits,
-        split_ratios=[0.8, 0.1, 0.1],
-        split_time_frames=[
-            np.datetime64("2020-01-01"),
-            np.datetime64("2021-01-01"),
-            np.datetime64("2023-03-01"),
-        ],
-    )
-
-    pdb_manager.molecule_type(type="protein", update=True)
-    pdb_manager.experiment_type(type="diffraction", update=True)
-    pdb_manager.resolution_better_than_or_equal_to(2.0, update=True)
-    pdb_manager.length_longer_than(40, update=True)
-    pdb_manager.length_shorter_than(401, update=True)
-
-    print(f"cluster_dfs: {pdb_manager.cluster(update=True)}")
-    print(
-        f"time_frame_split_dfs: \
-            {pdb_manager.filter_by_deposition_date(max_deposition_date=np.datetime64('2023-03-01'), update=True)}"
-    )
-
-    print(f"num_unique_pdbs: {pdb_manager.get_num_unique_pdbs(splits=splits)}")
-    print(f"best_resolution: {pdb_manager.get_best_resolution(splits=splits)}")
-
-    pdb_manager.download_pdbs("./pdb", splits=splits)
-    pdb_manager.export_pdbs(
-        pdb_dir="./pdb", splits=splits, max_num_chains_per_pdb_code=3
-    )
