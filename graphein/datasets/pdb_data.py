@@ -1465,7 +1465,10 @@ class PDBManager:
         )
 
     def write_chains(
-        self, splits: Optional[List[str]] = None, models: List[int] = [1], force: bool = False
+        self,
+        splits: Optional[List[str]] = None,
+        models: List[int] = [1],
+        force: bool = False,
     ) -> List[Path]:
         """Write chains in current selection to disk. e.g., we create a file
         of the form ``4hbb_A.pdb`` for chain ``A`` of PDB file ``4hhb.pdb``.
@@ -1510,7 +1513,9 @@ class PDBManager:
         for k, v in tqdm(df.items()):
             in_file = os.path.join(self.pdb_dir, f"{k}.pdb")
             paths.append(
-                extract_chains_to_file(in_file, v, out_dir=self.pdb_dir, models=models)
+                extract_chains_to_file(
+                    in_file, v, out_dir=self.pdb_dir, models=models
+                )
             )
         log.info("Done extracting chains")
 
