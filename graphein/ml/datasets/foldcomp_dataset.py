@@ -311,7 +311,7 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         self.num_workers = num_workers
         self.pin_memory = pin_memory
 
-    def setup(self):
+    def setup(self, stage: str):
         self.train_dataset()
         self.val_dataset()
         self.test_dataset()
