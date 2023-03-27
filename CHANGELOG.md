@@ -2,9 +2,10 @@
 
 #### New Features
 * [PDBManager] - [#272](https://github.com/a-r-j/graphein/pull/221) Adds a utility for creating custom dataset splits from the PDB.
+* [FoldComp Dataset] - [#284](https://github.com/a-r-j/graphein/pull/284) - Create ML datasets from FoldComp databases.
 
 
-### 1.6.0dev - UNRELEASED
+### 1.6.0 - 18/03/2023
 
 #### New Features
 * [Metrics] - [#245](https://github.com/a-r-j/graphein/pull/221) Adds a selection of structural metrics relevant to protein structures.
@@ -14,11 +15,13 @@
 
 
 #### Improvements
-
+* [Feature] = [#277](https://github.com/a-r-j/graphein/pull/227) Adds support for pathlib paths for protein graph creation. [#269](https://github.com/a-r-j/graphein/issues/269)
 * [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
 * [Logging] - [#242](https://github.com/a-r-j/graphein/pull/242) Adds control of protein graph construction logging. Resolves [#238](https://github.com/a-r-j/graphein/issues/238)
 
 #### Protein
+* [Bugfix] - [#222]https://github.com/a-r-j/graphein/pull/222) Fixes entrypoint for user-defined `df_processing_funcs` ([#216](https://github.com/a-r-j/graphein/issues/216))
+* [Feature] = [#263](https://github.com/a-r-j/graphein/pull/263) Adds control of Alt Loc selection strategy. N.b. Default `ProteinGraphConfig` changed to include insertions by default (`insertions=True`) and `alt_locs="max_occupancy"`.
 * [Feature] - [#264](https://github.com/a-r-j/graphein/pull/264) Adds entrypoint to `graphein.protein.graphs.construct_graph` for passing in a BioPandas dataframe directly.
 * [Feature] - [#229](https://github.com/a-r-j/graphein/pull/220) Adds support for filtering KNN edges based on self-loops and chain membership. Contribution by @anton-bushuiev.
 * [Feature] - [#234](https://github.com/a-r-j/graphein/pull/234) Adds support for aggregating node features over residues (`graphein.protein.features.sequence.utils.aggregate_feature_over_residues`).
@@ -40,6 +43,9 @@
 
 #### Utils
 * [Improvement] - [#234](https://github.com/a-r-j/graphein/pull/234) - Adds `parse_aggregation_type` to retrieve aggregation functions.
+
+#### RNA
+* [Bugfix] - [#281](https://github.com/a-r-j/graphein/pull/234) - Bugfix for nx->PyG conversion for graphs containing edges without "kind" attributes. Contribution by @rg314.
 
 #### Constants
 * [Improvement] - [#234](https://github.com/a-r-j/graphein/pull/234) - Adds 1 to 3 mappings to `graphein.protein.resi_atoms`.

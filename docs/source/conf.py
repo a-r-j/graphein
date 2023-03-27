@@ -55,6 +55,7 @@ extensions = [
     "nbsphinx",
     "nbsphinx_link",
     "sphinx.ext.napoleon",
+    "sphinx_codeautolink",
     # "sphinx_autorun",
 ]
 
@@ -63,9 +64,9 @@ nbsphinx_allow_errors = True
 nbsphinx_require_js_path = (
     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
 )
-nbsphinx_kernel_name = "graphein-wip"
-# nbsphinx_execute = "always"
-nbsphinx_execute = "never"
+nbsphinx_kernel_name = "graphein"
+nbsphinx_execute = "always"
+# nbsphinx_execute = "never"
 
 ogp_site_url = "https://graphein.ai/"
 ogp_image = "https://graphein.ai/_static/graphein.png"

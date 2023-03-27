@@ -36,15 +36,22 @@ jobs:
         #  - torch: 1.9.0
         #    torchvision: 0.10.0
         #    python-version: 3.9
+    # https://github.com/marketplace/actions/setup-miniconda#use-a-default-shell
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-        # See: https://github.com/marketplace/actions/setup-conda
-      - name: Setup anaconda
-        uses: s-weigand/setup-conda@v1
+        uses: actions/checkout@v3
+        # See: https://github.com/marketplace/actions/setup-miniconda
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
         with:
+          auto-update-conda: true
+          miniforge-variant: Mambaforge
+          channels: "conda-forge, salilab, pytorch, pyg"
           python-version: ${{ matrix.python-version }}
-          conda-channels: "conda-forge, salilab, pytorch, pyg"
+          use-mamba: true
       #- name: Set up Python ${{ matrix.python-version }}
       #  uses: actions/setup-python@v2
       #  with:
@@ -73,4 +80,4 @@ jobs:
       - name: Run unit tests and generate coverage report
         run: pytest .
       - name: Test notebook execution
-        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb"
+        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb"

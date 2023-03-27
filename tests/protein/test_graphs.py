@@ -4,6 +4,8 @@ from functools import partial
 from pathlib import Path
 
 import networkx as nx
+import numpy as np
+import pandas as pd
 import pytest
 
 from graphein.protein.config import DSSPConfig, ProteinGraphConfig
@@ -203,7 +205,8 @@ def test_chain_selection():
 # Removed - testing with GetContacts as a dependency is not a priority right now
 """
 def test_intramolecular_edges():
-    Example-based test that intramolecular edge construction using GetContacts works correctly.
+    Example-based test that intramolecular edge construction using GetContacts
+    works correctly.
 
     Uses 4hhb PDB file as an example test case.
 
@@ -270,7 +273,8 @@ def test_node_features():
 
     config_params = {
         "node_metadata_functions": [
-            expasy_protein_scale,  # Todo we need to refactor node data assingment flow
+            expasy_protein_scale,  # Todo we need to refactor node data
+            # assignment flow
             meiler_embedding,
         ],
         "graph_metadata_functions": [
@@ -319,7 +323,8 @@ def test_sequence_features():
     # Check for existence on sequence-based features as node-level features
     # for n, d in G.nodes(data=True):
     # Todo this can probably be improved.
-    # This only checks for the existence and shape of the esm_embedding for each node
+    # This only checks for the existence and shape of the esm_embedding for each
+    # node
     # assert "esm_embedding" in d
     # assert len(d["esm_embedding"]) == 1280
 
@@ -356,11 +361,12 @@ def test_graph_sequence_feature():
         assert g_atom.graph[f"sequence_{c}"] == g_res.graph[f"sequence_{c}"]
 
 
-def test_insertion_handling():
+def test_insertion_and_alt_loc_handling():
     configs = {
         "granularity": "CA",
         "keep_hets": [],
         "insertions": False,
+        "alt_locs": "max_occupancy",
         "verbose": False,
         "node_metadata_functions": [meiler_embedding, expasy_protein_scale],
         "edge_construction_functions": [
@@ -382,6 +388,73 @@ def test_insertion_handling():
         g.graph["sequence_C"]
     ) + len(g.graph["sequence_D"]) + len(g.graph["sequence_E"]) == len(g)
     assert g.graph["coords"].shape[0] == len(g)
+
+
+def test_alt_loc_exclusion():
+    configs = {
+        "granularity": "CA",
+        "keep_hets": [],
+        "insertions": True,
+        "alt_locs": "max_occupancy",
+        "verbose": False,
+        "node_metadata_functions": [meiler_embedding, expasy_protein_scale],
+        "edge_construction_functions": [
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+            add_ionic_interactions,
+            add_aromatic_sulphur_interactions,
+            add_hydrophobic_interactions,
+            add_cation_pi_interactions,
+        ],
+    }
+
+    config = ProteinGraphConfig(**configs)
+
+    # This is a PDB with three altlocs
+    g = construct_graph(config=config, pdb_code="2VVI")
+
+    # Test altlocs are dropped
+    assert len(set(g.nodes())) == len(g.nodes())
+
+    # Test the correct one is left
+    for opt, expected_coords, node_id in (
+        ("max_occupancy", [5.850, -9.326, -42.884], "A:CYS:195:A"),
+        ("min_occupancy", [5.864, -9.355, -42.943], "A:CYS:195:B"),
+        ("first", [5.850, -9.326, -42.884], "A:CYS:195:A"),
+        ("last", [5.864, -9.355, -42.943], "A:CYS:195:B"),
+    ):
+        config.alt_locs = opt
+        g = construct_graph(config=config, pdb_code="2VVI")
+        assert np.array_equal(g.nodes[node_id]["coords"], expected_coords)
+
+
+def test_alt_loc_inclusion():
+    configs = {
+        "granularity": "CA",
+        "keep_hets": [],
+        "insertions": False,
+        "alt_locs": True,
+        "verbose": False,
+        "node_metadata_functions": [meiler_embedding, expasy_protein_scale],
+        "edge_construction_functions": [
+            add_peptide_bonds,
+            add_hydrogen_bond_interactions,
+            add_ionic_interactions,
+            add_aromatic_sulphur_interactions,
+            add_hydrophobic_interactions,
+            add_cation_pi_interactions,
+        ],
+    }
+
+    config = ProteinGraphConfig(**configs)
+
+    # This is a PDB with an altloc leading to different residues
+    g = construct_graph(config=config, pdb_code="1ALX")
+
+    # Test both are present
+    assert "A:TYR:11:A" in g.nodes() and "A:TRP:11:B" in g.nodes()
+
+    # TODO Test on other PDBs where altlocs are of the same residues
 
 
 def test_edges_do_not_add_nodes_for_chain_subset():
@@ -428,7 +501,8 @@ def test_secondary_structure_graphs():
     res_counts = sum(d["residue_counts"] for _, d in h.nodes(data=True))
     assert res_counts == len(
         g
-    ), "Residue counts in SS graph should match number of residues in original graph"
+    ), "Residue counts in SS graph should match number of residues in original \
+        graph"
     assert nx.is_connected(
         h
     ), "SS graph should be connected in this configuration"
@@ -465,3 +539,31 @@ def test_chain_graph():
     h = compute_chain_graph(g, return_weighted_graph=True)
     node_sum = sum(d["num_residues"] for _, d in h.nodes(data=True))
     assert node_sum == len(g), "Number of residues do not match"
+
+
+def test_df_processing():
+    def return_even_df(df: pd.DataFrame) -> pd.DataFrame:
+        return df.loc[df["residue_number"] % 2 == 0]
+
+    def remove_hetatms(df: pd.DataFrame) -> pd.DataFrame:
+        return df.loc[df["record_name"] == "ATOM"]
+
+    params_to_change = {
+        "protein_df_processing_functions": [return_even_df, remove_hetatms],
+        "granularity": "atom",
+    }
+
+    config = ProteinGraphConfig(**params_to_change)
+    config.dict()
+
+    config2 = ProteinGraphConfig(granularity="atom")
+
+    g1 = construct_graph(config=config, pdb_code="3eiy")
+    g2 = construct_graph(config=config2, pdb_code="3eiy")
+
+    for n, d in g1.nodes(data=True):
+        assert (
+            int(d["residue_number"]) % 2 == 0
+        ), "Only even residues should be present"
+
+    assert len(g1) != len(g2), "Graphs should not be equal"
