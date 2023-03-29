@@ -474,20 +474,6 @@ def save_rgroup_df_to_pdb(
     log.info(f"Successfully saved rgroup data to {path}")
 
 
-def is_tool(name: str) -> bool:
-    """Checks whether ``name`` is on ``PATH`` and is marked as an executable.
-
-    Source:
-    https://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
-
-    :param name: Name of program to check for execution ability.
-    :type name: str
-    :return: Whether ``name`` is on PATH and is marked as an executable.
-    :rtype: bool
-    """
-    return which(name) is not None
-
-
 def esmfold(
     sequence: str,
     out_path: Optional[str] = None,
