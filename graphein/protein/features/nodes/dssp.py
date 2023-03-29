@@ -15,7 +15,8 @@ import pandas as pd
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 
 from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
-from graphein.protein.utils import is_tool, save_pdb_df_to_pdb
+from graphein.protein.utils import save_pdb_df_to_pdb
+from graphein.utils.dependencies import is_tool
 
 DSSP_COLS = [
     "chain",

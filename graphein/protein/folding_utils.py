@@ -17,7 +17,11 @@ from typing import Dict, List, Optional
 import requests
 from loguru import logger as log
 
-from graphein.utils.dependencies import import_message, is_tool
+from graphein.utils.dependencies import (
+    MissingDependencyError,
+    import_message,
+    is_tool,
+)
 
 try:
     import torch

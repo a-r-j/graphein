@@ -47,7 +47,7 @@ from graphein.protein.graphs import (
     construct_graphs_mp,
     read_pdb_to_dataframe,
 )
-from graphein.protein.utils import is_tool
+from graphein.utils.dependencies import is_tool
 
 DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
 

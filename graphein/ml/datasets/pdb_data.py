@@ -18,9 +18,9 @@ from tqdm import tqdm
 from graphein.protein.utils import (
     download_pdb_multiprocessing,
     extract_chains_to_file,
-    is_tool,
     read_fasta,
 )
+from graphein.utils.dependencies import is_tool
 
 
 class PDBManager:
@@ -1434,6 +1434,7 @@ class PDBManager:
     def download_pdbs(
         self,
         out_dir=".",
+        format="pdb",
         splits: Optional[List[str]] = None,
         overwrite: bool = False,
         max_workers: int = 8,
@@ -1443,6 +1444,8 @@ class PDBManager:
 
         :param out_dir: Output directory, defaults to ``"."``
         :type out_dir: str, optional
+        :param format: Filetype to download. ``pdb`` or ``mmtf``.
+        :type format: str
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
@@ -1459,6 +1462,7 @@ class PDBManager:
         download_pdb_multiprocessing(
             self.get_unique_pdbs(splits),
             out_dir,
+            format=format,
             overwrite=overwrite,
             max_workers=max_workers,
             chunksize=chunksize,
@@ -1470,6 +1474,7 @@ class PDBManager:
         models: List[int] = [1],
         force: bool = False,
     ) -> List[Path]:
+        # sourcery skip: simplify-len-comparison, use-named-expression
         """Write chains in current selection to disk. e.g., we create a file
         of the form ``4hbb_A.pdb`` for chain ``A`` of PDB file ``4hhb.pdb``.
 
