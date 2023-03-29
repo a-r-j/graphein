@@ -145,6 +145,9 @@ dmypy.json
 # Local test files
 datasets/examples/*
 *.ent
+*.pdb
+*.pt
+*.dbn
 *.zip
 datasets/regnetwork/human
 notebooks/lightning_logs
