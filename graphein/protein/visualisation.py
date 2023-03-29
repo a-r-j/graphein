@@ -22,7 +22,7 @@ from loguru import logger as log
 from mpl_toolkits.mplot3d import Axes3D
 
 from graphein.protein.subgraphs import extract_k_hop_subgraph
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     from pytorch3d.ops import sample_points_from_meshes
@@ -41,6 +41,7 @@ except ImportError:
         submodule="graphein.protein.visualisation",
         package="mpl_chord_diagram",
         pip_install=True,
+        extras=True,
     )
 
 

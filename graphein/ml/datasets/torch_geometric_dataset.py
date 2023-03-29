@@ -22,7 +22,7 @@ from graphein.protein.utils import (
     download_pdb,
     download_pdb_multiprocessing,
 )
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     import torch

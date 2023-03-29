@@ -12,7 +12,7 @@ import pandas as pd
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 from ..graphs import (
     deprotonate_structure,
@@ -188,7 +188,7 @@ def protein_to_pyg(
         df["residue_id"] = df.residue_id + ":" + df.insertion
 
     return Data(
-        x=protein_df_to_tensor(df, atoms_to_keep=atom_types),
+        coords=protein_df_to_tensor(df, atoms_to_keep=atom_types),
         residues=get_sequence(
             df,
             chains=chain_selection,

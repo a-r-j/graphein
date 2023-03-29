@@ -22,13 +22,13 @@ from torch_geometric.loader import DataLoader
 from tqdm import tqdm
 
 from graphein.protein.tensor import Protein
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     import foldcomp
 except ImportError:
     message = import_message(
-        "graphein.ml.datasets.foldcomp", "foldcomp", None, True
+        "graphein.ml.datasets.foldcomp", "foldcomp", None, True, extras=True
     )
     log.warning(message)
 
