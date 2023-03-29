@@ -48,9 +48,10 @@ except ImportError:
         "graphein.protein.folding_utils",
         package="foldcomp",
         pip_install=True,
-        extras=True
+        extras=True,
     )
     log.warning(message)
+
 
 @lru_cache
 def _get_model(model: str = "v1") -> torch.nn.Module:
