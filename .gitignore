@@ -166,5 +166,9 @@ pdb.fasta
 resolu.idx
 source.idx
 
+# Foldcomp files
+afdb_swissprot_v4
+afdb_swissprot_v4.*
+
 # Local test directories
 tmp/
