@@ -148,6 +148,7 @@ datasets/examples/*
 *.pdb
 *.pt
 *.dbn
+*,cif
 *.zip
 datasets/regnetwork/human
 notebooks/lightning_logs
