@@ -38,12 +38,16 @@ try:
     from rdkit.Chem.Descriptors3D import NPR1, NPR2
     from rdkit.Chem.rdMolTransforms import ComputeCentroid
 except ImportError:
-    import_message("graphein.molecule.utils", "rdkit", "rdkit", True, extras=True)
+    import_message(
+        "graphein.molecule.utils", "rdkit", "rdkit", True, extras=True
+    )
 
 try:
     import selfies as sf
 except ImportError:
-    import_message("graphein.molecule.utils", "selfies", None, True, extras=True)
+    import_message(
+        "graphein.molecule.utils", "selfies", None, True, extras=True
+    )
 
 
 MST_MAX_WEIGHT: int = 100
