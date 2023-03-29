@@ -17,11 +17,7 @@ from typing import Dict, List, Optional
 import requests
 from loguru import logger as log
 
-from graphein.utils.dependencies import (
-    MissingDependencyError,
-    import_message,
-    is_tool,
-)
+from graphein.utils.dependencies import import_message, is_tool
 
 try:
     import torch
@@ -45,6 +41,16 @@ except ImportError:
     )
     log.warning(message)
 
+try:
+    import foldcomp
+except ImportError:
+    message = import_message(
+        "graphein.protein.folding_utils",
+        package="foldcomp",
+        pip_install=True,
+        extras=True
+    )
+    log.warning(message)
 
 @lru_cache
 def _get_model(model: str = "v1") -> torch.nn.Module:
@@ -193,6 +199,54 @@ def esm_embed_fasta(
         cmd += f"--toks_per_batch {max_tokens} "
     log.info(f"Running command: {cmd}")
     subprocess.run(cmd, shell=True)
+
+
+def foldcompress_file(fname: str, anchor_residue_threshold: int = 25):
+    """Compress a PDB file using the FoldCompress algorithm.
+
+    :param fname: Path to PDB file.
+    :type fname: str
+    :param anchor_residue_threshold: Threshold for anchor residues. 25 should
+        give a RMSD ~0.07A. A reset point every 200 residues will give a RMSD
+        ~0.2A
+    :type anchor_residue_threshold: int
+    """
+    if not os.path.exists(fname):
+        raise FileNotFoundError(f"File {fname} not found.")
+    if not fname.endswith(".pdb"):
+        raise ValueError("Can only compress PDB files.")
+
+    with open(fname, "r") as f:
+        src = f.read()
+
+    fcz = foldcomp.compress(fname, src, anchor_residue_threshold)
+
+    stem = os.path.splitext(fname)[0]
+    with open(f"{stem}.fcz", "wb") as f:
+        f.write(fcz)
+
+
+def foldcompress_database(
+    db_name: str, dir_path: str, fnames: Optional[List[str]]
+):
+    """
+    Compress all PDB files in the database using the FoldCompress algorithm.
+    """
+    is_tool("foldcomp", error=True)
+    cmd = f"foldcomp compress {dir_path} {db_name} --db"
+    log.info(f"Compressing {dir_path}. Running command: {cmd}")
+    subprocess.run(cmd, shell=True)
+
+    if fnames is not None:
+        is_tool("mmseqs", error=True)
+        log.info("Writing selection IDs")
+        id_path = os.path.join(dir_path, f"{db_name}id_list.txt")
+        with open(id_path, "w") as f:
+            f.write("\n".join(fnames))
+
+        cmd = f"mmseqs createsubdb --subdb-mode 0 --id-mode 1 {id_path} {db_name} {db_name}_selection"
+        log.info(f"Extracing {len(fnames)} selections. Running command: {cmd}")
+        subprocess.run(cmd, shell=True)
 
 
 def esmfold_web(
