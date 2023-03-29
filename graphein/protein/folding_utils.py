@@ -141,6 +141,7 @@ def esm_embed_fasta(
     fasta: str,
     out_dir: str,
     model: str = "esm2_t33_650M_UR50D",
+    max_tokens: Optional[int] = None,
     repr_layers: Optional[List[int]] = [0, 32, 33],
     include: Optional[List[str]] = ["mean", "per_tok"],
     truncation_seq_length: Optional[int] = None,
@@ -165,6 +166,8 @@ def esm_embed_fasta(
     :param repr_layers: layers indices from which to extract representations
                         (0 to num_layers, inclusive).
     :type repr_layers: List[int]
+    :param max_tokens: Maximum number of tokens per gpu forward-pass.
+    :type max_tokens: Optional[int]
     :param include: List of representations to include in the output.
         {mean,per_tok,bos,contacts} [{mean,per_tok,bos,contacts} ...]. Default
         is ``["mean", "per_tok"]``.
@@ -186,6 +189,8 @@ def esm_embed_fasta(
         cmd += f"--include {' '.join(include)} "
     if truncation_seq_length is not None:
         cmd += f"--truncation_seq_length {truncation_seq_length} "
+    if max_tokens is not None:
+        cmd += f"--toks_per_batch {max_tokens} "
     log.info(f"Running command: {cmd}")
     subprocess.run(cmd, shell=True)
 
