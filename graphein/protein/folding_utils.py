@@ -89,6 +89,8 @@ def esmfold_fasta(
 ):
     """Batch fold a fasta file with ESMFold.
 
+    Multimer prediction can be done with chains separated by ``:``.
+
     :param fasta: Path to FASTA file
     :type fasta: str
     :param out_dir: Path to output directory
@@ -113,8 +115,7 @@ def esmfold_fasta(
     :type cpu_offload: bool
     :raises FileNotFoundError: If fasta file not found.
     """
-    if not is_tool("esm-fold"):
-        raise MissingDependencyError()
+    is_tool("esm-fold", error=True)
     if not os.path.exists(fasta):
         raise FileNotFoundError(f"File {fasta} not found.")
 
@@ -139,27 +140,52 @@ def esmfold_fasta(
 def esm_embed_fasta(
     fasta: str,
     out_dir: str,
-    model: str = "esm-extract esm2_t33_650M_UR50D",
+    model: str = "esm2_t33_650M_UR50D",
     repr_layers: Optional[List[int]] = [0, 32, 33],
-    include: Optional[List[str]] = [""],
+    include: Optional[List[str]] = ["mean", "per_tok"],
     truncation_seq_length: Optional[int] = None,
 ):
-    is_tool("esm-extract")
+    """
+    Batch embed a fasta file with ESM.
+
+
+    Default parameters compute final-layer embedding from ESM-2.
+
+    .. code-block:: bash
+
+        python scripts/extract.py esm2_t33_650M_UR50D examples/data/some_proteins.fasta \
+        examples/data/some_proteins_emb_esm2 --repr_layers 0 32 33 --include mean per_tok
+
+    :param fasta: Path to FASTA file.
+    :type fasta: str
+    :param out_dir: Path to output directory.
+    :type out_dir: str
+    :param model: PyTorch model file OR name of pretrained model to
+        download (see README for models) Defaults to ``esm2_t33_650M_UR50D``.
+    :param repr_layers: layers indices from which to extract representations
+                        (0 to num_layers, inclusive).
+    :type repr_layers: List[int]
+    :param include: List of representations to include in the output.
+        {mean,per_tok,bos,contacts} [{mean,per_tok,bos,contacts} ...]. Default
+        is ``["mean", "per_tok"]``.
+    :type include: List[str]
+    :param truncation_seq_length: Truncate sequences longer than this value.
+    :type truncation_seq_length: int
+    """
+    is_tool("esm-extract", error=True)
     if not os.path.exists(fasta):
         raise FileNotFoundError(f"File {fasta} not found.")
 
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    cmd = f"esm-exstract {model} "
-    cmd += f"--fasta {fasta} "
-    cmd += f"--output-dir {out_dir} "
+    cmd = f"esm-extract {model} {fasta} {out_dir} "
     if repr_layers is not None:
-        cmd += f"--repr-layers {' '.join([str(l) for l in repr_layers])} "
+        cmd += f"--repr_layers {' '.join([str(l) for l in repr_layers])} "
     if include is not None:
         cmd += f"--include {' '.join(include)} "
     if truncation_seq_length is not None:
-        cmd += f"--truncation-seq-length {truncation_seq_length} "
+        cmd += f"--truncation_seq_length {truncation_seq_length} "
     log.info(f"Running command: {cmd}")
     subprocess.run(cmd, shell=True)
 
@@ -167,8 +193,8 @@ def esm_embed_fasta(
 def esmfold_web(
     sequence: str, out_path: Optional[str] = None, version: int = 1
 ):
-    """Fold a protein sequence using the ESMFold model from the ESMFold server at
-    https://api.esmatlas.com/foldSequence/v1/pdb/.
+    """Fold a protein sequence using the ESMFold model from the ESMFold server
+    at https://api.esmatlas.com/foldSequence/v1/pdb/.
 
     Parameters
     ----------
