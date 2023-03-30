@@ -890,8 +890,6 @@ class PDBManager:
             self.df = df
         return df
 
-        # return self.compare_length(oligomer, comparison, True, splits, update)
-
     def resolution_better_than_or_equal_to(
         self,
         resolution: float,
