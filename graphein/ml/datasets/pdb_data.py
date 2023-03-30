@@ -563,6 +563,7 @@ class PDBManager:
             records.append(record)
 
         df = pd.DataFrame.from_records(records)
+        df["n_chains"] = df.groupby("pdb")["pdb"].transform("count")
         df["ligands"] = df.pdb.map(self._parse_ligand_map())
         df["ligands"] = df["ligands"].fillna("").apply(list)
         df["source"] = df.pdb.map(self._parse_source_map())
@@ -855,8 +856,9 @@ class PDBManager:
         comparison: str = "equal",
         splits: Optional[List[str]] = None,
         update: bool = False,
-    ):
+    ) -> pd.DataFrame:
         """Select molecules with a given oligmeric length.
+        I.e. ``df.n_chains ==/</>  oligomer``
 
         :param length: Oligomeric length of molecule, defaults to ``1``.
         :type length: int
@@ -873,7 +875,22 @@ class PDBManager:
         :return: DataFrame of selected oligmers.
         :rtype: pd.DataFrame
         """
-        return self.compare_length(oligomer, comparison, True, splits, update)
+        splits_df = self.get_splits(splits)
+        if comparison == "equal":
+            df = splits_df.loc[splits_df.n_chains == oligomer]
+        elif comparison == "less":
+            df = splits_df.loc[splits_df.n_chains < oligomer]
+        elif comparison == "greater":
+            df = splits_df.loc[splits_df.n_chains > oligomer]
+        else:
+            raise ValueError(
+                "Comparison must be one of 'equal', 'less', or 'greater'."
+            )
+        if update:
+            self.df = df
+        return df
+
+        # return self.compare_length(oligomer, comparison, True, splits, update)
 
     def resolution_better_than_or_equal_to(
         self,
