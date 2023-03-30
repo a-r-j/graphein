@@ -1,6 +1,10 @@
 from .pdb_data import PDBManager
-from .torch_geometric_dataset import (
-    InMemoryProteinGraphDataset,
-    ProteinGraphDataset,
-    ProteinGraphListDataset,
-)
+
+try:
+    from .torch_geometric_dataset import (
+        InMemoryProteinGraphDataset,
+        ProteinGraphDataset,
+        ProteinGraphListDataset,
+    )
+except ImportError:
+    pass
