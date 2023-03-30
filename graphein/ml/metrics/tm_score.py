@@ -1,6 +1,8 @@
 from typing import Union
 
+import numpy as np
 import torch
+from torch_geometric.utils import unbatch
 from torchmetrics import Metric
 
 from ...protein.tensor.types import AtomTensor, CoordTensor
@@ -67,8 +69,8 @@ class TMScore(Metric):
 
     def update(
         self,
-        pred: Union[COORD_TENSOR, ATOM_TENSOR],
-        target: Union[COORD_TENSOR, ATOM_TENSOR],
+        pred: Union[CoordTensor, AtomTensor],
+        target: Union[CoordTensor, AtomTensor],
         batch: torch.Tensor,
     ):
         y = unbatch(target, batch)
