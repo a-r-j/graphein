@@ -6,5 +6,5 @@ try:
         ProteinGraphDataset,
         ProteinGraphListDataset,
     )
-except ImportError:
+except (NameError, ImportError):
     pass
