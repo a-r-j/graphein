@@ -315,7 +315,7 @@ def to_dataframe(
         import graphein.protein.tensor as gpt
 
         protein = gpt.Protein().from_pdb_code("3eiy")
-        to_dataframe(protein.x)
+        to_dataframe(protein.coords)
 
     .. seealso::
 
