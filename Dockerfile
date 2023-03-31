@@ -1,5 +1,4 @@
-FROM pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
-
+FROM pytorch/pytorch:2.0.0-cuda11.7-cudnn8-runtime
 RUN apt-get update \
     && apt-get -y install build-essential ffmpeg libsm6 libxext6 wget git \
     && rm -rf /var/lib/apt/lists/*
