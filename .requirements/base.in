@@ -15,7 +15,7 @@ rich-click
 seaborn
 pyyaml>=5.1,<6.0
 scikit-learn
-scipy
+scipy>=1.8
 tqdm
 typing_extensions
 wget
