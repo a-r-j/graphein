@@ -135,7 +135,9 @@ Specifies a rotation matrix in either 2D or 3D.
 """
 
 
-RotationMatrixTensor = NewType("RotationMatrixTensor", Float[Tensor, "-1, 3, 3"])
+RotationMatrixTensor = NewType(
+    "RotationMatrixTensor", Float[Tensor, "-1, 3, 3"]
+)
 
 RotationTensor = NewType(
     "RotationTensor", Union[QuaternionTensor, RotationMatrixTensor]
