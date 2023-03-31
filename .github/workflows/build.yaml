@@ -69,6 +69,8 @@ jobs:
         #run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install PyG
         run: mamba install -c pyg pyg
+      - name: Install torch-cluster
+        run: mamba install pytorch-cluster -c pyg
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
       - name: Install Graphein
