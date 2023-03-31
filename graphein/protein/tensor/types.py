@@ -13,7 +13,7 @@ from jaxtyping import Float
 from torch import Tensor
 
 # Positions
-AtomTensor = NewType("AtomTensor", Float[Tensor, "-1, 37, 3"])
+AtomTensor = NewType("AtomTensor", Float[Tensor, "-1 37 3"])
 """
 ``torch.float[-1, 37, 3]``
 
@@ -24,7 +24,7 @@ x,y,z positions.
 .. seealso:: :class:`ResidueTensor` :class:`CoordTensor`
 """
 
-BackboneTensor = NewType("BackboneTensor", Float[Tensor, "-1, 4, 3"])
+BackboneTensor = NewType("BackboneTensor", Float[Tensor, "-1 4 3"])
 """
 ``torch.float[-1, 4, 3]``
 
@@ -36,7 +36,7 @@ and the last dimension contains the x,y,z coordinates.
 
 """
 
-ResidueTensor = NewType("ResidueTensor", Float[Tensor, "37, 3"])
+ResidueTensor = NewType("ResidueTensor", Float[Tensor, "37 3"])
 """
 ``torch.float[37, 3]``
 
@@ -49,7 +49,7 @@ fill value (default = ``1e-5``).
 """
 
 
-CoordTensor = NewType("CoordTensor", Float[Tensor, "-1, 3"])
+CoordTensor = NewType("CoordTensor", Float[Tensor, "-1 3"])
 """
 ``torch.float[-1, 3]``
 
@@ -68,7 +68,7 @@ Union of ``AtomTensor`` and ``CoordTensor``.
 """
 
 # Represenations
-BackboneFrameTensor = NewType("BackboneFrameTensor", Float[Tensor, "-1, 3, 3"])
+BackboneFrameTensor = NewType("BackboneFrameTensor", Float[Tensor, "-1 3 3"])
 """
 ``torch.float[-1, 3, 3]``
 
@@ -80,7 +80,7 @@ relative to an idealised residue.
     :ref:`graphein.protein.tensor.reconstruction.get_ideal_backbone_coords
 """
 
-ResidueFrameTensor = NewType("ResidueFrameTensor", Float[Tensor, "3, 3"])
+ResidueFrameTensor = NewType("ResidueFrameTensor", Float[Tensor, "3 3"])
 """
 ``torch.float[3, 3]``
 
@@ -89,9 +89,9 @@ ResidueFrameTensor = NewType("ResidueFrameTensor", Float[Tensor, "3, 3"])
 
 
 # Rotations
-EulerAngleTensor = NewType("EulerAngleTensor", Float[Tensor, "-1, 3"])
+EulerAngleTensor = NewType("EulerAngleTensor", Float[Tensor, "-1 3"])
 
-QuaternionTensor = NewType("QuaternionTensor", Float[Tensor, "-1, 4"])
+QuaternionTensor = NewType("QuaternionTensor", Float[Tensor, "-1 4"])
 """
 ``torch.float[-1, 4]``
 
@@ -102,10 +102,10 @@ Tensor of quaternions. The first dimension is the length of the protein
 """
 
 
-TransformTensor = NewType("TransformTensor", Float[Tensor, "-1, 4, 4"])
+TransformTensor = NewType("TransformTensor", Float[Tensor, "-1 4 4"])
 
 
-RotationMatrix2D = NewType("RotationMatrix2D", Float[Tensor, "2, 2"])
+RotationMatrix2D = NewType("RotationMatrix2D", Float[Tensor, "2 2"])
 """
 ``torch.float[2, 2]``
 
@@ -114,7 +114,7 @@ Specifies a 2D rotation matrix.
 .. seealso:: :class:`RotationMatrix3D` :class:`RotationMatrix` :class:`RotationTensor`
 """
 
-RotationMatrix3D = NewType("RotationMatrix3D", Float[Tensor, "3, 3"])
+RotationMatrix3D = NewType("RotationMatrix3D", Float[Tensor, "3 3"])
 """
 ``torch.float[3, 3]``
 
@@ -135,7 +135,7 @@ Specifies a rotation matrix in either 2D or 3D.
 """
 
 
-RotationMatrixTensor = NewType("RotationMatrixTensor", Float[Tensor, "-1, 3, 3"])
+RotationMatrixTensor = NewType("RotationMatrixTensor", Float[Tensor, "-1 3 3"])
 
 RotationTensor = NewType(
     "RotationTensor", Union[QuaternionTensor, RotationMatrixTensor]
@@ -144,7 +144,7 @@ RotationTensor = NewType(
 
 # Angles
 DihedralTensor = NewType(
-    "DihedralTensor", Union[Float[Tensor, "-1, 3"], Float[Tensor, "-1, 6"]]
+    "DihedralTensor", Union[Float[Tensor, "-1 3"], Float[Tensor, "-1 6"]]
 )
 """
 ``Union[torch.float[-1, 3], torch.float[-1, 6]]``
@@ -161,7 +161,7 @@ or embedded on the unit sphere ``[cos(phi), sin(phi), cos(psi), sin(psi), ...]``
 """
 
 TorsionTensor = NewType(
-    "TorsionTensor", Union[Float[Tensor, "-1, 4"], Float[Tensor, "-1, 8"]]
+    "TorsionTensor", Union[Float[Tensor, "-1 4"], Float[Tensor, "-1 8"]]
 )
 """
 ``Union[torch.float[-1, 4], torch.float[-1, 8]]``
@@ -177,7 +177,7 @@ degrees/radians or embedded on the unit sphere:
 
 """
 
-BackboneFrameTensor = NewType("BackboneFrameTensor", Float[Tensor, "-1, 3, 3"])
+BackboneFrameTensor = NewType("BackboneFrameTensor", Float[Tensor, "-1 3 3"])
 """
 ``torch.float[-1, 3, 3]``
 
@@ -191,14 +191,17 @@ relative to an idealised residue.
     :meth:`graphein.protein.tensor.representation.get_backbone_frames`
 """
 
-ResidueFrameTensor = NewType("ResidueFrameTensor", Float[Tensor, "3, 3"])
+ResidueFrameTensor = NewType("ResidueFrameTensor", Float[Tensor, "3 3"])
 """
 ``torch.float[-1, 3, 3]``
 
 .. seealso:: :class:`BackboneFrameTensor`
 """
 
-EdgeTensor = NewType("EdgeTensor", Float[Tensor, "2, -1"])
+EdgeTensor = NewType("EdgeTensor", Float[Tensor, "2 -1"])
+
+
+OrientationTensor = NewType("OrientationTensor", Float[Tensor, "-1 2 3"])
 
 
 ScalarTensor = NewType("ScalarTensor", Float[Tensor, "-1"])
