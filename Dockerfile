@@ -12,6 +12,10 @@ RUN apt-get update && apt-get install -y iputils-ping && apt-get clean \
 RUN apt-get update && apt-get install -y ncbi-blast+ && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install DSSP
+RUN apt-get update && apt-get install -y dssp && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV CONDA_ALWAYS_YES=true
 
 
@@ -41,7 +45,6 @@ ENV PATH /getcontacts:$PATH
 RUN conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 RUN conda install -c pytorch3d pytorch3d
 RUN conda install -c dglteam dgl
-RUN conda install -c salilab dssp
 RUN conda install -c conda-forge ipywidgets
 
 RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace('.',''))") \
