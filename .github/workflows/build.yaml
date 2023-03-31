@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8, 3.9]
-        torch: [1.12.0, 1.13.0]
+        torch: [1.12.0, 1.13.0, 2.0.0]
         #include:
         #  - torch: 1.6.0
         #    torchvision: 0.7.0
@@ -62,11 +62,15 @@ jobs:
       #  run: source activate graphein-dev
       - name: Install DSSP
         run: conda install -c salilab dssp
+      - name: Install mmseqs
+        run: mamba install -c conda-forge -c bioconda mmseqs2
       - name: Install PyTorch
-        run: conda install -c pytorch pytorch==${{matrix.torch}} cpuonly
+        run: mamba install -c pytorch pytorch==${{matrix.torch}} cpuonly
         #run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install PyG
-        run: conda install -c pyg pyg
+        run: mamba install -c pyg pyg
+      - name: Install torch-cluster
+        run: mamba install pytorch-cluster -c pyg
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
       - name: Install Graphein

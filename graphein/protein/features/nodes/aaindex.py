@@ -4,7 +4,8 @@ from typing import Dict, Tuple
 import networkx as nx
 from loguru import logger as log
 
-from graphein.utils.utils import import_message, protein_letters_3to1_all_caps
+from graphein.utils.dependencies import import_message
+from graphein.utils.utils import protein_letters_3to1_all_caps
 
 try:
     from pyaaisc import Aaindex
@@ -13,6 +14,7 @@ except ImportError:
         submodule="graphein.protein.features.nodes.aaindex",
         package="pyaaisc",
         pip_install=True,
+        extras=True,
     )
     log.warning(message)
 

@@ -7,12 +7,14 @@ import numpy as np
 
 from graphein.molecule.config import MoleculeGraphConfig
 from graphein.molecule.graphs import construct_graph
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     import rdkit
 except ImportError:
-    import_message("graphein.molecule.graphs", "rdkit", "rdkit", True)
+    import_message(
+        "graphein.molecule.graphs", "rdkit", "rdkit", True, extras=True
+    )
 
 config = MoleculeGraphConfig()
 

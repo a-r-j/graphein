@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import plotly.graph_objects as go
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 from ..protein.visualisation import plotly_protein_structure_graph
 from .conversion import GraphFormatConvertor
@@ -19,7 +19,7 @@ except ImportError:
         submodule="graphein.ml.conversion",
         package="torch_geometric",
         pip_install=True,
-        conda_channel="rusty1s",
+        conda_channel="pyg",
     )
 
 try:

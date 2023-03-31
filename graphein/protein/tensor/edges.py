@@ -3,7 +3,7 @@ from typing import Optional
 
 from loguru import logger as log
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 from .types import CoordTensor, EdgeTensor, OptTensor
 

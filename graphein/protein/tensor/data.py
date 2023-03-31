@@ -194,7 +194,7 @@ class Protein(Data):
         :rtype: Protein
         """
         self.id = id
-        self.x = protein_df_to_tensor(
+        self.coords = protein_df_to_tensor(
             df, atoms_to_keep=atoms_to_keep, fill_value=self.fill_value
         )
         self.residues = get_sequence(
@@ -279,7 +279,7 @@ class Protein(Data):
 
         .. see:: :func:`graphein.protein.tensor.io.to_dataframe`
 
-        :param x: AtomTensor, defaults to ``None`` (uses ``Protein.x``)
+        :param x: AtomTensor, defaults to ``None`` (uses ``Protein.coords``)
         :type x: Optional[Union[AtomTensor, BackboneTensor]], optional
         :param cache: Whether to store the dataframe as a ``Protein`` attribute,
             defaults to ``None``.
@@ -291,7 +291,7 @@ class Protein(Data):
         """
 
         if x is None:
-            x = self.x
+            x = self.coords
         out = to_dataframe(
             x=x,
             fill_value=self.fill_value,
@@ -328,7 +328,7 @@ class Protein(Data):
         .. seealso:: :meth:`graphein.protein.tensor.io.to_dataframe`
 
 
-        :param x: ``AtomTensor``, defaults to ``None`` (uses ``Protein.x``)
+        :param x: ``AtomTensor``, defaults to ``None`` (uses ``Protein.coords``)
         :type x: Optional[Union[AtomTensor, BackboneTensor]], optional
         :param out_path: Path to output file, defaults to ``None``
             (``{Protein.id}.pdb``)
@@ -341,7 +341,7 @@ class Protein(Data):
         if out_path is None:
             out_path = self.id + ".pdb"
         if x is None:
-            x = self.x
+            x = self.coords
         to_pdb(x, out_path, gz, **kwargs)
 
     def from_pdb_code(
@@ -501,7 +501,7 @@ class Protein(Data):
         :rtype: graphein.protein.tensor.types.CoordTensor
         """
 
-        out = get_c_alpha(self.x)
+        out = get_c_alpha(self.coords)
         if cache is not None:
             setattr(self, cache, out)
         return out
@@ -529,7 +529,7 @@ class Protein(Data):
         :return: Backbone coordinates ``[Length x 4 x 3]``
         :rtype: graphein.protein.tensor.types.BackboneTensor
         """
-        out = get_backbone(self.x)
+        out = get_backbone(self.coords)
         if cache is not None:
             setattr(self, cache, out)
         return out
@@ -549,7 +549,7 @@ class Protein(Data):
         :return: _description_
         :rtype: Tuple[BackboneFrameTensor, CoordTensor]
         """
-        out = get_backbone_frames(self.x)
+        out = get_backbone_frames(self.coords)
         if cache is not None:
             setattr(self, cache, out)
         return out
@@ -578,7 +578,7 @@ class Protein(Data):
         :rtype: AtomTensor
         """
         if x is None:
-            x = self.x
+            x = self.coords
         return idealize_backbone(x, lr=lr, n_iter=n_iter, inplace=inplace)
 
     def full_atom_coords(self, cache: Optional[str] = None) -> CoordTensor:
@@ -593,7 +593,7 @@ class Protein(Data):
         :return: Tensor of atom positions.
         :rtype: CoordTensor
         """
-        out = get_full_atom_coords(self.x, fill_value=self.fill_value)
+        out = get_full_atom_coords(self.coords, fill_value=self.fill_value)
         if cache is not None:
             setattr(self, cache, out)
         return out
@@ -605,7 +605,7 @@ class Protein(Data):
         """
         .. see:: :func:`graphein.protein.tensor.angles.dihedrals`
         """
-        out = dihedrals(self.x, rad=rad, embed=embed)
+        out = dihedrals(self.coords, rad=rad, embed=embed)
 
         if cache is not None:
             setattr(self, cache, out)
@@ -622,7 +622,7 @@ class Protein(Data):
             , (not stored).
         :type cache: Optional[str]
         """
-        return sidechain_torsion(self.x, self.residues)
+        return sidechain_torsion(self.coords, self.residues)
 
     def kappa(
         self,
@@ -640,7 +640,7 @@ class Protein(Data):
             (not stored).
         :type cache: Optional[str]
         """
-        out = kappa(self.x, rad=rad, embed=embed)
+        out = kappa(self.coords, rad=rad, embed=embed)
         if cache is not None:
             setattr(self, cache, out)
         return out
@@ -658,7 +658,7 @@ class Protein(Data):
             (not stored).
         :type cache: Optional[str]
         """
-        out = alpha(self.x, rad=rad, embed=embed)
+        out = alpha(self.coords, rad=rad, embed=embed)
         if cache is not None:
             setattr(self, cache, out)
         return out
@@ -677,8 +677,8 @@ class Protein(Data):
 
         """
         out = kabsch(
-            self.x,
-            other.x,
+            self.coords,
+            other.coords,
             ca_only=ca_only,
             fill_value=self.fill_value,
             return_transformed=return_transformed,
@@ -710,7 +710,7 @@ class Protein(Data):
             complete structure.
         :rtype: bool
         """
-        return is_complete_structure(self.x, self.residues)
+        return is_complete_structure(self.coords, self.residues)
 
     def has_complete_backbone(self) -> bool:
         """
@@ -722,7 +722,7 @@ class Protein(Data):
             complete backbone.
         :rtype: bool
         """
-        return has_complete_backbone(self.x)
+        return has_complete_backbone(self.coords)
 
     def __eq__(self, __o: object) -> bool:
         # sourcery skip: merge-duplicate-blocks, merge-else-if-into-elif
@@ -755,7 +755,7 @@ class Protein(Data):
 
     def plot_dihedrals(self) -> go.Figure:
         dh = (
-            dihedrals(self.x)
+            dihedrals(self.coords)
             if "dihedrals" not in self.keys
             else self.dihedrals
         )
@@ -781,7 +781,7 @@ class Protein(Data):
         """
         residue_ids = self.residue_id if hasattr(self, "residue_id") else None
         return plot_structure(
-            self.x, atoms=atoms, lines=lines, residue_ids=residue_ids
+            self.coords, atoms=atoms, lines=lines, residue_ids=residue_ids
         )
 
     def apply_structural_noise(
@@ -798,13 +798,13 @@ class Protein(Data):
         .. see:: :func:`graphein.protein.tensor.geometry.apply_structural_noise`
 
         :param x: Coordinates to apply noise to, defaults to ``None``. If
-            ``None`` (default), ``self.x`` is used.
+            ``None`` (default), ``self.coords`` is used.
         :param cache: If provided, the result will be cached in the ``Protein``
             under the provided string as the attribute name. Default is ``None``,
             (not stored).
         """
         if x is None:
-            x = self.x
+            x = self.coords
         out = apply_structural_noise(
             x,
             magnitude=magnitude,
@@ -836,6 +836,9 @@ class ProteinBatch(Batch):
         if hasattr(batch, "_inc_dict"):
             self._inc_dict = batch._inc_dict
 
+        if hasattr(batch, "_num_graphs"):
+            self._num_graphs = batch._num_graphs
+
         # self.fill_value = fill_value
         return self
 
@@ -844,8 +847,6 @@ class ProteinBatch(Batch):
         # sourcery skip: class-extract-method
         proteins = [Protein().from_data(p) for p in proteins]
         batch = Batch.from_data_list(proteins)
-        # self.from_batch(batch)
-        # return self
         return cls().from_batch(batch)
 
     def from_pdb_codes(
@@ -960,7 +961,7 @@ class ProteinBatch(Batch):
         :rtype: graphein.protein.tensor.types.CoordTensor
         """
 
-        out = get_c_alpha(self.x)
+        out = get_c_alpha(self.coords)
         if cache is not None:
             setattr(self, cache, out)
         return out
@@ -986,7 +987,7 @@ class ProteinBatch(Batch):
         :return: Backbone coordinates ``[Length x 4 x 3]``
         :rtype: graphein.protein.tensor.types.BackboneTensor
         """
-        out = get_backbone(self.x)
+        out = get_backbone(self.coords)
         if cache is not None:
             setattr(self, cache, out)
         return out
@@ -1006,7 +1007,7 @@ class ProteinBatch(Batch):
         :return: _description_
         :rtype: Tuple[BackboneFrameTensor, CoordTensor]
         """
-        out = get_backbone_frames(self.x)
+        out = get_backbone_frames(self.coords)
         if cache is not None:
             setattr(self, cache, out)
         return out
@@ -1064,7 +1065,7 @@ class ProteinBatch(Batch):
 
     # Testing
     def is_complete(self) -> bool:
-        return is_complete_structure(self.x, self.residues)
+        return is_complete_structure(self.coords, self.residues)
 
     def has_complete_backbone(self) -> bool:
         """Returns ``True`` if the protein has a complete backbone, else
@@ -1076,7 +1077,7 @@ class ProteinBatch(Batch):
 
             :meth:`graphein.protein.tensor.testing.has_complete_backbone`
         """
-        return has_complete_backbone(self.x, fill_value=self.fill_value)
+        return has_complete_backbone(self.coords, fill_value=self.fill_value)
 
     def protein_apply(
         self, func: Callable[["Protein"], Any], rebatch: bool = False
@@ -1094,7 +1095,7 @@ class ProteinBatch(Batch):
                 )
 
             def single_plot(protein: gpt.Protein()):
-                return plot_structure(protein.x, lines=False)
+                return plot_structure(protein.coords, lines=False)
 
             plots = batch.protein_apply(single_plot)
             plots[2]
@@ -1132,7 +1133,7 @@ class ProteinBatch(Batch):
             from graphein.protein.tensor.plot import plot_structure
 
             def single_plot(protein: gpt.Protein()):
-            return plot_structure(protein.x, lines=False)
+            return plot_structure(protein.coords, lines=False)
 
             plot = batch.apply_to(single_plot, 2)
 
@@ -1277,13 +1278,13 @@ class ProteinBatch(Batch):
         .. see:: :func:`graphein.protein.tensor.geometry.apply_structural_noise`
 
         :param x: Coordinates to apply noise to, defaults to ``None``. If
-            ``None`` (default), ``self.x`` is used.
+            ``None`` (default), ``self.coords`` is used.
         :param cache: If provided, the result will be cached in the
             ``ProteinBatch`` under the provided string as the attribute name.
             Default is ``None``, (not stored).
         """
         if x is None:
-            x = self.x
+            x = self.coords
         out = apply_structural_noise(
             x,
             magnitude=magnitude,

@@ -33,7 +33,7 @@ from graphein.protein.subgraphs import (
     extract_subgraph_from_secondary_structure,
     extract_surface_subgraph,
 )
-from graphein.protein.utils import is_tool
+from graphein.utils.dependencies import is_tool
 
 DSSP_AVAILABLE = is_tool("mkdssp")
 

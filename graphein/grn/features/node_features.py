@@ -1,20 +1,8 @@
 """Node featurisation utilities for Gene Regulatory Networks."""
 from typing import Any, Dict
 
+from bioservices import HGNC, UniProt
 from loguru import logger as log
-
-from graphein.utils.utils import import_message
-
-try:
-    from bioservices import HGNC, UniProt
-except ImportError:
-    message = import_message(
-        submodule="graphein.grn.features.node_features",
-        package="bioservices",
-        conda_channel="bioconda",
-        pip_install=True,
-    )
-    log.warning(message)
 
 
 def add_sequence_to_nodes(n: str, d: Dict[str, Any]):

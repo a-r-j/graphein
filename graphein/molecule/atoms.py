@@ -14,12 +14,14 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     import rdkit.Chem as Chem
 except ImportError:
-    import_message("graphein.molecule.atoms", "rdkit", "rdkit", True)
+    import_message(
+        "graphein.molecule.atoms", "rdkit", "rdkit", True, extras=True
+    )
 
 
 BASE_ATOMS: List[str] = [
