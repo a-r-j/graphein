@@ -699,7 +699,9 @@ class PDBManager:
         splits: Optional[List[str]] = None,
         update: bool = False,
     ) -> pd.DataFrame:
-        """Select molecules by experiment type. [`diffraction`, `NMR`, `EM`, `other`]
+        """
+        Select molecules by experiment type:
+        [``diffraction``, ``NMR``, ``EM``, ``other``]
 
         :param type: Experiment type of molecule, defaults to "diffraction".
         :type type: str, optional
@@ -896,10 +898,12 @@ class PDBManager:
         splits: Optional[List[str]] = None,
         update: bool = False,
     ) -> pd.DataFrame:
-        """Select molecules with a resolution better than or equal to the given value.
+        """
+        Select molecules with a resolution better than or equal to the given
+        value.
 
-        Conventions for PDB resolution values are used, where a lower resolution
-        value indicates a better resolution for a molecule overall.
+        Conventions for PDB resolution values are used, where a lower
+        resolution value indicates a better resolution for a molecule overall.
 
         :param resolution: Worst molecule resolution allowed.
         :type resolution: int
@@ -926,10 +930,12 @@ class PDBManager:
         splits: Optional[List[str]] = None,
         update: bool = False,
     ) -> pd.DataFrame:
-        """Select molecules with a resolution worse than or equal to the given value.
+        """
+        Select molecules with a resolution worse than or equal to the
+        given value.
 
-        Conventions for PDB resolution values are used, where a higher resolution
-        value indicates a worse resolution for a molecule overall.
+        Conventions for PDB resolution values are used, where a higher
+        resolution value indicates a worse resolution for a molecule overall.
 
         :param resolution: Best molecule resolution allowed.
         :type resolution: int
@@ -959,7 +965,8 @@ class PDBManager:
         """
         Select molecules that contain a given ligand.
 
-        :param ligand: Ligand to select. (PDB ligand code - http://ligand-expo.rcsb.org/)
+        :param ligand: Ligand to select.
+            (PDB ligand code - http://ligand-expo.rcsb.org/)
         :type ligand: str
         :param update: Whether to update the DataFrame in place, defaults to
             ``False``.
@@ -987,12 +994,14 @@ class PDBManager:
         If inverse is ``True``, selects molecules that do not have all the
         ligands in the list.
 
-        :param ligand: List of ligands. (PDB ligand codes - http://ligand-expo.rcsb.org/)
+        :param ligand: List of ligands.
+            (PDB ligand codes - http://ligand-expo.rcsb.org/)
         :type ligand: List[str]
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
-        :param inverse: Whether to inverse the selection, defaults to ``False``.
+        :param inverse: Whether to inverse the selection,
+            defaults to ``False``.
         :type inverse: bool, optional
         :param update: Whether to update the DataFrame in place, defaults to
             ``False``.
@@ -1049,21 +1058,22 @@ class PDBManager:
         assign_leftover_rows_to_split_n: int = 0,
         random_state: int = 42,
     ) -> Dict[str, pd.DataFrame]:
-        """Split the provided DataFrame iteratively according to given proportions.
+        """
+        Split the provided DataFrame iteratively according to given proportions.
 
         :param df: DataFrame to split.
         :type df: pd.DataFrame
-        :param splits: Names of splits into which to divide the provided DataFrame.
+        :param splits: Names of splits into which to divide the
+            provided DataFrame.
         :type splits: List[str]
         :param split_ratios: Ratios by which to split the provided DataFrame.
         :type split_ratios: List[float]
-        :param assign_leftover_rows_to_split_n: To which split to assign leftover rows,
-            defaults to ``0``.
+        :param assign_leftover_rows_to_split_n: To which split to assign
+            leftover rows, defaults to ``0``.
         :type assign_leftover_rows_to_split_n: int, optional
-        :param random_state: Random seed to use for DataFrame splitting, defaults to
-            ``42``.
+        :param random_state: Random seed to use for DataFrame splitting,
+            defaults to ``42``.
         :type random_state: int, optional
-
         :return: Dictionary of DataFrame splits.
         :rtype: Dict[str, pd.DataFrame]
         """
@@ -1182,9 +1192,8 @@ class PDBManager:
         assert split_ratios_provided, "Split ratios must be provided."
 
         # Split clusters
-        log.info(
-            f"Randomly splitting clusters into ratios: {' '.join([str(r) for r in self.split_ratios])}..."
-        )
+        ratio_str = " ".join([str(r) for r in self.split_ratios])
+        log.info(f"Randomly splitting clusters into ratios: {ratio_str}...")
         df_splits = self.split_df_proportionally(
             df,
             self.splits,
@@ -1255,7 +1264,7 @@ class PDBManager:
             # Remove existing file if we are overwriting
             if os.path.exists(self.root_dir / cluster_fname) and overwrite:
                 log.info(
-                    f"Overwriting. Removing old cluster file {self.root_dir / cluster_fname}"
+                    f"Overwriting. Removing old cluster file:  {self.root_dir / cluster_fname}"
                 )
                 os.remove(self.root_dir / cluster_fname)
 
@@ -1301,15 +1310,18 @@ class PDBManager:
         splits: List[str],
         split_time_frames: List[np.datetime64],
     ) -> Dict[str, pd.DataFrame]:
-        """Split the provided DataFrame sequentially according to given time frames.
+        """
+        Split the provided DataFrame sequentially according to given
+        time frames.
 
         :param df: DataFrame to split.
         :type df: pd.DataFrame
-        :param splits: Names of splits into which to divide the provided DataFrame.
+        :param splits: Names of splits into which to divide the
+            provided DataFrame.
         :type splits: List[str]
-        :param split_time_frames: Time frames into which to split the provided DataFrame.
+        :param split_time_frames: Time frames into which to split the
+            provided DataFrame.
         :type split_time_frames: List[np.datetime64]
-
         :return: Dictionary of DataFrame splits.
         :rtype: Dict[str, pd.DataFrame]
         """
