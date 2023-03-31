@@ -20,4 +20,4 @@ tqdm
 typing_extensions
 wget
 xarray
-torchtyping
+jaxtyping
