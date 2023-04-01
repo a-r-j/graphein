@@ -1,4 +1,4 @@
-git+https://github.com/biopandas/biopandas
+git+https://github.com/biopandas/biopandas.git@main
 biopython
 bioservices>=1.10.0
 deepdiff
