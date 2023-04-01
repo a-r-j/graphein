@@ -1460,9 +1460,7 @@ def to_protein_mp(
     :rtype: List[Protein]
     """
     assert (
-        pdb_codes is not None
-        or paths is not None
-        or uniprot_ids is not None
+        pdb_codes is not None or paths is not None or uniprot_ids is not None
     ), "Iterable of pdb codes, pdb paths or uniprot IDs required."
 
     if pdb_codes is not None:
