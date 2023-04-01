@@ -5,6 +5,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+import os
 from typing import List, Optional, Union
 
 import numpy as np
@@ -94,7 +95,7 @@ def get_protein_length(df: pd.DataFrame, insertions: bool = False) -> int:
 
 
 def protein_to_pyg(
-    pdb_path: Optional[str] = None,
+    path: Optional[Union[str, os.PathLike]] = None,
     pdb_code: Optional[str] = None,
     uniprot_id: Optional[str] = None,
     chain_selection: str = "all",
@@ -117,13 +118,16 @@ def protein_to_pyg(
         gpt.io.protein_to_pyg(pdb_code="3eiy")
 
         # From PDB Path
-        gpt.io.protein_to_pyg(pdb_path="3eiy.pdb")
+        gpt.io.protein_to_pyg(path="3eiy.pdb")
+
+        # From MMTF Path
+        gpt.io.protein_to_pyg(path="3eiy.mmtf")
 
         # From UniProt ID
-        gpt.io.protein_to_pyg(pdb_path="Q5VSL9")
+        gpt.io.protein_to_pyg(uniprot_id="Q5VSL9")
 
 
-    :param pdb_path: Path to PDB file. Default is ``None``.
+    :param path: Path to PDB or MMTF file. Default is ``None``.
     :param pdb_code: PDB accesion code. Default is ``None``.
     :param uniprot_id: UniProt ID. Default is ``None``.
     :param chain_selection: Selection of chains to include (e.g. ``"ABC"``) or
@@ -141,11 +145,11 @@ def protein_to_pyg(
     """
 
     # Get ID
-    if pdb_path is not None:
+    if path is not None:
         id = (
-            pdb_path.split("/")[-1] + "_" + chain_selection
+            path.split("/")[-1] + "_" + chain_selection
             if chain_selection != "all"
-            else pdb_path
+            else path
         )
     elif pdb_code is not None:
         id = (
@@ -161,7 +165,7 @@ def protein_to_pyg(
         )
 
     df = read_pdb_to_dataframe(
-        pdb_path=pdb_path,
+        path=path,
         pdb_code=pdb_code,
         uniprot_id=uniprot_id,
         model_index=model_index,
