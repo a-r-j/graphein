@@ -1,4 +1,4 @@
-### 1.6.1 - UNRELEASED
+### 1.7.0 - UNRELEASED
 
 * `Protein` tensors have coordinates renamed from `Protein.x` to `Protein.coords`. [#272](https://github.com/a-r-j/graphein/pull/272)
 * Tensor types are now defined using [`jaxtyping`](https://github.com/google/jaxtyping), removing the `torchtyping` dependency [#272](https://github.com/a-r-j/graphein/pull/272)
