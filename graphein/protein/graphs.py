@@ -104,7 +104,7 @@ def read_pdb_to_dataframe(
         atomic_df = PandasPdb().read_pdb(pdb_path)
     elif uniprot_id is not None:
         atomic_df = PandasPdb().fetch_pdb(
-            uniprot_id=uniprot_id, source="alphafold2-v2"
+            uniprot_id=uniprot_id, source="alphafold2-v3"
         )
     else:
         atomic_df = PandasPdb().fetch_pdb(pdb_code)
