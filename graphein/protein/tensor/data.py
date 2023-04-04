@@ -101,7 +101,7 @@ class Protein(Data):
 
         # From a PyG Data object
         data = gpt.io.protein_to_pyg(
-            pdb_code="4hhb", # Can alternatively pass a path or a uniprot ID (for AF2) with pdb_path=... and uniprot_id=...
+            pdb_code="4hhb", # Can alternatively pass a path or a uniprot ID (for AF2) with path=... and uniprot_id=...
             chain_selection="ABCD", # Select all 4 chains
             deprotonate=True, # Deprotonate the structure
             keep_insertions=False, # Remove insertions
@@ -225,7 +225,7 @@ class Protein(Data):
             >>> import graphein.protein.tensor as gpt
 
             >>> data = gpt.io.protein_to_pyg(
-                ... pdb_code="4hhb", # Can alternatively pass a path or a uniprot ID (for AF2) with pdb_path=... and uniprot_id=...
+                ... pdb_code="4hhb", # Can alternatively pass a path or a uniprot ID (for AF2) with path=... and uniprot_id=...
                 ... chain_selection="ABCD", # Select all 4 chains
                 ... deprotonate=True, # Deprotonate the structure
                 ... keep_insertions=False, # Remove insertions
@@ -376,7 +376,7 @@ class Protein(Data):
 
     def from_pdb_file(
         self,
-        pdb_path: str,
+        path: str,
         chain_selection: str = "all",
         deprotonate: bool = True,
         keep_insertions=False,
@@ -387,7 +387,7 @@ class Protein(Data):
         graph_labels: Optional[torch.Tensor] = None,
     ) -> "Protein":
         data = protein_to_pyg(
-            pdb_path=pdb_path,
+            path=path,
             chain_selection=chain_selection,
             deprotonate=deprotonate,
             keep_insertions=keep_insertions,
@@ -887,7 +887,7 @@ class ProteinBatch(Batch):
 
     def from_pdb_files(
         self,
-        pdb_paths: List[str],
+        paths: List[str],
         chain_selection: Optional[List[str]] = None,
         node_labels: Optional[List[torch.Tensor]] = None,
         graph_labels: Optional[List[torch.Tensor]] = None,
@@ -899,7 +899,7 @@ class ProteinBatch(Batch):
     ):
         proteins = [
             Protein().from_pdb_file(
-                pdb_path=pdb,
+                path=pdb,
                 chain_selection=chain_selection[i]
                 if chain_selection is not None
                 else "all",
@@ -915,7 +915,7 @@ class ProteinBatch(Batch):
                 if graph_labels is not None
                 else None,
             )
-            for i, pdb in enumerate(pdb_paths)
+            for i, pdb in enumerate(paths)
         ]
         batch = Batch.from_data_list(proteins)
         self.from_batch(batch)
@@ -1297,7 +1297,7 @@ class ProteinBatch(Batch):
 
 
 def to_protein(
-    pdb_path: Optional[str] = None,
+    path: Optional[str] = None,
     pdb_code: Optional[str] = None,
     uniprot_id: Optional[str] = None,
     chain_selection: str = "all",
@@ -1321,7 +1321,7 @@ def to_protein(
         gpt.data.to_protein(pdb_code="3eiy", ...)
 
         # From PDB Path
-        gpt.io.to_protein(pdb_path="3eiy.pdb", ...)
+        gpt.io.to_protein(path="3eiy.pdb", ...)
 
         # From UniProt ID
         gpt.io.to_protein(uniprot_id="Q5VSL9", ...)
@@ -1332,7 +1332,7 @@ def to_protein(
         :func:`graphein.protein.tensor.data.to_protein_mp`
 
 
-    :param pdb_path: Path to PDB file. Default is ``None``.
+    :param path: Path to PDB or MMTF file. Default is ``None``.
     :param pdb_code: PDB accesion code. Default is ``None``.
     :param uniprot_id: UniProt ID. Default is ``None``.
     :param chain_selection: Selection of chains to include (e.g. ``"ABC"``) or
@@ -1349,7 +1349,7 @@ def to_protein(
     :rtype: Protein
     """
     data = protein_to_pyg(
-        pdb_path=pdb_path,
+        path=path,
         pdb_code=pdb_code,
         uniprot_id=uniprot_id,
         chain_selection=chain_selection,
@@ -1385,9 +1385,9 @@ def _mp_constructor(
                 pdb_code=args[0],
                 chain_selection=args[1],  # , model_index=args[2]
             )
-        elif source == "pdb_path":
+        elif source == "path":
             return func(
-                pdb_path=args[0],
+                path=args[0],
                 chain_selection=args[1],  # , model_index=args[2]
             )
         elif source == "uniprot_id":
@@ -1405,7 +1405,7 @@ def _mp_constructor(
 
 
 def to_protein_mp(
-    pdb_paths: Optional[str] = None,
+    paths: Optional[str] = None,
     pdb_codes: Optional[str] = None,
     uniprot_ids: Optional[str] = None,
     chain_selections: Optional[List[str]] = None,
@@ -1430,7 +1430,7 @@ def to_protein_mp(
         gpt.data.to_protein_mp(pdb_codes=["3eiy", "4hhb", ..., num_cores=8])
 
         # From PDB Paths
-        gpt.io.to_protein_mp(pdb_paths=["3eiy.pdb", "4hhb.pdb", ...])
+        gpt.io.to_protein_mp(paths=["3eiy.pdb", "4hhb.pdb", ...])
 
         # From UniProt IDs
         gpt.io.to_protein_mp(uniprot_ids=["Q5VSL9", ...])
@@ -1442,7 +1442,7 @@ def to_protein_mp(
         :func:`graphein.protein.tensor.data.to_protein`
 
 
-    :param pdb_paths: Path to PDB file. Default is ``None``.
+    :param paths: Path to PDB or MMTF files. Default is ``None``.
     :param pdb_codes: PDB accesion code. Default is ``None``.
     :param uniprot_ids: UniProt ID. Default is ``None``.
     :param chain_selections: Selection of chains to include (e.g. ``"ABC"``) or
@@ -1460,18 +1460,16 @@ def to_protein_mp(
     :rtype: List[Protein]
     """
     assert (
-        pdb_codes is not None
-        or pdb_paths is not None
-        or uniprot_ids is not None
+        pdb_codes is not None or paths is not None or uniprot_ids is not None
     ), "Iterable of pdb codes, pdb paths or uniprot IDs required."
 
     if pdb_codes is not None:
         pdbs = pdb_codes
         source = "pdb_code"
 
-    if pdb_paths is not None:
-        pdbs = pdb_paths
-        source = "pdb_path"
+    if paths is not None:
+        pdbs = paths
+        source = "path"
 
     if uniprot_ids is not None:
         pdbs = uniprot_ids

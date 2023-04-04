@@ -33,7 +33,7 @@ def test_node_list_subgraphing():
         "A:U:5:135:OP1",
     ]
 
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     g = extract_subgraph_from_node_list(G, NODE_LIST, filter_dataframe=True)
 
@@ -78,7 +78,7 @@ def test_node_list_subgraphing():
 def test_extract_subgraph_from_atom_types():
     """Tests subgraph extraction from a list of allowed atom types"""
     file_path = Path(__file__).parent / "test_data/2jyf.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     ATOM_TYPES = ["P"]
     g = extract_subgraph_from_atom_types(G, ATOM_TYPES, filter_dataframe=True)
@@ -94,7 +94,7 @@ def test_extract_subgraph_from_residue_types():
     A_COUNT = 484  # TODO
     G_COUNT = 592  # TODO
 
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     g = extract_subgraph_from_residue_types(
         G, RESIDUE_TYPES, filter_dataframe=True
@@ -151,7 +151,7 @@ def test_extract_subgraph_from_residue_types():
 def test_extract_subgraph_from_point():
     """Tests subgraph extraction from a spherical selection."""
     file_path = Path(__file__).parent / "test_data/2jyf.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     POINT = np.array([0.0, 0.0, 0.0])
     RADIUS = 10
@@ -183,7 +183,7 @@ def test_extract_subgraph_from_point():
 def test_extract_subgraph_from_chains():
     """Tests subgraph extraction from chains."""
     file_path = Path(__file__).parent / "test_data/2jyf.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     CHAINS = ["A", "C"]
     s_g = extract_subgraph_from_chains(G, CHAINS, filter_dataframe=True)
@@ -218,7 +218,7 @@ def test_extract_subgraph_from_chains():
 def test_extract_subgraph_from_sequence_position():
     """Tests subgraph extraction from sequence position."""
     file_path = Path(__file__).parent / "test_data/2jyf.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     SEQ_POS = list(range(1, 50, 2))
 
@@ -255,7 +255,7 @@ def test_extract_subgraph_from_sequence_position():
 def test_extract_subgraph_from_bond_type():
     """Tests subgraph extraction from bond type"""
     file_path = Path(__file__).parent / "test_data/2jyf.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     BOND_TYPES = ["covalent"]
 
@@ -287,7 +287,7 @@ def test_extract_subgraph_from_bond_type():
 def test_extract_k_hop_subgraph():
     """Tests k-hop subgraph extraction."""
     file_path = Path(__file__).parent / "test_data/2jyf.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     CENTRAL_NODE = "A:A:6:181:N6"
     K = 1

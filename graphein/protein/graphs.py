@@ -7,6 +7,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import os
 import traceback
 from contextlib import nullcontext
 from functools import partial
@@ -17,6 +18,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from Bio.PDB.Polypeptide import three_to_one
+from biopandas.mmtf import PandasMmtf
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from rich.progress import Progress
@@ -68,7 +70,7 @@ def subset_structure_to_rna(
 
 
 def read_pdb_to_dataframe(
-    pdb_path: Optional[os.Pathlike] = None,
+    path: Optional[Union[str, os.PathLike]] = None,
     pdb_code: Optional[str] = None,
     uniprot_id: Optional[str] = None,
     model_index: int = 1,
@@ -80,8 +82,8 @@ def read_pdb_to_dataframe(
     their cartesian coordinates in 3D space. Also contains associated metadata
     from the PDB file.
 
-    :param pdb_path: path to PDB file. Defaults to ``None``.
-    :type pdb_path: str, optional
+    :param path: path to PDB or MMTF file. Defaults to ``None``.
+    :type path: str, optional
     :param pdb_code: 4-character PDB accession. Defaults to ``None``.
     :type pdb_code: str, optional
     :param uniprot_id: UniProt ID to build graph from AlphaFoldDB. Defaults to
@@ -93,15 +95,20 @@ def read_pdb_to_dataframe(
     :returns: ``pd.DataFrame`` containing protein structure
     :rtype: pd.DataFrame
     """
-    if pdb_code is None and pdb_path is None and uniprot_id is None:
+    if pdb_code is None and path is None and uniprot_id is None:
         raise NameError(
-            "One of pdb_code, pdb_path or uniprot_id must be specified!"
+            "One of pdb_code, path or uniprot_id must be specified!"
         )
 
-    if pdb_path is not None:
-        if isinstance(pdb_path, Path):
-            pdb_path = os.fsdecode(pdb_path)
-        atomic_df = PandasPdb().read_pdb(pdb_path)
+    if path is not None:
+        if isinstance(path, Path):
+            path = os.fsdecode(path)
+        if path.endswith(".pdb"):
+            atomic_df = PandasPdb().read_pdb(path)
+        elif path.endswith(".mmtf"):
+            atomic_df = PandasMmtf().read_mmtf(path)
+        else:
+            raise ValueError("File must be either .pdb or .mmtf")
     elif uniprot_id is not None:
         atomic_df = PandasPdb().fetch_pdb(
             uniprot_id=uniprot_id, source="alphafold2-v3"
@@ -486,7 +493,7 @@ def initialise_graph_with_metadata(
     granularity: str,
     name: Optional[str] = None,
     pdb_code: Optional[str] = None,
-    pdb_path: Optional[str] = None,
+    path: Optional[str] = None,
 ) -> nx.Graph:
     """
     Initializes the nx Graph object with initial metadata.
@@ -507,26 +514,26 @@ def initialise_graph_with_metadata(
     :param pdb_code: PDB ID / Accession code, if the PDB is available on the
         PDB database.
     :type pdb_code: Optional[str], defaults to ``None``.
-    :param pdb_path: path to local PDB file, if constructing a graph from a
+    :param path: path to local PDB or MMTF file, if constructing a graph from a
         local file.
-    :type pdb_path: Optional[str], defaults to ``None``.
+    :type path: Optional[str], defaults to ``None``.
     :return: Returns initial protein structure graph with metadata.
     :rtype: nx.Graph
     """
-    if pdb_path is not None and isinstance(pdb_path, Path):
-        pdb_path = os.fsdecode(pdb_path)
+    if path is not None and isinstance(path, Path):
+        path = os.fsdecode(path)
 
     # Get name for graph if no name was provided
     if name is None:
-        if pdb_path is not None:
-            name = get_protein_name_from_filename(pdb_path)
+        if path is not None:
+            name = get_protein_name_from_filename(path)
         else:
             name = pdb_code
 
     G = nx.Graph(
         name=name,
         pdb_code=pdb_code,
-        pdb_path=pdb_path,
+        path=path,
         chain_ids=list(protein_df["chain_id"].unique()),
         pdb_df=protein_df,
         raw_pdb_df=raw_pdb_df,
@@ -679,7 +686,7 @@ def compute_edges(
 def construct_graph(
     config: Optional[ProteinGraphConfig] = None,
     name: Optional[str] = None,
-    pdb_path: Optional[os.Pathlike] = None,
+    path: Optional[Union[str, os.PathLike]] = None,
     uniprot_id: Optional[str] = None,
     pdb_code: Optional[str] = None,
     df: Optional[pd.DataFrame] = None,
@@ -693,7 +700,7 @@ def construct_graph(
     verbose: bool = True,
 ) -> nx.Graph:
     """
-    Constructs protein structure graph from a ``pdb_code``, ``pdb_path``,
+    Constructs protein structure graph from a ``pdb_code``, ``path``,
     ``uniprot_id`` or a BioPandas DataFrame containing ``ATOM`` data.
 
     Users can provide a :class:`~graphein.protein.config.ProteinGraphConfig`
@@ -708,9 +715,9 @@ def construct_graph(
     :param name: an optional given name for the graph. the PDB ID or PDB file
         name will be used if not specified.
     :type name: str, optional
-    :param pdb_path: Path to ``pdb_file`` when constructing a graph from a
+    :param path: Path to PDB or MMTF file when constructing a graph from a
         local pdb file. Default is ``None``.
-    :type pdb_path: Optional[str], defaults to ``None``
+    :type path: Optional[str], defaults to ``None``
     :param pdb_code: A 4-character PDB ID / accession to be used to construct
         the graph, if available. Default is ``None``.
     :type pdb_code: Optional[str], defaults to ``None``
@@ -748,18 +755,13 @@ def construct_graph(
     :rtype: nx.Graph
     """
 
-    if (
-        pdb_code is None
-        and pdb_path is None
-        and uniprot_id is None
-        and df is None
-    ):
+    if pdb_code is None and path is None and uniprot_id is None and df is None:
         raise ValueError(
             "Either a PDB ID, UniProt ID, a dataframe or a path to a local PDB file"
             " must be specified to construct a graph"
         )
-    if pdb_path is not None and isinstance(pdb_path, Path):
-        pdb_path = os.fsdecode(pdb_path)
+    if path is not None and isinstance(path, Path):
+        path = os.fsdecode(path)
 
     # If no config is provided, use default
     if config is None:
@@ -800,7 +802,7 @@ def construct_graph(
         )
         if df is None:
             raw_df = read_pdb_to_dataframe(
-                pdb_path,
+                path,
                 pdb_code,
                 uniprot_id,
                 model_index=model_index,
@@ -832,7 +834,7 @@ def construct_graph(
             raw_pdb_df=raw_df,
             name=name,
             pdb_code=pdb_code,
-            pdb_path=pdb_path,
+            path=path,
             granularity=config.granularity,
         )
         # Add nodes to graph
@@ -878,8 +880,8 @@ def _mp_graph_constructor(
 
     :param args: Tuple of pdb code/path and the chain selection for that PDB.
     :type args: Tuple[str, str]
-    :param use_pdb_code: Whether we are using ``"pdb_code"``s, ``pdb_path``s or
-        ``"uniprot_id"``s.
+    :param use_pdb_code: Whether we are using ``"pdb_code"``s, ``path``s
+        (to PDB or MMTF files) or ``"uniprot_id"``s.
     :type use_pdb_code: bool
     :param config: Protein structure graph construction config
         (see: :class:`graphein.protein.config.ProteinGraphConfig`).
@@ -897,9 +899,9 @@ def _mp_graph_constructor(
             return func(
                 pdb_code=args[0], chain_selection=args[1], model_index=args[2]
             )
-        elif source == "pdb_path":
+        elif source == "path":
             return func(
-                pdb_path=args[0], chain_selection=args[1], model_index=args[2]
+                path=args[0], chain_selection=args[1], model_index=args[2]
             )
         elif source == "uniprot_id":
             return func(
@@ -919,7 +921,7 @@ def _mp_graph_constructor(
 
 def construct_graphs_mp(
     pdb_code_it: Optional[List[str]] = None,
-    pdb_path_it: Optional[List[str]] = None,
+    path_it: Optional[List[str]] = None,
     uniprot_id_it: Optional[List[str]] = None,
     chain_selections: Optional[List[str]] = None,
     model_indices: Optional[List[str]] = None,
@@ -934,9 +936,9 @@ def construct_graphs_mp(
 
     :param pdb_code_it: List of pdb codes to use for protein graph construction
     :type pdb_code_it: Optional[List[str]], defaults to ``None``
-    :param pdb_path_it: List of paths to PDB files to use for protein graph
+    :param path_it: List of paths to PDB or MMTF files to use for protein graph
         construction.
-    :type pdb_path_it: Optional[List[str]], defaults to ``None``
+    :type path_it: Optional[List[str]], defaults to ``None``
     :param chain_selections: List of chains to select from the protein
         structures (e.g. ``["ABC", "A", "L", "CD"...]``).
     :type chain_selections: Optional[List[str]], defaults to ``None``
@@ -961,16 +963,16 @@ def construct_graphs_mp(
     :rtype: Union[List[nx.Graph], Dict[str, nx.Graph]]
     """
     assert (
-        pdb_code_it is not None or pdb_path_it is not None
+        pdb_code_it is not None or path_it is not None
     ), "Iterable of pdb codes, pdb paths or uniprot IDs required."
 
     if pdb_code_it is not None:
         pdbs = pdb_code_it
         source = "pdb_code"
 
-    if pdb_path_it is not None:
-        pdbs = pdb_path_it
-        source = "pdb_path"
+    if path_it is not None:
+        pdbs = path_it
+        source = "path"
 
     if uniprot_id_it is not None:
         pdbs = uniprot_id_it

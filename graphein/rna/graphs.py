@@ -7,7 +7,8 @@
 # Code Repository: https://github.com/a-r-j/graphein
 # This submodule is heavily inspired by: https://github.com/emalgorithm/rna-design/blob/aec77a18abe4850958d6736ec185a6f8cbfdf20c/src/util.py#L9
 
-from typing import Callable, List, Optional
+import os
+from typing import Callable, List, Optional, Union
 
 import networkx as nx
 from loguru import logger as log
@@ -94,7 +95,7 @@ def validate_dotbracket(db: str):
 def construct_rna_graph_3d(
     config: Optional[RNAGraphConfig] = None,
     name: Optional[str] = None,
-    pdb_path: Optional[str] = None,
+    path: Optional[Union[str, os.PathLike]] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
     model_index: int = 1,
@@ -105,7 +106,7 @@ def construct_rna_graph_3d(
     graph_annotation_funcs: Optional[List[Callable]] = None,
 ) -> nx.Graph:
     """
-    Constructs RNA structure graph from a ``pdb_code`` or ``pdb_path``.
+    Constructs RNA structure graph from a ``pdb_code`` or ``path``.
 
     Users can provide a :class:`~graphein.rna.config.RNAGraphConfig`
     object to specify construction parameters.
@@ -116,9 +117,9 @@ def construct_rna_graph_3d(
     :param config: :class:`~graphein.rna.config.RNAGraphConfig` object. If
         ``None``, defaults to config in ``graphein.rna.config``.
     :type config: graphein.protein.config.RNAGraphConfig, optional
-    :param pdb_path: Path to ``pdb_file`` to build graph from. Default is
+    :param path: Path to PDB or MMTF to build graph from. Default is
         ``None``.
-    :type pdb_path: str, optional
+    :type path: str, optional
     :param pdb_code: 4-character PDB accession pdb_code to build graph from.
         Default is ``None``.
     :type pdb_code: str, optional
@@ -152,8 +153,8 @@ def construct_rna_graph_3d(
         config = RNAGraphConfig()
 
     # Get name from pdb_file is no pdb_code is provided
-    if pdb_path and (pdb_code is None):
-        pdb_code = gp.get_protein_name_from_filename(pdb_path)
+    if path and (pdb_code is None):
+        pdb_code = gp.get_protein_name_from_filename(path)
 
     # If config params are provided, overwrite them
     config.rna_df_processing_functions = (
@@ -183,7 +184,7 @@ def construct_rna_graph_3d(
     )
 
     raw_df = gp.read_pdb_to_dataframe(
-        pdb_path,
+        path,
         pdb_code,
         model_index=model_index,
     )
@@ -203,7 +204,7 @@ def construct_rna_graph_3d(
         raw_pdb_df=raw_df,
         name=name,
         pdb_code=pdb_code,
-        pdb_path=pdb_path,
+        path=path,
         granularity=config.granularity,
     )
     # Add nodes to graph
@@ -343,7 +344,7 @@ def construct_graph(
     use_nussinov: bool = False,
     name: Optional[str] = None,
     config: Optional[RNAGraphConfig] = None,
-    pdb_path: Optional[str] = None,
+    path: Optional[str] = None,
     pdb_code: Optional[str] = None,
     chain_selection: str = "all",
     rna_df_processing_funcs: Optional[List[Callable]] = None,
@@ -354,11 +355,11 @@ def construct_graph(
 ) -> nx.Graph:
     # TODO Docstring
 
-    if pdb_path is not None or pdb_code is not None:
+    if path is not None or pdb_code is not None:
         return construct_rna_graph_3d(
             config=config,
             name=name,
-            pdb_path=pdb_path,
+            path=path,
             pdb_code=pdb_code,
             chain_selection=chain_selection,
             rna_df_processing_funcs=rna_df_processing_funcs,

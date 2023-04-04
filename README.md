@@ -89,7 +89,7 @@ from graphein.protein.utils import download_alphafold_structure
 
 config = ProteinGraphConfig()
 fp = download_alphafold_structure("Q5VSL9", aligned_score=False)
-g = construct_graph(config=config, pdb_path=fp)
+g = construct_graph(config=config, path=fp)
 ```
 
 ### Creating a Protein Mesh

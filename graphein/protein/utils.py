@@ -224,16 +224,16 @@ def download_pdb(
     return out_dir / f"{pdb_code}{extension}"
 
 
-def get_protein_name_from_filename(pdb_path: str) -> str:
+def get_protein_name_from_filename(path: str) -> str:
     """
-    Extracts a filename from a ``pdb_path``
+    Extracts a filename from a ``path``
 
-    :param pdb_path: Path to extract filename from.
-    :type pdb_path: str
+    :param path: Path to extract filename from.
+    :type path: str
     :return: file name.
     :rtype: str
     """
-    _, tail = os.path.split(pdb_path)
+    _, tail = os.path.split(path)
     tail = os.path.splitext(tail)[0]
     return tail
 
