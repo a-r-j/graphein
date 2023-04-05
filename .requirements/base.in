@@ -1,3 +1,4 @@
+pandas>=2.0.0
 biopandas>=0.4.1
 biopython
 bioservices>=1.10.0
