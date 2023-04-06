@@ -7,6 +7,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import os
 import traceback
 from contextlib import nullcontext
 from functools import partial
