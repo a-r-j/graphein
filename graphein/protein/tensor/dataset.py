@@ -48,7 +48,7 @@ class ProteinDataset(Dataset):
         pdb_dir: str,
         out_dir: str,
         overwrite: bool = False,
-        pdb_paths: Optional[List[str]] = None,
+        paths: Optional[List[str]] = None,
         pdb_codes: Optional[List[str]] = None,
         uniprot_ids: Optional[List[str]] = None,
         sequences: Optional[Union[List[str], str]] = None,
@@ -81,9 +81,9 @@ class ProteinDataset(Dataset):
         :param overwrite: Whether to overwrite existing files. Defaults to
             ``False``.
         :type overwrite: bool, optional
-        :param pdb_paths: List of full path of pdb files to load. Defaults to
+        :param paths: List of full path of PDB or MMTF files to load. Defaults to
             ``None``.
-        :type pdb_paths: Optional[List[str]], optional
+        :type paths: Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
             Defaults to ``None``.
         :type pdb_codes: Optional[List[str]], optional
@@ -153,8 +153,8 @@ class ProteinDataset(Dataset):
             self.sequences = sequences
             self.fold_sequences()
 
-        self.pdb_paths = pdb_paths
-        if self.pdb_paths is None:
+        self.paths = paths
+        if self.paths is None:
             if self.pdb_codes and self.uniprot_ids:
                 self.structures = self.pdb_codes + self.uniprot_ids
             elif self.pdb_codes:
@@ -164,12 +164,12 @@ class ProteinDataset(Dataset):
         # Use local saved pdb_files instead of download or move them to
         # self.root/raw dir
         else:
-            if isinstance(self.pdb_paths, list):
+            if isinstance(self.paths, list):
                 self.structures = [
-                    os.path.splitext(os.path.split(pdb_path)[-1])[0]
-                    for pdb_path in self.pdb_paths
+                    os.path.splitext(os.path.split(path)[-1])[0]
+                    for path in self.paths
                 ]
-                self.pdb_path, _ = os.path.split(self.pdb_paths[0])
+                self.path, _ = os.path.split(self.paths[0])
 
         # Labels & chains
         self.chain_selections = chain_selections
@@ -410,7 +410,7 @@ class ProteinDataset(Dataset):
             ]
             print(file_names)
             graphs = to_protein_mp(
-                pdb_paths=file_names,
+                paths=file_names,
                 # config=self.config,
                 # TODO args
                 chain_selections=chains,

@@ -58,7 +58,7 @@ def generate_graph():
     """Generate PDB network.
     This is a helper function.
     """
-    return construct_graph(pdb_path=str(DATA_PATH))
+    return construct_graph(path=str(DATA_PATH))
 
 
 @pytest.fixture(scope="module")
@@ -89,7 +89,7 @@ def test_construct_graph():
     Uses 4hhb PDB file as an example test case.
     """
     file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
     assert isinstance(G, nx.Graph)
     assert len(G) == 574
 
@@ -133,17 +133,17 @@ def test_construct_graph_with_dssp():
     )  # should download 6rew.pdb to pdb_dir
 
     assert g_pdb.graph["pdb_code"] == "6rew"
-    assert g_pdb.graph["pdb_path"] is None
+    assert g_pdb.graph["path"] is None
     assert g_pdb.graph["name"] == g_pdb.graph["pdb_code"]
     assert len(g_pdb.graph["dssp_df"]) == 1365
 
     file_path = str(
         Path(__file__).parent / "test_data" / "alphafold_structure.pdb"
     )
-    g_local = construct_graph(config=dssp_prot_config, pdb_path=file_path)
+    g_local = construct_graph(config=dssp_prot_config, path=file_path)
 
     assert g_local.graph["pdb_code"] is None
-    assert g_local.graph["pdb_path"] == file_path
+    assert g_local.graph["path"] == file_path
     assert g_local.graph["name"] == "alphafold_structure"
     assert len(g_local.graph["dssp_df"]) == 382
 
@@ -185,7 +185,7 @@ def test_chain_selection():
     Uses 4hhb PDB file as an example test case.
     """
     file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     # Check default construction contains all chains
     assert G.graph["chain_ids"] == ["A", "B", "C", "D"]
@@ -194,7 +194,7 @@ def test_chain_selection():
         assert d["chain_id"] in ["A", "B", "C", "D"]
 
     # Check graph contains only chain selection
-    G = construct_graph(pdb_path=str(file_path), chain_selection="AD")
+    G = construct_graph(path=str(file_path), chain_selection="AD")
     assert G.graph["chain_ids"] == ["A", "D"]
     # Check nodes only contain residues from chain selection
     for n, d in G.nodes(data=True):
@@ -225,7 +225,7 @@ def test_intramolecular_edges():
         ]
     }
     config = ProteinGraphConfig(**edge_functions)
-    G = construct_graph(pdb_path=str(file_path), config=config)
+    G = construct_graph(path=str(file_path), config=config)
     # Todo complete
 """
 
@@ -258,7 +258,7 @@ def test_distance_edges():
         ]
     }
     config = ProteinGraphConfig(**edge_functions)
-    G = construct_graph(pdb_path=str(file_path), config=config)
+    G = construct_graph(path=str(file_path), config=config)
     assert G is not None
 
 
@@ -288,7 +288,7 @@ def test_node_features():
         "dssp_config": DSSPConfig(),
     }
     config = ProteinGraphConfig(**config_params)
-    G = construct_graph(pdb_path=str(file_path), config=config)
+    G = construct_graph(path=str(file_path), config=config)
 
     # Check for existence of features
     for _, d in G.nodes(data=True):
@@ -318,7 +318,7 @@ def test_sequence_features():
         ]
     }
     config = ProteinGraphConfig(**sequence_feature_functions)
-    G = construct_graph(pdb_path=str(file_path), config=config)
+    G = construct_graph(path=str(file_path), config=config)
 
     # Check for existence on sequence-based features as node-level features
     # for n, d in G.nodes(data=True):
@@ -494,7 +494,7 @@ def test_secondary_structure_graphs():
         graph_metadata_functions=[secondary_structure],
         dssp_config=DSSPConfig(),
     )
-    g = construct_graph(pdb_path=str(file_path), config=config)
+    g = construct_graph(path=str(file_path), config=config)
 
     h = compute_secondary_structure_graph(g, remove_non_ss=False)
     # Check number of residues preserved
@@ -532,7 +532,7 @@ def test_chain_graph():
         graph_metadata_functions=[secondary_structure],
         dssp_config=DSSPConfig(),
     )
-    g = construct_graph(pdb_path=str(file_path), config=config)
+    g = construct_graph(path=str(file_path), config=config)
     h = compute_chain_graph(g)
     assert len(h.edges) == len(g.edges), "Number of edges do not match"
 
