@@ -21,7 +21,7 @@ from graphein.utils.config_parser import parse_config
 )
 @click.option(
     "-p",
-    "--pdb_path",
+    "--path",
     help="Path to input pdbs",
     type=click.Path(
         exists=True, file_okay=True, dir_okay=True, path_type=pathlib.Path
@@ -35,20 +35,20 @@ from graphein.utils.config_parser import parse_config
         exists=True, file_okay=False, dir_okay=True, path_type=pathlib.Path
     ),
 )
-def main(config_path, pdb_path, output_path):
+def main(config_path, path, output_path):
     """Build the graphs and save them in output dir."""
     config = parse_config(path=config_path) if config_path else None
-    if pdb_path.is_file():
-        pdb_paths = [pdb_path]
-    elif pdb_path.is_dir():
-        pdb_paths = list(pdb_path.glob("*.pdb"))
+    if path.is_file():
+        paths = [path]
+    elif path.is_dir():
+        paths = list(path.glob("*.pdb"))
     else:
         raise NotImplementedError(
             "Given PDB path needs to point to either a pdb file or a directory with pdb files."
         )
 
-    for path in pdb_paths:
-        g = construct_graph(config=config, pdb_path=str(path))
+    for path in paths:
+        g = construct_graph(config=config, path=str(path))
 
         with open(str(output_path / f"{path.stem}.gpickle"), "wb") as f:
             pickle.dump(g, f)

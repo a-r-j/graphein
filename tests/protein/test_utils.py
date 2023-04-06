@@ -32,7 +32,7 @@ def test_save_graph_to_pdb():
         a.drop(["line_idx"], axis=1),
         g.graph["pdb_df"].drop(["line_idx", "node_id", "residue_id"], axis=1),
     )
-    h = construct_graph(pdb_path="/tmp/test_graph.pdb")
+    h = construct_graph(path="/tmp/test_graph.pdb")
 
     # We check for isomorphism rather than equality as array features are not
     # comparable
@@ -55,7 +55,7 @@ def test_save_pdb_df_to_pdb():
 
     # Now check for raw, unprocessed DF
     save_pdb_df_to_pdb(g.graph["raw_pdb_df"], "/tmp/test_pdb.pdb")
-    h = construct_graph(pdb_path="/tmp/test_pdb.pdb")
+    h = construct_graph(path="/tmp/test_pdb.pdb")
 
     # We check for isomorphism rather than equality as array features are not
     # comparable

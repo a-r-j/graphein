@@ -80,7 +80,7 @@ def test_pdb_rna_graph():
 
     assert "name" in g.graph.keys()
     assert "pdb_code" in g.graph.keys()
-    assert "pdb_path" in g.graph.keys()
+    assert "path" in g.graph.keys()
     assert "chain_ids" in g.graph.keys()
     assert "pdb_df" in g.graph.keys()
     assert "raw_pdb_df" in g.graph.keys()
@@ -92,7 +92,7 @@ def test_construct_graph():
     Uses 4hhb PDB file as an example test case.
     """
     file_path = Path(__file__).parent / "test_data/2jyf.pdb"
-    g = construct_graph(pdb_path=str(file_path))
+    g = construct_graph(path=str(file_path))
 
     for n, d in g.nodes(data=True):
         assert isinstance(n, str)
@@ -109,7 +109,7 @@ def test_construct_graph():
 
     assert "name" in g.graph.keys()
     assert "pdb_code" in g.graph.keys()
-    assert "pdb_path" in g.graph.keys()
+    assert "path" in g.graph.keys()
     assert "chain_ids" in g.graph.keys()
     assert "pdb_df" in g.graph.keys()
     assert "raw_pdb_df" in g.graph.keys()
