@@ -1,4 +1,4 @@
-### 1.6.1 - UNRELEASED
+### 1.7.0 - UNRELEASED
 
 #### New Features
 
