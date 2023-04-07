@@ -1,9 +1,4 @@
-### 1.6.1 - UNRELEASED
-
-* `Protein` tensors have coordinates renamed from `Protein.x` to `Protein.coords`. [#272](https://github.com/a-r-j/graphein/pull/272)
-* Tensor types are now defined using [`jaxtyping`](https://github.com/google/jaxtyping), removing the `torchtyping` dependency [#272](https://github.com/a-r-j/graphein/pull/272)
-* Drops explicit Python 3.7 support. Colab now runs on 3.8+. [#272](https://github.com/a-r-j/graphein/pull/272)
-* Dockerfile now builds from `pytorch/pytorch:1.13.0-cuda11.6-cudnn8-runtime` (replaces `pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime`) [#272](https://github.com/a-r-j/graphein/pull/272)
+### 1.7.0 - UNRELEASED
 
 #### New Features
 
@@ -11,6 +6,18 @@
 * [FoldComp Dataset] - [#284](https://github.com/a-r-j/graphein/pull/284) - Create ML datasets from FoldComp databases.
 * [ESM] - [#284](https://github.com/a-r-j/graphein/pull/284) - Wrapper for ESMFold batch folding & embedding.
 * [Downloads] MMTF downloading now supported in download utilities. [#272](https://github.com/a-r-j/graphein/pull/272)
+
+#### API Changes
+* The `pdb_path` argument to many functions (e.g. `graphein.protein.graphs.construct_graph`) has been renamed to `path` as this can now accept MMTF files in addition to PDB files.
+* `Protein` tensors have coordinates renamed from `Protein.x` to `Protein.coords`. [#272](https://github.com/a-r-j/graphein/pull/272)
+
+#### Other changes
+* Tensor types are now defined using [`jaxtyping`](https://github.com/google/jaxtyping), removing the `torchtyping` dependency [#272](https://github.com/a-r-j/graphein/pull/272)
+* Drops explicit Python 3.7 support. Colab now runs on 3.8+. [#272](https://github.com/a-r-j/graphein/pull/272)
+* Dockerfile now builds from `pytorch/pytorch:1.13.0-cuda11.6-cudnn8-runtime` (replaces `pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime`) [#272](https://github.com/a-r-j/graphein/pull/272)
+* Missing `os` import fixed in [#297(https://github.com/a-r-j/graphein/pull/297). Fixes [#296](https://github.com/a-r-j/graphein/issues/296)
+
+
 
 ### 1.6.0 - 18/03/2023
 
