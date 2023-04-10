@@ -313,6 +313,9 @@ class GraphFormatConvertor:
         kind_strs = np.array(
             list(map(lambda x: "_".join(x), data.get("kind", [])))
         )
+        print(80*'=')
+        print(set(kind_strs))
+        print(80*'=')
         for kind in set(kind_strs):
             key = f"edge_index_{kind}"
             if key in self.columns:
@@ -348,11 +351,12 @@ class GraphFormatConvertor:
             # Edge indices of different kinds
             for kind in set(kind_strs):
                 key = f"edge_index_{kind}"
-                edge_index_kind = to_undirected(
-                    getattr(data, key),
-                    num_nodes=data.num_nodes
-                )
-                setattr(data, key, edge_index_kind)
+                if key in self.columns:
+                    edge_index_kind = to_undirected(
+                        getattr(data, key),
+                        num_nodes=data.num_nodes
+                    )
+                    setattr(data, key, edge_index_kind)
 
         return data
 
