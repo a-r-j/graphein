@@ -353,8 +353,7 @@ class GraphFormatConvertor:
                 key = f"edge_index_{kind}"
                 if key in self.columns:
                     edge_index_kind = to_undirected(
-                        getattr(data, key),
-                        num_nodes=data.num_nodes
+                        getattr(data, key), num_nodes=data.num_nodes
                     )
                     setattr(data, key, edge_index_kind)
 
