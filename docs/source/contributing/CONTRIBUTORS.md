@@ -27,3 +27,5 @@ Rico Meinl: [@ricomnl](https://github.com/ricomnl)
 Alex Morehead [@amorehead](https://github.com/amorehead)
 
 Aviv Korman [@avivko](https://github.com/avivko)
+
+Anton Bushuiev [@anton-bushuiev](https://github.com/anton-bushuiev)
