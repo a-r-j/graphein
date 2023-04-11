@@ -339,11 +339,12 @@ class GraphFormatConvertor:
         if not G.is_directed():
             # Edge index and edge features
             edge_index, edge_features = to_undirected(
-                data.edge_index,
+                edge_index,
                 [getattr(data, attr) for attr in edge_feature_names],
                 data.num_nodes,
             )
-            data.edge_index = edge_index
+            if "edge_index" in self.columns:
+                data.edge_index = edge_index
             for attr, val in zip(edge_feature_names, edge_features):
                 setattr(data, attr, val)
 
