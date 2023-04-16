@@ -8,6 +8,7 @@ import networkx as nx
 import plotly.graph_objects as go
 
 from graphein.utils.dependencies import import_message
+from graphein.protein.visualisation import add_vector_to_plot
 
 from ..protein.visualisation import plotly_protein_structure_graph
 from .conversion import GraphFormatConvertor
@@ -115,13 +116,17 @@ def plot_pyg_data(
         d["coords"] = x.coords[i]
         if node_colour_tensor is not None:
             d["colour"] = float(node_colour_tensor[i])
+        if hasattr(x, "c_beta_vector"):
+            d["c_beta_vector"] = x.c_beta_vector[i]
+        if hasattr(x, "virtual_c_beta_vector"):
+            d["virtual_c_beta_vector"] = x.virtual_c_beta_vector[i]
 
     if edge_colour_tensor is not None:
         # TODO add edge types
         for i, (_, _, d) in enumerate(nx_graph.edges(data=True)):
             d["colour"] = float(edge_colour_tensor[i])
 
-    return plotly_protein_structure_graph(
+    fig = plotly_protein_structure_graph(
         nx_graph,
         plot_title,
         figsize,
@@ -135,3 +140,8 @@ def plot_pyg_data(
         colour_nodes_by if node_colour_tensor is None else "colour",
         colour_edges_by if edge_colour_tensor is None else "colour",
     )
+    if hasattr(x, "c_beta_vector"):
+        fig = add_vector_to_plot(nx_graph, fig, "c_beta_vector", colour="green", scale=1.5)
+    if hasattr(x, "virtual_c_beta_vector"):
+        fig = add_vector_to_plot(nx_graph, fig, "virtual_c_beta_vector", colour="red", scale=1.5)
+    return fig
