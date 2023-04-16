@@ -526,7 +526,6 @@ class PDBManager:
             ids = f.read().splitlines()
         log.info(f"Found {len(ids)} PDB files unavailable for download.")
         ids = {id: False for id in ids}
-        print(ids)
         return ids
 
     def parse(self) -> pd.DataFrame:
