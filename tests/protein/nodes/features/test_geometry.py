@@ -15,7 +15,7 @@ from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.features.nodes.geometry import (
     add_beta_carbon_vector,
     add_sidechain_vector,
-    add_virtual_beta_carbon_vector
+    add_virtual_beta_carbon_vector,
 )
 from graphein.protein.graphs import construct_graph
 
@@ -160,8 +160,9 @@ def test_add_virtual_beta_carbon_vector():
         # check glycines are not zero
         if d["residue_name"] == "GLY":
             np.testing.assert_array_compare(
-                operator.__ne__, 
-                d["virtual_c_beta_vector"], np.array([0.0, 0.0, 0.0])
+                operator.__ne__,
+                d["virtual_c_beta_vector"],
+                np.array([0.0, 0.0, 0.0]),
             )
         else:
             # Check scaled vector has norm close 1
@@ -181,8 +182,9 @@ def test_add_virtual_beta_carbon_vector():
         # check glycines are not zero
         if d["residue_name"] == "GLY":
             np.testing.assert_array_compare(
-                operator.__ne__, 
-                d["virtual_c_beta_vector"], np.array([0.0, 0.0, 0.0])
+                operator.__ne__,
+                d["virtual_c_beta_vector"],
+                np.array([0.0, 0.0, 0.0]),
             )
 
     # Test altloc handling
