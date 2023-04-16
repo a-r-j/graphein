@@ -42,6 +42,9 @@ def add_sidechain_vector(
         if d["residue_name"] == "GLY":
             # If GLY, set vector to 0
             vec = np.array([0, 0, 0])
+        elif n not in sc_centroid.index:
+            vec = np.array([0, 0, 0])
+            log.warning(f"Non-glycine residue {n} does not have side-chain atoms.")
         else:
             if reverse:
                 vec = d["coords"] - np.array(
