@@ -44,7 +44,9 @@ def add_sidechain_vector(
             vec = np.array([0, 0, 0])
         elif n not in sc_centroid.index:
             vec = np.array([0, 0, 0])
-            log.warning(f"Non-glycine residue {n} does not have side-chain atoms.")
+            log.warning(
+                f"Non-glycine residue {n} does not have side-chain atoms."
+            )
         else:
             if reverse:
                 vec = d["coords"] - np.array(
@@ -99,7 +101,9 @@ def add_beta_carbon_vector(
             vec = np.array([0, 0, 0])
         elif n not in c_beta_coords.index:
             vec = np.array([0, 0, 0])
-            log.warning(f"Non-glycine residue {n} does not have a beta-carbon.")
+            log.warning(
+                f"Non-glycine residue {n} does not have a beta-carbon."
+            )
         else:
             if reverse:
                 vec = d["coords"] - np.array(
