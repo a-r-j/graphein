@@ -94,6 +94,9 @@ def add_beta_carbon_vector(
     for n, d in g.nodes(data=True):
         if d["residue_name"] == "GLY":
             vec = np.array([0, 0, 0])
+        elif n not in c_beta_coords.index:
+            vec = np.array([0, 0, 0])
+            log.warning(f"Non-glycine residue {n} does not have a beta-carbon.")
         else:
             if reverse:
                 vec = d["coords"] - np.array(
