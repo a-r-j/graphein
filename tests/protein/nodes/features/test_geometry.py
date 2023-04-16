@@ -7,6 +7,8 @@
 
 from functools import partial
 
+import pytest
+from loguru import logger
 import numpy as np
 
 from graphein.protein.config import ProteinGraphConfig
@@ -17,7 +19,7 @@ from graphein.protein.features.nodes.geometry import (
 from graphein.protein.graphs import construct_graph
 
 
-def test_add_beta_carbon_vector():
+def test_add_beta_carbon_vector(caplog):
     config = ProteinGraphConfig(
         edge_construction_functions=[
             partial(add_beta_carbon_vector, scale=True)
@@ -75,6 +77,16 @@ def test_add_beta_carbon_vector():
     g = construct_graph(config=config, pdb_code="7w9w")
     for n, d in g.nodes(data=True):
         assert d["c_beta_vector"].shape == (3,)
+
+    # Test handling of missing beta-carbons
+    g = construct_graph(config=config, pdb_code="3se8")
+    assert "H:CYS:104" in caplog.text  # Test warning is raised
+    for n, d in g.nodes(data=True):
+        assert d["c_beta_vector"].shape == (3,)
+        if n == 'H:CYS:104':
+            np.testing.assert_equal(
+                d["c_beta_vector"], np.array([0.0, 0.0, 0.0])
+            )
 
 
 def test_add_sidechain_vector():
