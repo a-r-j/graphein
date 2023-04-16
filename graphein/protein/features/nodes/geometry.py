@@ -188,3 +188,47 @@ def add_sequence_neighbour_vector(
                     vec = vec / np.linalg.norm(vec)
 
             residue[1][f"sequence_neighbour_vector_{suffix}"] = vec
+
+
+def add_virtual_beta_carbon_vector(
+    g: nx.Graph, scale: bool = False, reverse: bool = False
+):
+    """For each node adds a vector from alpha carbon to virtual beta carbon.
+    :param g: Graph to add vector to.
+    :type g: nx.Graph
+    :param scale: Scale vector to unit vector. Defaults to ``False``.
+    :type scale: bool
+    :param reverse: Reverse vector. Defaults to ``False``.
+    :type reverse: bool
+    """
+    # Get coords of backbone atoms
+    coord_dfs = {}
+    for atom_type in ["N", "CA", "C"]:
+        df = filter_dataframe(
+            g.graph["raw_pdb_df"], "atom_name", [atom_type], boolean=True
+        )
+        df.index = df["node_id"]
+        coord_dfs[atom_type] = df
+
+    # Iterate over nodes and compute vector
+    for n, d in g.nodes(data=True):
+        if any([n not in df.index for df in coord_dfs.values()]):
+            vec = np.array([0, 0, 0], dtype=float)
+            log.warning(
+                f"Missing backbone atom in residue {n}."
+            )
+        else:
+            N = np.array(coord_dfs["N"].loc[n][["x_coord", "y_coord", "z_coord"]], dtype=float)
+            Ca = np.array(coord_dfs["CA"].loc[n][["x_coord", "y_coord", "z_coord"]], dtype=float)
+            C = np.array(coord_dfs["C"].loc[n][["x_coord", "y_coord", "z_coord"]], dtype=float)
+            b = Ca - N
+            c = C - Ca
+            a = np.cross(b, c)
+            Cb = -0.58273431*a + 0.56802827*b - 0.54067466*c + Ca
+            vec = Cb - Ca
+
+            if reverse:
+                vec = -vec
+            if scale:
+                vec = vec / np.linalg.norm(vec)
+        d["virtual_c_beta_vector"] = vec
