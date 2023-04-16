@@ -41,21 +41,23 @@ def add_sidechain_vector(
     for n, d in g.nodes(data=True):
         if d["residue_name"] == "GLY":
             # If GLY, set vector to 0
-            vec = np.array([0, 0, 0])
+            vec = np.array([0., 0., 0.])
         elif n not in sc_centroid.index:
-            vec = np.array([0, 0, 0])
+            vec = np.array([0., 0., 0.])
             log.warning(
                 f"Non-glycine residue {n} does not have side-chain atoms."
             )
         else:
             if reverse:
                 vec = d["coords"] - np.array(
-                    sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]]
+                    sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]],
+                    dtype=float
                 )
             else:
                 vec = (
                     np.array(
-                        sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]]
+                        sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]],
+                        dtype=float
                     )
                     - d["coords"]
                 )
@@ -73,7 +75,7 @@ def add_beta_carbon_vector(
     carbon.
 
     Glycine does not have a beta carbon, so we set it to
-    ``np.array([0, 0, 0])``. We extract the position of the beta carbon from the
+    ``np.array([0., 0., 0.])``. We extract the position of the beta carbon from the
     unprocessed atomic PDB dataframe. For this we use the ``raw_pdb_df``
     DataFrame. If ``scale``, we scale the vector to the unit vector. If
     ``reverse`` is ``True``, we reverse the vector (``C beta - node``).
@@ -98,21 +100,23 @@ def add_beta_carbon_vector(
     # Iterate over nodes and compute vector
     for n, d in g.nodes(data=True):
         if d["residue_name"] == "GLY":
-            vec = np.array([0, 0, 0])
+            vec = np.array([0., 0., 0.])
         elif n not in c_beta_coords.index:
-            vec = np.array([0, 0, 0])
+            vec = np.array([0., 0., 0.])
             log.warning(
                 f"Non-glycine residue {n} does not have a beta-carbon."
             )
         else:
             if reverse:
                 vec = d["coords"] - np.array(
-                    c_beta_coords.loc[n][["x_coord", "y_coord", "z_coord"]]
+                    c_beta_coords.loc[n][["x_coord", "y_coord", "z_coord"]],
+                    dtype=float
                 )
             else:
                 vec = (
                     np.array(
-                        c_beta_coords.loc[n][["x_coord", "y_coord", "z_coord"]]
+                        c_beta_coords.loc[n][["x_coord", "y_coord", "z_coord"]],
+                        dtype=float
                     )
                     - d["coords"]
                 )
@@ -158,7 +162,7 @@ def add_sequence_neighbour_vector(
             # Checks not at chain terminus - is this versatile enough?
             if i == len(chain_residues) - 1:
                 residue[1][f"sequence_neighbour_vector_{suffix}"] = np.array(
-                    [0, 0, 0]
+                    [0., 0., 0.]
                 )
                 continue
             # Asserts residues are on the same chain
