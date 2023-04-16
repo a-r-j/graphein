@@ -138,8 +138,3 @@ def test_add_sidechain_vector():
             np.testing.assert_almost_equal(
                 sc_true, d["coords"] + d["sidechain_vector"]
             )
-
-
-if __name__ == "__main__":
-    test_add_beta_carbon_vector()
-    test_add_sidechain_vector()
