@@ -41,9 +41,9 @@ def add_sidechain_vector(
     for n, d in g.nodes(data=True):
         if d["residue_name"] == "GLY":
             # If GLY, set vector to 0
-            vec = np.array([0., 0., 0.])
+            vec = np.array([0.0, 0.0, 0.0])
         elif n not in sc_centroid.index:
-            vec = np.array([0., 0., 0.])
+            vec = np.array([0.0, 0.0, 0.0])
             log.warning(
                 f"Non-glycine residue {n} does not have side-chain atoms."
             )
@@ -51,13 +51,13 @@ def add_sidechain_vector(
             if reverse:
                 vec = d["coords"] - np.array(
                     sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]],
-                    dtype=float
+                    dtype=float,
                 )
             else:
                 vec = (
                     np.array(
                         sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]],
-                        dtype=float
+                        dtype=float,
                     )
                     - d["coords"]
                 )
@@ -100,9 +100,9 @@ def add_beta_carbon_vector(
     # Iterate over nodes and compute vector
     for n, d in g.nodes(data=True):
         if d["residue_name"] == "GLY":
-            vec = np.array([0., 0., 0.])
+            vec = np.array([0.0, 0.0, 0.0])
         elif n not in c_beta_coords.index:
-            vec = np.array([0., 0., 0.])
+            vec = np.array([0.0, 0.0, 0.0])
             log.warning(
                 f"Non-glycine residue {n} does not have a beta-carbon."
             )
@@ -110,13 +110,15 @@ def add_beta_carbon_vector(
             if reverse:
                 vec = d["coords"] - np.array(
                     c_beta_coords.loc[n][["x_coord", "y_coord", "z_coord"]],
-                    dtype=float
+                    dtype=float,
                 )
             else:
                 vec = (
                     np.array(
-                        c_beta_coords.loc[n][["x_coord", "y_coord", "z_coord"]],
-                        dtype=float
+                        c_beta_coords.loc[n][
+                            ["x_coord", "y_coord", "z_coord"]
+                        ],
+                        dtype=float,
                     )
                     - d["coords"]
                 )
@@ -162,7 +164,7 @@ def add_sequence_neighbour_vector(
             # Checks not at chain terminus - is this versatile enough?
             if i == len(chain_residues) - 1:
                 residue[1][f"sequence_neighbour_vector_{suffix}"] = np.array(
-                    [0., 0., 0.]
+                    [0.0, 0.0, 0.0]
                 )
                 continue
             # Asserts residues are on the same chain
@@ -214,17 +216,24 @@ def add_virtual_beta_carbon_vector(
     for n, d in g.nodes(data=True):
         if any([n not in df.index for df in coord_dfs.values()]):
             vec = np.array([0, 0, 0], dtype=float)
-            log.warning(
-                f"Missing backbone atom in residue {n}."
-            )
+            log.warning(f"Missing backbone atom in residue {n}.")
         else:
-            N = np.array(coord_dfs["N"].loc[n][["x_coord", "y_coord", "z_coord"]], dtype=float)
-            Ca = np.array(coord_dfs["CA"].loc[n][["x_coord", "y_coord", "z_coord"]], dtype=float)
-            C = np.array(coord_dfs["C"].loc[n][["x_coord", "y_coord", "z_coord"]], dtype=float)
+            N = np.array(
+                coord_dfs["N"].loc[n][["x_coord", "y_coord", "z_coord"]],
+                dtype=float,
+            )
+            Ca = np.array(
+                coord_dfs["CA"].loc[n][["x_coord", "y_coord", "z_coord"]],
+                dtype=float,
+            )
+            C = np.array(
+                coord_dfs["C"].loc[n][["x_coord", "y_coord", "z_coord"]],
+                dtype=float,
+            )
             b = Ca - N
             c = C - Ca
             a = np.cross(b, c)
-            Cb = -0.58273431*a + 0.56802827*b - 0.54067466*c + Ca
+            Cb = -0.58273431 * a + 0.56802827 * b - 0.54067466 * c + Ca
             vec = Cb - Ca
 
             if reverse:
