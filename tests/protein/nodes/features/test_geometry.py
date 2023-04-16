@@ -7,8 +7,8 @@
 
 from functools import partial
 
-from loguru import logger
 import numpy as np
+from loguru import logger
 
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.features.nodes.geometry import (
@@ -82,7 +82,7 @@ def test_add_beta_carbon_vector(caplog):
     assert "H:CYS:104" in caplog.text  # Test warning is raised
     for n, d in g.nodes(data=True):
         assert d["c_beta_vector"].shape == (3,)
-        if n == 'H:CYS:104':
+        if n == "H:CYS:104":
             np.testing.assert_equal(
                 d["c_beta_vector"], np.array([0.0, 0.0, 0.0])
             )
