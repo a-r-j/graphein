@@ -17,7 +17,6 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import networkx as nx
 import numpy as np
 import pandas as pd
-from Bio.PDB.Polypeptide import three_to_one
 from biopandas.mmtf import PandasMmtf
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
@@ -25,11 +24,7 @@ from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
-from graphein.protein.config import (
-    DSSPConfig,
-    GetContactsConfig,
-    ProteinGraphConfig,
-)
+from graphein.protein.config import GetContactsConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (
     add_distance_to_edges,
     compute_distmat,
@@ -103,12 +98,12 @@ def read_pdb_to_dataframe(
     if path is not None:
         if isinstance(path, Path):
             path = os.fsdecode(path)
-        if path.endswith(".pdb"):
+        if path.endswith(".pdb") or path.endswith(".pdb.gz"):
             atomic_df = PandasPdb().read_pdb(path)
-        elif path.endswith(".mmtf"):
+        elif path.endswith(".mmtf") or path.endswith(".mmtf.gz"):
             atomic_df = PandasMmtf().read_mmtf(path)
         else:
-            raise ValueError("File must be either .pdb or .mmtf")
+            raise ValueError(f"File {path} must be either .pdb or .mmtf not")
     elif uniprot_id is not None:
         atomic_df = PandasPdb().fetch_pdb(
             uniprot_id=uniprot_id, source="alphafold2-v3"
@@ -293,12 +288,9 @@ def remove_insertions(
     )
     df = df[~duplicates]
 
-    # Catches explicit insertions
-    df = filter_dataframe(
+    return filter_dataframe(
         df, by_column="insertion", list_of_values=[""], boolean=True
     )
-
-    return df
 
 
 def filter_hetatms(
@@ -459,7 +451,8 @@ def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def select_chains(
-    protein_df: pd.DataFrame, chain_selection: str, verbose: bool = False
+    protein_df: pd.DataFrame,
+    chain_selection: Union[str, List[str]],
 ) -> pd.DataFrame:
     """
     Extracts relevant chains from ``protein_df``.
@@ -468,19 +461,22 @@ def select_chains(
         (``CA``, ``CB``).
     :type protein_df: pd.DataFrame
     :param chain_selection: Specifies chains that should be extracted from
-        the larger complexed structure.
-    :type chain_selection: str
-    :param verbose: Print dataframe?
-    :type verbose: bool
+        the larger complexed structure. If chain_selection is ``"all"``, all
+        chains will be selected. Otherwise, provide a list of strings.
+    :type chain_selection: Union[str, List[str]]
     :return: Protein structure dataframe containing only entries in the
         chain selection.
     :rtype: pd.DataFrame
     """
     if chain_selection != "all":
+        if isinstance(chain_selection, str):
+            raise ValueError(
+                "Only 'all' is a valid string for chain selection. Otherwise use a list of strings: e.g. ['A', 'B', 'C']"
+                )
         protein_df = filter_dataframe(
             protein_df,
             by_column="chain_id",
-            list_of_values=list(chain_selection),
+            list_of_values=chain_selection,
             boolean=True,
         )
 
@@ -590,7 +586,7 @@ def add_nodes_to_graph(
     # If no protein dataframe is supplied, use the one stored in the Graph
     # object
     if protein_df is None:
-        protein_df = G.graph["pdb_df"]
+        protein_df: pd.DataFrame = G.graph["pdb_df"]
     # Assign intrinsic node attributes
     chain_id = protein_df["chain_id"].apply(str)
     residue_name = protein_df["residue_name"]
@@ -690,7 +686,7 @@ def construct_graph(
     uniprot_id: Optional[str] = None,
     pdb_code: Optional[str] = None,
     df: Optional[pd.DataFrame] = None,
-    chain_selection: str = "all",
+    chain_selection: Union[str, List[str]] = "all",
     model_index: int = 1,
     df_processing_funcs: Optional[List[Callable]] = None,
     edge_construction_funcs: Optional[List[Callable]] = None,
@@ -727,8 +723,8 @@ def construct_graph(
     :param df: Pandas dataframe containing ATOM data to build graph from.
         Default is ``None``.
     :type df: pd.DataFrame, optional
-    :param chain_selection: String of polypeptide chains to include in graph.
-        E.g ``"ABDF"`` or ``"all"``. Default is ``"all"``.
+    :param chain_selection: List of strings denoting polypeptide chains to 
+        include in graph. E.g ``["A", "B", "D", "F"]`` or ``"all"``. Default is ``"all"``.
     :type chain_selection: str
     :param model_index: Index of model to use in the case of structural
         ensembles. Default is ``1``.
@@ -923,7 +919,7 @@ def construct_graphs_mp(
     pdb_code_it: Optional[List[str]] = None,
     path_it: Optional[List[str]] = None,
     uniprot_id_it: Optional[List[str]] = None,
-    chain_selections: Optional[List[str]] = None,
+    chain_selections: Optional[Union[List[List[str]], List[str]]] = None,
     model_indices: Optional[List[str]] = None,
     config: ProteinGraphConfig = ProteinGraphConfig(),
     num_cores: int = 16,
@@ -940,7 +936,7 @@ def construct_graphs_mp(
         construction.
     :type path_it: Optional[List[str]], defaults to ``None``
     :param chain_selections: List of chains to select from the protein
-        structures (e.g. ``["ABC", "A", "L", "CD"...]``).
+        structures (e.g. ``[["A", "B" "C"], ["A"], ["L"], ["C", "D"]...]``).
     :type chain_selections: Optional[List[str]], defaults to ``None``
     :param model_indices: List of model indices to use for protein graph
         construction. Only relevant for structures containing ensembles of
@@ -1167,7 +1163,7 @@ def compute_secondary_structure_graph(
         ss_list.append(d["ss"])
 
     # Number SS elements
-    ss_list = pd.Series(number_groups_of_runs(ss_list))
+    ss_list: pd.Series = pd.Series(number_groups_of_runs(ss_list))
     ss_list.index = list(g.nodes())
 
     # Remove unstructured elements if necessary
