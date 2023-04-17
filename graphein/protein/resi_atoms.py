@@ -690,6 +690,7 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "MVA": "V",
     "NH2": "X",
     "NLE": "L",
+    "NLW": "L",
     "OCS": "C",
     "ORN": "A",
     "PCA": "Q",
