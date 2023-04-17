@@ -194,7 +194,7 @@ def test_chain_selection():
         assert d["chain_id"] in ["A", "B", "C", "D"]
 
     # Check graph contains only chain selection
-    G = construct_graph(path=str(file_path), chain_selection="AD")
+    G = construct_graph(path=str(file_path), chain_selection=["A", "D"])
     assert G.graph["chain_ids"] == ["A", "D"]
     # Check nodes only contain residues from chain selection
     for n, d in G.nodes(data=True):
@@ -470,13 +470,13 @@ def test_edges_do_not_add_nodes_for_chain_subset():
         ],
     }
     config = ProteinGraphConfig(**new_funcs)
-    g = construct_graph(config=config, pdb_code="2vvi", chain_selection="A")
+    g = construct_graph(config=config, pdb_code="2vvi", chain_selection=["A"])
     assert len(g) == 217
-    g = construct_graph(config=config, pdb_code="2vvi", chain_selection="B")
+    g = construct_graph(config=config, pdb_code="2vvi", chain_selection=["B"])
     assert len(g) == 219
-    g = construct_graph(config=config, pdb_code="2vvi", chain_selection="C")
+    g = construct_graph(config=config, pdb_code="2vvi", chain_selection=["C"])
     assert len(g) == 222
-    g = construct_graph(config=config, pdb_code="2vvi", chain_selection="D")
+    g = construct_graph(config=config, pdb_code="2vvi", chain_selection=["D"])
     assert len(g) == 219
 
 
