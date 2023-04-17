@@ -62,7 +62,7 @@ except ImportError:
     log.warning(message)
 
 
-def get_protein_length(df: pd.DataFrame, insertions: bool = False) -> int:
+def get_protein_length(df: pd.DataFrame, insertions: bool = True) -> int:
     """Return the number of unique amino acids in the protein.
 
     Note for future development: this function may return incorrect results
@@ -73,13 +73,14 @@ def get_protein_length(df: pd.DataFrame, insertions: bool = False) -> int:
     :param df: Protein DataFrame to get length of.
     :type df: pd.DataFrame
     :param insertions: Whether or not to include insertions in the length.
+        Defaults to ``True``.
     :type insertions: bool
     :return: Number of unique residues.
     :rtype: int
     """
     # Get unique residues:
     if "residue_id" not in df.columns:
-        ids = (
+        df["residue_id"] = (
             df["chain_id"]
             + ":"
             + df["residue_name"]
@@ -88,8 +89,7 @@ def get_protein_length(df: pd.DataFrame, insertions: bool = False) -> int:
         )
         if insertions:
             df["residue_id"] = df.residue_id + ":" + df.insertion
-    else:
-        ids = df["residue_id"].values
+    ids = df["residue_id"].values
 
     return len(set(ids))
 
@@ -98,12 +98,14 @@ def protein_to_pyg(
     path: Optional[Union[str, os.PathLike]] = None,
     pdb_code: Optional[str] = None,
     uniprot_id: Optional[str] = None,
-    chain_selection: str = "all",
+    chain_selection: Union[str, List[str]] = "all",
     deprotonate: bool = True,
-    keep_insertions: bool = False,
+    keep_insertions: bool = True,
     keep_hets: List[str] = [],
     model_index: int = 1,
     atom_types: List[str] = PROTEIN_ATOMS,
+    remove_nonstandard: bool = True,
+    store_het: bool = False,
 ) -> Data:
     """
     Parses a protein (from either: a PDB code, PDB file or a UniProt ID
@@ -128,16 +130,32 @@ def protein_to_pyg(
 
 
     :param path: Path to PDB or MMTF file. Default is ``None``.
+    :type path: Union[str, os.PathLike]
     :param pdb_code: PDB accesion code. Default is ``None``.
+    :type pdb_code: str
     :param uniprot_id: UniProt ID. Default is ``None``.
-    :param chain_selection: Selection of chains to include (e.g. ``"ABC"``) or
-        ``"all"``. Default is ``"all"``.
+    :type uniprot_id: str
+    :param chain_selection: Selection of chains to include (e.g.
+        ``["A", "C", "AB"]``) or ``"all"``. Default is ``"all"``.
+    :type chain_selection: Union[str, List[str]]
     :param deprotonate: Whether or not to remove Hydrogens. Default is ``True``.
-    :param keep_insertions: Whether or not to keep insertions.
+    :type deprotonate: bool
+    :param keep_insertions: Whether or not to keep insertions. Default is
+        ``True``.
+    :type keep_insertions: bool
     :param keep_hets: List of heteroatoms to include. E.g. ``["HOH"]``.
+    :type keep_hets: List[str]
     :param model_index: Index of model in models containing multiple structures.
+    :type model_index: int
     :param atom_types: List of atom types to select. Default is:
         :const:`graphein.protein.resi_atoms.PROTEIN_ATOMS`
+    :type atom_types: List[str]
+    :param remove_nonstandard: Whether or not to remove non-standard residues.
+        Default is ``True``.
+    :type remove_nonstandard: bool
+    :param store_het: Whether or not to store heteroatoms in the ``Data``
+        object. Default is ``False``.
+    :type store_het: bool
     :returns: ``Data`` object with attributes: ``x`` (AtomTensor), ``residues``
         (list of 3-letter residue codes), id (ID of protein), residue_id (E.g.
         ``"A:SER:1"``), residue_type (torch.Tensor), ``chains`` (torch.Tensor).
@@ -147,22 +165,24 @@ def protein_to_pyg(
     # Get ID
     if path is not None:
         id = (
-            path.split("/")[-1] + "_" + chain_selection
+            path.split("/")[-1] + "_" + "".join(chain_selection)
             if chain_selection != "all"
             else path
         )
     elif pdb_code is not None:
         id = (
-            pdb_code + "_" + chain_selection
+            pdb_code + "_" + "".join(chain_selection)
             if chain_selection != "all"
             else pdb_code
         )
     elif uniprot_id is not None:
         id = (
-            uniprot_id + "_" + chain_selection
+            uniprot_id + "_" + "".join(chain_selection)
             if chain_selection != "all"
             else uniprot_id
         )
+    else:
+        raise ValueError("Must provide either a path, PDB code or uniprot ID.")
 
     df = read_pdb_to_dataframe(
         path=path,
@@ -170,14 +190,34 @@ def protein_to_pyg(
         uniprot_id=uniprot_id,
         model_index=model_index,
     )
-    df = select_chains(df, chain_selection)
+    if chain_selection != "all":
+        if isinstance(chain_selection, str):
+            chain_selection = [chain_selection]
+        df = select_chains(df, chain_selection)
+
     if deprotonate:
         df = deprotonate_structure(df)
     if not keep_insertions:
         df = remove_insertions(df)
     # Remove hetatms
     hets = filter_hetatms(df, keep_hets=keep_hets)
+
+    if store_het:
+        hetatms = df.loc[df.record_name == "HETATM"]
+        all_hets = list(set(hetatms.residue_name))
+        het_coords = {}
+        for het in all_hets:
+            het_coords[het] = torch.tensor(
+                hetatms.loc[hetatms.residue_name == het][
+                    ["x_coord", "y_coord", "z_coord"]
+                ].values
+            )
+
     df = df.loc[df.record_name == "ATOM"]
+    if remove_nonstandard:
+        df = df.loc[
+            df.residue_name.isin(STANDARD_AMINO_ACID_MAPPING_1_TO_3.values())
+        ]
     df = pd.concat([df] + hets)
     df = sort_dataframe(df)
 
@@ -191,7 +231,7 @@ def protein_to_pyg(
     if keep_insertions:
         df["residue_id"] = df.residue_id + ":" + df.insertion
 
-    return Data(
+    out = Data(
         coords=protein_df_to_tensor(df, atoms_to_keep=atom_types),
         residues=get_sequence(
             df,
@@ -204,12 +244,15 @@ def protein_to_pyg(
         residue_type=residue_type_tensor(df),
         chains=protein_df_to_chain_tensor(df),
     )
+    if store_het:
+        out.hetatms = [het_coords]
+    return out
 
 
 def protein_df_to_chain_tensor(
     df: pd.DataFrame,
     chains_to_keep: Optional[List[str]] = None,
-    insertions: bool = False,
+    insertions: bool = True,
     one_hot: bool = False,
     dtype: torch.dtype = torch.int64,
     device: torch.device = torch.device("cpu"),
@@ -223,7 +266,7 @@ def protein_df_to_chain_tensor(
     :param chains_to_keep: List of chains to retain, defaults to ``None``
         (all chains).
     :type chains_to_keep: Optional[List[str]], optional
-    :param insertions: Whether or not to keep insertions, defaults to ``False``
+    :param insertions: Whether or not to keep insertions, defaults to ``True``
     :type insertions: bool, optional
     :param one_hot: Whether or not to return a one-hot encoded tensor
         (``L x num_chains``). If ``False`` an integer tensor is returned.
@@ -241,7 +284,7 @@ def protein_df_to_chain_tensor(
         df = df.loc[df.chain_id.isin(chains_to_keep)]
 
     # Keep or remove insertions
-    if insertions:
+    if not insertions:
         df = df.loc[df.insertion.isin(["", " "])]
 
     if not per_atom:
@@ -264,7 +307,7 @@ def protein_df_to_chain_tensor(
 def protein_df_to_tensor(
     df: pd.DataFrame,
     atoms_to_keep: List[str] = PROTEIN_ATOMS,
-    insertions: bool = False,
+    insertions: bool = True,
     fill_value: float = 1e-5,
 ) -> AtomTensor:
     """
@@ -276,7 +319,7 @@ def protein_df_to_tensor(
     :param atoms_to_keep: List of atom types to retain in the tensor.
         Defaults to :const:`~graphein.protein.resi_atoms.PROTEIN_ATOMS`
     :type atoms_to_keep: List[str]
-    :param insertions: Whether or not to keep insertions. Defaults to ``False``.
+    :param insertions: Whether or not to keep insertions. Defaults to ``True``.
     :type insertions: bool
     :param fill_value: Value to fill missing entries with. Defaults to ``1e-5``.
     :type fill_value: float
@@ -288,7 +331,9 @@ def protein_df_to_tensor(
     residue_indices = pd.factorize(get_residue_id(df, unique=False))[0]
     atom_indices = df["atom_name"].map(lambda x: atoms_to_keep.index(x)).values
 
-    positions = torch.zeros((num_residues, len(atoms_to_keep), 3)) + fill_value
+    positions: AtomTensor = (
+        torch.zeros((num_residues, len(atoms_to_keep), 3)) + fill_value
+    )
     positions[residue_indices, atom_indices] = torch.tensor(
         df[["x_coord", "y_coord", "z_coord"]].values
     ).float()
@@ -368,9 +413,9 @@ def to_dataframe(
     res_nums = nz[:, 0] + 1
 
     atom_number = np.arange(1, len(res_nums) + 1)
-    map = {v: k for k, v in ATOM_NUMBERING.items()}
+    numbering_map = {v: k for k, v in ATOM_NUMBERING.items()}
     atom_type = nz[:, 1]
-    atom_type = [map[a.item()] for a in atom_type]
+    atom_type = [numbering_map[a.item()] for a in atom_type]
 
     if residue_types is None:
         residue_types = infer_residue_types(

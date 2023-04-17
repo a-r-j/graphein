@@ -347,7 +347,7 @@ class Protein(Data):
     def from_pdb_code(
         self,
         pdb_code: str,
-        chain_selection: str = "all",
+        chain_selection: Union[str, List[str]] = "all",
         deprotonate: bool = True,
         keep_insertions=False,
         keep_hets: List[str] = [],

@@ -695,6 +695,7 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "PCA": "Q",
     "PHE": "F",
     "PRO": "P",
+    "PSW": "U",
     "PTR": "Y",
     "PVL": "X",
     "PYL": "O",
