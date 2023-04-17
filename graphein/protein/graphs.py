@@ -318,7 +318,6 @@ def process_dataframe(
     alt_locs: bool = False,
     deprotonate: bool = True,
     keep_hets: List[str] = [],
-    verbose: bool = False,
 ) -> pd.DataFrame:
     """
     Process ATOM and HETATM dataframes to produce singular dataframe used for
@@ -352,8 +351,6 @@ def process_dataframe(
     :param keep_hets: Hetatoms to keep. Defaults to an empty list (``[]``).
         To keep a hetatom, pass it inside a list of hetatom names to keep.
     :type keep_hets: List[str]
-    :param verbose: Verbosity level.
-    :type verbose: bool
     :param chain_selection: Which protein chain to select. Defaults to
         ``"all"``. Eg can use ``"ACF"`` to select 3 chains (``A``, ``C`` &
         ``F``)
@@ -424,7 +421,7 @@ def process_dataframe(
 
     # perform chain selection
     protein_df = select_chains(
-        protein_df, chain_selection=chain_selection, verbose=verbose
+        protein_df, chain_selection=chain_selection
     )
 
     log.debug(f"Detected {len(protein_df)} total nodes")
