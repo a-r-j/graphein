@@ -420,9 +420,7 @@ def process_dataframe(
         protein_df = remove_insertions(protein_df)
 
     # perform chain selection
-    protein_df = select_chains(
-        protein_df, chain_selection=chain_selection
-    )
+    protein_df = select_chains(protein_df, chain_selection=chain_selection)
 
     log.debug(f"Detected {len(protein_df)} total nodes")
 
