@@ -1,9 +1,10 @@
 ### 1.7.1 - UNRELEASED
 
 #### New Features
-
 * [Feature] - [#305](https://github.com/a-r-j/graphein/pull/305) Adds the `add_virtual_beta_carbon_vector` function inspired by [RFdiffusion](https://github.com/RosettaCommons/RFdiffusion/blob/main/rfdiffusion/coords6d.py#L37) and ProteinMPNN.
 
+#### API Changes
+* Chain selections are now specified with either `"all"` or a list of strings (e.g. `["A", "B"]`) rather than a single selection string (e.g. `"AB"`). This is a necessary chain due to MMTF support which can have multicharacter chain identifiers. [#307](https://github.com/a-r-j/graphein/pull/307)
 
 #### Improvements
 * [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Removes obsolete `remove_insertions` in [`rgroup_df` construction](https://github.com/a-r-j/graphein/blob/649a490505740a266b26976807e7f303c2a32ff0/graphein/protein/graphs.py#L540).
@@ -12,6 +13,9 @@
 * [Bugfix] - [#301](https://github.com/a-r-j/graphein/pull/301) Fixes the conversion of undirected NetworkX graph to directed PyG data.
 
 #### Other Changes
+* Adds the ability to store a dictionary of HETATM positions in `Data`/`Protein` objects created in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
+* Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
+* Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
 * `plot_pyg_data` now also plots some geometric features if present. [#305](https://github.com/a-r-j/graphein/pull/305)
 
 ### 1.7.0 - 10 /04/2023
