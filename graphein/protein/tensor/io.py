@@ -208,14 +208,16 @@ def protein_to_pyg(
         het_coords = {}
         for het in all_hets:
             het_coords[het] = torch.tensor(
-                hetatms.loc[
-                    hetatms.residue_name == het
-                    ][["x_coord", "y_coord", "z_coord"]].values
-                )
+                hetatms.loc[hetatms.residue_name == het][
+                    ["x_coord", "y_coord", "z_coord"]
+                ].values
+            )
 
     df = df.loc[df.record_name == "ATOM"]
     if remove_nonstandard:
-        df = df.loc[df.residue_name.isin(STANDARD_AMINO_ACID_MAPPING_1_TO_3.values())]
+        df = df.loc[
+            df.residue_name.isin(STANDARD_AMINO_ACID_MAPPING_1_TO_3.values())
+        ]
     df = pd.concat([df] + hets)
     df = sort_dataframe(df)
 
@@ -329,7 +331,9 @@ def protein_df_to_tensor(
     residue_indices = pd.factorize(get_residue_id(df, unique=False))[0]
     atom_indices = df["atom_name"].map(lambda x: atoms_to_keep.index(x)).values
 
-    positions: AtomTensor = torch.zeros((num_residues, len(atoms_to_keep), 3)) + fill_value
+    positions: AtomTensor = (
+        torch.zeros((num_residues, len(atoms_to_keep), 3)) + fill_value
+    )
     positions[residue_indices, atom_indices] = torch.tensor(
         df[["x_coord", "y_coord", "z_coord"]].values
     ).float()

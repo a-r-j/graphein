@@ -472,7 +472,7 @@ def select_chains(
         if isinstance(chain_selection, str):
             raise ValueError(
                 "Only 'all' is a valid string for chain selection. Otherwise use a list of strings: e.g. ['A', 'B', 'C']"
-                )
+            )
         protein_df = filter_dataframe(
             protein_df,
             by_column="chain_id",
@@ -723,7 +723,7 @@ def construct_graph(
     :param df: Pandas dataframe containing ATOM data to build graph from.
         Default is ``None``.
     :type df: pd.DataFrame, optional
-    :param chain_selection: List of strings denoting polypeptide chains to 
+    :param chain_selection: List of strings denoting polypeptide chains to
         include in graph. E.g ``["A", "B", "D", "F"]`` or ``"all"``. Default is ``"all"``.
     :type chain_selection: str
     :param model_index: Index of model to use in the case of structural
