@@ -1754,9 +1754,15 @@ class PDBManager:
 
                 if not os.path.exists(str(output_pdb_filepath)):
                     try:
-                        pdb = PandasPdb().read_pdb(str(input_pdb_filepath)).get_models(models)
+                        pdb = (
+                            PandasPdb()
+                            .read_pdb(str(input_pdb_filepath))
+                            .get_models(models)
+                        )
                         # work around int-typing bug for `model_id` within version `0.5.0.dev0` of BioPandas -> appears when calling `to_pdb()`
-                        cast_pdb_column_to_type(pdb, column_name="model_id", type=str)
+                        cast_pdb_column_to_type(
+                            pdb, column_name="model_id", type=str
+                        )
                     except FileNotFoundError:
                         log.info(
                             f"Failed to load {str(input_pdb_filepath)}. Perhaps it is not longer available to download from the PDB?"

@@ -514,7 +514,9 @@ def esmfold(
             f.write(cif)
 
 
-def cast_pdb_column_to_type(pdb: PandasPdb, column_name: str, type: Type) -> PandasPdb:
+def cast_pdb_column_to_type(
+    pdb: PandasPdb, column_name: str, type: Type
+) -> PandasPdb:
     """Casts a specified column within a PandasPdb object to a given type
     and returns the typecasted PandasPdb object.
 
