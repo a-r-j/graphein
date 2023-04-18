@@ -16,6 +16,7 @@ from pandas.core.groupby.generic import DataFrameGroupBy
 from tqdm import tqdm
 
 from graphein.protein.utils import (
+    cast_pdb_column_to_type,
     download_pdb_multiprocessing,
     extract_chains_to_file,
     read_fasta,
@@ -1709,6 +1710,7 @@ class PDBManager:
         split: str,
         merge_fn: Callable,
         max_num_chains_per_pdb_code: int = 1,
+        models: List[int] = [1],
     ):
         """Record groups of PDB codes and associated chains
         as collated PDB files.
@@ -1727,6 +1729,9 @@ class PDBManager:
         :param max_num_chains_per_pdb_code: Maximum number of chains
             to collate into a matching PDB file.
         :type max_num_chains_per_pdb_code: int, optional
+        :param models: List of indices of models from which to extract chains,
+            defaults to ``[1]``.
+        :type models: List[int], optional
         """
         if len(df) > 0:
             split_dir = Path(out_dir) / split
@@ -1749,7 +1754,9 @@ class PDBManager:
 
                 if not os.path.exists(str(output_pdb_filepath)):
                     try:
-                        pdb = PandasPdb().read_pdb(str(input_pdb_filepath))
+                        pdb = PandasPdb().read_pdb(str(input_pdb_filepath)).get_models(models)
+                        # work around int-typing bug for `model_id` within version `0.5.0.dev0` of BioPandas -> appears when calling `to_pdb()`
+                        cast_pdb_column_to_type(pdb, column_name="model_id", type=str)
                     except FileNotFoundError:
                         log.info(
                             f"Failed to load {str(input_pdb_filepath)}. Perhaps it is not longer available to download from the PDB?"
@@ -1767,6 +1774,7 @@ class PDBManager:
         out_dir: str = "collated_pdb",
         splits: Optional[List[str]] = None,
         max_num_chains_per_pdb_code: int = 1,
+        models: List[int] = [1],
     ):
         """Write the given selection as a collection of PDB files.
 
@@ -1784,6 +1792,9 @@ class PDBManager:
         :param max_num_chains_per_pdb_code: Maximum number of chains
             to collate into a matching PDB file.
         :type max_num_chains_per_pdb_code: int, optional
+        :param models: List of indices of models from which to extract chains,
+            defaults to ``[1]``.
+        :type models: List[int], optional
         """
         out_dir = Path(pdb_dir) / out_dir
         os.makedirs(out_dir, exist_ok=True)
@@ -1798,6 +1809,7 @@ class PDBManager:
                     split=split,
                     merge_fn=self.merge_pdb_chain_groups,
                     max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
+                    models=models,
                 )
         else:
             self.write_out_pdb_chain_groups(
@@ -1807,6 +1819,7 @@ class PDBManager:
                 split="full",
                 merge_fn=self.merge_pdb_chain_groups,
                 max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
+                models=models,
             )
 
     def export_pdbs(
@@ -1814,6 +1827,7 @@ class PDBManager:
         pdb_dir: str,
         splits: Optional[List[str]] = None,
         max_num_chains_per_pdb_code: int = 1,
+        models: List[int] = [1],
         force: bool = False,
     ):
         """Write the selection as a collection of PDB files.
@@ -1826,6 +1840,9 @@ class PDBManager:
         :param max_num_chains_per_pdb_code: Maximum number of chains
             to collate into a matching PDB file.
         :type max_num_chains_per_pdb_code: int, optional
+        :param models: List of indices of models from which to extract chains,
+            defaults to ``[1]``.
+        :type models: List[int], optional
         :param force: Whether to raise an error if the download selection
             contains PDBs which are not available in PDB format.
         """
@@ -1841,5 +1858,6 @@ class PDBManager:
             split_dfs,
             splits=splits,
             max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
+            models=models,
         )
         log.info("Done writing selection of PDB chains")
