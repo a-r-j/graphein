@@ -1211,6 +1211,7 @@ class PDBManager:
                         self.df_splits[split], df_split, split
                     )
                 else:
+                    df_split.split = split
                     self.df_splits[split] = df_split
                 df_splits[split] = self.df_splits[split]
 
@@ -1342,6 +1343,7 @@ class PDBManager:
                 (df.deposition_date >= start_datetime)
                 & (df.deposition_date < end_datetime)
             ]
+            df_split.split = split
             df_splits[split] = df_split
             start_datetime = end_datetime
 
@@ -1413,6 +1415,7 @@ class PDBManager:
                         self.df_splits[split], df_split, split
                     )
                 else:
+                    df_split.split = split
                     self.df_splits[split] = df_split
                 df_splits[split] = self.df_splits[split]
 
