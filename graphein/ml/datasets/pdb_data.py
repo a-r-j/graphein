@@ -1771,8 +1771,14 @@ class PDBManager:
                         pdb, column_name="model_id", type=str
                     )
                     # select only from chains available in the PDB file
-                    pdb_atom_chains = pdb.df[atom_df_name].chain_id.unique().tolist()
-                    chains = [chain for chain in entry_chains if chain in pdb_atom_chains]
+                    pdb_atom_chains = (
+                        pdb.df[atom_df_name].chain_id.unique().tolist()
+                    )
+                    chains = [
+                        chain
+                        for chain in entry_chains
+                        if chain in pdb_atom_chains
+                    ]
                     chains = (
                         chains
                         if max_num_chains_per_pdb_code == -1
