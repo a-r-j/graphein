@@ -98,12 +98,12 @@ def read_pdb_to_dataframe(
     if path is not None:
         if isinstance(path, Path):
             path = os.fsdecode(path)
-        if path.endswith(".pdb") or path.endswith(".pdb.gz"):
+        if path.endswith(".pdb") or path.endswith(".pdb.gz") or path.endswith(".ent"):
             atomic_df = PandasPdb().read_pdb(path)
         elif path.endswith(".mmtf") or path.endswith(".mmtf.gz"):
             atomic_df = PandasMmtf().read_mmtf(path)
         else:
-            raise ValueError(f"File {path} must be either .pdb or .mmtf not")
+            raise ValueError(f"File {path} must be either .pdb(.gz), .mmtf(.gz) or .ent, not {path.split('.')[-1]}")
     elif uniprot_id is not None:
         atomic_df = PandasPdb().fetch_pdb(
             uniprot_id=uniprot_id, source="alphafold2-v3"
