@@ -54,6 +54,8 @@ def get_obsolete_mapping() -> Dict[str, str]:
             obs_dict[entry[2].lower().decode("utf-8")] = (
                 entry[3].lower().decode("utf-8")
             )
+        elif len(entry) == 3:
+            obs_dict[entry[2].lower().decode("utf-8")] = ""
     return obs_dict
 
 
