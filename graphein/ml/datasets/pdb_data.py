@@ -1712,6 +1712,7 @@ class PDBManager:
         out_dir: str,
         split: str,
         merge_fn: Callable,
+        atom_df_name: str = "ATOM",
         max_num_chains_per_pdb_code: int = 1,
         models: List[int] = [1],
     ):
@@ -1729,6 +1730,9 @@ class PDBManager:
         :type split: str
         :param merge_fn: The PDB code-chain grouping function to use.
         :type merge_fn: Callable
+        :param atom_df_name: Name of the DataFrame by which to access
+            ATOM entries within a PandasPdb object.
+        :type atom_df_name: str, defaults to ``ATOM``
         :param max_num_chains_per_pdb_code: Maximum number of chains
             to collate into a matching PDB file.
         :type max_num_chains_per_pdb_code: int, optional
@@ -1745,15 +1749,10 @@ class PDBManager:
             df_merged = df_merged.reset_index(drop=True)
 
             for _, entry in tqdm(df_merged.iterrows()):
-                pdb_code, chains = entry["pdb"], entry["chain"]
-                chains = (
-                    chains
-                    if max_num_chains_per_pdb_code == -1
-                    else chains[:max_num_chains_per_pdb_code]
-                )
+                entry_pdb_code, entry_chains = entry["pdb"], entry["chain"]
 
-                input_pdb_filepath = Path(pdb_dir) / f"{pdb_code}.pdb"
-                output_pdb_filepath = split_dir / f"{pdb_code}.pdb"
+                input_pdb_filepath = Path(pdb_dir) / f"{entry_pdb_code}.pdb"
+                output_pdb_filepath = split_dir / f"{entry_pdb_code}.pdb"
 
                 if not os.path.exists(str(output_pdb_filepath)):
                     try:
@@ -1762,18 +1761,27 @@ class PDBManager:
                             .read_pdb(str(input_pdb_filepath))
                             .get_models(models)
                         )
-                        # work around int-typing bug for `model_id` within version `0.5.0.dev0` of BioPandas -> appears when calling `to_pdb()`
-                        cast_pdb_column_to_type(
-                            pdb, column_name="model_id", type=str
-                        )
                     except FileNotFoundError:
                         log.info(
                             f"Failed to load {str(input_pdb_filepath)}. Perhaps it is not longer available to download from the PDB?"
                         )
                         continue
+                    # work around int-typing bug for `model_id` within version `0.5.0.dev0` of BioPandas -> appears when calling `to_pdb()`
+                    cast_pdb_column_to_type(
+                        pdb, column_name="model_id", type=str
+                    )
+                    # select only from chains available in the PDB file
+                    pdb_atom_chains = pdb.df[atom_df_name].chain_id.unique().tolist()
+                    chains = [chain for chain in entry_chains if chain in pdb_atom_chains]
+                    chains = (
+                        chains
+                        if max_num_chains_per_pdb_code == -1
+                        else chains[:max_num_chains_per_pdb_code]
+                    )
                     pdb_chains = self.select_pdb_by_criterion(
                         pdb, "chain_id", chains
                     )
+                    # export selected chains within the same PDB file
                     pdb_chains.to_pdb(str(output_pdb_filepath))
 
     def write_df_pdbs(
