@@ -22,7 +22,7 @@ from loguru import logger as log
 from mpl_toolkits.mplot3d import Axes3D
 
 from graphein.protein.subgraphs import extract_k_hop_subgraph
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     from pytorch3d.ops import sample_points_from_meshes
@@ -41,6 +41,7 @@ except ImportError:
         submodule="graphein.protein.visualisation",
         package="mpl_chord_diagram",
         pip_install=True,
+        extras=True,
     )
 
 
@@ -195,7 +196,7 @@ def plotly_protein_structure_graph(
     figsize: Tuple[int, int] = (620, 650),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
-    node_size_multiplier: float = 20.0,
+    node_size_multiplier: float = 1.0,
     node_size_feature: str = "degree",
     label_node_ids: bool = True,
     node_colour_map=plt.cm.plasma,
@@ -217,7 +218,7 @@ def plotly_protein_structure_graph(
     :param node_size_min: Specifies node minimum size. Defaults to ``20.0``.
     :type node_size_min: float
     :param node_size_multiplier: Scales node size by a constant. Node sizes
-        reflect degree. Defaults to ``20.0``.
+        reflect degree. Defaults to ``1.0``.
     :type node_size_multiplier: float
     :param node_size_feature: Which feature to scale the node size by. Defaults
         to ``degree``.
@@ -378,7 +379,7 @@ def plot_protein_structure_graph(
     figsize: Tuple[int, int] = (10, 7),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
-    node_size_multiplier: float = 20.0,
+    node_size_multiplier: float = 1.0,
     label_node_ids: bool = True,
     node_colour_map=plt.cm.plasma,
     edge_color_map=plt.cm.plasma,
@@ -402,10 +403,10 @@ def plot_protein_structure_graph(
     :type figsize: Tuple[int, int]
     :param node_alpha: Controls node transparency, defaults to ``0.7``.
     :type node_alpha: float
-    :param node_size_min: Specifies node minimum size, defaults to ``20``.
+    :param node_size_min: Specifies node minimum size, defaults to ``20.0``.
     :type node_size_min: float
     :param node_size_multiplier: Scales node size by a constant. Node sizes
-        reflect degree. Defaults to ``20``.
+        reflect degree. Defaults to ``1.0``.
     :type node_size_multiplier: float
     :param label_node_ids: bool indicating whether or not to plot ``node_id``
         labels. Defaults to ``True``.
@@ -449,7 +450,8 @@ def plot_protein_structure_graph(
     # 3D network plot
     with plt.style.context(plot_style):
         fig = plt.figure(figsize=figsize)
-        ax = Axes3D(fig, auto_add_to_figure=True)
+        ax = Axes3D(fig)
+        fig.add_axes(ax)
 
         # Loop on the pos dictionary to extract the x,y,z coordinates of each
         # node
@@ -628,15 +630,15 @@ def plot_distance_matrix(
         raise ValueError("Must provide either a graph or a distance matrix.")
 
     if dist_mat is None:
-        dist_mat = g.graph["dist_mat"]
+        dist_mat = g.graph["dist_mat"]  # type: ignore
     if g is not None:
         x_range = list(g.nodes)
         y_range = list(g.nodes)
         if not title:
             title = g.graph["name"] + " - Distance Matrix"
     else:
-        x_range = list(range(dist_mat.shape[0]))
-        y_range = list(range(dist_mat.shape[1]))
+        x_range = list(range(dist_mat.shape[0]))  # type: ignore
+        y_range = list(range(dist_mat.shape[1]))  # type: ignore
         if not title:
             title = "Distance matrix"
 
@@ -742,7 +744,7 @@ def asteroid_plot(
     use_plotly: bool = True,
     show_edges: bool = False,
     show_legend: bool = True,
-    node_size_multiplier: float = 10,
+    node_size_multiplier: float = 10.0,
 ) -> Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]:
     # sourcery skip: remove-unnecessary-else, swap-if-else-branches
     """Plots a k-hop subgraph around a node as concentric shells.
@@ -777,12 +779,12 @@ def asteroid_plot(
     :type use_plotly: bool
     :param show_edges: Whether to show edges in the plot. Defaults to ``False``.
     :type show_edges: bool
-    :param show_legend: Whether to show the legend of the edges. Fefaults to
+    :param show_legend: Whether to show the legend of the edges. Defaults to
         `True``.
     :type show_legend: bool
     :param node_size_multiplier: Multiplier for the size of the nodes. Defaults
-        to ``10``.
-    :type node_size_multiplier: float.
+        to ``10.0``.
+    :type node_size_multiplier: float
     :returns: Plotly figure or matplotlib figure.
     :rtpye: Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]
     """

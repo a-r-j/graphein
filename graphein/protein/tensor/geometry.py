@@ -10,7 +10,7 @@ from typing import List, Tuple, Union
 
 from loguru import logger as log
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 from ..resi_atoms import (
     CHI_ANGLES_ATOMS,

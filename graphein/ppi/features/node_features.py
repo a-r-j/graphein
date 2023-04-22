@@ -8,20 +8,8 @@
 from typing import Any, Dict
 
 import networkx as nx
+from bioservices import HGNC, UniProt
 from loguru import logger as log
-
-from graphein.utils.utils import import_message
-
-try:
-    from bioservices import HGNC, UniProt
-except ImportError:
-    message = import_message(
-        submodule="graphein.ppi.features.nodes_features",
-        package="bioservices",
-        conda_channel="bioconda",
-        pip_install=True,
-    )
-    log.warning(message)
 
 
 def add_sequence_to_nodes(n: str, d: Dict[str, Any]):

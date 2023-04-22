@@ -9,7 +9,7 @@ from typing import List, Tuple, Union
 
 from loguru import logger as log
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 from .reconstruction import get_ideal_backbone_coords
 from .types import AtomTensor, BackboneFrameTensor, BackboneTensor, CoordTensor

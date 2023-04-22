@@ -83,7 +83,7 @@ def test_protein_df_to_tensor():  # sourcery skip: extract-duplicate-method
 
 def test_to_pdb():
     protein = Protein().from_pdb_code("4hhb")
-    to_pdb(protein.x, "test.pdb")
+    to_pdb(protein.coords, "test.pdb")
     assert os.path.exists("test.pdb"), "File does not exist"
 
     ppdb1 = PandasPdb().read_pdb("test.pdb")

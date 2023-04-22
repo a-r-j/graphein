@@ -1,18 +1,58 @@
-### 1.6.0dev - UNRELEASED
+### 1.7.1 - UNRELEASED
+
+#### API Changes
+* Chain selections are now specified with either `"all"` or a list of strings (e.g. `["A", "B"]`) rather than a single selection string (e.g. `"AB"`). This is a necessary chain due to MMTF support which can have multicharacter chain identifiers. [#307](https://github.com/a-r-j/graphein/pull/307)
+
+
+#### Other Changes
+* Adds the ability to store a dictionary of HETATM positions in `Data`/`Protein` objects created in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
+* Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
+* Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
+
+
+
+### 1.7.0 - UNRELEASED
 
 #### New Features
+
+* [PDBManager] - [#272](https://github.com/a-r-j/graphein/pull/272) Adds a utility for creating custom dataset splits from the PDB.
+* [FoldComp Dataset] - [#284](https://github.com/a-r-j/graphein/pull/284) - Create ML datasets from FoldComp databases.
+* [ESM] - [#284](https://github.com/a-r-j/graphein/pull/284) - Wrapper for ESMFold batch folding & embedding.
+* [Downloads] MMTF downloading now supported in download utilities. [#272](https://github.com/a-r-j/graphein/pull/272)
+
+#### Improvements
+* [Bugfix] - [#301](https://github.com/a-r-j/graphein/pull/301) Fixes the conversion of undirected NetworkX graph to directed PyG data.
+
+#### API Changes
+* The `pdb_path` argument to many functions (e.g. `graphein.protein.graphs.construct_graph`) has been renamed to `path` as this can now accept MMTF files in addition to PDB files.
+* `Protein` tensors have coordinates renamed from `Protein.x` to `Protein.coords`. [#272](https://github.com/a-r-j/graphein/pull/272)
+
+#### Other changes
+* Tensor types are now defined using [`jaxtyping`](https://github.com/google/jaxtyping), removing the `torchtyping` dependency [#272](https://github.com/a-r-j/graphein/pull/272)
+* Drops explicit Python 3.7 support. Colab now runs on 3.8+. [#272](https://github.com/a-r-j/graphein/pull/272)
+* Dockerfile now builds from `pytorch/pytorch:1.13.0-cuda11.6-cudnn8-runtime` (replaces `pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime`) [#272](https://github.com/a-r-j/graphein/pull/272)
+* Missing `os` import fixed in [#297(https://github.com/a-r-j/graphein/pull/297). Fixes [#296](https://github.com/a-r-j/graphein/issues/296)
+
+
+
+### 1.6.0 - 18/03/2023
+
+#### New Features
+
 * [Metrics] - [#245](https://github.com/a-r-j/graphein/pull/221) Adds a selection of structural metrics relevant to protein structures.
 * [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/244) Adds suite of utilities for working directly with tensor-based representations of proteins (graphein.protein.tensor).
 * [Tensor Operations] - [#244](https://github.com/a-r-j/graphein/pull/244) Adds suite of utilities for working with ESMfold (graphein.protein.folding_utils).
 
-
-
 #### Improvements
 
+* [Feature] = [#277](https://github.com/a-r-j/graphein/pull/227) Adds support for pathlib paths for protein graph creation. [#269](https://github.com/a-r-j/graphein/issues/269)
 * [Logging] - [#221](https://github.com/a-r-j/graphein/pull/221) Adds global control of logging with `graphein.verbose(enabled=False)`.
 * [Logging] - [#242](https://github.com/a-r-j/graphein/pull/242) Adds control of protein graph construction logging. Resolves [#238](https://github.com/a-r-j/graphein/issues/238)
 
 #### Protein
+
+* [Bugfix] - [#222]<https://github.com/a-r-j/graphein/pull/222)> Fixes entrypoint for user-defined `df_processing_funcs` ([#216](https://github.com/a-r-j/graphein/issues/216))
+* [Feature] = [#263](https://github.com/a-r-j/graphein/pull/263) Adds control of Alt Loc selection strategy. N.b. Default `ProteinGraphConfig` changed to include insertions by default (`insertions=True`) and `alt_locs="max_occupancy"`.
 * [Feature] - [#264](https://github.com/a-r-j/graphein/pull/264) Adds entrypoint to `graphein.protein.graphs.construct_graph` for passing in a BioPandas dataframe directly.
 * [Feature] - [#229](https://github.com/a-r-j/graphein/pull/220) Adds support for filtering KNN edges based on self-loops and chain membership. Contribution by @anton-bushuiev.
 * [Feature] - [#234](https://github.com/a-r-j/graphein/pull/234) Adds support for aggregating node features over residues (`graphein.protein.features.sequence.utils.aggregate_feature_over_residues`).
@@ -26,27 +66,34 @@
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes edge metadata conversion to PyG. Contribution by @manonreau.
 * [Bugfix] - [#220](https://github.com/a-r-j/graphein/pull/220) Fixes centroid atom grouping & avoids unnecessary edge computation where none are found. Contribution by @manonreau.
 
+* [Bugfix] - [#268](https://github.com/a-r-j/graphein/pull/268) Fixes 'sequence' metadata feature for atomistic graphs, removing duplicate residues.  Contribution by @kamurani.
 
 #### ML
+
 * [Bugfix] - [#234](https://github.com/a-r-j/graphein/pull/234) - Fixes bugs and improves `conversion.convert_nx_to_pyg` and `visualisation.plot_pyg_data`. Removes distance matrix (`dist_mat`) from defualt set of features converted to tensor.
 
 #### Utils
+
 * [Improvement] - [#234](https://github.com/a-r-j/graphein/pull/234) - Adds `parse_aggregation_type` to retrieve aggregation functions.
 
+#### RNA
+
+* [Bugfix] - [#281](https://github.com/a-r-j/graphein/pull/234) - Bugfix for nx->PyG conversion for graphs containing edges without "kind" attributes. Contribution by @rg314.
+
 #### Constants
+
 * [Improvement] - [#234](https://github.com/a-r-j/graphein/pull/234) - Adds 1 to 3 mappings to `graphein.protein.resi_atoms`.
 
-
 #### Documentation
+
 * [Tensor Module] - [#244](https://github.com/a-r-j/graphein/pull/244) Documents new graphein.protein.tensor module.
 * [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) Updates to intersphinx maps
 
-
 #### Package
+
 * [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) CI now runs for python 3.8, 3.9 and torch 1.12.0 and 1.13.0
 * [CI] - [#244](https://github.com/a-r-j/graphein/pull/244) Separate builds for core library and library with DL dependencies.
 * [Licence] - [#244](https://github.com/a-r-j/graphein/pull/244) Bump to 2023
-
 
 ### 1.5.2 - 19/9/2022
 

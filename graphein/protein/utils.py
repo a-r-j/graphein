@@ -10,7 +10,7 @@ import tempfile
 from functools import lru_cache, partial
 from pathlib import Path
 from shutil import which
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
@@ -90,7 +90,8 @@ def read_fasta(file_path: str) -> Dict[str, str]:
 
 def download_pdb_multiprocessing(
     pdb_codes: List[str],
-    out_dir: Union[str, Path],
+    out_dir: Union[str, Path],  # type: ignore
+    format: str = "pdb",
     overwrite: bool = False,
     strict: bool = False,
     max_workers: int = 16,
@@ -102,6 +103,8 @@ def download_pdb_multiprocessing(
     :type pdb_codes: List[str]
     :param out_dir: Path to directory to download PDB structures to.
     :type out_dir: Union[str, Path]
+    :param format: Filetype to download. ``pdb`` or ``mmtf``.
+    :type format: str
     :param overwrite: Whether to overwrite existing files, defaults to
         ``False``.
     :type overwrite: bool
@@ -117,7 +120,11 @@ def download_pdb_multiprocessing(
     """
     out_dir: Path = Path(out_dir)
     func = partial(
-        download_pdb, out_dir=out_dir, overwrite=overwrite, strict=strict
+        download_pdb,
+        out_dir=out_dir,
+        format=format,
+        overwrite=overwrite,
+        strict=strict,
     )
     return process_map(
         func, pdb_codes, max_workers=max_workers, chunksize=chunksize
@@ -127,6 +134,7 @@ def download_pdb_multiprocessing(
 def download_pdb(
     pdb_code: str,
     out_dir: Optional[Union[str, Path]] = None,
+    format: str = "pdb",
     check_obsolete: bool = False,
     overwrite: bool = False,
     strict: bool = True,
@@ -142,6 +150,8 @@ def download_pdb(
     :param out_dir: Path to directory to download PDB structure to. If ``None``,
         will download to a temporary directory.
     :type out_dir: Optional[Union[str, Path]]
+    :param format: Filetype to download. ``pdb`` or ``mmtf``.
+    :type format: str
     :param check_obsolete: Whether to check for obsolete PDB codes,
         defaults to ``False``. If an obsolete PDB code is found, the updated PDB
         is downloaded.
@@ -155,6 +165,14 @@ def download_pdb(
     :rtype: Path
     """
     pdb_code = pdb_code.lower()
+    if format == "pdb":
+        BASE_URL = "https://files.rcsb.org/download/"
+        extension = ".pdb"
+    elif format == "mmtf":
+        BASE_URL = "https://mmtf.rcsb.org/v1.0/full/"
+        extension = ".mmtf.gz"
+    else:
+        raise ValueError(f"Invalid format: {format}. Must be 'pdb' or 'mmtf'.")
 
     # Make output directory if it doesn't exist or set it to tempdir if None
     if out_dir is not None:
@@ -169,9 +187,11 @@ def download_pdb(
         try:
             new_pdb = obs_map[pdb_code.lower()].lower()
             log.info(
-                "{pdb_code} is deprecated. Downloading {new_pdb} instead."
+                f"{pdb_code} is deprecated. Downloading {new_pdb} instead."
             )
-            return download_pdb(new_pdb, out_dir, overwrite=overwrite)
+            return download_pdb(
+                new_pdb, out_dir, format=format, overwrite=overwrite
+            )
         except KeyError:
             log.warning(
                 f"PDB {pdb_code} not found. Possibly too large; large \
@@ -180,15 +200,17 @@ def download_pdb(
             return
 
     # Check if PDB already exists
-    if os.path.exists(out_dir / f"{pdb_code}.pdb") and not overwrite:
-        log.info(f"{pdb_code} already exists: {out_dir / f'{pdb_code}.pdb'}")
-        return out_dir / f"{pdb_code}.pdb"
+    if os.path.exists(out_dir / f"{pdb_code}{extension}") and not overwrite:
+        log.info(
+            f"{pdb_code} already exists: {out_dir / f'{pdb_code}{extension}'}"
+        )
+        return out_dir / f"{pdb_code}{extension}"
 
     # Download
     try:
         wget.download(
-            f"https://files.rcsb.org/download/{pdb_code}.pdb",
-            out=str(out_dir / f"{pdb_code}.pdb"),
+            f"{BASE_URL}{pdb_code}{extension}",
+            out=str(out_dir / f"{pdb_code}{extension}"),
         )
     except HTTPError:
         log.warning(f"PDB {pdb_code} not found.")
@@ -196,22 +218,22 @@ def download_pdb(
     # Check file exists
     if strict:
         assert os.path.exists(
-            out_dir / f"{pdb_code}.pdb"
-        ), "{pdb_code} download failed. Not found in {out_dir}"
-    log.info("{pdb_code} downloaded to {out_dir}")
-    return out_dir / f"{pdb_code}.pdb"
+            out_dir / f"{pdb_code}{extension}"
+        ), f"{pdb_code} download failed. Not found in {out_dir}"
+    log.info(f"{pdb_code} downloaded to {out_dir}")
+    return out_dir / f"{pdb_code}{extension}"
 
 
-def get_protein_name_from_filename(pdb_path: str) -> str:
+def get_protein_name_from_filename(path: str) -> str:
     """
-    Extracts a filename from a ``pdb_path``
+    Extracts a filename from a ``path``
 
-    :param pdb_path: Path to extract filename from.
-    :type pdb_path: str
+    :param path: Path to extract filename from.
+    :type path: str
     :return: file name.
     :rtype: str
     """
-    _, tail = os.path.split(pdb_path)
+    _, tail = os.path.split(path)
     tail = os.path.splitext(tail)[0]
     return tail
 
@@ -452,20 +474,6 @@ def save_rgroup_df_to_pdb(
     log.info(f"Successfully saved rgroup data to {path}")
 
 
-def is_tool(name: str) -> bool:
-    """Checks whether ``name`` is on ``PATH`` and is marked as an executable.
-
-    Source:
-    https://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
-
-    :param name: Name of program to check for execution ability.
-    :type name: str
-    :return: Whether ``name`` is on PATH and is marked as an executable.
-    :rtype: bool
-    """
-    return which(name) is not None
-
-
 def esmfold(
     sequence: str,
     out_path: Optional[str] = None,
@@ -504,3 +512,68 @@ def esmfold(
     if out_path is not None:
         with open(out_path, "w") as f:
             f.write(cif)
+
+
+def cast_pdb_column_to_type(
+    pdb: PandasPdb, column_name: str, type: Type
+) -> PandasPdb:
+    """Casts a specified column within a PandasPdb object to a given type
+    and returns the typecasted PandasPdb object.
+
+    :param pdb: Input PandasPdb object.
+    type pdb: PandasPdb
+    :param column_name: Name of column to typecast.
+    :type column_name: str
+    :param type: Type to which to cast the specified column.
+    :type type: Type
+    :return: Typecasted PandasPdb object.
+    :rtype: PandasPdb
+    """
+    for key in pdb.df:
+        if column_name in pdb.df[key]:
+            pdb.df[key][column_name] = pdb.df[key][column_name].apply(type)
+    return pdb
+
+
+def extract_chains_to_file(
+    pdb_file: str, chains: List[str], out_dir: str, models: List[int] = [1]
+) -> List[str]:
+    """Extracts chains from a PDB file to separate files.
+
+    .. code-block::python
+
+        extract_chains_to_file("4hhb.pdb", ["A", "B"], ".", [1])
+
+    This will create new files ``./4hhb_A.pdb`` and ``./4hhb_B.pdb``.
+
+
+    :param pdb_file: PDB file
+    :type pdb_file: str
+    :param chains: List of chains to extract
+    :type chains: List[str]
+    :param out_file: Directory of output files
+    :type out_file: str
+    :param models: List of indices of models from which to extract chains,
+        defaults to ``[1]``.
+    :type models: List[int], optional
+    :return: List of output file paths
+    :rtype: List[str]
+    """
+    fname = os.path.basename(pdb_file)
+    fname = fname.split(".")[0]
+
+    ppdb = PandasPdb().read_pdb(pdb_file).get_models(models)
+    # work around int-typing bug for `model_id` within version `0.5.0.dev0` of BioPandas -> appears when calling `to_pdb()`
+    cast_pdb_column_to_type(ppdb, column_name="model_id", type=str)
+
+    out_files = []
+    for chain in chains:
+        out_path = os.path.join(out_dir, f"{fname}_{chain}.pdb")
+        out_files.append(out_path)
+        df = ppdb.df["ATOM"].loc[ppdb.df["ATOM"]["chain_id"] == chain]
+        out_df = PandasPdb()
+        out_df.df["ATOM"] = df
+        out_df.to_pdb(
+            path=out_path, records=None, gz=False, append_newline=True
+        )
+    return out_files

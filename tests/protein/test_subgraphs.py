@@ -33,7 +33,7 @@ from graphein.protein.subgraphs import (
     extract_subgraph_from_secondary_structure,
     extract_surface_subgraph,
 )
-from graphein.protein.utils import is_tool
+from graphein.utils.dependencies import is_tool
 
 DSSP_AVAILABLE = is_tool("mkdssp")
 
@@ -43,7 +43,7 @@ def test_node_list_subgraphing():
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
     NODE_LIST = ["C:ALA:28", "C:ARG:31", "D:LEU:75", "A:THR:38"]
 
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     g = extract_subgraph_from_node_list(G, NODE_LIST, filter_dataframe=True)
 
@@ -88,7 +88,7 @@ def test_node_list_subgraphing():
 def test_extract_subgraph_from_atom_types():
     """Tests subgraph extraction from a list of allowed atom types"""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     ATOM_TYPES = ["CA"]
     g = extract_subgraph_from_atom_types(G, ATOM_TYPES, filter_dataframe=True)
@@ -104,7 +104,7 @@ def test_extract_subgraph_from_residue_types():
     SERINES = 32
     GLYCINES = 40
 
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     g = extract_subgraph_from_residue_types(
         G, RESIDUE_TYPES, filter_dataframe=True
@@ -165,7 +165,7 @@ def test_extract_subgraph_from_residue_types():
 def test_extract_subgraph_from_point():
     """Tests subgraph extraction from a spherical selection."""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     POINT = np.array([0.0, 0.0, 0.0])
     RADIUS = 10
@@ -197,7 +197,7 @@ def test_extract_subgraph_from_point():
 def test_extract_subgraph_from_chains():
     """Tests subgraph extraction from chains."""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     CHAINS = ["A", "C"]
     s_g = extract_subgraph_from_chains(G, CHAINS, filter_dataframe=True)
@@ -232,7 +232,7 @@ def test_extract_subgraph_from_chains():
 def test_extract_subgraph_from_sequence_position():
     """Tests subgraph extraction from sequence position."""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     SEQ_POS = list(range(1, 50, 2))
 
@@ -272,7 +272,7 @@ def test_extract_subgraph_from_bond_type():
     config = ProteinGraphConfig(
         edge_construction_functions=[add_peptide_bonds, add_ionic_interactions]
     )
-    G = construct_graph(pdb_path=str(file_path))  # , config=config)
+    G = construct_graph(path=str(file_path))  # , config=config)
 
     BOND_TYPES = ["ionic"]
 
@@ -304,7 +304,7 @@ def test_extract_subgraph_from_bond_type():
 def test_extract_k_hop_subgraph():
     """Tests k-hop subgraph extraction."""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     CENTRAL_NODE = "B:SER:49"
     K = 1
@@ -325,7 +325,7 @@ def test_surface_subgraph():
     config = ProteinGraphConfig(
         graph_metadata_functions=[rsa], dssp_config=DSSPConfig()
     )
-    G = construct_graph(pdb_path=str(file_path), config=config)
+    G = construct_graph(path=str(file_path), config=config)
 
     RSA_THRESHOLD: float = 0.2
     s_g = extract_surface_subgraph(G, RSA_THRESHOLD, filter_dataframe=True)
@@ -346,7 +346,7 @@ def test_secondary_structure_subgraph():
         graph_metadata_functions=[secondary_structure],
         dssp_config=DSSPConfig(),
     )
-    G = construct_graph(pdb_path=str(file_path), config=config)
+    G = construct_graph(path=str(file_path), config=config)
 
     SS_ELEMENTS: List[str] = ["H"]
     s_g = extract_subgraph_from_secondary_structure(
@@ -369,7 +369,7 @@ def test_successful_pickle():
         graph_metadata_functions=[secondary_structure],
         dssp_config=DSSPConfig(),
     )
-    G = construct_graph(pdb_path=str(file_path), config=config)
+    G = construct_graph(path=str(file_path), config=config)
     s_g = extract_subgraph_from_residue_types(
         G,
         residue_types=["ALA", "SER", "MET"],

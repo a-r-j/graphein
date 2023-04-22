@@ -10,7 +10,7 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 from loguru import logger as log
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 from ..resi_atoms import ATOM_NUMBERING, CHI_ANGLES_ATOMS
 from .testing import has_nan
@@ -23,6 +23,7 @@ except ImportError:
         "graphein.protein.tensor.angles",
         "einops",
         pip_install=True,
+        extras=True,
     )
 
 try:

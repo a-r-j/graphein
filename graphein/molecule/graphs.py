@@ -16,12 +16,12 @@ import numpy as np
 from loguru import logger as log
 from tqdm.contrib.concurrent import process_map, thread_map
 
+from graphein.utils.dependencies import import_message
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
     compute_edges,
-    import_message,
 )
 
 from .chembl import get_smiles_from_chembl

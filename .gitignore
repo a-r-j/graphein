@@ -145,6 +145,31 @@ dmypy.json
 # Local test files
 datasets/examples/*
 *.ent
+*.pdb
+*.pt
+*.dbn
+*.cif
 *.zip
+*.mol2
 datasets/regnetwork/human
 notebooks/lightning_logs
+pdb/
+cc-to-pdb.tdd
+entries.idx
+pdb_cluster_all_seqs.fasta
+pdb_cluster_cluster.tsv
+pdb_cluster_rep_seq_id_*_c_*.fasta
+pdb_bundle_index.txt
+pdb_entry_type.txt
+pdb_seqres.txt
+pdb_seqres.txt.gz
+pdb.fasta
+resolu.idx
+source.idx
+
+# Foldcomp files
+afdb_swissprot_v4
+afdb_swissprot_v4.*
+
+# Local test directories
+tmp/

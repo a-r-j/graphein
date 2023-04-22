@@ -51,7 +51,7 @@ def generate_graph():
     """Generate PDB network.
     This is a helper function.
     """
-    return construct_graph(pdb_path=str(DATA_PATH))
+    return construct_graph(path=str(DATA_PATH))
 
 
 @pytest.fixture(scope="module")
@@ -187,7 +187,7 @@ def test_add_cation_pi_interactions(net):
 def test_add_peptide_bonds():
     file_path = Path(__file__).parent.parent / "test_data/4hhb.pdb"
     # Peptide bonds are default
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     for u, v in G.edges():
         assert abs(int(u.split(":")[2]) - int(v.split(":")[2])) == 1
@@ -203,7 +203,7 @@ def test_add_sequence_distance_edges():
                 partial(add_sequence_distance_edges, d=d)
             ]
         )
-        G = construct_graph(pdb_path=str(file_path), config=config)
+        G = construct_graph(path=str(file_path), config=config)
         for u, v in G.edges():
             assert abs(int(u.split(":")[2]) - int(v.split(":")[2])) == d
 

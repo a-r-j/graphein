@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import pandas as pd
 from loguru import logger as log
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 from ..resi_atoms import (
     ATOM_NUMBERING_MODIFIED,
@@ -35,7 +35,7 @@ except ImportError:
 
 def get_sequence(
     df: pd.DataFrame,
-    chains: str = "all",
+    chains: Union[str, List[str]] = "all",
     insertions: bool = False,
     list_of_three: bool = False,
     three_to_one_map: Optional[str] = None,
@@ -61,7 +61,9 @@ def get_sequence(
     """
     # Select chains
     if chains != "all":
-        df = df.loc[df.chain_id.isin(list(chains))]
+        if isinstance(chains, str):
+            chains = [chains]
+        df = df.loc[df.chain_id.isin(chains)]
 
     # Assign residues IDs
     if "residue_id" not in df.columns:
@@ -92,7 +94,7 @@ def get_sequence(
 
 
 def get_residue_id(
-    df: pd.DataFrame, insertions: bool = False, unique: bool = True
+    df: pd.DataFrame, insertions: bool = True, unique: bool = True
 ) -> List[str]:
     """
     Returns a list of residue IDs from a DataFrame of a protein structure.
@@ -169,10 +171,16 @@ def residue_type_tensor(
     )
 
     # Convert to one letter code
-    residues = [three_to_one_mapping[res] for res in residues]
+    residues_one = []
+    for res in residues:
+        res = three_to_one_mapping[res]
+        if res in vocabulary:
+            residues_one.append(res)
+        else:
+            residues_one.append("X")
 
     residues = torch.tensor(
-        [vocabulary.index(res) for res in residues],
+        [vocabulary.index(res) for res in residues_one],
         dtype=dtype,
         device=device,
     )
