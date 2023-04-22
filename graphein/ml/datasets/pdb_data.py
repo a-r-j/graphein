@@ -1538,9 +1538,15 @@ class PDBManager:
 
         # Check we have all source PDB files
         downloaded = os.listdir(self.pdb_dir)
-        downloaded = [f for f in downloaded if f.endswith(f".{self.structure_format}")]
+        downloaded = [
+            f for f in downloaded if f.endswith(f".{self.structure_format}")
+        ]
 
-        to_download = [k for k in df.keys() if f"{k}.{self.structure_format}" not in downloaded]
+        to_download = [
+            k
+            for k in df.keys()
+            if f"{k}.{self.structure_format}" not in downloaded
+        ]
         if len(to_download) > 0:
             log.info(f"Downloading {len(to_download)} PDB files...")
             download_pdb_multiprocessing(
@@ -1552,7 +1558,9 @@ class PDBManager:
         log.info("Extracting chains...")
         paths = []
         for k, v in tqdm(df.items()):
-            in_file = os.path.join(self.pdb_dir, f"{k}.{self.structure_format}")
+            in_file = os.path.join(
+                self.pdb_dir, f"{k}.{self.structure_format}"
+            )
             paths.append(
                 extract_chains_to_file(
                     in_file, v, out_dir=self.pdb_dir, models=models
@@ -1757,8 +1765,12 @@ class PDBManager:
             for _, entry in tqdm(df_merged.iterrows()):
                 entry_pdb_code, entry_chains = entry["pdb"], entry["chain"]
 
-                input_pdb_filepath = Path(pdb_dir) / f"{entry_pdb_code}.{self.structure_format}"
-                output_pdb_filepath = split_dir / f"{entry_pdb_code}.{self.structure_format}"
+                input_pdb_filepath = (
+                    Path(pdb_dir) / f"{entry_pdb_code}.{self.structure_format}"
+                )
+                output_pdb_filepath = (
+                    split_dir / f"{entry_pdb_code}.{self.structure_format}"
+                )
 
                 if not os.path.exists(str(output_pdb_filepath)):
                     try:
