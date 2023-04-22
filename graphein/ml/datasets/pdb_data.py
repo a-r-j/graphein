@@ -30,6 +30,7 @@ class PDBManager:
     def __init__(
         self,
         root_dir: str = ".",
+        structure_format: str = "pdb",
         splits: Optional[List[str]] = None,
         split_ratios: Optional[List[float]] = None,
         split_time_frames: Optional[List[np.datetime64]] = None,
@@ -40,6 +41,9 @@ class PDBManager:
         :param root_dir: The directory in which to store all PDB entries,
             defaults to ``"."``.
         :type root_dir: str, optional
+        :param structure_format: Whether to use ``.pdb`` or ``.mmtf`` file.
+            Defaults to ``"pdb"``.
+        :type structure_format: str, optional
         :param splits: A list of names corresponding to each dataset split,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
@@ -81,6 +85,8 @@ class PDBManager:
         self.pdb_dir = self.root_dir / "pdb"
         if not os.path.exists(self.pdb_dir):
             os.makedirs(self.pdb_dir)
+
+        self.structure_format = structure_format
 
         self.pdb_seqres_archive_filename = Path(self.pdb_sequences_url).name
         self.pdb_seqres_filename = Path(self.pdb_seqres_archive_filename).stem
@@ -1532,9 +1538,9 @@ class PDBManager:
 
         # Check we have all source PDB files
         downloaded = os.listdir(self.pdb_dir)
-        downloaded = [f for f in downloaded if f.endswith(".pdb")]
+        downloaded = [f for f in downloaded if f.endswith(f".{self.structure_format}")]
 
-        to_download = [k for k in df.keys() if f"{k}.pdb" not in downloaded]
+        to_download = [k for k in df.keys() if f"{k}.{self.structure_format}" not in downloaded]
         if len(to_download) > 0:
             log.info(f"Downloading {len(to_download)} PDB files...")
             download_pdb_multiprocessing(
@@ -1546,7 +1552,7 @@ class PDBManager:
         log.info("Extracting chains...")
         paths = []
         for k, v in tqdm(df.items()):
-            in_file = os.path.join(self.pdb_dir, f"{k}.pdb")
+            in_file = os.path.join(self.pdb_dir, f"{k}.{self.structure_format}")
             paths.append(
                 extract_chains_to_file(
                     in_file, v, out_dir=self.pdb_dir, models=models
@@ -1751,8 +1757,8 @@ class PDBManager:
             for _, entry in tqdm(df_merged.iterrows()):
                 entry_pdb_code, entry_chains = entry["pdb"], entry["chain"]
 
-                input_pdb_filepath = Path(pdb_dir) / f"{entry_pdb_code}.pdb"
-                output_pdb_filepath = split_dir / f"{entry_pdb_code}.pdb"
+                input_pdb_filepath = Path(pdb_dir) / f"{entry_pdb_code}.{self.structure_format}"
+                output_pdb_filepath = split_dir / f"{entry_pdb_code}.{self.structure_format}"
 
                 if not os.path.exists(str(output_pdb_filepath)):
                     try:
