@@ -4,7 +4,13 @@
 * Chain selections are now specified with either `"all"` or a list of strings (e.g. `["A", "B"]`) rather than a single selection string (e.g. `"AB"`). This is a necessary chain due to MMTF support which can have multicharacter chain identifiers. [#307](https://github.com/a-r-j/graphein/pull/307)
 
 
+#### Bugfixes
+* Adds missing `stage` parameter to `graphein.ml.datasets.foldcomp_data.FoldCompDataModule.setup()`. [#310](https://github.com/a-r-j/graphein/pull/310)
+
 #### Other Changes
+* Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Adds support for `.ent` files to `graphein.protein.graphs.read_pdb_to_dataframe`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Obsolete residues with no replacement are now returned by `graphein.protein.utils.get_obsolete_mapping`. [#310](https://github.com/a-r-j/graphein/pull/310)
 * Adds the ability to store a dictionary of HETATM positions in `Data`/`Protein` objects created in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
 * Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
 * Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
