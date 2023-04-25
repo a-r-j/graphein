@@ -9,11 +9,11 @@ Graphein provides many types for commonly used tensors of specific shapes.
 # Code Repository: https://github.com/a-r-j/graphein
 from typing import NewType, Optional, Union
 
-from jaxtyping import Float
+from jaxtyping import Float, Int
 from torch import Tensor
 
 # Positions
-AtomTensor = NewType("AtomTensor", Float[Tensor, "-1 37 3"])
+AtomTensor = NewType("AtomTensor", Float[Tensor, "residues 37 3"])
 """
 ``torch.float[-1, 37, 3]``
 
@@ -24,7 +24,7 @@ x,y,z positions.
 .. seealso:: :class:`ResidueTensor` :class:`CoordTensor`
 """
 
-BackboneTensor = NewType("BackboneTensor", Float[Tensor, "-1 4 3"])
+BackboneTensor = NewType("BackboneTensor", Float[Tensor, "residues 4 3"])
 """
 ``torch.float[-1, 4, 3]``
 
@@ -49,7 +49,7 @@ fill value (default = ``1e-5``).
 """
 
 
-CoordTensor = NewType("CoordTensor", Float[Tensor, "-1 3"])
+CoordTensor = NewType("CoordTensor", Float[Tensor, "nodes 3"])
 """
 ``torch.float[-1, 3]``
 
@@ -68,7 +68,7 @@ Union of ``AtomTensor`` and ``CoordTensor``.
 """
 
 # Represenations
-BackboneFrameTensor = NewType("BackboneFrameTensor", Float[Tensor, "-1 3 3"])
+BackboneFrameTensor = NewType("BackboneFrameTensor", Float[Tensor, "residues 3 3"])
 """
 ``torch.float[-1, 3, 3]``
 
@@ -89,9 +89,9 @@ ResidueFrameTensor = NewType("ResidueFrameTensor", Float[Tensor, "3 3"])
 
 
 # Rotations
-EulerAngleTensor = NewType("EulerAngleTensor", Float[Tensor, "-1 3"])
+EulerAngleTensor = NewType("EulerAngleTensor", Float[Tensor, "nodes 3"])
 
-QuaternionTensor = NewType("QuaternionTensor", Float[Tensor, "-1 4"])
+QuaternionTensor = NewType("QuaternionTensor", Float[Tensor, "nodes 4"])
 """
 ``torch.float[-1, 4]``
 
@@ -102,7 +102,7 @@ Tensor of quaternions. The first dimension is the length of the protein
 """
 
 
-TransformTensor = NewType("TransformTensor", Float[Tensor, "-1 4 4"])
+TransformTensor = NewType("TransformTensor", Float[Tensor, "nodes 4 4"])
 
 
 RotationMatrix2D = NewType("RotationMatrix2D", Float[Tensor, "2 2"])
@@ -135,7 +135,7 @@ Specifies a rotation matrix in either 2D or 3D.
 """
 
 
-RotationMatrixTensor = NewType("RotationMatrixTensor", Float[Tensor, "-1 3 3"])
+RotationMatrixTensor = NewType("RotationMatrixTensor", Float[Tensor, "nodes 3 3"])
 
 RotationTensor = NewType(
     "RotationTensor", Union[QuaternionTensor, RotationMatrixTensor]
@@ -144,7 +144,7 @@ RotationTensor = NewType(
 
 # Angles
 DihedralTensor = NewType(
-    "DihedralTensor", Union[Float[Tensor, "-1 3"], Float[Tensor, "-1 6"]]
+    "DihedralTensor", Union[Float[Tensor, "residues 3"], Float[Tensor, "residues 6"]]
 )
 """
 ``Union[torch.float[-1, 3], torch.float[-1, 6]]``
@@ -161,7 +161,7 @@ or embedded on the unit sphere ``[cos(phi), sin(phi), cos(psi), sin(psi), ...]``
 """
 
 TorsionTensor = NewType(
-    "TorsionTensor", Union[Float[Tensor, "-1 4"], Float[Tensor, "-1 8"]]
+    "TorsionTensor", Union[Float[Tensor, "residues 4"], Float[Tensor, "residues 8"]]
 )
 """
 ``Union[torch.float[-1, 4], torch.float[-1, 8]]``
@@ -177,7 +177,7 @@ degrees/radians or embedded on the unit sphere:
 
 """
 
-BackboneFrameTensor = NewType("BackboneFrameTensor", Float[Tensor, "-1 3 3"])
+BackboneFrameTensor = NewType("BackboneFrameTensor", Float[Tensor, "residues 3 3"])
 """
 ``torch.float[-1, 3, 3]``
 
@@ -198,12 +198,12 @@ ResidueFrameTensor = NewType("ResidueFrameTensor", Float[Tensor, "3 3"])
 .. seealso:: :class:`BackboneFrameTensor`
 """
 
-EdgeTensor = NewType("EdgeTensor", Float[Tensor, "2 -1"])
+EdgeTensor = NewType("EdgeTensor", Int[Tensor, "2 edges"])
 
 
-OrientationTensor = NewType("OrientationTensor", Float[Tensor, "-1 2 3"])
+OrientationTensor = NewType("OrientationTensor", Float[Tensor, "nodes 2 3"])
 
 
-ScalarTensor = NewType("ScalarTensor", Float[Tensor, "-1"])
+ScalarTensor = NewType("ScalarTensor", Float[Tensor, "nodes"])
 
 OptTensor = NewType("OptTensor", Optional[Tensor])
