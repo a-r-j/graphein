@@ -68,7 +68,9 @@ Union of ``AtomTensor`` and ``CoordTensor``.
 """
 
 # Represenations
-BackboneFrameTensor = NewType("BackboneFrameTensor", Float[Tensor, "residues 3 3"])
+BackboneFrameTensor = NewType(
+    "BackboneFrameTensor", Float[Tensor, "residues 3 3"]
+)
 """
 ``torch.float[-1, 3, 3]``
 
@@ -135,7 +137,9 @@ Specifies a rotation matrix in either 2D or 3D.
 """
 
 
-RotationMatrixTensor = NewType("RotationMatrixTensor", Float[Tensor, "nodes 3 3"])
+RotationMatrixTensor = NewType(
+    "RotationMatrixTensor", Float[Tensor, "nodes 3 3"]
+)
 
 RotationTensor = NewType(
     "RotationTensor", Union[QuaternionTensor, RotationMatrixTensor]
@@ -144,7 +148,8 @@ RotationTensor = NewType(
 
 # Angles
 DihedralTensor = NewType(
-    "DihedralTensor", Union[Float[Tensor, "residues 3"], Float[Tensor, "residues 6"]]
+    "DihedralTensor",
+    Union[Float[Tensor, "residues 3"], Float[Tensor, "residues 6"]],
 )
 """
 ``Union[torch.float[-1, 3], torch.float[-1, 6]]``
@@ -161,7 +166,8 @@ or embedded on the unit sphere ``[cos(phi), sin(phi), cos(psi), sin(psi), ...]``
 """
 
 TorsionTensor = NewType(
-    "TorsionTensor", Union[Float[Tensor, "residues 4"], Float[Tensor, "residues 8"]]
+    "TorsionTensor",
+    Union[Float[Tensor, "residues 4"], Float[Tensor, "residues 8"]],
 )
 """
 ``Union[torch.float[-1, 4], torch.float[-1, 8]]``
@@ -177,7 +183,9 @@ degrees/radians or embedded on the unit sphere:
 
 """
 
-BackboneFrameTensor = NewType("BackboneFrameTensor", Float[Tensor, "residues 3 3"])
+BackboneFrameTensor = NewType(
+    "BackboneFrameTensor", Float[Tensor, "residues 3 3"]
+)
 """
 ``torch.float[-1, 3, 3]``
 

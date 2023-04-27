@@ -293,7 +293,11 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         self.train_split = train_split
         self.val_split = val_split
         self.test_split = test_split
-        self.transform = self._compose_transforms(transform) if transform is not None else None
+        self.transform = (
+            self._compose_transforms(transform)
+            if transform is not None
+            else None
+        )
 
         if (
             isinstance(train_split, float)
