@@ -6,6 +6,8 @@
 
 #### Bugfixes
 * Adds missing `stage` parameter to `graphein.ml.datasets.foldcomp_data.FoldCompDataModule.setup()`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Ensures exproting groups of PDB chains with PDBManager selects the first model for multu-model structures. [#311](https://github.com/a-r-j/graphein/pull/311)
+* Fixes bug with exporting PDBs with only one splitting strategy in PDBManager [#311](https://github.com/a-r-j/graphein/pull/311)
 
 #### Other Changes
 * Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
