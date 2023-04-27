@@ -232,10 +232,7 @@ class FoldCompDataset(Dataset):
             idx = self.protein_to_idx[idx]
         name, pdb = self.db[idx]
 
-        out = self.process_pdb(pdb, name)
-
-        # Apply transforms, if any
-        return self.transform(out) if self.transform is not None else out
+        return self.process_pdb(pdb, name)
 
 
 class FoldCompLightningDataModule(L.LightningDataModule):
