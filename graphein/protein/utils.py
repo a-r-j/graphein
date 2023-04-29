@@ -10,7 +10,7 @@ import tempfile
 from functools import lru_cache, partial
 from pathlib import Path
 from shutil import which
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
@@ -54,6 +54,8 @@ def get_obsolete_mapping() -> Dict[str, str]:
             obs_dict[entry[2].lower().decode("utf-8")] = (
                 entry[3].lower().decode("utf-8")
             )
+        elif len(entry) == 3:
+            obs_dict[entry[2].lower().decode("utf-8")] = ""
     return obs_dict
 
 
@@ -514,6 +516,27 @@ def esmfold(
             f.write(cif)
 
 
+def cast_pdb_column_to_type(
+    pdb: PandasPdb, column_name: str, type: Type
+) -> PandasPdb:
+    """Casts a specified column within a PandasPdb object to a given type
+    and returns the typecasted PandasPdb object.
+
+    :param pdb: Input PandasPdb object.
+    type pdb: PandasPdb
+    :param column_name: Name of column to typecast.
+    :type column_name: str
+    :param type: Type to which to cast the specified column.
+    :type type: Type
+    :return: Typecasted PandasPdb object.
+    :rtype: PandasPdb
+    """
+    for key in pdb.df:
+        if column_name in pdb.df[key]:
+            pdb.df[key][column_name] = pdb.df[key][column_name].apply(type)
+    return pdb
+
+
 def extract_chains_to_file(
     pdb_file: str, chains: List[str], out_dir: str, models: List[int] = [1]
 ) -> List[str]:
@@ -542,6 +565,8 @@ def extract_chains_to_file(
     fname = fname.split(".")[0]
 
     ppdb = PandasPdb().read_pdb(pdb_file).get_models(models)
+    # work around int-typing bug for `model_id` within version `0.5.0.dev0` of BioPandas -> appears when calling `to_pdb()`
+    cast_pdb_column_to_type(ppdb, column_name="model_id", type=str)
 
     out_files = []
     for chain in chains:

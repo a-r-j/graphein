@@ -6,17 +6,17 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 import asyncio
-import contextlib
 import os
 import random
 import shutil
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import Callable, Dict, Iterable, List, Optional, Union
 
 import pandas as pd
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from sklearn.model_selection import train_test_split
+from torch_geometric import transforms as T
 from torch_geometric.data import Data, Dataset
 from torch_geometric.loader import DataLoader
 from tqdm import tqdm
@@ -76,7 +76,7 @@ class FoldCompDataset(Dataset):
         exclude_ids: Optional[List[str]] = None,
         fraction: float = 1.0,
         use_graphein: bool = True,
-        transform: Optional[List[GraphTransform]] = None,
+        transform: Optional[T.BaseTransform] = None,
     ):
         """Dataset class for FoldComp databases.
 
@@ -124,7 +124,7 @@ class FoldCompDataset(Dataset):
         ]
         self._get_indices()
         super().__init__(
-            root=self.root, transform=None, pre_transform=None  # type: ignore
+            root=self.root, transform=self.transform, pre_transform=None  # type: ignore
         )
 
     @property
@@ -232,14 +232,7 @@ class FoldCompDataset(Dataset):
             idx = self.protein_to_idx[idx]
         name, pdb = self.db[idx]
 
-        out = self.process_pdb(pdb, name)
-
-        # Apply transforms, if any
-        if self.transform is not None:
-            for transform in self.transform:
-                out = transform(out)
-
-        return out
+        return self.process_pdb(pdb, name)
 
 
 class FoldCompLightningDataModule(L.LightningDataModule):
@@ -252,7 +245,7 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         train_split: Optional[Union[List[str], float]] = None,
         val_split: Optional[Union[List[str], float]] = None,
         test_split: Optional[Union[List[str], float]] = None,
-        transform: Optional[List[GraphTransform]] = None,
+        transform: Optional[Iterable[Callable]] = None,
         num_workers: int = 4,
         pin_memory: bool = True,
     ) -> None:
@@ -281,7 +274,7 @@ class FoldCompLightningDataModule(L.LightningDataModule):
             ``Data``/``Protein`` object and return a transformed version.
             The data object will be transformed before every access.
             (default: ``None``).
-        :type transform: Optional[List[GraphTransform]]
+        :type transform: Optional[Iterable[Callable]]
         :param num_workers: Number of workers to use for data loading, defaults
             to ``4``.
         :type num_workers: int, optional
@@ -297,7 +290,12 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         self.train_split = train_split
         self.val_split = val_split
         self.test_split = test_split
-        self.transform = transform
+        self.transform = (
+            self._compose_transforms(transform)
+            if transform is not None
+            else None
+        )
+
         if (
             isinstance(train_split, float)
             and isinstance(val_split, float)
@@ -311,7 +309,13 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         self.num_workers = num_workers
         self.pin_memory = pin_memory
 
-    def setup(self, stage: str):
+    def _compose_transforms(self, transforms: Iterable[Callable]) -> T.Compose:
+        try:
+            return T.Compose(list(transforms.values()))
+        except Exception:
+            return T.Compose(transforms)
+
+    def setup(self, stage: Optional[str] = None):
         self.train_dataset()
         self.val_dataset()
         self.test_dataset()

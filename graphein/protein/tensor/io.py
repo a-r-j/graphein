@@ -98,6 +98,7 @@ def protein_to_pyg(
     path: Optional[Union[str, os.PathLike]] = None,
     pdb_code: Optional[str] = None,
     uniprot_id: Optional[str] = None,
+    df: Optional[pd.DataFrame] = None,
     chain_selection: Union[str, List[str]] = "all",
     deprotonate: bool = True,
     keep_insertions: bool = True,
@@ -182,14 +183,15 @@ def protein_to_pyg(
             else uniprot_id
         )
     else:
-        raise ValueError("Must provide either a path, PDB code or uniprot ID.")
+        id = None
 
-    df = read_pdb_to_dataframe(
-        path=path,
-        pdb_code=pdb_code,
-        uniprot_id=uniprot_id,
-        model_index=model_index,
-    )
+    if df is None:
+        df = read_pdb_to_dataframe(
+            path=path,
+            pdb_code=pdb_code,
+            uniprot_id=uniprot_id,
+            model_index=model_index,
+        )
     if chain_selection != "all":
         if isinstance(chain_selection, str):
             chain_selection = [chain_selection]

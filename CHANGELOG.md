@@ -12,7 +12,17 @@
 * [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes data types of geometric feature vectors: `object` -> `float`.
 * [Bugfix] - [#301](https://github.com/a-r-j/graphein/pull/301) Fixes the conversion of undirected NetworkX graph to directed PyG data.
 
+#### Bugfixes
+* Adds missing `stage` parameter to `graphein.ml.datasets.foldcomp_data.FoldCompDataModule.setup()`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Ensures exproting groups of PDB chains with PDBManager selects the first model for multu-model structures. [#311](https://github.com/a-r-j/graphein/pull/311)
+* Fixes bug with exporting PDBs with only one splitting strategy in PDBManager [#311](https://github.com/a-r-j/graphein/pull/311)
+* Fixes incorrect jaxtyping syntax for variable size dimensions [#312](https://github.com/a-r-j/graphein/pull/312)
+
 #### Other Changes
+* Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
+* Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Adds support for `.ent` files to `graphein.protein.graphs.read_pdb_to_dataframe`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Obsolete residues with no replacement are now returned by `graphein.protein.utils.get_obsolete_mapping`. [#310](https://github.com/a-r-j/graphein/pull/310)
 * Adds the ability to store a dictionary of HETATM positions in `Data`/`Protein` objects created in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
 * Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
 * Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
@@ -37,7 +47,6 @@
 * Drops explicit Python 3.7 support. Colab now runs on 3.8+. [#272](https://github.com/a-r-j/graphein/pull/272)
 * Dockerfile now builds from `pytorch/pytorch:1.13.0-cuda11.6-cudnn8-runtime` (replaces `pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime`) [#272](https://github.com/a-r-j/graphein/pull/272)
 * Missing `os` import fixed in [#297(https://github.com/a-r-j/graphein/pull/297). Fixes [#296](https://github.com/a-r-j/graphein/issues/296)
-
 
 
 ### 1.6.0 - 18/03/2023
