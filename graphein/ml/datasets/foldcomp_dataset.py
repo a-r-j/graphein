@@ -9,7 +9,6 @@ import asyncio
 import os
 import random
 import shutil
-from io import StringIO
 from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Optional, Union
 
@@ -19,7 +18,6 @@ import numpy as np
 import torch
 
 #from biopandas.pdb import PandasPdb
-from biotite.structure.io.pdb import PDBFile
 from loguru import logger as log
 from sklearn.model_selection import train_test_split
 from torch_geometric import transforms as T
@@ -29,12 +27,10 @@ from tqdm import tqdm
 
 from graphein.protein.resi_atoms import (
     ATOM_NUMBERING,
-    RESI_THREE_TO_1,
     STANDARD_AMINO_ACID_MAPPING_1_TO_3,
     STANDARD_AMINO_ACIDS,
 )
 from graphein.protein.tensor import Protein
-from graphein.protein.tensor.io import protein_to_pyg
 from graphein.utils.dependencies import import_message
 
 try:
