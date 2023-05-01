@@ -10,7 +10,7 @@ import os
 import random
 import shutil
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Optional, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 
 import numpy as np
 import torch
@@ -265,7 +265,7 @@ class FoldCompDataset(Dataset):
             self.db = foldcomp.open(self.root / self.database, decompress=False)  # type: ignore
 
     @staticmethod
-    def fc_to_pyg(data: Dict, name: Optional[str] = None) -> Protein:
+    def fc_to_pyg(data: Dict[str, Any], name: Optional[str] = None) -> Protein:
         # Map sequence to 3-letter codes
         res = [STANDARD_AMINO_ACID_MAPPING_1_TO_3[r] for r in data["residues"]]
         residue_type = torch.tensor(
@@ -313,7 +313,7 @@ class FoldCompDataset(Dataset):
             idx = self.protein_to_idx[idx]
 
         name = self.idx_to_protein[idx]
-        data = foldcomp.get_data(self.db[idx])
+        data = foldcomp.get_data(self.db[idx]) # type: ignore
         return self.fc_to_pyg(data, name)
 
 
