@@ -6,6 +6,8 @@
 
 #### Bugfixes
 * Adds missing `stage` parameter to `graphein.ml.datasets.foldcomp_data.FoldCompDataModule.setup()`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Ensures exproting groups of PDB chains with PDBManager selects the first model for multu-model structures. [#311](https://github.com/a-r-j/graphein/pull/311)
+* Fixes bug with exporting PDBs with only one splitting strategy in PDBManager [#311](https://github.com/a-r-j/graphein/pull/311)
 * Fixes incorrect jaxtyping syntax for variable size dimensions [#312](https://github.com/a-r-j/graphein/pull/312)
 
 #### Other Changes
@@ -39,7 +41,6 @@
 * Drops explicit Python 3.7 support. Colab now runs on 3.8+. [#272](https://github.com/a-r-j/graphein/pull/272)
 * Dockerfile now builds from `pytorch/pytorch:1.13.0-cuda11.6-cudnn8-runtime` (replaces `pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime`) [#272](https://github.com/a-r-j/graphein/pull/272)
 * Missing `os` import fixed in [#297(https://github.com/a-r-j/graphein/pull/297). Fixes [#296](https://github.com/a-r-j/graphein/issues/296)
-
 
 
 ### 1.6.0 - 18/03/2023
