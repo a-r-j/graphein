@@ -9,11 +9,17 @@ import asyncio
 import os
 import random
 import shutil
+from io import StringIO
 from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Optional, Union
 
-import pandas as pd
-from biopandas.pdb import PandasPdb
+import numpy as np
+
+#import pandas as pd
+import torch
+
+#from biopandas.pdb import PandasPdb
+from biotite.structure.io.pdb import PDBFile
 from loguru import logger as log
 from sklearn.model_selection import train_test_split
 from torch_geometric import transforms as T
@@ -21,7 +27,14 @@ from torch_geometric.data import Data, Dataset
 from torch_geometric.loader import DataLoader
 from tqdm import tqdm
 
+from graphein.protein.resi_atoms import (
+    ATOM_NUMBERING,
+    RESI_THREE_TO_1,
+    STANDARD_AMINO_ACID_MAPPING_1_TO_3,
+    STANDARD_AMINO_ACIDS,
+)
 from graphein.protein.tensor import Protein
+from graphein.protein.tensor.io import protein_to_pyg
 from graphein.utils.dependencies import import_message
 
 try:
@@ -65,6 +78,81 @@ https://github.com/steineggerlab/foldcomp
 
 
 GraphTransform = Callable[[Union[Data, Protein]], Union[Data, Protein]]
+
+
+ATOM_MAP = {'MET': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'SD', 'CE'],
+             'ILE': ['N', 'CA', 'C', 'O', 'CB', 'CG1', 'CG2', 'CD1'],
+             'LEU': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD1', 'CD2'],
+             'ALA': ['N', 'CA', 'C', 'O', 'CB'],
+             'ASN': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'OD1', 'ND2'],
+             'PRO': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD'],
+             'ARG': ['N',
+              'CA',
+              'C',
+              'O',
+              'CB',
+              'CG',
+              'CD',
+              'NE',
+              'CZ',
+              'NH1',
+              'NH2'],
+             'HIS': ['N',
+              'CA',
+              'C',
+              'O',
+              'CB',
+              'CG',
+              'ND1',
+              'CD2',
+              'CE1',
+              'NE2'],
+             'GLU': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'OE1', 'OE2'],
+             'TYR': ['N',
+              'CA',
+              'C',
+              'O',
+              'CB',
+              'CG',
+              'CD1',
+              'CD2',
+              'CE1',
+              'CE2',
+              'CZ',
+              'OH'],
+             'VAL': ['N', 'CA', 'C', 'O', 'CB', 'CG1', 'CG2'],
+             'LYS': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'CE', 'NZ'],
+             'THR': ['N', 'CA', 'C', 'O', 'CB', 'OG1', 'CG2'],
+             'PHE': ['N',
+              'CA',
+              'C',
+              'O',
+              'CB',
+              'CG',
+              'CD1',
+              'CD2',
+              'CE1',
+              'CE2',
+              'CZ'],
+             'GLY': ['N', 'CA', 'C', 'O'],
+             'SER': ['N', 'CA', 'C', 'O', 'CB', 'OG'],
+             'GLN': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'OE1', 'NE2'],
+             'ASP': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'OD1', 'OD2'],
+             'CYS': ['N', 'CA', 'C', 'O', 'CB', 'SG'],
+             'TRP': ['N',
+              'CA',
+              'C',
+              'O',
+              'CB',
+              'CG',
+              'CD1',
+              'CD2',
+              'NE1',
+              'CE2',
+              'CE3',
+              'CZ2',
+              'CZ3',
+              'CH2']}
 
 
 class FoldCompDataset(Dataset):
@@ -112,17 +200,15 @@ class FoldCompDataset(Dataset):
         self.use_graphein = use_graphein
         self.transform = transform
 
-        _database_files = [
-            "$db",
-            "$db.dbtype",
-            "$db.index",
-            "$db.lookup",
-            "$db.source",
-        ]
-        self.database_files = [
-            f.replace("$db", self.database) for f in _database_files
+        self._database_files = [
+            f"{self.database}",
+            f"{self.database}.dbtype",
+            f"{self.database}.index",
+            f"{self.database}.lookup",
+            f"{self.database}.source",
         ]
         self._get_indices()
+
         super().__init__(
             root=self.root, transform=self.transform, pre_transform=None  # type: ignore
         )
@@ -146,7 +232,7 @@ class FoldCompDataset(Dataset):
     def download(self):
         """Downloads foldcomp database if not already downloaded."""
 
-        if not all(os.path.exists(self.root / f) for f in self.database_files):
+        if not all(os.path.exists(self.root / f) for f in self._database_files):
             log.info(f"Downloading FoldComp dataset {self.database}...")
             try:
                 foldcomp.setup(self.database)
@@ -156,7 +242,7 @@ class FoldCompDataset(Dataset):
             log.info("Download complete.")
             log.info("Moving files to raw directory...")
 
-            for f in self.database_files:
+            for f in self._database_files:
                 shutil.move(f, self.root)
         else:
             log.info(f"FoldComp database already downloaded: {self.root}.")
@@ -203,23 +289,47 @@ class FoldCompDataset(Dataset):
         # Open the database
         log.info("Opening database...")
         if self.ids is not None:
-            self.db = foldcomp.open(self.root / self.database, ids=self.ids)  # type: ignore
+            self.db = foldcomp.open(self.root / self.database, ids=self.ids, decompress=False)  # type: ignore
         else:
-            self.db = foldcomp.open(self.root / self.database)  # type: ignore
+            self.db = foldcomp.open(self.root / self.database, decompress=False)  # type: ignore
 
     @staticmethod
-    def _parse_dataframe(pdb_string: str) -> pd.DataFrame:
-        """Reads a PDB string into a Pandas dataframe."""
-        pdb: List[str] = pdb_string.split("\n")
-        return PandasPdb().read_pdb_from_list(pdb).df["ATOM"]
+    def fc_to_pyg(data: Dict, name: Optional[str] = None) -> Protein:
+        # Map sequence to 3-letter codes
+        res = [STANDARD_AMINO_ACID_MAPPING_1_TO_3[r] for r in data["residues"]]
+        residue_type = torch.tensor(
+                [STANDARD_AMINO_ACIDS.index(res) for res in data["residues"]],
+            )
 
-    def process_pdb(self, pdb_string: str, name: str) -> Union[Protein, Data]:
-        """Process a PDB string into a Graphein Protein object."""
-        df = self._parse_dataframe(pdb_string)
-        data = Protein().from_dataframe(df, id=name)
-        if not self.use_graphein:
-            data = data.to_data()
-        return data
+        # Get residue numbers
+        res_num = [i for i, _ in enumerate(res)]
+
+        # Get list of atom types
+        atom_types = []
+        atom_counts = []
+        for r in res:
+            atom_types += ATOM_MAP[r]
+            atom_counts.append(len(ATOM_MAP[r]))
+        atom_types += ["OXT"]
+        atom_counts[-1] += 1
+
+        # Get atom indices
+        atom_idx = np.array([ATOM_NUMBERING[atm] for atm in atom_types])
+
+        # Initialize coordinates
+        coords = np.ones((len(res), 37, 3)) * 1e-5
+
+        res_idx = np.repeat(res_num, atom_counts)
+        coords[res_idx, atom_idx, :] = np.array(data["coordinates"])
+
+        return Protein(
+            coords=torch.from_numpy(coords).float(),
+            residues=res,
+            residue_id=[f"A:{m}:{str(n)}" for m, n in zip(res, res_num)],
+            chains=torch.zeros(len(res)),
+            residue_type=residue_type.long(),
+            id=name
+        )
 
     def len(self) -> int:
         """Returns length of the dataset"""
@@ -230,12 +340,10 @@ class FoldCompDataset(Dataset):
         ID or its index."""
         if isinstance(idx, str):
             idx = self.protein_to_idx[idx]
-        name, pdb = self.db[idx]
 
-        out = self.process_pdb(pdb, name)
-
-        # Apply transforms, if any
-        return self.transform(out) if self.transform is not None else out
+        name = self.idx_to_protein[idx]
+        data = foldcomp.get_data(self.db[idx])
+        return self.fc_to_pyg(data, name)
 
 
 class FoldCompLightningDataModule(L.LightningDataModule):
