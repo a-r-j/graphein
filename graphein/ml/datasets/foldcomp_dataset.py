@@ -13,11 +13,7 @@ from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Optional, Union
 
 import numpy as np
-
-#import pandas as pd
 import torch
-
-#from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from sklearn.model_selection import train_test_split
 from torch_geometric import transforms as T
@@ -76,79 +72,56 @@ https://github.com/steineggerlab/foldcomp
 GraphTransform = Callable[[Union[Data, Protein]], Union[Data, Protein]]
 
 
-ATOM_MAP = {'MET': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'SD', 'CE'],
-             'ILE': ['N', 'CA', 'C', 'O', 'CB', 'CG1', 'CG2', 'CD1'],
-             'LEU': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD1', 'CD2'],
-             'ALA': ['N', 'CA', 'C', 'O', 'CB'],
-             'ASN': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'OD1', 'ND2'],
-             'PRO': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD'],
-             'ARG': ['N',
-              'CA',
-              'C',
-              'O',
-              'CB',
-              'CG',
-              'CD',
-              'NE',
-              'CZ',
-              'NH1',
-              'NH2'],
-             'HIS': ['N',
-              'CA',
-              'C',
-              'O',
-              'CB',
-              'CG',
-              'ND1',
-              'CD2',
-              'CE1',
-              'NE2'],
-             'GLU': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'OE1', 'OE2'],
-             'TYR': ['N',
-              'CA',
-              'C',
-              'O',
-              'CB',
-              'CG',
-              'CD1',
-              'CD2',
-              'CE1',
-              'CE2',
-              'CZ',
-              'OH'],
-             'VAL': ['N', 'CA', 'C', 'O', 'CB', 'CG1', 'CG2'],
-             'LYS': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'CE', 'NZ'],
-             'THR': ['N', 'CA', 'C', 'O', 'CB', 'OG1', 'CG2'],
-             'PHE': ['N',
-              'CA',
-              'C',
-              'O',
-              'CB',
-              'CG',
-              'CD1',
-              'CD2',
-              'CE1',
-              'CE2',
-              'CZ'],
-             'GLY': ['N', 'CA', 'C', 'O'],
-             'SER': ['N', 'CA', 'C', 'O', 'CB', 'OG'],
-             'GLN': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'OE1', 'NE2'],
-             'ASP': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'OD1', 'OD2'],
-             'CYS': ['N', 'CA', 'C', 'O', 'CB', 'SG'],
-             'TRP': ['N',
-              'CA',
-              'C',
-              'O',
-              'CB',
-              'CG',
-              'CD1',
-              'CD2',
-              'NE1',
-              'CE2',
-              'CE3',
-              'CZ2',
-              'CZ3',
-              'CH2']}
+ATOM_MAP = {
+    "MET": ["N", "CA", "C", "O", "CB", "CG", "SD", "CE"],
+    "ILE": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "CD1"],
+    "LEU": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2"],
+    "ALA": ["N", "CA", "C", "O", "CB"],
+    "ASN": ["N", "CA", "C", "O", "CB", "CG", "OD1", "ND2"],
+    "PRO": ["N", "CA", "C", "O", "CB", "CG", "CD"],
+    "ARG": ["N", "CA", "C", "O", "CB", "CG", "CD", "NE", "CZ", "NH1", "NH2"],
+    "HIS": ["N", "CA", "C", "O", "CB", "CG", "ND1", "CD2", "CE1", "NE2"],
+    "GLU": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1", "OE2"],
+    "TYR": [
+        "N",
+        "CA",
+        "C",
+        "O",
+        "CB",
+        "CG",
+        "CD1",
+        "CD2",
+        "CE1",
+        "CE2",
+        "CZ",
+        "OH",
+    ],
+    "VAL": ["N", "CA", "C", "O", "CB", "CG1", "CG2"],
+    "LYS": ["N", "CA", "C", "O", "CB", "CG", "CD", "CE", "NZ"],
+    "THR": ["N", "CA", "C", "O", "CB", "OG1", "CG2"],
+    "PHE": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ"],
+    "GLY": ["N", "CA", "C", "O"],
+    "SER": ["N", "CA", "C", "O", "CB", "OG"],
+    "GLN": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1", "NE2"],
+    "ASP": ["N", "CA", "C", "O", "CB", "CG", "OD1", "OD2"],
+    "CYS": ["N", "CA", "C", "O", "CB", "SG"],
+    "TRP": [
+        "N",
+        "CA",
+        "C",
+        "O",
+        "CB",
+        "CG",
+        "CD1",
+        "CD2",
+        "NE1",
+        "CE2",
+        "CE3",
+        "CZ2",
+        "CZ3",
+        "CH2",
+    ],
+}
 
 
 class FoldCompDataset(Dataset):
@@ -228,7 +201,9 @@ class FoldCompDataset(Dataset):
     def download(self):
         """Downloads foldcomp database if not already downloaded."""
 
-        if not all(os.path.exists(self.root / f) for f in self._database_files):
+        if not all(
+            os.path.exists(self.root / f) for f in self._database_files
+        ):
             log.info(f"Downloading FoldComp dataset {self.database}...")
             try:
                 foldcomp.setup(self.database)
@@ -294,8 +269,8 @@ class FoldCompDataset(Dataset):
         # Map sequence to 3-letter codes
         res = [STANDARD_AMINO_ACID_MAPPING_1_TO_3[r] for r in data["residues"]]
         residue_type = torch.tensor(
-                [STANDARD_AMINO_ACIDS.index(res) for res in data["residues"]],
-            )
+            [STANDARD_AMINO_ACIDS.index(res) for res in data["residues"]],
+        )
 
         # Get residue numbers
         res_num = [i for i, _ in enumerate(res)]
@@ -324,7 +299,7 @@ class FoldCompDataset(Dataset):
             residue_id=[f"A:{m}:{str(n)}" for m, n in zip(res, res_num)],
             chains=torch.zeros(len(res)),
             residue_type=residue_type.long(),
-            id=name
+            id=name,
         )
 
     def len(self) -> int:
