@@ -314,7 +314,7 @@ class FoldCompDataset(Dataset):
             idx = self.protein_to_idx[idx]
 
         name = self.idx_to_protein[idx]
-        data = foldcomp.get_data(self.db[idx]) # type: ignore
+        data = foldcomp.get_data(self.db[idx])  # type: ignore
         return self.fc_to_pyg(data, name)
 
 

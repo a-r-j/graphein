@@ -18,7 +18,7 @@
 * Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
 * Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
 * Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
-
+* Improve FoldComp dataloading performance [#313](https://github.com/a-r-j/graphein/pull/313)
 
 ### 1.7.0 - UNRELEASED
 
