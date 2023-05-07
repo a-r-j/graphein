@@ -300,7 +300,7 @@ class FoldCompDataset(Dataset):
             residue_id=[f"A:{m}:{str(n)}" for m, n in zip(res, res_num)],
             chains=torch.zeros(len(res)),
             residue_type=residue_type.long(),
-            b_factor = torch.from_numpy(b_factor).float(),
+            b_factor=torch.from_numpy(b_factor).float(),
             id=name,
         )
 
