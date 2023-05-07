@@ -226,7 +226,7 @@ def kappa(
         angles = angles[mask]
 
     if embed:
-        angles = angle_to_unit_circle(angles)
+        angles = torch.stack([torch.cos(angles), torch.sin(angles)], dim=-1)
 
     return angles
 
@@ -288,7 +288,7 @@ def alpha(
         angles = angles[mask]
 
     if embed:
-        angles = angle_to_unit_circle(angles)
+        angles = torch.stack([torch.cos(angles), torch.sin(angles)], dim=-1)
 
     return angles
 
