@@ -79,7 +79,7 @@ def _extract_torsion_coords(
 
         angle_groups = CHI_ANGLES_ATOMS[res]
         if not selenium and res == "SEC":
-                angle_groups = []
+            angle_groups = []
 
         for angle_coord_set in angle_groups:
             res_coords.append([ATOM_NUMBERING[i] for i in angle_coord_set])
