@@ -71,7 +71,7 @@ def _extract_torsion_coords(
     idxs = []
 
     # Whether or not the protein contains selenocysteine
-    selenium = (coords.shape[1] == 38)
+    selenium = coords.shape[1] == 38
 
     # Iterate over residues and grab indices of the atoms for each Chi angle
     for i, res in enumerate(res_types):
@@ -124,7 +124,7 @@ def sidechain_torsion(
     :rtype: Union[TorsionTensor, Tuple[TorsionTensor, torch.Tensor]]
     """
     # Whether or not the protein contains selenocysteine
-    selenium = (coords.shape[1] == 38)
+    selenium = coords.shape[1] == 38
 
     idxs, coords = _extract_torsion_coords(coords, res_types)
     angles = _dihedral_angle(
