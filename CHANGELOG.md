@@ -10,6 +10,7 @@
 * Fixes bug with exporting PDBs with only one splitting strategy in PDBManager [#311](https://github.com/a-r-j/graphein/pull/311)
 * Fixes incorrect jaxtyping syntax for variable size dimensions [#312](https://github.com/a-r-j/graphein/pull/312)
 * Fixes shape of angle embeddings for `graphein.protein.tesnor.angles.alpha/kappa`. [#315](https://github.com/a-r-j/graphein/pull/315)
+* Fixes initialisation of `Protein` objects. [#317](https://github.com/a-r-j/graphein/issues/317) [#318](https://github.com/a-r-j/graphein/pull/318)
 
 #### Other Changes
 * Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
