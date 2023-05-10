@@ -24,7 +24,7 @@
 
 <br></br>
 
-[Documentation](http://www.graphein.ai) | [Paper](https://www.biorxiv.org/content/10.1101/2020.07.15.204701v1) | [Tutorials](http://graphein.ai/notebooks_index.html) | [Installation](#installation)
+[Documentation](http://www.graphein.ai) | [Paper](https://proceedings.neurips.cc/paper_files/paper/2022/hash/ade039c1db0391106a3375bd2feb310a-Abstract-Conference.html) | [Tutorials](http://graphein.ai/notebooks_index.html) | [Installation](#installation)
 
 Protein & Interactomic Graph Library
 

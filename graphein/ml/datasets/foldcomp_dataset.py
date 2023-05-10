@@ -293,13 +293,14 @@ class FoldCompDataset(Dataset):
         res_idx = np.repeat(res_num, atom_counts)
         coords[res_idx, atom_idx, :] = np.array(data["coordinates"])
         b_factor = np.array(data["b_factors"]) / 100
+
         return Protein(
             coords=torch.from_numpy(coords).float(),
             residues=res,
             residue_id=[f"A:{m}:{str(n)}" for m, n in zip(res, res_num)],
             chains=torch.zeros(len(res)),
             residue_type=residue_type.long(),
-            b_factor = torch.from_numpy(b_factor).float(),
+            b_factor=torch.from_numpy(b_factor).float(),
             id=name,
         )
 
