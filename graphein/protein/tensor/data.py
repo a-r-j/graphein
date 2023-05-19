@@ -132,7 +132,10 @@ class Protein(Data):
     """
 
     def __init__(
-        self, atom_list: List[str] = PROTEIN_ATOMS, fill_value: float = 1e-5, **kwargs
+        self,
+        atom_list: List[str] = PROTEIN_ATOMS,
+        fill_value: float = 1e-5,
+        **kwargs,
     ) -> None:
         """
         .. seealso::
@@ -1213,19 +1216,19 @@ class ProteinBatch(Batch):
 
         return proteins
 
-    #def __eq__(self, __o: object) -> bool:
-    #    # sourcery skip: merge-duplicate-blocks, merge-else-if-into-elif
-    #    for i in self.keys:
-    #        attr_self = getattr(self, i)
-    #        attr_other = getattr(__o, i)
-    #
-    #        if isinstance(attr_self, torch.Tensor):
-    #            if not is_tensor_equal(attr_self, attr_other):
-    #                return False
-    #        else:
-    #            if attr_self != attr_other:
-    #                return False
-    #    return True
+    def __eq__(self, __o: object) -> bool:
+        # sourcery skip: merge-duplicate-blocks, merge-else-if-into-elif
+        for i in self.keys:
+            attr_self = getattr(self, i)
+            attr_other = getattr(__o, i)
+
+            if isinstance(attr_self, torch.Tensor):
+                if not is_tensor_equal(attr_self, attr_other):
+                    return False
+            else:
+                if attr_self != attr_other:
+                    return False
+        return True
 
     def plot_structure(
         self,
