@@ -470,6 +470,11 @@ def dihedrals(
 ) -> DihedralTensor:
     length = coords.shape[0]
 
+    if embed and not rad:
+        raise ValueError(
+            "Cannot embed angles in degrees. Use embed=True and rad=True."
+            )
+
     if batch is None:
         batch = torch.zeros(length, device=coords.device).long()
 
@@ -492,7 +497,7 @@ def dihedrals(
 
     angles = torch.stack([phi, psi, omg], dim=2)
 
-    if rad:
+    if not rad:
         angles = angles * 180 / np.pi
 
     if sparse:

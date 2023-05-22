@@ -277,13 +277,14 @@ def point_to_coordinate(
         )
         coords_trans = torch.cat([coords_pretrans[i], transformed_coords], 0)
 
-    coords = F.pad(
-        coords_trans[: total_num_angles - 1], (0, 0, 0, 0, 1, 0)
-    )  # original
-    # coords = F.pad(coords_trans[: total_num_angles - 2], (0, 0, 0, 0, 2, 0))
-    # coords = F.pad(coords_trans[: total_num_angles - 3], (0, 0, 0, 0, 3, 0))
-    # return coords
-    #return coords_trans
+    #coords = F.pad(
+    #    coords_trans[: total_num_angles - 1], (0, 0, 0, 0, 1, 0)
+    #)  # original
+
+    # Pad and set first Ca to origin
+    coords = F.pad(coords_trans[: total_num_angles - 2], (0, 0, 0, 0, 2, 0))
+    # Set first N to canonical position
+    coords[0, 0] = torch.tensor([[-1.4584, 0, 0]])
     return coords
 
 
