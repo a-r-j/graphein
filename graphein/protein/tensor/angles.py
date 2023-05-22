@@ -175,7 +175,9 @@ def sidechain_torsion(
             )
         else:
             msk = torch.zeros(post_pad_len, 4, device=coords.device)
-            mask_msk = torch.zeros(post_pad_len, 4, device=coords.device, dtype=bool)
+            mask_msk = torch.zeros(
+                post_pad_len, 4, device=coords.device, dtype=bool
+            )
         angles = torch.vstack([angles, msk])
         mask = torch.vstack([mask, mask_msk])
 
@@ -225,7 +227,7 @@ def kappa(
     """
     if not rad and embed:
         raise ValueError("Cannot embed kappa angles in degrees.")
-    
+
     if x.ndim == 3:
         x = x[:, ca_idx, :]
 
@@ -295,7 +297,9 @@ def alpha(
     :rtype: torch.Tensor
     """
     if not rad and embed:
-        raise ValueError("Cannot embed angles on unit circle if not in radians.")
+        raise ValueError(
+            "Cannot embed angles on unit circle if not in radians."
+        )
 
     if x.ndim == 3:
         x = x[:, ca_idx, :]
@@ -488,7 +492,7 @@ def dihedrals(
     if embed and not rad:
         raise ValueError(
             "Cannot embed angles in degrees. Use embed=True and rad=True."
-            )
+        )
 
     if batch is None:
         batch = torch.zeros(length, device=coords.device).long()
