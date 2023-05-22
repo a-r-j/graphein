@@ -283,7 +283,7 @@ def point_to_coordinate(
     # coords = F.pad(coords_trans[: total_num_angles - 2], (0, 0, 0, 0, 2, 0))
     # coords = F.pad(coords_trans[: total_num_angles - 3], (0, 0, 0, 0, 3, 0))
     # return coords
-    #return coords_trans
+    # return coords_trans
     return coords
 
 
