@@ -134,38 +134,48 @@ def sidechain_torsion(
         coords[:, 3, :].unsqueeze(1),
     )
 
-    if rad:
-        angles = angles * torch.pi / 180
+    if embed and not rad:
+        raise ValueError("Cannot embed torsion angles in degrees.")
+
+    if not rad:
+        angles = angles * 180 / torch.pi
+
     angles, mask = to_dense_batch(angles, idxs)
     angles = angles.squeeze(-1)
 
     # Interleave sin and cos transformed tensors
-    angles = rearrange(
-        [torch.cos(angles), torch.sin(angles)], "t h w-> h (w t)"
-    )
-    mask = rearrange([mask, mask], "t h w -> h (w t)")
+    if embed:
+        angles = rearrange(
+            [torch.cos(angles), torch.sin(angles)], "t h w-> h (w t)"
+        )
+        mask = rearrange([mask, mask], "t h w -> h (w t)")
 
     # Pad if last residues are a run of ALA, GLY or UNK
     post_pad_len = 0
     res_types = copy.deepcopy(res_types)
     res_types.reverse()
+    PAD_RESIDUES = ["ALA", "GLY", "UNK"]
+    # If we have selenocysteine but no Se atoms,
+    # add it to the list of residues to pad since
+    if not selenium:
+        PAD_RESIDUES.append("SEC")
     for res in res_types:
-        PAD_RESIDUES = ["ALA", "GLY", "UNK"]
-        if not selenium:
-            PAD_RESIDUES.append("SEC")
-
         if res in PAD_RESIDUES:
             post_pad_len += 1
         else:
             break
 
     if post_pad_len != 0:
-        msk = torch.tensor(
-            [1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0], device=coords.device
-        ).repeat(post_pad_len, 1)
-        mask_msk = torch.tensor([False] * 8, device=coords.device).repeat(
-            post_pad_len, 1
-        )
+        if embed:
+            msk = torch.tensor(
+                [1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0], device=coords.device
+            ).repeat(post_pad_len, 1)
+            mask_msk = torch.tensor([False] * 8, device=coords.device).repeat(
+                post_pad_len, 1
+            )
+        else:
+            msk = torch.zeros(post_pad_len, 8, device=coords.device)
+            mask_msk = torch.zeros(post_pad_len, 4, device=coords.device, dtype=bool)
         angles = torch.vstack([angles, msk])
         mask = torch.vstack([mask, mask_msk])
 
@@ -213,6 +223,9 @@ def kappa(
     :return: Tensor of bend angles
     :rtype: torch.Tensor
     """
+    if not rad and embed:
+        raise ValueError("Cannot embed kappa angles in degrees.")
+    
     if x.ndim == 3:
         x = x[:, ca_idx, :]
 
@@ -281,6 +294,8 @@ def alpha(
     :return: Tensor of dihedral angles
     :rtype: torch.Tensor
     """
+    if not rad and embed:
+        raise ValueError("Cannot embed angles on unit circle if not in radians.")
 
     if x.ndim == 3:
         x = x[:, ca_idx, :]
