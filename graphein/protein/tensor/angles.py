@@ -174,7 +174,7 @@ def sidechain_torsion(
                 post_pad_len, 1
             )
         else:
-            msk = torch.zeros(post_pad_len, 8, device=coords.device)
+            msk = torch.zeros(post_pad_len, 4, device=coords.device)
             mask_msk = torch.zeros(post_pad_len, 4, device=coords.device, dtype=bool)
         angles = torch.vstack([angles, msk])
         mask = torch.vstack([mask, mask_msk])
