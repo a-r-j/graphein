@@ -11,6 +11,8 @@
 * Fixes incorrect jaxtyping syntax for variable size dimensions [#312](https://github.com/a-r-j/graphein/pull/312)
 * Fixes shape of angle embeddings for `graphein.protein.tesnor.angles.alpha/kappa`. [#315](https://github.com/a-r-j/graphein/pull/315)
 * Fixes initialisation of `Protein` objects. [#317](https://github.com/a-r-j/graphein/issues/317) [#318](https://github.com/a-r-j/graphein/pull/318)
+* Fixes incorrect `rad` and `embed` argument logic in `graphein.protein.tensor.angles.dihedrals/sidechain_torsion` [#321](https://github.com/a-r-j/graphein/pull/321)
+* Fixes incorrect start padding in pNeRF output [#321](https://github.com/a-r-j/graphein/pull/321)
 
 #### Other Changes
 * Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
