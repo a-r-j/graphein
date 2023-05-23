@@ -173,3 +173,6 @@ afdb_swissprot_v4.*
 
 # Local test directories
 tmp/
+
+# Local Conda/Mamba environment
+graphein-env/

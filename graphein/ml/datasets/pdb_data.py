@@ -727,6 +727,35 @@ class PDBManager:
         if update:
             self.df = df
         return df
+    
+    def name(
+        self,
+        substrings: List[str],
+        splits: Optional[List[str]] = None,
+        update: bool = False,
+    ) -> pd.DataFrame:
+        """
+        Select molecules by substrings present in their names:
+        e.g., [``DNA``, ``RNA``]
+
+        :param substrings: Substrings to be found within the name field of each molecule.
+        :type type: str, optional
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param update: Whether to modify the DataFrame in place, defaults to
+            ``False``.
+        :type update: bool, optional
+
+        :return: DataFrame of selected molecules.
+        :rtype: pd.DataFrame
+        """
+        splits_df = self.get_splits(splits)
+        df = splits_df.loc[splits_df.name.str.contains("|".join(substrings))]
+
+        if update:
+            self.df = df
+        return df
 
     def compare_length(
         self,
