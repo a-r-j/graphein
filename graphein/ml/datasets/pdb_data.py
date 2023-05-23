@@ -728,6 +728,35 @@ class PDBManager:
             self.df = df
         return df
     
+    def experiment_types(
+        self,
+        types: List[str] = ["diffraction"],
+        splits: Optional[List[str]] = None,
+        update: bool = False,
+    ) -> pd.DataFrame:
+        """
+        Select molecules by experiment types:
+        [``diffraction``, ``NMR``, ``EM``, ``other``]
+
+        :param types: Experiment types of molecules, defaults to "diffraction".
+        :type types: List[str], optional
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param update: Whether to modify the DataFrame in place, defaults to
+            ``False``.
+        :type update: bool, optional
+
+        :return: DataFrame of selected molecules.
+        :rtype: pd.DataFrame
+        """
+        splits_df = self.get_splits(splits)
+        df = splits_df.loc[splits_df.experiment_type.isin(types)]
+
+        if update:
+            self.df = df
+        return df
+    
     def name(
         self,
         substrings: List[str],
@@ -1084,6 +1113,33 @@ class PDBManager:
         if update:
             self.df = df
         return df
+    
+    def select_complexes_with_grouped_molecule_types(
+        self, types_to_group: List[str], splits: Optional[List[str]] = None, update: bool = False
+    ):
+        """
+        Select complexes containing at least one instance of each
+        provided molecule type.
+
+        :param types_to_group: Names of molecule types by which to assemble complexes.
+        :type types_to_group: List[str]
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param update: Whether to update the DataFrame in place, defaults to
+            ``False``.
+        :type update: bool, optional
+
+        :return: DataFrame containing only complexes with at least one instance
+          of each provided molecule type.
+        :rtype: pd.DataFrame
+        """
+        splits_df = self.get_splits(splits)
+        df = splits_df.groupby("pdb").filter(
+            lambda group: all(type_to_group in group["molecule_type"].values for type_to_group in types_to_group)
+        )
+        if update:
+            self.df = df
 
     def split_df_proportionally(
         self,
