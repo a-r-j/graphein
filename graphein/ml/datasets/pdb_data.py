@@ -1807,7 +1807,9 @@ class PDBManager:
                     pdb.df[key][field].isin(field_values)
                 ]
                 if "ATOM" in key and len(filtered_pdb) == 0:
-                    log.warning("Filtered DataFrame does not contain any atoms. Skipping DataFrame...")
+                    log.warning(
+                        "Filtered DataFrame does not contain any atoms. Skipping DataFrame..."
+                    )
                     return None
                 pdb.df[key] = filtered_pdb
         return pdb
