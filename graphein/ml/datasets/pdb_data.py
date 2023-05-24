@@ -1115,14 +1115,14 @@ class PDBManager:
         return df
     
     def select_complexes_with_grouped_molecule_types(
-        self, types_to_group: List[str], splits: Optional[List[str]] = None, update: bool = False
+        self, molecule_types_to_group: List[str], splits: Optional[List[str]] = None, update: bool = False
     ):
         """
         Select complexes containing at least one instance of each
         provided molecule type.
 
-        :param types_to_group: Names of molecule types by which to assemble complexes.
-        :type types_to_group: List[str]
+        :param molecule_types_to_group: Names of molecule types by which to assemble complexes.
+        :type molecule_types_to_group: List[str]
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
@@ -1136,7 +1136,7 @@ class PDBManager:
         """
         splits_df = self.get_splits(splits)
         df = splits_df.groupby("pdb").filter(
-            lambda group: all(type_to_group in group["molecule_type"].values for type_to_group in types_to_group)
+            lambda group: all(molecule_type_to_group in group["molecule_type"].values for molecule_type_to_group in molecule_types_to_group)
         )
         if update:
             self.df = df
@@ -1812,7 +1812,7 @@ class PDBManager:
         split: str,
         merge_fn: Callable,
         atom_df_name: str = "ATOM",
-        max_num_chains_per_pdb_code: int = 1,
+        max_num_chains_per_pdb_code: int = -1,
         models: List[int] = [1],
     ):
         """Record groups of PDB codes and associated chains
@@ -1833,7 +1833,7 @@ class PDBManager:
             ATOM entries within a PandasPdb object.
         :type atom_df_name: str, defaults to ``ATOM``
         :param max_num_chains_per_pdb_code: Maximum number of chains
-            to collate into a matching PDB file.
+            to collate into a matching PDB file, defaults to ``-1``.
         :type max_num_chains_per_pdb_code: int, optional
         :param models: List of indices of models from which to extract chains,
             defaults to ``[1]``.
@@ -1899,7 +1899,7 @@ class PDBManager:
         df: pd.DataFrame,
         out_dir: str = "collated_pdb",
         splits: Optional[List[str]] = None,
-        max_num_chains_per_pdb_code: int = 1,
+        max_num_chains_per_pdb_code: int = -1,
         models: List[int] = [1],
     ):
         """Write the given selection as a collection of PDB files.
@@ -1916,7 +1916,7 @@ class PDBManager:
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
         :param max_num_chains_per_pdb_code: Maximum number of chains
-            to collate into a matching PDB file.
+            to collate into a matching PDB file, defaults to ``-1``.
         :type max_num_chains_per_pdb_code: int, optional
         :param models: List of indices of models from which to extract chains,
             defaults to ``[1]``.
@@ -1952,7 +1952,7 @@ class PDBManager:
         self,
         pdb_dir: str,
         splits: Optional[List[str]] = None,
-        max_num_chains_per_pdb_code: int = 1,
+        max_num_chains_per_pdb_code: int = -1,
         models: List[int] = [1],
         force: bool = False,
     ):
@@ -1964,7 +1964,7 @@ class PDBManager:
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
         :param max_num_chains_per_pdb_code: Maximum number of chains
-            to collate into a matching PDB file.
+            to collate into a matching PDB file, defaults to ``-1``.
         :type max_num_chains_per_pdb_code: int, optional
         :param models: List of indices of models from which to extract chains,
             defaults to ``[1]``.
