@@ -1778,7 +1778,7 @@ class PDBManager:
 
     def select_pdb_by_criterion(
         self, pdb: PandasPdb, field: str, field_values: List[Any]
-    ) -> PandasPdb:
+    ) -> Optional[PandasPdb]:
         """Filter a PDB using a field selection.
 
         :param pdb: The PDB object to filter by a field.
@@ -1789,18 +1789,18 @@ class PDBManager:
             the PDB.
         :type field_values: List[Any]
 
-        :return: The filtered PDB object.
-        :rtype: PandasPdb
+        :return: The filtered PDB object or instead `None` to signify
+        that no atoms within the PDB object were found after filtering.
+        :rtype: Optional[PandasPdb], optional
         """
         for key in pdb.df:
             if field in pdb.df[key]:
                 filtered_pdb = pdb.df[key][
                     pdb.df[key][field].isin(field_values)
                 ]
-                if "ATOM" in key:
-                    assert (
-                        len(filtered_pdb) > 0
-                    ), "Filtered DataFrame must contain atoms."
+                if "ATOM" in key and len(filtered_pdb) == 0:
+                    log.warning("Filtered DataFrame does not contain any atoms. Skipping DataFrame...")
+                    return None
                 pdb.df[key] = filtered_pdb
         return pdb
 
@@ -1891,7 +1891,8 @@ class PDBManager:
                         pdb, "chain_id", chains
                     )
                     # export selected chains within the same PDB file
-                    pdb_chains.to_pdb(str(output_pdb_filepath))
+                    if pdb_chains:
+                        pdb_chains.to_pdb(str(output_pdb_filepath))
 
     def write_df_pdbs(
         self,
