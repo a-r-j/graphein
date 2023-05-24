@@ -1136,7 +1136,7 @@ class PDBManager:
         """
         splits_df = self.get_splits(splits)
         df = splits_df.groupby("pdb").filter(
-            lambda group: all(molecule_type_to_group in group["molecule_type"].values for molecule_type_to_group in molecule_types_to_group)
+            lambda group: all([molecule_type_to_group in group["molecule_type"].values for molecule_type_to_group in molecule_types_to_group])
         )
         if update:
             self.df = df
