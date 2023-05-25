@@ -23,6 +23,7 @@
 * Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
 * Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
 * Improve FoldComp dataloading performance and include B factors (pLDDT) in output. [#313](https://github.com/a-r-j/graphein/pull/313) [#315](https://github.com/a-r-j/graphein/pull/315)
+* Add new helper functions to PDBManager [#322](https://github.com/a-r-j/graphein/pull/322) (@amorehead)
 
 ### 1.7.0 - UNRELEASED
 
