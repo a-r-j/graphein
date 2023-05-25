@@ -1785,8 +1785,8 @@ class PDBManager:
         )
 
     def select_pdb_by_criterion(
-        self, pdb: PandasPdb, field: str, field_values: List[Any]
-    ) -> Optional[PandasPdb]:
+        self, pdb: PandasPdb, field: str, field_values: List[Any], pdb_code: str
+    ) -> PandasPdb:
         """Filter a PDB using a field selection.
 
         :param pdb: The PDB object to filter by a field.
@@ -1796,10 +1796,11 @@ class PDBManager:
         :param field_values: The field values by which to filter
             the PDB.
         :type field_values: List[Any]
+        :param pdb_code: The PDB code associated with a given PDB object.
+        :type pdb_code: str
 
-        :return: The filtered PDB object or instead `None` to signify
-        that no atoms within the PDB object were found after filtering.
-        :rtype: Optional[PandasPdb], optional
+        :return: The filtered PDB object.
+        :rtype: PandasPdb
         """
         for key in pdb.df:
             if field in pdb.df[key]:
@@ -1808,9 +1809,8 @@ class PDBManager:
                 ]
                 if "ATOM" in key and len(filtered_pdb) == 0:
                     log.warning(
-                        "Filtered DataFrame does not contain any atoms. Skipping DataFrame..."
+                        f"DataFrame for PDB {pdb_code} does not contain any standard atoms after filtering"
                     )
-                    return None
                 pdb.df[key] = filtered_pdb
         return pdb
 
@@ -1898,11 +1898,10 @@ class PDBManager:
                         else chains[:max_num_chains_per_pdb_code]
                     )
                     pdb_chains = self.select_pdb_by_criterion(
-                        pdb, "chain_id", chains
+                        pdb, "chain_id", chains, entry_pdb_code
                     )
                     # export selected chains within the same PDB file
-                    if pdb_chains:
-                        pdb_chains.to_pdb(str(output_pdb_filepath))
+                    pdb_chains.to_pdb(str(output_pdb_filepath))
 
     def write_df_pdbs(
         self,
