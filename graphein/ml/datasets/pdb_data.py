@@ -1785,7 +1785,11 @@ class PDBManager:
         )
 
     def select_pdb_by_criterion(
-        self, pdb: PandasPdb, field: str, field_values: List[Any], pdb_code: str
+        self,
+        pdb: PandasPdb,
+        field: str,
+        field_values: List[Any],
+        pdb_code: str,
     ) -> PandasPdb:
         """Filter a PDB using a field selection.
 
