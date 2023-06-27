@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-import requests
 import pandas as pd
+import requests
 from tqdm import tqdm
 
 # RFAM API endpoint to retrieve family information
