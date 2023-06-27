@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 
 # RFAM API endpoint to retrieve family information
-RFAM_API_URL = 'https://rfam.org/family'
+RFAM_API_URL = "https://rfam.org/family"
 
 
 class FamilyNotFound(ValueError):
@@ -21,22 +21,24 @@ def _get_RFAM_family_df(family_id: str):
     :rtype: pd.DataFrame
     """
     # Send an HTTP GET request to retrieve the data
-    response = requests.get(f'{RFAM_API_URL}/{family_id}/structures?content-type=application/json')
+    response = requests.get(
+        f"{RFAM_API_URL}/{family_id}/structures?content-type=application/json"
+    )
 
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
         # Extract the mapping from response
         data = response.json()
-        df = pd.DataFrame(data['mapping'])
+        df = pd.DataFrame(data["mapping"])
     else:
         raise FamilyNotFound(
-            f'Error occurred while retrieving family <-> structures mapping for family {family_id} (status code: {response.status_code})')
+            f"Error occurred while retrieving family <-> structures mapping for family {family_id} (status code: {response.status_code})"
+        )
 
     return df
 
 
-def _get_RFAM_family_info(family_id: str,
-                          keys: Optional[List[str]] = None):
+def _get_RFAM_family_info(family_id: str, keys: Optional[List[str]] = None):
     """
     Downloads DataFrame of PDB IDs annotated with RFAM families
     :param family_id: RFAM ID
@@ -47,10 +49,12 @@ def _get_RFAM_family_info(family_id: str,
     :rtype: pd.DataFrame
     """
     if keys is None:
-        keys = ['id', 'description']
+        keys = ["id", "description"]
 
     # Send an HTTP GET request to retrieve the data
-    response = requests.get(f'{RFAM_API_URL}/{family_id}?content-type=application/json')
+    response = requests.get(
+        f"{RFAM_API_URL}/{family_id}?content-type=application/json"
+    )
 
     # Check if the request was successful (status code 200)
     out = {}
@@ -58,18 +62,21 @@ def _get_RFAM_family_info(family_id: str,
         # Extract the family information from the response
         data = response.json()
         for k in keys:
-            out[k] = data['rfam'][k]
+            out[k] = data["rfam"][k]
     else:
         raise FamilyNotFound(
-            f'Error occurred while retrieving data for family {family_id} (status code: {response.status_code})')
+            f"Error occurred while retrieving data for family {family_id} (status code: {response.status_code})"
+        )
 
     return out
 
 
-def RFAM_families_df(family_ids: Optional[List[str]] = None,
-                     max_id: int = 4236,
-                     family_info_keys: Optional[List[str]] = None,
-                     verbose=True):
+def RFAM_families_df(
+    family_ids: Optional[List[str]] = None,
+    max_id: int = 4236,
+    family_info_keys: Optional[List[str]] = None,
+    verbose=True,
+):
     """
     Retrieves a DataFrame of PDB IDs annotated with RFAM families
     :param family_ids: List of families to retrieve. If None, retrieves all families: RF00001, RF00002, ..., RF04236
@@ -85,11 +92,11 @@ def RFAM_families_df(family_ids: Optional[List[str]] = None,
     :rtype: pd.DataFrame
     """
     if family_ids is None:
-        family_ids = [f'RF{i:05d}' for i in range(1, max_id + 1)]
+        family_ids = [f"RF{i:05d}" for i in range(1, max_id + 1)]
 
     families_df = None
     if verbose:
-        print('Retrieving RFAM families ...')
+        print("Retrieving RFAM families ...")
     for family_id in tqdm(family_ids):
         # Retrieve DF for a single family
         try:
@@ -97,8 +104,7 @@ def RFAM_families_df(family_ids: Optional[List[str]] = None,
             df = _get_RFAM_family_df(family_id)
 
             # Annotate family with descriptions
-            out = _get_RFAM_family_info(family_id,
-                                        keys=family_info_keys)
+            out = _get_RFAM_family_info(family_id, keys=family_info_keys)
             for k, v in out.items():
                 df[k] = v
 
@@ -114,7 +120,7 @@ def RFAM_families_df(family_ids: Optional[List[str]] = None,
     return families_df
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     family_IDs = None  # ['RF10000']
     families_df = RFAM_families_df(family_IDs)
     print(families_df)
