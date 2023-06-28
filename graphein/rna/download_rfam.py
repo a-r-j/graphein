@@ -5,12 +5,11 @@ from pathlib import Path
 
 import pandas as pd
 import wget
-
 from loguru import logger as log
 
 
 class RFAMManager:
-    """ A utility for downloading RFAM families and their PDB structure IDs."""
+    """A utility for downloading RFAM families and their PDB structure IDs."""
 
     def __init__(
         self,
@@ -39,7 +38,7 @@ class RFAMManager:
         self.download_metadata()
 
     def download_metadata(self):
-        """ Download metadata mapping PDB structures to RFAM families """
+        """Download metadata mapping PDB structures to RFAM families"""
         self._download_rfam_families()
         self._download_rfam_pdb_mapping()
 
@@ -117,7 +116,7 @@ class RFAMManager:
         return df
 
     def parse_rfam(self) -> pd.DataFrame:
-        """Parse mapping between PDB structures and RFAM families """
+        """Parse mapping between PDB structures and RFAM families"""
         family_info_df = self._parse_rfam_families()
         rfam_pdb_mapping_df = self._parse_rfam_pdb_mapping()
         df = pd.merge(
