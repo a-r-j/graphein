@@ -1,8 +1,9 @@
+import copy
 import gzip
 import os
-import shutil
 import pathlib
-import copy
+import shutil
+
 import pandas as pd
 import wget
 from loguru import logger as log
@@ -28,12 +29,16 @@ class RFAMManager:
         if not os.path.exists(self.rfam_dir):
             os.makedirs(self.rfam_dir)
 
-        self.rfam_families_archive_filename = pathlib.Path(self.rfam_families_url).name
+        self.rfam_families_archive_filename = pathlib.Path(
+            self.rfam_families_url
+        ).name
         self.rfam_families_filename = pathlib.Path(self.rfam_families_url).stem
         self.rfam_pdb_mapping_archive_filename = pathlib.Path(
             self.rfam_pdb_mapping_url
         ).name
-        self.rfam_pdb_mapping_filename = pathlib.Path(self.rfam_pdb_mapping_url).stem
+        self.rfam_pdb_mapping_filename = pathlib.Path(
+            self.rfam_pdb_mapping_url
+        ).stem
 
         self.download_metadata()
 
