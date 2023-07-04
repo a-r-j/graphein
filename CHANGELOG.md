@@ -7,6 +7,7 @@
 * Chain selections are now specified with either `"all"` or a list of strings (e.g. `["A", "B"]`) rather than a single selection string (e.g. `"AB"`). This is a necessary chain due to MMTF support which can have multicharacter chain identifiers. [#307](https://github.com/a-r-j/graphein/pull/307)
 
 #### Improvements
+* [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes `add_k_nn_edges` for the case when some residues were dropped before (e.g. when some alt_locs are removed).
 * [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Removes obsolete `remove_insertions` in [`rgroup_df` construction](https://github.com/a-r-j/graphein/blob/649a490505740a266b26976807e7f303c2a32ff0/graphein/protein/graphs.py#L540).
 * [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes the construction of geometric features when beta-carbons or side chains are missing in non-glycine residues (for example in `H:CYS:104` in 3SE8).
 * [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes data types of geometric feature vectors: `object` -> `float`.
