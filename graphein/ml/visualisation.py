@@ -1,13 +1,15 @@
 """Visualisation utils for ML."""
 from __future__ import annotations
 
-from typing import Optional, Tuple
+import itertools
+from typing import Optional, Tuple, Iterable
 
 import matplotlib.pyplot as plt
 import networkx as nx
 import plotly.graph_objects as go
 
 from graphein.protein.visualisation import add_vector_to_plot
+from graphein.protein.features.nodes.geometry import VECTOR_FEATURE_NAMES
 from graphein.utils.dependencies import import_message
 
 from ..protein.visualisation import plotly_protein_structure_graph
@@ -49,6 +51,8 @@ def plot_pyg_data(
     edge_colour_map=plt.cm.plasma,
     colour_nodes_by: str = "residue_name",
     colour_edges_by: Optional[str] = None,
+    node_vector_features: Iterable[str] = tuple(VECTOR_FEATURE_NAMES),
+    node_vector_feature_colours: Iterable[str] = ('red', 'green', 'blue')
 ) -> go.Figure:
     """
     Plots protein structure graph from ``torch_geometric.data.Data``
@@ -95,6 +99,11 @@ def plot_pyg_data(
     :param colour_edges_by: Specifies how to colour edges. Currently only
         ``"kind"`` or ``None`` are supported.
     :type colour_edges_by: Optional[str]
+    :param node_vector_features: Specifies node vector features to visualize. By default all
+        present features are plotted.
+    :type node_vector_features: Interable[str]
+    :param node_vector_feature_colours: Specifies colors of vectors.
+    :type node_vector_feature_colours: Interable[str]
     :returns: Plotly Graph Objects plot
     :rtype: go.Figure
     """
@@ -116,16 +125,17 @@ def plot_pyg_data(
         d["coords"] = x.coords[i]
         if node_colour_tensor is not None:
             d["colour"] = float(node_colour_tensor[i])
-        if hasattr(x, "c_beta_vector"):
-            d["c_beta_vector"] = x.c_beta_vector[i]
-        if hasattr(x, "virtual_c_beta_vector"):
-            d["virtual_c_beta_vector"] = x.virtual_c_beta_vector[i]
+        for node_vec in node_vector_features:
+            if hasattr(x, node_vec):
+                d[node_vec] = getattr(x, node_vec)[i]
 
+    # Preprocess edge colours
     if edge_colour_tensor is not None:
         # TODO add edge types
         for i, (_, _, d) in enumerate(nx_graph.edges(data=True)):
             d["colour"] = float(edge_colour_tensor[i])
 
+    # Plot nx graph
     fig = plotly_protein_structure_graph(
         nx_graph,
         plot_title,
@@ -140,12 +150,17 @@ def plot_pyg_data(
         colour_nodes_by if node_colour_tensor is None else "colour",
         colour_edges_by if edge_colour_tensor is None else "colour",
     )
-    if hasattr(x, "c_beta_vector"):
-        fig = add_vector_to_plot(
-            nx_graph, fig, "c_beta_vector", colour="green", scale=1.5
-        )
-    if hasattr(x, "virtual_c_beta_vector"):
-        fig = add_vector_to_plot(
-            nx_graph, fig, "virtual_c_beta_vector", colour="red", scale=1.5
-        )
+
+    # Add vectors to visualize
+    node_vector_feature_colours = itertools.cycle(node_vector_feature_colours)
+    for node_vec in node_vector_features:
+        if hasattr(x, node_vec):
+            fig = add_vector_to_plot(
+                nx_graph,
+                fig,
+                node_vec,
+                colour=next(node_vector_feature_colours),
+                scale=1.5
+            )
+
     return fig
