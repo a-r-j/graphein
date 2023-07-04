@@ -1,8 +1,8 @@
 import gzip
 import os
 import shutil
-from pathlib import Path
-
+import pathlib
+import copy
 import pandas as pd
 import wget
 from loguru import logger as log
@@ -16,7 +16,7 @@ class RFAMManager:
         root_dir: str = ".",
     ):
         # Arguments
-        self.root_dir = Path(root_dir)
+        self.root_dir = pathlib.Path(root_dir)
 
         # Constants
         self.rfam_families_url = "https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/database_files/family.txt.gz"
@@ -28,14 +28,17 @@ class RFAMManager:
         if not os.path.exists(self.rfam_dir):
             os.makedirs(self.rfam_dir)
 
-        self.rfam_families_archive_filename = Path(self.rfam_families_url).name
-        self.rfam_families_filename = Path(self.rfam_families_url).stem
-        self.rfam_pdb_mapping_archive_filename = Path(
+        self.rfam_families_archive_filename = pathlib.Path(self.rfam_families_url).name
+        self.rfam_families_filename = pathlib.Path(self.rfam_families_url).stem
+        self.rfam_pdb_mapping_archive_filename = pathlib.Path(
             self.rfam_pdb_mapping_url
         ).name
-        self.rfam_pdb_mapping_filename = Path(self.rfam_pdb_mapping_url).stem
+        self.rfam_pdb_mapping_filename = pathlib.Path(self.rfam_pdb_mapping_url).stem
 
         self.download_metadata()
+
+        self.source: pd.DataFrame = self.parse_rfam()
+        self.df: pd.DataFrame = copy.deepcopy(self.source)
 
     def download_metadata(self):
         """Download metadata mapping PDB structures to RFAM families"""
