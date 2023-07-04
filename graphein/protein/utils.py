@@ -405,6 +405,15 @@ def save_graph_to_pdb(
     hetatm_df = filter_dataframe(
         g.graph["pdb_df"], "record_name", ["HETATM"], boolean=True
     )
+
+    # Add blank columns
+    blank_cols = [f"blank_{i}" for i in range(1, 4)]
+    for col in blank_cols:
+        if col not in atom_df.columns:
+            atom_df[col] = [""] * len(atom_df)
+        if col not in hetatm_df.columns:
+            hetatm_df[col] = [""] * len(hetatm_df)
+
     if atoms:
         ppd.df["ATOM"] = atom_df
     if hetatms:
@@ -432,6 +441,15 @@ def save_pdb_df_to_pdb(
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
     hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
     ppd = PandasPdb()
+
+    # Add blank columns
+    blank_cols = [f"blank_{i}" for i in range(1, 4)]
+    for col in blank_cols:
+        if col not in atom_df.columns:
+            atom_df[col] = [""] * len(atom_df)
+        if col not in hetatm_df.columns:
+            hetatm_df[col] = [""] * len(hetatm_df)
+
     if atoms:
         ppd.df["ATOM"] = atom_df
     if hetatms:
@@ -468,6 +486,15 @@ def save_rgroup_df_to_pdb(
     hetatm_df = filter_dataframe(
         g.graph["rgroup_df"], "record_name", ["HETATM"], boolean=True
     )
+
+    # Add blank columns
+    blank_cols = [f"blank_{i}" for i in range(1, 4)]
+    for col in blank_cols:
+        if col not in atom_df.columns:
+            atom_df[col] = [""] * len(atom_df)
+        if col not in hetatm_df.columns:
+            hetatm_df[col] = [""] * len(hetatm_df)
+
     if atoms:
         ppd.df["ATOM"] = atom_df
     if hetatms:
