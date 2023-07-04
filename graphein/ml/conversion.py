@@ -14,6 +14,7 @@ import networkx as nx
 import numpy as np
 import torch
 from loguru import logger as log
+from torch_geometric.utils.undirected import to_undirected
 
 from graphein.utils.dependencies import import_message
 
@@ -319,7 +320,8 @@ class GraphFormatConvertor:
         # Convert everything possible to torch.Tensors
         for key, val in data.items():
             try:
-                data[key] = torch.tensor(np.array(val))
+                if not isinstance(val, torch.Tensor):
+                    data[key] = torch.tensor(np.array(val))
             except Exception as e:
                 log.warning(e)
                 pass
