@@ -289,6 +289,12 @@ class GraphFormatConvertor:
                     data[key].append(value)
 
         # Add edge features
+        edge_feature_names = list(G.edges(data=True))[0][2].keys()
+        edge_feature_names = list(
+            filter(
+                lambda x: x in self.columns and x != "kind", edge_feature_names
+            )
+        )
         for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
             for key, value in feat_dict.items():
                 key = str(key)
@@ -326,8 +332,32 @@ class GraphFormatConvertor:
                 log.warning(e)
                 pass
 
+        # Construct PyG data
         data = Data.from_dict(data)
         data.num_nodes = G.number_of_nodes()
+
+        # Symmetrize if undirected
+        if not G.is_directed():
+            # Edge index and edge features
+            edge_index, edge_features = to_undirected(
+                edge_index,
+                [getattr(data, attr) for attr in edge_feature_names],
+                data.num_nodes,
+            )
+            if "edge_index" in self.columns:
+                data.edge_index = edge_index
+            for attr, val in zip(edge_feature_names, edge_features):
+                setattr(data, attr, val)
+
+            # Edge indices of different kinds
+            for kind in set(kind_strs):
+                key = f"edge_index_{kind}"
+                if key in self.columns:
+                    edge_index_kind = to_undirected(
+                        getattr(data, key), num_nodes=data.num_nodes
+                    )
+                    setattr(data, key, edge_index_kind)
+
         return data
 
     @staticmethod

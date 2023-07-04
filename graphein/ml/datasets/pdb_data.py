@@ -16,6 +16,7 @@ from pandas.core.groupby.generic import DataFrameGroupBy
 from tqdm import tqdm
 
 from graphein.protein.utils import (
+    cast_pdb_column_to_type,
     download_pdb_multiprocessing,
     extract_chains_to_file,
     read_fasta,
@@ -29,6 +30,7 @@ class PDBManager:
     def __init__(
         self,
         root_dir: str = ".",
+        structure_format: str = "pdb",
         splits: Optional[List[str]] = None,
         split_ratios: Optional[List[float]] = None,
         split_time_frames: Optional[List[np.datetime64]] = None,
@@ -39,6 +41,9 @@ class PDBManager:
         :param root_dir: The directory in which to store all PDB entries,
             defaults to ``"."``.
         :type root_dir: str, optional
+        :param structure_format: Whether to use ``.pdb`` or ``.mmtf`` file.
+            Defaults to ``"pdb"``.
+        :type structure_format: str, optional
         :param splits: A list of names corresponding to each dataset split,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
@@ -80,6 +85,8 @@ class PDBManager:
         self.pdb_dir = self.root_dir / "pdb"
         if not os.path.exists(self.pdb_dir):
             os.makedirs(self.pdb_dir)
+
+        self.structure_format = structure_format
 
         self.pdb_seqres_archive_filename = Path(self.pdb_sequences_url).name
         self.pdb_seqres_filename = Path(self.pdb_seqres_archive_filename).stem
@@ -1210,6 +1217,7 @@ class PDBManager:
                         self.df_splits[split], df_split, split
                     )
                 else:
+                    df_split.split = split
                     self.df_splits[split] = df_split
                 df_splits[split] = self.df_splits[split]
 
@@ -1341,6 +1349,7 @@ class PDBManager:
                 (df.deposition_date >= start_datetime)
                 & (df.deposition_date < end_datetime)
             ]
+            df_split.split = split
             df_splits[split] = df_split
             start_datetime = end_datetime
 
@@ -1412,6 +1421,7 @@ class PDBManager:
                         self.df_splits[split], df_split, split
                     )
                 else:
+                    df_split.split = split
                     self.df_splits[split] = df_split
                 df_splits[split] = self.df_splits[split]
 
@@ -1528,9 +1538,15 @@ class PDBManager:
 
         # Check we have all source PDB files
         downloaded = os.listdir(self.pdb_dir)
-        downloaded = [f for f in downloaded if f.endswith(".pdb")]
+        downloaded = [
+            f for f in downloaded if f.endswith(f".{self.structure_format}")
+        ]
 
-        to_download = [k for k in df.keys() if f"{k}.pdb" not in downloaded]
+        to_download = [
+            k
+            for k in df.keys()
+            if f"{k}.{self.structure_format}" not in downloaded
+        ]
         if len(to_download) > 0:
             log.info(f"Downloading {len(to_download)} PDB files...")
             download_pdb_multiprocessing(
@@ -1542,7 +1558,9 @@ class PDBManager:
         log.info("Extracting chains...")
         paths = []
         for k, v in tqdm(df.items()):
-            in_file = os.path.join(self.pdb_dir, f"{k}.pdb")
+            in_file = os.path.join(
+                self.pdb_dir, f"{k}.{self.structure_format}"
+            )
             paths.append(
                 extract_chains_to_file(
                     in_file, v, out_dir=self.pdb_dir, models=models
@@ -1708,7 +1726,9 @@ class PDBManager:
         out_dir: str,
         split: str,
         merge_fn: Callable,
+        atom_df_name: str = "ATOM",
         max_num_chains_per_pdb_code: int = 1,
+        models: List[int] = [1],
     ):
         """Record groups of PDB codes and associated chains
         as collated PDB files.
@@ -1724,9 +1744,15 @@ class PDBManager:
         :type split: str
         :param merge_fn: The PDB code-chain grouping function to use.
         :type merge_fn: Callable
+        :param atom_df_name: Name of the DataFrame by which to access
+            ATOM entries within a PandasPdb object.
+        :type atom_df_name: str, defaults to ``ATOM``
         :param max_num_chains_per_pdb_code: Maximum number of chains
             to collate into a matching PDB file.
         :type max_num_chains_per_pdb_code: int, optional
+        :param models: List of indices of models from which to extract chains,
+            defaults to ``[1]``.
+        :type models: List[int], optional
         """
         if len(df) > 0:
             split_dir = Path(out_dir) / split
@@ -1737,27 +1763,49 @@ class PDBManager:
             df_merged = df_merged.reset_index(drop=True)
 
             for _, entry in tqdm(df_merged.iterrows()):
-                pdb_code, chains = entry["pdb"], entry["chain"]
-                chains = (
-                    chains
-                    if max_num_chains_per_pdb_code == -1
-                    else chains[:max_num_chains_per_pdb_code]
-                )
+                entry_pdb_code, entry_chains = entry["pdb"], entry["chain"]
 
-                input_pdb_filepath = Path(pdb_dir) / f"{pdb_code}.pdb"
-                output_pdb_filepath = split_dir / f"{pdb_code}.pdb"
+                input_pdb_filepath = (
+                    Path(pdb_dir) / f"{entry_pdb_code}.{self.structure_format}"
+                )
+                output_pdb_filepath = (
+                    split_dir / f"{entry_pdb_code}.{self.structure_format}"
+                )
 
                 if not os.path.exists(str(output_pdb_filepath)):
                     try:
-                        pdb = PandasPdb().read_pdb(str(input_pdb_filepath))
+                        pdb = (
+                            PandasPdb()
+                            .read_pdb(str(input_pdb_filepath))
+                            .get_models(models)
+                        )
                     except FileNotFoundError:
                         log.info(
                             f"Failed to load {str(input_pdb_filepath)}. Perhaps it is not longer available to download from the PDB?"
                         )
                         continue
+                    # work around int-typing bug for `model_id` within version `0.5.0.dev0` of BioPandas -> appears when calling `to_pdb()`
+                    cast_pdb_column_to_type(
+                        pdb, column_name="model_id", type=str
+                    )
+                    # select only from chains available in the PDB file
+                    pdb_atom_chains = (
+                        pdb.df[atom_df_name].chain_id.unique().tolist()
+                    )
+                    chains = [
+                        chain
+                        for chain in entry_chains
+                        if chain in pdb_atom_chains
+                    ]
+                    chains = (
+                        chains
+                        if max_num_chains_per_pdb_code == -1
+                        else chains[:max_num_chains_per_pdb_code]
+                    )
                     pdb_chains = self.select_pdb_by_criterion(
                         pdb, "chain_id", chains
                     )
+                    # export selected chains within the same PDB file
                     pdb_chains.to_pdb(str(output_pdb_filepath))
 
     def write_df_pdbs(
@@ -1767,6 +1815,7 @@ class PDBManager:
         out_dir: str = "collated_pdb",
         splits: Optional[List[str]] = None,
         max_num_chains_per_pdb_code: int = 1,
+        models: List[int] = [1],
     ):
         """Write the given selection as a collection of PDB files.
 
@@ -1784,6 +1833,9 @@ class PDBManager:
         :param max_num_chains_per_pdb_code: Maximum number of chains
             to collate into a matching PDB file.
         :type max_num_chains_per_pdb_code: int, optional
+        :param models: List of indices of models from which to extract chains,
+            defaults to ``[1]``.
+        :type models: List[int], optional
         """
         out_dir = Path(pdb_dir) / out_dir
         os.makedirs(out_dir, exist_ok=True)
@@ -1798,6 +1850,7 @@ class PDBManager:
                     split=split,
                     merge_fn=self.merge_pdb_chain_groups,
                     max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
+                    models=models,
                 )
         else:
             self.write_out_pdb_chain_groups(
@@ -1807,6 +1860,7 @@ class PDBManager:
                 split="full",
                 merge_fn=self.merge_pdb_chain_groups,
                 max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
+                models=models,
             )
 
     def export_pdbs(
@@ -1814,6 +1868,7 @@ class PDBManager:
         pdb_dir: str,
         splits: Optional[List[str]] = None,
         max_num_chains_per_pdb_code: int = 1,
+        models: List[int] = [1],
         force: bool = False,
     ):
         """Write the selection as a collection of PDB files.
@@ -1826,6 +1881,9 @@ class PDBManager:
         :param max_num_chains_per_pdb_code: Maximum number of chains
             to collate into a matching PDB file.
         :type max_num_chains_per_pdb_code: int, optional
+        :param models: List of indices of models from which to extract chains,
+            defaults to ``[1]``.
+        :type models: List[int], optional
         :param force: Whether to raise an error if the download selection
             contains PDBs which are not available in PDB format.
         """
@@ -1841,5 +1899,6 @@ class PDBManager:
             split_dfs,
             splits=splits,
             max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
+            models=models,
         )
         log.info("Done writing selection of PDB chains")
