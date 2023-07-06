@@ -407,7 +407,7 @@ def save_graph_to_pdb(
     )
 
     # Add blank columns
-    blank_cols = [f"blank_{i}" for i in range(1, 5)]
+    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
     for col in blank_cols:
         if col not in atom_df.columns:
             atom_df[col] = [""] * len(atom_df)
@@ -443,7 +443,7 @@ def save_pdb_df_to_pdb(
     ppd = PandasPdb()
 
     # Add blank columns
-    blank_cols = [f"blank_{i}" for i in range(1, 5)]
+    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
     for col in blank_cols:
         if col not in atom_df.columns:
             atom_df[col] = [""] * len(atom_df)
@@ -488,7 +488,7 @@ def save_rgroup_df_to_pdb(
     )
 
     # Add blank columns
-    blank_cols = [f"blank_{i}" for i in range(1, 5)]
+    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
     for col in blank_cols:
         if col not in atom_df.columns:
             atom_df[col] = [""] * len(atom_df)
