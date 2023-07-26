@@ -1,4 +1,4 @@
-### 1.7.1 - UNRELEASED
+### 1.7.1 - 26/07/2023
 
 #### API Changes
 * Chain selections are now specified with either `"all"` or a list of strings (e.g. `["A", "B"]`) rather than a single selection string (e.g. `"AB"`). This is a necessary chain due to MMTF support which can have multicharacter chain identifiers. [#307](https://github.com/a-r-j/graphein/pull/307)
@@ -13,6 +13,7 @@
 * Fixes initialisation of `Protein` objects. [#317](https://github.com/a-r-j/graphein/issues/317) [#318](https://github.com/a-r-j/graphein/pull/318)
 * Fixes incorrect `rad` and `embed` argument logic in `graphein.protein.tensor.angles.dihedrals/sidechain_torsion` [#321](https://github.com/a-r-j/graphein/pull/321)
 * Fixes incorrect start padding in pNeRF output [#321](https://github.com/a-r-j/graphein/pull/321)
+* Fixes `pyyaml` breaking installation [#328](https://github.com/a-r-j/graphein/pull/328)
 
 #### Other Changes
 * Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
