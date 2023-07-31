@@ -429,6 +429,7 @@ def test_add_k_nn_edges():
         edges_real = list(g.edges())
         assert set(edges_real) == set(edges_expected)
 
+
 def test_insertion_codes_in_add_k_nn_edges():
     pdb_df = pd.DataFrame(
         {
@@ -439,16 +440,16 @@ def test_insertion_codes_in_add_k_nn_edges():
             "y_coord": [4.0, 5.0, 6.0],
             "z_coord": [7.0, 8.0, 9.0],
         },
-        index=[0, 1, 3]  # simulating dropped "B:ALA:4:altA"
+        index=[0, 1, 3],  # simulating dropped "B:ALA:4:altA"
     )
     g = nx.empty_graph(pdb_df["node_id"])
     g.graph["pdb_df"] = pdb_df
     add_k_nn_edges(g, k=3)
 
     edges_expected = [
-        ('A:HIS:1', 'A:TYR:2'),
-        ('A:HIS:1', 'B:ALA:4:altB'),
-        ('A:TYR:2', 'B:ALA:4:altB')
+        ("A:HIS:1", "A:TYR:2"),
+        ("A:HIS:1", "B:ALA:4:altB"),
+        ("A:TYR:2", "B:ALA:4:altB"),
     ]
 
     assert set(g.edges()) == set(edges_expected)

@@ -13,13 +13,12 @@ from loguru import logger as log
 
 from graphein.protein.utils import compute_rgroup_dataframe, filter_dataframe
 
-
 VECTOR_FEATURE_NAMES: List[str] = [
     "sidechain_vector",
     "c_beta_vector",
     "sequence_neighbour_vector_n_to_c",
     "sequence_neighbour_vector_c_to_n",
-    "virtual_c_beta_vector"
+    "virtual_c_beta_vector",
 ]
 """Names of all vector features from the module."""
 

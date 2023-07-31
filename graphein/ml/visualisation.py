@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 import itertools
-from typing import Optional, Tuple, Iterable
+from typing import Iterable, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import networkx as nx
 import plotly.graph_objects as go
 
-from graphein.protein.visualisation import add_vector_to_plot
 from graphein.protein.features.nodes.geometry import VECTOR_FEATURE_NAMES
+from graphein.protein.visualisation import add_vector_to_plot
 from graphein.utils.dependencies import import_message
 
 from ..protein.visualisation import plotly_protein_structure_graph
@@ -52,7 +52,7 @@ def plot_pyg_data(
     colour_nodes_by: str = "residue_name",
     colour_edges_by: Optional[str] = None,
     node_vector_features: Iterable[str] = tuple(VECTOR_FEATURE_NAMES),
-    node_vector_feature_colours: Iterable[str] = ('red', 'green', 'blue')
+    node_vector_feature_colours: Iterable[str] = ("red", "green", "blue"),
 ) -> go.Figure:
     """
     Plots protein structure graph from ``torch_geometric.data.Data``
@@ -160,7 +160,7 @@ def plot_pyg_data(
                 fig,
                 node_vec,
                 colour=next(node_vector_feature_colours),
-                scale=1.5
+                scale=1.5,
             )
 
     return fig
