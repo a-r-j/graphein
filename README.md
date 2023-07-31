@@ -24,7 +24,7 @@
 
 <br></br>
 
-[Documentation](http://www.graphein.ai) | [Paper](https://www.biorxiv.org/content/10.1101/2020.07.15.204701v1) | [Tutorials](http://graphein.ai/notebooks_index.html) | [Installation](#installation)
+[Documentation](http://www.graphein.ai) | [Paper](https://proceedings.neurips.cc/paper_files/paper/2022/hash/ade039c1db0391106a3375bd2feb310a-Abstract-Conference.html) | [Tutorials](http://graphein.ai/notebooks_index.html) | [Installation](#installation)
 
 Protein & Interactomic Graph Library
 
@@ -82,7 +82,7 @@ g = construct_graph(config=config, pdb_code="3eiy")
 |   |   |
 |---|---|
 | [Tutorial](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs) |
-| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb)|
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/alphafold_protein_graph_tutorial.ipynb)|
 
 ```python
 from graphein.protein.config import ProteinGraphConfig

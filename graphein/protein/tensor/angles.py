@@ -70,10 +70,18 @@ def _extract_torsion_coords(
     res_atoms = []
     idxs = []
 
+    # Whether or not the protein contains selenocysteine
+    selenium = coords.shape[1] == 38
+
     # Iterate over residues and grab indices of the atoms for each Chi angle
     for i, res in enumerate(res_types):
         res_coords = []
-        for angle_coord_set in CHI_ANGLES_ATOMS[res]:
+
+        angle_groups = CHI_ANGLES_ATOMS[res]
+        if not selenium and res == "SEC":
+            angle_groups = []
+
+        for angle_coord_set in angle_groups:
             res_coords.append([ATOM_NUMBERING[i] for i in angle_coord_set])
             idxs.append(i)
         res_atoms.append(torch.tensor(res_coords, device=coords.device))
@@ -115,6 +123,9 @@ def sidechain_torsion(
     :return: _description_
     :rtype: Union[TorsionTensor, Tuple[TorsionTensor, torch.Tensor]]
     """
+    # Whether or not the protein contains selenocysteine
+    selenium = coords.shape[1] == 38
+
     idxs, coords = _extract_torsion_coords(coords, res_types)
     angles = _dihedral_angle(
         coords[:, 0, :].unsqueeze(1),
@@ -123,34 +134,50 @@ def sidechain_torsion(
         coords[:, 3, :].unsqueeze(1),
     )
 
-    if rad:
-        angles = angles * torch.pi / 180
+    if embed and not rad:
+        raise ValueError("Cannot embed torsion angles in degrees.")
+
+    if not rad:
+        angles = angles * 180 / torch.pi
+
     angles, mask = to_dense_batch(angles, idxs)
     angles = angles.squeeze(-1)
 
     # Interleave sin and cos transformed tensors
-    angles = rearrange(
-        [torch.cos(angles), torch.sin(angles)], "t h w-> h (w t)"
-    )
-    mask = rearrange([mask, mask], "t h w -> h (w t)")
+    if embed:
+        angles = rearrange(
+            [torch.cos(angles), torch.sin(angles)], "t h w-> h (w t)"
+        )
+        mask = rearrange([mask, mask], "t h w -> h (w t)")
 
     # Pad if last residues are a run of ALA, GLY or UNK
     post_pad_len = 0
     res_types = copy.deepcopy(res_types)
     res_types.reverse()
+    PAD_RESIDUES = ["ALA", "GLY", "UNK"]
+    # If we have selenocysteine but no Se atoms,
+    # add it to the list of residues to pad since
+    if not selenium:
+        PAD_RESIDUES.append("SEC")
     for res in res_types:
-        if res in ["ALA", "GLY", "UNK"]:
+        if res in PAD_RESIDUES:
             post_pad_len += 1
         else:
             break
 
     if post_pad_len != 0:
-        msk = torch.tensor(
-            [1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0], device=coords.device
-        ).repeat(post_pad_len, 1)
-        mask_msk = torch.tensor([False] * 8, device=coords.device).repeat(
-            post_pad_len, 1
-        )
+        if embed:
+            msk = torch.tensor(
+                [1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0], device=coords.device
+            ).repeat(post_pad_len, 1)
+            mask_msk = torch.tensor([False] * 8, device=coords.device).repeat(
+                post_pad_len, 1
+            )
+        else:
+            msk = torch.zeros(post_pad_len, 4, device=coords.device)
+            mask_msk = torch.zeros(
+                post_pad_len, 4, device=coords.device, dtype=bool
+            )
         angles = torch.vstack([angles, msk])
         mask = torch.vstack([mask, mask_msk])
 
@@ -198,6 +225,9 @@ def kappa(
     :return: Tensor of bend angles
     :rtype: torch.Tensor
     """
+    if not rad and embed:
+        raise ValueError("Cannot embed kappa angles in degrees.")
+
     if x.ndim == 3:
         x = x[:, ca_idx, :]
 
@@ -226,7 +256,7 @@ def kappa(
         angles = angles[mask]
 
     if embed:
-        angles = angle_to_unit_circle(angles)
+        angles = torch.stack([torch.cos(angles), torch.sin(angles)], dim=-1)
 
     return angles
 
@@ -266,6 +296,10 @@ def alpha(
     :return: Tensor of dihedral angles
     :rtype: torch.Tensor
     """
+    if not rad and embed:
+        raise ValueError(
+            "Cannot embed angles on unit circle if not in radians."
+        )
 
     if x.ndim == 3:
         x = x[:, ca_idx, :]
@@ -288,7 +322,7 @@ def alpha(
         angles = angles[mask]
 
     if embed:
-        angles = angle_to_unit_circle(angles)
+        angles = torch.stack([torch.cos(angles), torch.sin(angles)], dim=-1)
 
     return angles
 
@@ -455,6 +489,11 @@ def dihedrals(
 ) -> DihedralTensor:
     length = coords.shape[0]
 
+    if embed and not rad:
+        raise ValueError(
+            "Cannot embed angles in degrees. Use embed=True and rad=True."
+        )
+
     if batch is None:
         batch = torch.zeros(length, device=coords.device).long()
 
@@ -477,7 +516,7 @@ def dihedrals(
 
     angles = torch.stack([phi, psi, omg], dim=2)
 
-    if rad:
+    if not rad:
         angles = angles * 180 / np.pi
 
     if sparse:

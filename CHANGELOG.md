@@ -18,6 +18,10 @@
 * Ensures exproting groups of PDB chains with PDBManager selects the first model for multu-model structures. [#311](https://github.com/a-r-j/graphein/pull/311)
 * Fixes bug with exporting PDBs with only one splitting strategy in PDBManager [#311](https://github.com/a-r-j/graphein/pull/311)
 * Fixes incorrect jaxtyping syntax for variable size dimensions [#312](https://github.com/a-r-j/graphein/pull/312)
+* Fixes shape of angle embeddings for `graphein.protein.tesnor.angles.alpha/kappa`. [#315](https://github.com/a-r-j/graphein/pull/315)
+* Fixes initialisation of `Protein` objects. [#317](https://github.com/a-r-j/graphein/issues/317) [#318](https://github.com/a-r-j/graphein/pull/318)
+* Fixes incorrect `rad` and `embed` argument logic in `graphein.protein.tensor.angles.dihedrals/sidechain_torsion` [#321](https://github.com/a-r-j/graphein/pull/321)
+* Fixes incorrect start padding in pNeRF output [#321](https://github.com/a-r-j/graphein/pull/321)
 
 #### Other Changes
 * Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
@@ -28,6 +32,9 @@
 * Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
 * Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
 * `plot_pyg_data` now also plots some geometric features if present. [#305](https://github.com/a-r-j/graphein/pull/305)
+* Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
+* Improve FoldComp dataloading performance and include B factors (pLDDT) in output. [#313](https://github.com/a-r-j/graphein/pull/313) [#315](https://github.com/a-r-j/graphein/pull/315)
+* Add new helper functions to PDBManager [#322](https://github.com/a-r-j/graphein/pull/322) (@amorehead)
 
 ### 1.7.0 - 10 /04/2023
 

@@ -132,7 +132,10 @@ class Protein(Data):
     """
 
     def __init__(
-        self, atom_list: List[str] = PROTEIN_ATOMS, fill_value: float = 1e-5
+        self,
+        atom_list: List[str] = PROTEIN_ATOMS,
+        fill_value: float = 1e-5,
+        **kwargs,
     ) -> None:
         """
         .. seealso::
@@ -145,10 +148,13 @@ class Protein(Data):
         :param fill_value: Value to fill in for missing values in the
             AtomTensor.
         :type fill_value: float
+        :param kwargs: Additional keyword arguments to store as attributes.
         """
         super().__init__()
         self.fill_value = fill_value
         self.atom_list = atom_list
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     # I/O
     def from_dataframe(
