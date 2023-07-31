@@ -1097,6 +1097,7 @@ def add_k_nn_edges(
         or pdb_df["z_coord"].isna().sum()
     ):
         raise ValueError("Coordinates contain a NaN value.")
+    pdb_df = pdb_df.reset_index(drop=True)
 
     # Construct distance matrix
     dist_mat = compute_distmat(pdb_df)
@@ -1124,7 +1125,7 @@ def add_k_nn_edges(
     nn = neigh.kneighbors_graph()
 
     # Create iterable of node indices
-    outgoing = np.repeat(np.array(range(len(G.graph["pdb_df"]))), k)
+    outgoing = np.repeat(np.array(range(len(pdb_df))), k)
     incoming = nn.indices
     interacting_nodes = list(zip(outgoing, incoming))
     log.info(f"Found: {len(interacting_nodes)} KNN edges")
@@ -1133,16 +1134,16 @@ def add_k_nn_edges(
             continue
 
         # Get nodes IDs from indices
-        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
-        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
+        n1 = pdb_df.loc[a1, "node_id"]
+        n2 = pdb_df.loc[a2, "node_id"]
 
         # Get chains
-        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
-        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
+        n1_chain = pdb_df.loc[a1, "chain_id"]
+        n2_chain = pdb_df.loc[a2, "chain_id"]
 
         # Get sequence position
-        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
-        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
+        n1_position = pdb_df.loc[a1, "residue_number"]
+        n2_position = pdb_df.loc[a2, "residue_number"]
 
         # Check residues are not on same chain
         condition_1 = n1_chain != n2_chain

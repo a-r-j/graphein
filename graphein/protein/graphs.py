@@ -534,7 +534,7 @@ def initialise_graph_with_metadata(
         chain_ids=list(protein_df["chain_id"].unique()),
         pdb_df=protein_df,
         raw_pdb_df=raw_pdb_df,
-        rgroup_df=compute_rgroup_dataframe(remove_insertions(raw_pdb_df)),
+        rgroup_df=compute_rgroup_dataframe(raw_pdb_df),
         coords=np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]]),
     )
 
