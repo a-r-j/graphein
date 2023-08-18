@@ -166,7 +166,9 @@ def protein_to_pyg(
     # Get ID
     if path is not None:
         id = (
-            os.path.splitext(path)[0].split("/")[-1] + "_" + "".join(chain_selection)
+            os.path.splitext(path)[0].split("/")[-1]
+            + "_"
+            + "".join(chain_selection)
             if chain_selection != "all"
             else os.path.splitext(path)[0].split("/")[-1]
         )
