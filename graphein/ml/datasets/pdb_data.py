@@ -33,10 +33,6 @@ PRIMARY_HYDROGEN_BOND_ATOMS_FOR_FILTERING: List[str] = [
     "N1",
     "N9",
     "N3",
-    "C2",
-    "C4",
-    "C5",
-    "C6",
 ]
 SECONDARY_HYDROGEN_BOND_ATOMS_FOR_FILTERING: List[str] = [
     "N",
@@ -44,10 +40,6 @@ SECONDARY_HYDROGEN_BOND_ATOMS_FOR_FILTERING: List[str] = [
     "N1",
     "N9",
     "N3",
-    "C2",
-    "C4",
-    "C5",
-    "C6",
 ]
 
 
