@@ -82,7 +82,7 @@ g = construct_graph(config=config, pdb_code="3eiy")
 |   |   |
 |---|---|
 | [Tutorial](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs) |
-| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb)|
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/alphafold_protein_graph_tutorial.ipynb)|
 
 ```python
 from graphein.protein.config import ProteinGraphConfig

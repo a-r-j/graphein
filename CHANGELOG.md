@@ -1,8 +1,17 @@
 ### 1.7.1 - UNRELEASED
 
+#### New Features
+* [Feature] - [#305](https://github.com/a-r-j/graphein/pull/305) Adds the `add_virtual_beta_carbon_vector` function inspired by [RFdiffusion](https://github.com/RosettaCommons/RFdiffusion/blob/main/rfdiffusion/coords6d.py#L37) and ProteinMPNN.
+
 #### API Changes
 * Chain selections are now specified with either `"all"` or a list of strings (e.g. `["A", "B"]`) rather than a single selection string (e.g. `"AB"`). This is a necessary chain due to MMTF support which can have multicharacter chain identifiers. [#307](https://github.com/a-r-j/graphein/pull/307)
 
+#### Improvements
+* [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes `add_k_nn_edges` for the case when some residues were dropped before (e.g. when some alt_locs are removed).
+* [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Removes obsolete `remove_insertions` in [`rgroup_df` construction](https://github.com/a-r-j/graphein/blob/649a490505740a266b26976807e7f303c2a32ff0/graphein/protein/graphs.py#L540).
+* [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes the construction of geometric features when beta-carbons or side chains are missing in non-glycine residues (for example in `H:CYS:104` in 3SE8).
+* [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes data types of geometric feature vectors: `object` -> `float`.
+* [Bugfix] - [#301](https://github.com/a-r-j/graphein/pull/301) Fixes the conversion of undirected NetworkX graph to directed PyG data.
 
 #### Bugfixes
 * Adds missing `stage` parameter to `graphein.ml.datasets.foldcomp_data.FoldCompDataModule.setup()`. [#310](https://github.com/a-r-j/graphein/pull/310)
@@ -13,20 +22,25 @@
 * Fixes initialisation of `Protein` objects. [#317](https://github.com/a-r-j/graphein/issues/317) [#318](https://github.com/a-r-j/graphein/pull/318)
 * Fixes incorrect `rad` and `embed` argument logic in `graphein.protein.tensor.angles.dihedrals/sidechain_torsion` [#321](https://github.com/a-r-j/graphein/pull/321)
 * Fixes incorrect start padding in pNeRF output [#321](https://github.com/a-r-j/graphein/pull/321)
+* Fixes setting ID for PyG data objects when loading from a path to a `.pdb` file [#332](https://github.com/a-r-j/graphein/pull/332)
 
 #### Other Changes
+
 * Uses [`cpdb`](https://github.com/a-r-j/CPDB) as default PDB file parser for improved performance. [#323](https://github.com/a-r-j/graphein/pull/323).
+* Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
 * Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
 * Adds support for `.ent` files to `graphein.protein.graphs.read_pdb_to_dataframe`. [#310](https://github.com/a-r-j/graphein/pull/310)
 * Obsolete residues with no replacement are now returned by `graphein.protein.utils.get_obsolete_mapping`. [#310](https://github.com/a-r-j/graphein/pull/310)
 * Adds the ability to store a dictionary of HETATM positions in `Data`/`Protein` objects created in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
 * Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
 * Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
+* `plot_pyg_data` now also plots some geometric features if present. [#305](https://github.com/a-r-j/graphein/pull/305)
 * Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
 * Improve FoldComp dataloading performance and include B factors (pLDDT) in output. [#313](https://github.com/a-r-j/graphein/pull/313) [#315](https://github.com/a-r-j/graphein/pull/315)
 * Add new helper functions to PDBManager [#322](https://github.com/a-r-j/graphein/pull/322) (@amorehead)
+* Add non-standard 'CYX' to `RESI_THREE_TO_1`.
 
-### 1.7.0 - UNRELEASED
+### 1.7.0 - 10 /04/2023
 
 #### New Features
 
@@ -35,8 +49,6 @@
 * [ESM] - [#284](https://github.com/a-r-j/graphein/pull/284) - Wrapper for ESMFold batch folding & embedding.
 * [Downloads] MMTF downloading now supported in download utilities. [#272](https://github.com/a-r-j/graphein/pull/272)
 
-#### Improvements
-* [Bugfix] - [#301](https://github.com/a-r-j/graphein/pull/301) Fixes the conversion of undirected NetworkX graph to directed PyG data.
 
 #### API Changes
 * The `pdb_path` argument to many functions (e.g. `graphein.protein.graphs.construct_graph`) has been renamed to `path` as this can now accept MMTF files in addition to PDB files.
