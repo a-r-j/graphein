@@ -652,6 +652,7 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "CSX": "C",
     "CXM": "M",
     "CYS": "C",
+    "CYX": "C",
     "DAL": "A",
     "DAR": "R",
     "DCY": "C",
