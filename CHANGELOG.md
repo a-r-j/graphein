@@ -12,6 +12,9 @@
 * [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes the construction of geometric features when beta-carbons or side chains are missing in non-glycine residues (for example in `H:CYS:104` in 3SE8).
 * [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes data types of geometric feature vectors: `object` -> `float`.
 * [Bugfix] - [#301](https://github.com/a-r-j/graphein/pull/301) Fixes the conversion of undirected NetworkX graph to directed PyG data.
+* [Bugfix] - [#334](https://github.com/a-r-j/graphein/pull/334) Fixes the corner case of the NetworkX -> PyG conversion when input graph has no edges.
+
+https://github.com/a-r-j/graphein/pull/334
 
 #### Bugfixes
 * Adds missing `stage` parameter to `graphein.ml.datasets.foldcomp_data.FoldCompDataModule.setup()`. [#310](https://github.com/a-r-j/graphein/pull/310)
