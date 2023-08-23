@@ -289,7 +289,8 @@ class GraphFormatConvertor:
                     data[key].append(value)
 
         # Add edge features
-        edge_feature_names = list(G.edges(data=True))[0][2].keys()
+        edge_list = list(G.edges(data=True))
+        edge_feature_names = edge_list[0][2].keys() if edge_list else []
         edge_feature_names = list(
             filter(
                 lambda x: x in self.columns and x != "kind", edge_feature_names
@@ -326,7 +327,8 @@ class GraphFormatConvertor:
         # Convert everything possible to torch.Tensors
         for key, val in data.items():
             try:
-                data[key] = torch.tensor(np.array(val))
+                if not isinstance(val, torch.Tensor):
+                    data[key] = torch.tensor(np.array(val))
             except Exception as e:
                 log.warning(e)
                 pass

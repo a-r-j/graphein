@@ -84,7 +84,7 @@ def read_requirements(*parts):
 INSTALL_REQUIRES = read_requirements(".requirements/base.in")
 EXTRA_REQUIRES = {
     "dev": read_requirements(".requirements/dev.in"),
-    "extras": read_requirements(".requirements/dev.in"),
+    "extras": read_requirements(".requirements/extras.in"),
 }
 # Add all requires
 all_requires = []
