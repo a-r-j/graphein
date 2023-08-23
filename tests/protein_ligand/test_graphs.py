@@ -14,6 +14,7 @@ from graphein.protein_ligand.graphs import (
 
 DATA_PATH = Path(__file__).resolve().parent / "test_data" / "3v1w.pdb"
 
+
 # Example-based Graph Construction test
 def test_construct_graph():
     """Example-based test that graph construction works correctly.
@@ -22,7 +23,7 @@ def test_construct_graph():
     """
     file_path = Path(__file__).parent / "test_data" / "3v1w.pdb"
     G = construct_graph(pdb_path=str(file_path))
-    print (G)
+    print(G)
     assert isinstance(G, nx.Graph)
     assert len(G) == 574
 
@@ -33,5 +34,6 @@ def test_construct_graph():
         if d["kind"] == {"peptide_bond"}
     ]
     assert len(peptide_bond_edges) == 570
+
 
 test_construct_graph()

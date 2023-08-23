@@ -38,8 +38,7 @@ def atom_type_one_hot(
     if "element_symbol" in d:
         if allowable_set is None:
             allowable_set = BASE_ATOMS
-    
-    
+
         features = onek_encoding_unk(d["element_symbol"], allowable_set)
 
         if return_array:

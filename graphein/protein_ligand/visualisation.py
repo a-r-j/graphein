@@ -370,7 +370,6 @@ def plot_protein_structure_graph(
 
     # 3D network plot
     with plt.style.context(plot_style):
-
         fig = plt.figure(figsize=figsize)
         ax = Axes3D(fig, auto_add_to_figure=True)
 

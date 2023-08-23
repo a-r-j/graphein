@@ -14,9 +14,9 @@ from typing import Union
 import networkx as nx
 import numpy as np
 import pandas as pd
+from scipy.spatial.distance import cdist
 from sklearn.metrics import pairwise_distances
 from sklearn.neighbors import kneighbors_graph
-from scipy.spatial.distance import cdist
 
 from graphein.protein.resi_atoms import (
     AA_RING_ATOMS,
@@ -78,7 +78,7 @@ def add_distance_threshold_ligand(G: nx.Graph, threshold: float = 5.0):
     """
     for idx, ligand in enumerate(G.graph["ligands_df"]):
         dist_mat = compute_distmat(G.graph["ligands_coords"][idx])
-        
+
         interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
         outgoing = [list(G.nodes())[i] for i in interacting_nodes[0]]
         incoming = [list(G.nodes())[i] for i in interacting_nodes[1]]
@@ -94,7 +94,7 @@ def add_distance_threshold_ligand(G: nx.Graph, threshold: float = 5.0):
                 G.add_edge(n1, n2, kind={"ligand_distance_threshold"})
 
     return G
-        
+
 
 def add_fully_connected_edges_ligand(
     G: nx.Graph,
@@ -158,7 +158,9 @@ def add_k_nn_edges_ligand(
             include_self=include_self,
         )
         # Create iterable of node indices
-        outgoing = np.repeat(np.array(range(len(G.graph["ligands_coords"][idx]))), k)
+        outgoing = np.repeat(
+            np.array(range(len(G.graph["ligands_coords"][idx]))), k
+        )
         outgoing = [list(G.nodes())[i] for i in outgoing]
         incoming = [list(G.nodes())[i] for i in nn.indices]
         interacting_nodes = list(zip(outgoing, incoming))
@@ -168,7 +170,7 @@ def add_k_nn_edges_ligand(
                 G.edges[n1, n2]["kind"].add(f"ligand_k_nn_{k}")
             else:
                 G.add_edge(n1, n2, kind={f"ligand_k_nn_{k}"})
-    
+
     return G
 
 
@@ -183,11 +185,14 @@ def add_distance_threshold_protein_ligand(G: nx.Graph, threshold: float = 5.0):
     :return: Graph with distance-based edges added
     """
 
-    for idx, ligand in enumerate(G.graph["ligands_coords"]):        
+    for idx, ligand in enumerate(G.graph["ligands_coords"]):
         dist_mat = cdist(G.graph["protein_coords"], ligand)
         interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
         outgoing = [list(G.nodes())[i] for i in interacting_nodes[0]]
-        incoming = [G.graph["ligands_df"][idx].iloc[i]["node_id"] for i in interacting_nodes[1]]
+        incoming = [
+            G.graph["ligands_df"][idx].iloc[i]["node_id"]
+            for i in interacting_nodes[1]
+        ]
         interacting_nodes = list(zip(outgoing, incoming))
 
         log.info(
@@ -195,10 +200,12 @@ def add_distance_threshold_protein_ligand(G: nx.Graph, threshold: float = 5.0):
         )
         for n1, n2 in interacting_nodes:
             if G.has_edge(n1, n2):
-                G.edges[n1, n2]["kind"].add("protein_ligand_distance_threshold")
+                G.edges[n1, n2]["kind"].add(
+                    "protein_ligand_distance_threshold"
+                )
             else:
                 G.add_edge(n1, n2, kind={"protein_ligand_distance_threshold"})
-    
+
     return G
 
 
@@ -213,13 +220,16 @@ def add_fully_connected_edges_protein_ligand(
     """
 
     for ligand in G.graph["ligands_df"]:
-        for n1, n2 in itertools.product(G.graph["protein_df"]["node_id"], ligand["node_id"]):
+        for n1, n2 in itertools.product(
+            G.graph["protein_df"]["node_id"], ligand["node_id"]
+        ):
             if G.has_edge(n1, n2):
                 G.edges[n1, n2]["kind"].add("protein_ligand_fully_connected")
             else:
                 G.add_edge(n1, n2, kind={"protein_ligand_fully_connected"})
-    
+
     return G
+
 
 def add_k_nn_edges_protein_ligand(
     G: nx.Graph,
@@ -254,7 +264,7 @@ def add_k_nn_edges_protein_ligand(
     """
 
     for idx, ligand in enumerate(G.graph["ligands_coords"]):
-        coords = np.concatenate([G.graph["protein_coords"], ligand])      
+        coords = np.concatenate([G.graph["protein_coords"], ligand])
         dist_mat = cdist(coords, coords)
 
         nn = kneighbors_graph(
@@ -273,11 +283,15 @@ def add_k_nn_edges_protein_ligand(
         log.info(f"Found: {len(interacting_nodes)} KNN edges")
         for n1, n2 in interacting_nodes:
             if n1 >= len(G.graph["protein_coords"]):
-                n1 = G.graph["ligands_df"][idx].iloc[n1-len(G.graph["protein_coords"])]["node_id"]
+                n1 = G.graph["ligands_df"][idx].iloc[
+                    n1 - len(G.graph["protein_coords"])
+                ]["node_id"]
             else:
                 n1 = G.graph["protein_df"].iloc[n1]["node_id"]
             if n2 >= len(G.graph["protein_coords"]):
-                n2 = G.graph["ligands_df"][idx].iloc[n2-len(G.graph["protein_coords"])]["node_id"]
+                n2 = G.graph["ligands_df"][idx].iloc[
+                    n2 - len(G.graph["protein_coords"])
+                ]["node_id"]
             else:
                 n2 = G.graph["protein_df"].iloc[n2]["node_id"]
             if G.has_edge(n1, n2):
@@ -285,6 +299,7 @@ def add_k_nn_edges_protein_ligand(
             else:
                 G.add_edge(n1, n2, kind={f"protein_ligand_k_nn_{k}"})
     return G
+
 
 def add_sequence_distance_edges(
     G: nx.Graph, d: int, name: str = "sequence_edge"
@@ -305,10 +320,11 @@ def add_sequence_distance_edges(
     print(len(G))
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
-
         # Find chain residues
         chain_residues = [
-            (n, v) for n, v in G.nodes(data=True) if "chain_id" in v and v["chain_id"] == chain_id
+            (n, v)
+            for n, v in G.nodes(data=True)
+            if "chain_id" in v and v["chain_id"] == chain_id
         ]
 
         # Iterate over every residue in chain
@@ -575,7 +591,7 @@ def add_aromatic_sulphur_interactions(
     interacting_atoms = get_interacting_atoms(5.3, distmat)
     interacting_atoms = list(zip(interacting_atoms[0], interacting_atoms[1]))
 
-    for (a1, a2) in interacting_atoms:
+    for a1, a2 in interacting_atoms:
         resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
         resi2 = aromatic_sulphur_df.loc[a2, "node_id"]
 
@@ -605,7 +621,7 @@ def add_cation_pi_interactions(
     interacting_atoms = get_interacting_atoms(6, distmat)
     interacting_atoms = list(zip(interacting_atoms[0], interacting_atoms[1]))
 
-    for (a1, a2) in interacting_atoms:
+    for a1, a2 in interacting_atoms:
         resi1 = cation_pi_df.loc[a1, "node_id"]
         resi2 = cation_pi_df.loc[a2, "node_id"]
 

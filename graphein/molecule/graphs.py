@@ -275,7 +275,7 @@ def construct_graph(
         rdmol = Chem.AddHs(rdmol)
 
     # If no coords are provided, add edges by bonds
-    #config.edge_construction_functions = [add_atom_bonds]
+    # config.edge_construction_functions = [add_atom_bonds]
     g = initialise_graph_with_metadata(
         name=name,
         rdmol=rdmol,
@@ -314,9 +314,7 @@ def construct_graph(
     return g
 
 
-def construct_junction_tree(
-    mol=Chem.Mol
-) -> nx.Graph:
+def construct_junction_tree(mol=Chem.Mol) -> nx.Graph:
     """
     Constructs molecule structure junction tree graph from a ``smiles``.
 

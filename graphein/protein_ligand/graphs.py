@@ -39,13 +39,17 @@ try:
     import rdkit.Chem as Chem
     import rdkit.Chem.AllChem as AllChem
 except ImportError:
-    message = import_message("graphein.protein_ligand.graphs", "rdkit", "rdkit", True)
+    message = import_message(
+        "graphein.protein_ligand.graphs", "rdkit", "rdkit", True
+    )
     log.warning(message)
 
 try:
     from prody import parsePDB, writePDBStream
 except ImportError:
-    message = import_message("graphein.protein_ligand.graphs", "prody", "prody", True)
+    message = import_message(
+        "graphein.protein_ligand.graphs", "prody", "prody", True
+    )
     log.warning(message)
 
 
@@ -109,6 +113,7 @@ def read_pdb_to_dataframe(
         print(atomic_df)
     return atomic_df
 
+
 def initialise_graph_with_metadata(
     protein_df: pd.DataFrame,
     ligands_df: List[pd.DataFrame],
@@ -140,9 +145,18 @@ def initialise_graph_with_metadata(
         protein_df=protein_df,
         ligands_df=ligands_df,
         raw_pdb_df=raw_pdb_df,
-        rgroup_df=compute_rgroup_dataframe(remove_insertions(raw_pdb_df.df["ATOM"])),
-        protein_coords=np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]]),
-        ligands_coords=np.asarray([ligand_df[["x_coord", "y_coord", "z_coord"]] for ligand_df in ligands_df]),
+        rgroup_df=compute_rgroup_dataframe(
+            remove_insertions(raw_pdb_df.df["ATOM"])
+        ),
+        protein_coords=np.asarray(
+            protein_df[["x_coord", "y_coord", "z_coord"]]
+        ),
+        ligands_coords=np.asarray(
+            [
+                ligand_df[["x_coord", "y_coord", "z_coord"]]
+                for ligand_df in ligands_df
+            ]
+        ),
     )
 
     # Create graph and assign intrinsic graph-level metadata
@@ -205,17 +219,34 @@ def add_nodes_to_graph(
     )
     nx.set_node_attributes(G, dict(zip(nodes, coords)), "coords")
     nx.set_node_attributes(G, dict(zip(nodes, b_factor)), "b_factor")
-    nx.set_node_attributes(G, dict(zip(nodes, ["protein" for _ in range(len(nodes))])), "source")
+    nx.set_node_attributes(
+        G, dict(zip(nodes, ["protein" for _ in range(len(nodes))])), "source"
+    )
 
     rdmols = []
     for i, ligand in enumerate(ligands_df):
         G.add_nodes_from(ligand["node_id"])
-        nx.set_node_attributes(G, dict(zip(ligand["node_id"], ["ligand"])), "source")
-        nx.set_node_attributes(G, dict(zip(ligand["node_id"], np.asarray(ligand[["x_coord", "y_coord", "z_coord"]]))), "coords")
-        nx.set_node_attributes(G, dict(zip(ligand["node_id"], ligand["element_symbol"])), "element_symbol")
+        nx.set_node_attributes(
+            G, dict(zip(ligand["node_id"], ["ligand"])), "source"
+        )
+        nx.set_node_attributes(
+            G,
+            dict(
+                zip(
+                    ligand["node_id"],
+                    np.asarray(ligand[["x_coord", "y_coord", "z_coord"]]),
+                )
+            ),
+            "coords",
+        )
+        nx.set_node_attributes(
+            G,
+            dict(zip(ligand["node_id"], ligand["element_symbol"])),
+            "element_symbol",
+        )
         # Convert mol to rdmol and save it
         ppdb = PandasPdb()
-        ppdb.df['HETATM'] = ligands_df[i]
+        ppdb.df["HETATM"] = ligands_df[i]
         ppdb.to_pdb(path="./tmp_saved_mol.pdb")
         rdmol = Chem.MolFromPDBFile("./tmp_saved_mol.pdb")
         rdmols.append(rdmol)
@@ -396,10 +427,12 @@ def construct_graph(
     df_dict = read_ligand_expo()
     pdb = parsePDB(pdb_code)
     if config.exclude_waters:
-        ligand = pdb.select('not protein and not water')
+        ligand = pdb.select("not protein and not water")
     else:
-        ligand = pdb.select('not protein')
-    res_name_list = set(list(zip(list(ligand.getResnames()), list(ligand.getChids()))))
+        ligand = pdb.select("not protein")
+    res_name_list = set(
+        list(zip(list(ligand.getResnames()), list(ligand.getChids())))
+    )
     ligands = []
     ligands_df = []
     # TODO: filter out ions, co-factors, etc.
@@ -407,7 +440,12 @@ def construct_graph(
         try:
             new_mol = process_ligand(ligand, res, df_dict)
             ligands.append(new_mol)
-            ligands_df.append(raw_df.df['HETATM'].loc[(raw_df.df['HETATM']["residue_name"] == res) & (raw_df.df['HETATM']["chain_id"] == chain)])
+            ligands_df.append(
+                raw_df.df["HETATM"].loc[
+                    (raw_df.df["HETATM"]["residue_name"] == res)
+                    & (raw_df.df["HETATM"]["chain_id"] == chain)
+                ]
+            )
         except Exception as e:
             log.warning(e)
             continue
@@ -456,7 +494,9 @@ def construct_graph(
     if config.ligand_edge_metadata_functions is not None:
         g = annotate_edge_metadata(g, config.ligand_edge_metadata_functions)
     if config.protein_ligand_edge_metadata_functions is not None:
-        g = annotate_edge_metadata(g, config.protein_ligand_edge_metadata_functions)
+        g = annotate_edge_metadata(
+            g, config.protein_ligand_edge_metadata_functions
+        )
 
     return g
 
@@ -492,6 +532,7 @@ def _mp_graph_constructor(
         log.info(ex)
         return None
 
+
 def process_ligand(ligand, res_name: str, expo_dict: Dict):
     """
     Process ligand in the following steps:
@@ -513,12 +554,13 @@ def process_ligand(ligand, res_name: str, expo_dict: Dict):
     """
     output = StringIO()
     sub_mol = ligand.select(f"resname {res_name}")
-    sub_smiles = expo_dict['SMILES'][res_name]
+    sub_smiles = expo_dict["SMILES"][res_name]
     template = AllChem.MolFromSmiles(sub_smiles)
     writePDBStream(output, sub_mol)
     pdb_string = output.getvalue()
     rd_mol = AllChem.MolFromPDBBlock(pdb_string)
     return AllChem.AssignBondOrdersFromTemplate(template, rd_mol)
+
 
 def read_ligand_expo() -> Dict[str, Dict[str, str]]:
     """
@@ -531,16 +573,16 @@ def read_ligand_expo() -> Dict[str, Dict[str, str]]:
     """
     file_name = "Components-smiles-stereo-oe.smi"
     try:
-        df = pd.read_csv(file_name, sep="\t",
-                         header=None,
-                         names=["SMILES", "ID", "Name"])
+        df = pd.read_csv(
+            file_name, sep="\t", header=None, names=["SMILES", "ID", "Name"]
+        )
     except FileNotFoundError:
         url = f"http://ligand-expo.rcsb.org/dictionaries/{file_name}"
         print(url)
         r = requests.get(url, allow_redirects=True)
-        open('Components-smiles-stereo-oe.smi', 'wb').write(r.content)
-        df = pd.read_csv(file_name, sep="\t",
-                         header=None,
-                         names=["SMILES", "ID", "Name"])
+        open("Components-smiles-stereo-oe.smi", "wb").write(r.content)
+        df = pd.read_csv(
+            file_name, sep="\t", header=None, names=["SMILES", "ID", "Name"]
+        )
     df.set_index("ID", inplace=True)
     return df.to_dict()

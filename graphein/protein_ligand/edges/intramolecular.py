@@ -32,7 +32,6 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
     log.debug("Adding peptide bonds to graph")
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
-
         # Find chain residues
         chain_residues = [
             (n, v) for n, v in G.nodes(data=True) if v["chain_id"] == chain_id

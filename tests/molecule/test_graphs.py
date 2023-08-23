@@ -6,7 +6,6 @@ import numpy as np
 
 from graphein.molecule.config import MoleculeGraphConfig
 from graphein.molecule.graphs import construct_graph, construct_junction_tree
-from graphein.molecule.graphs import construct_graph
 from graphein.utils.dependencies import import_message
 
 try:
@@ -141,6 +140,7 @@ def test_generate_graph_pdb():
         assert isinstance(
             d["bond"], rdkit.Chem.rdchem.Bond
         ), f"edge {u}-{v} does not have an RDKit bond associated with it."
+
 
 def test_generate_graph_smiles():
     """Tests junction tree graph construction from a SMILES string."""

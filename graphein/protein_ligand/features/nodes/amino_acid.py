@@ -117,7 +117,7 @@ def meiler_embedding(
     :returns: pd.Series of amino acid features
     :rtype: pd.Series
     """
-    
+
     if "residue_name" in d:
         df = load_meiler_embeddings()
         amino_acid = d["residue_name"]

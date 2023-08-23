@@ -14,20 +14,21 @@ from deepdiff import DeepDiff
 from pydantic import BaseModel
 from typing_extensions import Literal
 
-from graphein.protein_ligand.edges.distance import add_peptide_bonds
-from graphein.protein_ligand.features.nodes.amino_acid import meiler_embedding
-
-from graphein.protein_ligand.edges.atomic import add_atom_bonds, add_atomic_edges
+from graphein.protein_ligand.edges.atomic import (
+    add_atom_bonds,
+    add_atomic_edges,
+)
 from graphein.protein_ligand.edges.distance import (
     add_distance_threshold_ligand,
-    add_fully_connected_edges_ligand,
-    add_k_nn_edges_ligand,
-    add_fully_connected_edges_protein_ligand,
-    add_k_nn_edges_protein_ligand,
     add_distance_threshold_protein_ligand,
+    add_fully_connected_edges_ligand,
+    add_fully_connected_edges_protein_ligand,
+    add_k_nn_edges_ligand,
+    add_k_nn_edges_protein_ligand,
+    add_peptide_bonds,
 )
+from graphein.protein_ligand.features.nodes.amino_acid import meiler_embedding
 from graphein.protein_ligand.features.nodes.atom_type import atom_type_one_hot
-
 from graphein.utils.config import PartialMatchOperator, PathMatchOperator
 
 
@@ -182,13 +183,15 @@ class ProteinLigandGraphConfig(BaseModel):
     # Graph construction functions for protein
     protein_df_processing_functions: Optional[List[Callable]] = None
     protein_edge_construction_functions: List[Union[Callable, str]] = [
-        add_peptide_bonds, 
-        add_atomic_edges, 
+        add_peptide_bonds,
+        add_atomic_edges,
     ]
     protein_node_metadata_functions: Optional[List[Union[Callable, str]]] = [
         meiler_embedding
     ]
-    protein_edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
+    protein_edge_metadata_functions: Optional[
+        List[Union[Callable, str]]
+    ] = None
     graph_metadata_functions: Optional[List[Callable]] = None
 
     # Graph construction functions for ligand
@@ -209,7 +212,9 @@ class ProteinLigandGraphConfig(BaseModel):
         add_k_nn_edges_protein_ligand,
         add_distance_threshold_protein_ligand,
     ]
-    protein_ligand_edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
+    protein_ligand_edge_metadata_functions: Optional[
+        List[Union[Callable, str]]
+    ] = None
 
     # External Dependency configs
     get_contacts_config: Optional[GetContactsConfig] = None

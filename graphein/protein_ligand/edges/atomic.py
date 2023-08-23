@@ -27,6 +27,7 @@ log = logging.getLogger(__name__)
 # Todo dealing with metals
 # Todo There are other check and balances that can be implemented from here: https://www.daylight.com/meetings/mug01/Sayle/m4xbondage.html
 
+
 def add_atom_bonds(G: nx.Graph) -> nx.Graph:
     """Adds atomic bonds to a ligand part of protein-ligand graph.
 
@@ -46,6 +47,7 @@ def add_atom_bonds(G: nx.Graph) -> nx.Graph:
             else:
                 G.add_edge(n1, n2, kind={"ligand_bond"}, bond=bond)
     return G
+
 
 def assign_bond_states_to_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -118,8 +120,12 @@ def add_atomic_edges(G: nx.Graph, tolerance: float = 0.56) -> nx.Graph:
     dist_mat = compute_distmat(G.graph["protein_df"])
 
     # We assign bond states to the dataframe, and then map these to covalent radii
-    G.graph["protein_df"] = assign_bond_states_to_dataframe(G.graph["protein_df"])
-    G.graph["protein_df"] = assign_covalent_radii_to_dataframe(G.graph["protein_df"])
+    G.graph["protein_df"] = assign_bond_states_to_dataframe(
+        G.graph["protein_df"]
+    )
+    G.graph["protein_df"] = assign_covalent_radii_to_dataframe(
+        G.graph["protein_df"]
+    )
 
     # Create a covalent 'distance' matrix by adding the radius arrays with its transpose
     covalent_radius_distance_matrix = np.add(
