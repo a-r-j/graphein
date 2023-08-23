@@ -6,6 +6,8 @@
 
 # -- Path setup --------------------------------------------------------------
 
+import datetime
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -14,6 +16,9 @@ import os
 import sys
 
 import plotly.io as pio
+import sphinx.ext.autodoc
+
+sphinx.ext.autodoc.NewTypeDataDocumenter.directivetype = "class"
 
 os.environ["PLOTLY_RENDERER"] = "sphinx_gallery"
 
@@ -25,11 +30,11 @@ pio.renderers.default = "sphinx_gallery"
 # -- Project information -----------------------------------------------------
 
 project = "Graphein"
-copyright = "2022, Arian Jamasb"
 author = "Arian Jamasb"
+copyright = f"{datetime.datetime.now().year}, {author}"
 
 # The full version, including alpha/beta/rc tags
-release = "1.5.0rc1"
+release = "1.7.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -39,6 +44,7 @@ master_doc = "index"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
@@ -48,14 +54,19 @@ extensions = [
     "m2r2",
     "nbsphinx",
     "nbsphinx_link",
+    "sphinx.ext.napoleon",
+    "sphinx_codeautolink",
+    # "sphinx_autorun",
 ]
+
+autosummary_generate = True  # Turn on sphinx.ext.autosummary
 nbsphinx_allow_errors = True
 nbsphinx_require_js_path = (
     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
 )
-nbsphinx_kernel_name = "graphein-wip"
-# nbsphinx_execute = "always"
-nbsphinx_execute = "never"
+nbsphinx_kernel_name = "graphein"
+nbsphinx_execute = "always"
+# nbsphinx_execute = "never"
 
 ogp_site_url = "https://graphein.ai/"
 ogp_image = "https://graphein.ai/_static/graphein.png"
@@ -67,16 +78,23 @@ gtagjs_ids = [
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "xarray": ("https://xarray.pydata.org/en/stable/", None),
-    "pandas": ("https://pandas.pydata.org/docs/", None),
-    "scikit-learn": ("https://scikit-learn.org/stable/", None),
-    "sklearn": ("https://scikit-learn.org/stable/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
-    "Sphinx": ("https://www.sphinx-doc.org/en/stable/", None),
     "networkx": ("https://networkx.github.io/documentation/stable/", None),
     "nx": ("https://networkx.github.io/documentation/stable/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "np": ("https://numpy.org/doc/stable/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+    "pd": ("https://pandas.pydata.org/docs/", None),
+    "plotly": ("https://plotly.com/python-api-reference/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
+    "scikit-learn": ("https://scikit-learn.org/stable/", None),
+    "sklearn": ("https://scikit-learn.org/stable/", None),
+    "Sphinx": ("https://www.sphinx-doc.org/en/stable/", None),
     "torch": ("https://pytorch.org/docs/master/", None),
+    "xarray": ("https://xarray.pydata.org/en/stable/", None),
+    "torch_geometric": (
+        "https://pytorch-geometric.readthedocs.io/en/latest/",
+        None,
+    ),
 }
 
 mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
@@ -98,7 +116,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ["_build"]
 source_suffix = [".rst", ".md"]
 
 

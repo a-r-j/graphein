@@ -5,65 +5,72 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import logging
+
 from typing import Dict, List, Union
 
 import pandas as pd
 import requests
-
-log = logging.getLogger(__name__)
+from loguru import logger as log
 
 
 def params_BIOGRID(
     params: Dict[str, Union[str, int, List[str], List[int]]], **kwargs
 ) -> Dict[str, Union[str, int]]:
     """
-    Updates default parameters with user parameters for the method "interactions" of the BIOGRID API REST.
+    Updates default parameters with user parameters for the method
+    "interactions" of the BIOGRID API REST.
 
     See also https://wiki.thebiogrid.org/doku.php/biogridrest
     :param params: Dictionary of default parameters
     :type params: Dict[str, Union[str, int, List[str], List[int]]]
-    :param kwargs: User parameters for the method "network" of the BIOGRID API REST. The key must start with "BIOGRID"
+    :param kwargs: User parameters for the method "network" of the BIOGRID API
+        REST. The key must start with "BIOGRID"
     :type kwargs: Dict[str, Union[str, int, List[str], List[int]]]
     :return: Dictionary of parameters
     :rtype: Dict[str, Union[str, int]]
     """
     fields = [
-        "searchNames",  # If ‘true’, the interactor OFFICIAL_SYMBOL will be examined for a match
-        # with the geneList.
+        "searchNames",  # If ‘true’, the interactor OFFICIAL_SYMBOL will be
+        # examined for a match with the geneList.
         "max",  # Number of results to fetch
-        "interSpeciesExcluded",  # If ‘true’, interactions with interactors from different species will
-        # be excluded.
-        "selfInteractionsExcluded",  # If ‘true’, interactions with one interactor will be excluded.
-        "evidenceList",  # Any interaction evidence with its Experimental System in the list will be excluded
-        # from the results unless includeEvidence is set to true.
-        "includeEvidence",  # If set to true, any interaction evidence with its Experimental System in the
-        # evidenceList will be included in the result
-        "searchIds",  # If ‘true’, the interactor ENTREZ_GENE, ORDERED LOCUS and SYSTEMATIC_NAME (orf) will
-        # be examined for a match with the geneList.
-        "searchNames",  # If ‘true’, the interactor OFFICIAL_SYMBOL will be examined for a match with
-        # the geneList.
-        "searchSynonyms",  # If ‘true’, the interactor SYNONYMS will be examined for a match with
-        # the geneList.
-        "searchBiogridIds",  # If ‘true’, the entries in 'GENELIST' will be compared to BIOGRID internal IDS
-        # which are provided in all Tab2 formatted files.
-        "additionalIdentifierTypes",  # Identifier types on this list are examined for a match with
-        # the geneList.
-        "excludeGenes",  # If ‘true’, interactions containing genes in the geneList will be excluded from the
-        # results.
-        "includeInteractors",  # If ‘true’, in addition to interactions between genes on the geneList,
-        # interactions will also be fetched which have only one interactor on
-        # the geneList
-        "includeInteractorInteractions",  # If ‘true’ interactions between the geneList’s first order
-        # interactors will be included.
-        "pubmedList",  # Interactions will be fetched whose Pubmed Id is/ is not in this list, depending on
-        # the value of excludePubmeds.
-        "excludePubmeds",  # If ‘false’, interactions with Pubmed ID in pubmedList will be included in the
-        # results; if ‘true’ they will be excluded.
-        "htpThreshold",  # Interactions whose Pubmed ID has more than this number of interactions will be
-        # excluded from the results. Ignored if excludePubmeds is ‘false’.
-        "throughputTag"  # If set to 'low or 'high', only interactions with 'Low throughput' or
-        # 'High throughput' in the 'throughput' field will be returned.
+        "interSpeciesExcluded",  # If ‘true’, interactions with interactors from
+        # different species will be excluded.
+        "selfInteractionsExcluded",  # If ‘true’, interactions with one
+        # interactor will be excluded.
+        "evidenceList",  # Any interaction evidence with its Experimental System
+        # in the list will be excluded from the results unless includeEvidence
+        # is set to true.
+        "includeEvidence",  # If set to true, any interaction evidence with its
+        # Experimental System in the evidenceList will be included in the result
+        "searchIds",  # If ‘true’, the interactor ENTREZ_GENE, ORDERED LOCUS and
+        # SYSTEMATIC_NAME (orf) will be examined for a match with the geneList.
+        "searchNames",  # If ‘true’, the interactor OFFICIAL_SYMBOL will be
+        # examined for a match with the geneList.
+        "searchSynonyms",  # If ‘true’, the interactor SYNONYMS will be examined
+        # for a match with the geneList.
+        "searchBiogridIds",  # If ‘true’, the entries in 'GENELIST' will be
+        # compared to BIOGRID internal IDS which are provided in all Tab2
+        # formatted files.
+        "additionalIdentifierTypes",  # Identifier types on this list are
+        # examined for a match with the geneList.
+        "excludeGenes",  # If ‘true’, interactions containing genes in the
+        # geneList will be excluded from the results.
+        "includeInteractors",  # If ‘true’, in addition to interactions between
+        # genes on the geneList, interactions will also be fetched which have
+        # only one interactor on the geneList
+        "includeInteractorInteractions",  # If ‘true’ interactions between the
+        # geneList’s first order interactors will be included.
+        "pubmedList",  # Interactions will be fetched whose Pubmed Id is/ is
+        # not in this list, depending on the value of excludePubmeds.
+        "excludePubmeds",  # If ‘false’, interactions with Pubmed ID in
+        # pubmedList will be included in the results; if ‘true’ they will be
+        # excluded.
+        "htpThreshold",  # Interactions whose Pubmed ID has more than this
+        # number of interactions will be excluded from the results. Ignored if
+        # excludePubmeds is ‘false’.
+        "throughputTag"  # If set to 'low or 'high', only interactions with
+        # 'Low throughput' or 'High throughput' in the 'throughput' field
+        # will be returned.
     ]
     for p in fields:
         kwarg_name = "BIOGRID_" + p
@@ -87,13 +94,16 @@ def parse_BIOGRID(
     See also [1] BIOGRID: https://wiki.thebiogrid.org/doku.php/biogridrest
     :param protein_list: Proteins to include in the graph
     :type protein_list: List[str]
-    :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism. Default is 9606 (Homo Sapiens)
+    :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism.
+        Default is ``9606`` (Homo Sapiens).
     :type ncbi_taxon_id: Union[int, str, List[int], List[str]]
-    :param paginate: boolean indicating whether to paginate the calls (for BIOGRID, the maximum number of rows per
-        call is 10000). Defaults to True
+    :param paginate: boolean indicating whether to paginate the calls (for
+        BIOGRID, the maximum number of rows per call is ``10000).`` Defaults to
+        ``True``.
     :type paginate: bool
-    :param kwargs: Parameters of the "interactions" method of the BIOGRID API REST, used to select the results.
-        The parameter names are of the form BIOGRID_<param>, where <param> is the name of the parameter.
+    :param kwargs: Parameters of the "interactions" method of the BIOGRID API
+        REST, used to select the results. The parameter names are of the form
+        ``"BIOGRID_<param>"``, where ``<param>`` is the name of the parameter.
         Information about these parameters can be found at [1].
     :type kwargs: Dict[str, Union[str, int, List[str], List[int]]]
     :return: Source specific Pandas dataframe.
@@ -112,9 +122,10 @@ def parse_BIOGRID(
         "format": "json",
         "max": 10000,  # Number of results to fetch
         "searchNames": "true",
-        "includeInteractors": "false",  # Set to true to get any interaction involving EITHER gene,
-        # set to false to get interactions between genes
-        "selfInteractionsExcluded": "true",  # If ‘true’, interactions with one interactor will be excluded
+        "includeInteractors": "false",  # Set to true to get any interaction
+        # involving EITHER gene, set to false to get interactions between genes
+        "selfInteractionsExcluded": "true",  # If ‘true’, interactions with one
+        # interactor will be excluded
     }
     params = params_BIOGRID(params, **kwargs)
 
@@ -135,9 +146,11 @@ def parse_BIOGRID(
         :type params: Dict[str, Union[str, int]]
         :param start: index in gene list to start from
         :type start: int
-        :param max: number of genes to use in API call. Results are limited to 10k per call
+        :param max: number of genes to use in API call. Results are limited to
+            10k per call
         :type max: int
-        :param paginate: bool indicating whether or not to paginate calls. Above 10k calls this is required
+        :param paginate: bool indicating whether or not to paginate calls.
+            Above 10k calls this is required
         :type paginate: bool
         :return: pd.DataFrame containing BIOGRID_df API call output
         :rtype: pd.DataFrame
@@ -146,7 +159,8 @@ def parse_BIOGRID(
         response = requests.post(request_url, data=params)
         df = pd.read_json(response.text.strip()).transpose()
 
-        # Maximum number of results is limited to 10k. Paginate to retrieve everything
+        # Maximum number of results is limited to 10k. Paginate to
+        # retrieve everything
         if paginate and df.shape[0] == max:
             next_df = make_call(request_url, params, start + max, max)
             df = pd.concat([df, next_df])
@@ -162,15 +176,18 @@ def filter_BIOGRID(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
     """
     Filters results of the BIOGRID API call according to user kwargs.
 
-    :param df: Source specific Pandas dataframe (BIOGRID) with results of the API call
+    :param df: Source specific Pandas DataFrame (BIOGRID) with results of the
+        API call.
     :type df: pd.DataFrame
-    :param kwargs: User thresholds used to filter the results. The parameter names are of the form BIOGRID_<param>,
-        where <param> is the name of the parameter. All the parameters are numerical values.
+    :param kwargs: User thresholds used to filter the results. The parameter
+        names are of the form ``"BIOGRID_<param>"``, where ``<param>`` is the
+        name of the parameter. All the parameters are numerical values.
     :type kwargs: Dict[str, Union[str, int, List[str], List[int]]]
-    :return: Source specific Pandas dataframe with filtered results
+    :return: Source specific Pandas DataFrame with filtered results.
     :rtype: pd.DataFrame
     """
-    # Note: To filter BIOGRID interactions, use parameters from https://wiki.thebiogrid.org/doku.php/biogridrest
+    # Note: To filter BIOGRID interactions, use parameters from
+    # https://wiki.thebiogrid.org/doku.php/biogridrest
     # TODO: Make sure that user can filter results of API call via the parameters.
     #       Otherwise implement filtering here.
     # TODO: Perhaps can filter by EXPERIMENTAL_SYSTEM (e.g. Co-fractionation)
@@ -180,12 +197,12 @@ def filter_BIOGRID(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
 
 def standardise_BIOGRID(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Standardises BIOGRID dataframe, e.g. puts everything into a common format.
+    Standardises BIOGRID DataFrame, e.g. puts everything into a common format.
 
-    :param df: Source specific Pandas dataframe
+    :param df: Source specific Pandas DataFrame.
     :type df: pd.DataFrame
-    :return: Standardised dataframe
-    :rtpe: pd.DataFrame
+    :return: Standardised DataFrame.
+    :rtype: pd.DataFrame
     """
     if df.empty:
         return pd.DataFrame({"p1": [], "p2": [], "source": []})
@@ -208,15 +225,18 @@ def BIOGRID_df(
     **kwargs,
 ) -> pd.DataFrame:
     """
-    Generates standardised dataframe with BIOGRID protein-protein interactions, filtered according to user's input.
+    Generates standardised DataFrame with BIOGRID protein-protein interactions,
+    filtered according to user's input.
 
-    :protein_list: List of proteins (official symbol) that will be included in the PPI graph
+    :param protein_list: List of proteins (official symbol) that will be
+        included in the PPI graph.
     :type protein_list: List[str]
-    :ncbi_taxon_id: NCBI taxonomy identifiers for the organism. 9606 corresponds to Homo Sapiens
+    :param ncbi_taxon_id: NCBI taxonomy identifiers for the organism.
+        ``9606`` corresponds to Homo Sapiens.
     :type ncbi_taxon_id: int
-    :param kwargs:  Additional parameters to pass to BIOGRID API calls
+    :param kwargs:  Additional parameters to pass to BIOGRID API calls.
     :type kwargs: Union[int, str, List[int], List[str]]
-    :return: Standardised dataframe with BIOGRID interactions
+    :return: Standardised DataFrame with BIOGRID interactions.
     :rtype: pd.DataFrame
     """
     df = parse_BIOGRID(
@@ -225,27 +245,3 @@ def BIOGRID_df(
     df = filter_BIOGRID(df, **kwargs)
     df = standardise_BIOGRID(df)
     return df
-
-
-if __name__ == "__main__":
-    protein_list = [
-        "CDC42",
-        "CDK1",
-        "KIF23",
-        "PLK1",
-        "RAC2",
-        "RACGAP1",
-        "RHOA",
-        "RHOB",
-    ]
-    sources = ["STRING", "BIOGRID"]
-    kwargs = {
-        "STRING_escore": 0.2,  # Keeps STRING interactions with an experimental score >= 0.2
-        "BIOGRID_throughputTag": "high",  # Keeps high throughput BIOGRID interactions
-    }
-
-    df = BIOGRID_df(
-        protein_list=protein_list, ncbi_taxon_id=9606, kwargs=kwargs
-    )
-
-    print(df.head())

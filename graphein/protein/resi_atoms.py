@@ -14,7 +14,7 @@ We also include mappings of covalent radii and bond lengths for the amino acids 
 # Code Repository: https://github.com/a-r-j/graphein
 
 
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -117,31 +117,41 @@ and ``"Z"`` denotes ``"GLX"`` which corresponds to``"GLU"`` (``"E"``) **or** ``"
 ``"X"`` denotes unknown (``"UNK"`` or sometimes ``"XAA"``).
 """
 
-STANDARD_AMINO_ACID_MAPPING_TO_1_3: Dict[str, str] = {
-    "A": "ALA",
-    "C": "CYS",
-    "D": "ASP",
-    "E": "GLU",
-    "F": "PHE",
-    "G": "GLY",
-    "H": "HIS",
-    "I": "ILE",
-    "K": "LYS",
-    "L": "LEU",
-    "M": "MET",
-    "N": "ASN",
-    "O": "PYL",
-    "P": "PRO",
-    "Q": "GLN",
-    "R": "ARG",
-    "S": "SER",
-    "T": "THR",
-    "U": "SEC",
-    "V": "VAL",
-    "W": "TRP",
-    "Y": "TYR",
-    "X": "UNK",
+STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
+    "ALA": "A",
+    "CYS": "C",
+    "ASP": "D",
+    "GLU": "E",
+    "PHE": "F",
+    "GLY": "G",
+    "HIS": "H",
+    "ILE": "I",
+    "LYS": "K",
+    "LEU": "L",
+    "MET": "M",
+    "ASN": "N",
+    "PYL": "O",
+    "PRO": "P",
+    "GLN": "Q",
+    "ARG": "R",
+    "SER": "S",
+    "THR": "T",
+    "SEC": "U",
+    "VAL": "V",
+    "TRP": "W",
+    "TYR": "Y",
+    "UNK": "X",
 }
+"""
+Mapping of 3-letter standard amino acids codes to their one-letter form.
+"""
+
+STANDARD_AMINO_ACID_MAPPING_1_TO_3 = {
+    v: k for k, v in STANDARD_AMINO_ACID_MAPPING_3_TO_1.items()
+}
+"""
+Mapping of 1-letter standard amino acids codes to their three-letter form.
+"""
 
 NON_STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
     "CGU": "E",
@@ -157,6 +167,247 @@ Mapping of 3-letter non-standard amino acids codes to their one-letter form.
 See: http://ligand-expo.rcsb.org/
 """
 
+
+NON_STANDARD_AMINO_ACID_MAPPING_1_TO_3 = {
+    v: k for k, v in NON_STANDARD_AMINO_ACID_MAPPING_3_TO_1.items()
+}
+"""
+Mapping of 1-letter non-standard amino acids codes to their three-letter form.
+
+See: http://ligand-expo.rcsb.org/
+"""
+
+
+PROTEIN_ATOMS: List[str] = [
+    "N",
+    "CA",
+    "C",
+    "O",
+    "CB",
+    "OG",
+    "CG",
+    "CD1",
+    "CD2",
+    "CE1",
+    "CE2",
+    "CZ",
+    "OD1",
+    "ND2",
+    "CG1",
+    "CG2",
+    "CD",
+    "CE",
+    "NZ",
+    "OD2",
+    "OE1",
+    "NE2",
+    "OE2",
+    "OH",
+    "NE",
+    "NH1",
+    "NH2",
+    "OG1",
+    "SD",
+    "ND1",
+    "SG",
+    "NE1",
+    "CE3",
+    "CZ2",
+    "CZ3",
+    "CH2",
+    "OXT",
+]
+"""List of standard atom types present in protein structures."""
+
+
+STANDARD_RESIDUE_ATOMS: Dict[str, List[str]] = {
+    "ALA": ["N", "CA", "C", "O", "CB"],
+    "ARG": ["N", "CA", "C", "O", "CB", "CG", "CD", "NE", "CZ", "NH1", "NH2"],
+    "ASN": ["N", "CA", "C", "O", "CB", "CG", "OD1", "ND2"],
+    "ASP": ["N", "CA", "C", "O", "CB", "CG", "OD1", "OD2"],
+    "CYS": ["N", "CA", "C", "O", "CB", "SG"],
+    "GLN": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1", "NE2"],
+    "GLU": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1", "OE2"],
+    "GLY": ["N", "CA", "C", "O"],
+    "HIS": ["N", "CA", "C", "O", "CB", "CG", "ND1", "CD2", "CE1", "NE2"],
+    "ILE": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "CD1"],
+    "LEU": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2"],
+    "LYS": ["N", "CA", "C", "O", "CB", "CG", "CD", "CE", "NZ"],
+    "MET": ["N", "CA", "C", "O", "CB", "CG", "SD", "CE"],
+    "PHE": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ"],
+    "PRO": ["N", "CA", "C", "O", "CB", "CG", "CD"],
+    "SER": ["N", "CA", "C", "O", "CB", "OG"],
+    "THR": ["N", "CA", "C", "O", "CB", "OG1", "CG2"],
+    "TRP": [
+        "N",
+        "CA",
+        "C",
+        "O",
+        "CB",
+        "CG",
+        "CD1",
+        "CD2",
+        "NE1",
+        "CE2",
+        "CE3",
+        "CZ2",
+        "CZ3",
+        "CH2",
+    ],
+    "TYR": [
+        "N",
+        "CA",
+        "C",
+        "O",
+        "CB",
+        "CG",
+        "CD1",
+        "CD2",
+        "CE1",
+        "CE2",
+        "CZ",
+        "OH",
+    ],
+    "VAL": ["N", "CA", "C", "O", "CB", "CG1", "CG2"],
+}
+"""Dictionary mapping standard amino acid residues to their constituent atoms."""
+
+
+ATOM_NUMBERING: Dict[str, int] = {
+    atom: i
+    for i, atom in enumerate(
+        [
+            "N",
+            "CA",
+            "C",
+            "O",
+            "CB",
+            "OG",
+            "CG",
+            "CD1",
+            "CD2",
+            "CE1",
+            "CE2",
+            "CZ",
+            "OD1",
+            "ND2",
+            "CG1",
+            "CG2",
+            "CD",
+            "CE",
+            "NZ",
+            "OD2",
+            "OE1",
+            "NE2",
+            "OE2",
+            "OH",
+            "NE",
+            "NH1",
+            "NH2",
+            "OG1",
+            "SD",
+            "ND1",
+            "SG",
+            "NE1",
+            "CE3",
+            "CZ2",
+            "CZ3",
+            "CH2",
+            "OXT",
+        ]
+    )
+}
+"""Default ordering of atoms in (dimension 1 of) a protein structure tensor."""
+
+ELEMENT_SYMBOL_MAP: Dict[str, str] = {
+    "N": "N",
+    "CA": "C",
+    "C": "C",
+    "O": "O",
+    "CB": "C",
+    "OG": "O",
+    "CG": "C",
+    "CD1": "C",
+    "CD2": "C",
+    "CE1": "C",
+    "CE2": "C",
+    "CZ": "C",
+    "OD1": "O",
+    "ND2": "N",
+    "CG1": "C",
+    "CG2": "C",
+    "CD": "C",
+    "CE": "C",
+    "NZ": "N",
+    "OD2": "O",
+    "OE1": "O",
+    "NE2": "N",
+    "OE2": "O",
+    "OH": "O",
+    "NE": "N",
+    "NH1": "N",
+    "NH2": "N",
+    "OG1": "O",
+    "SD": "S",
+    "ND1": "N",
+    "SG": "S",
+    "NE1": "N",
+    "CE3": "C",
+    "CZ2": "C",
+    "CZ3": "C",
+    "CH2": "C",
+    "OXT": "O",
+}
+"""Maps PDB atom names to the element symbols."""
+
+ATOM_NUMBERING_MODIFIED: Dict[str, int] = {
+    atom: i
+    for i, atom in enumerate(
+        [
+            "N",
+            "CA",
+            "C",
+            "O",
+            "CB",
+            "OG",
+            "CG",
+            "CD1",
+            "CD2",
+            "CE1",
+            "CE2",
+            "CZ",
+            "OD1",
+            "ND2",
+            "CG1",
+            "CG2",
+            "CD",
+            "CE",
+            "NZ",
+            "OD2",
+            "OE1",
+            "NE2",
+            "OE2",
+            "OH",
+            "NE",
+            "NH1",
+            "NH2",
+            "OG1",
+            "SD",
+            "ND1",
+            "SG",
+            "NE1",
+            "CE3",
+            "CZ2",
+            "CZ3",
+            "CH2",
+            "OXT",
+            "SE",
+        ]
+    )
+}
+"""Default Ordering of atoms (including non-standard residues) in (dimension 1 of) a protein structure tensor."""
+
+
 BOND_TYPES: List[str] = [
     "hydrophobic",
     "disulfide",
@@ -167,6 +418,11 @@ BOND_TYPES: List[str] = [
     "cation_pi",
     "backbone",
     "delaunay",
+    "vdw",
+    "vdw_clash",
+    "salt_bridge",
+    "proximal",
+    "bb_carbonyl_carbonyl",
 ]
 """List of supported bond types."""
 
@@ -251,9 +507,11 @@ NON_STANDARD_RESI_NAMES: List[str] = [
     "MVA",
     "NH2",
     "NLE",
+    "NLW",
     "OCS",
     "ORN",
     "PCA",
+    "PSW",
     "PTR",
     "PVL",
     "PYL",
@@ -333,14 +591,17 @@ RESI_NAMES: List[str] = [
     "LYS",
     "MET",
     "MLE",
+    "MSE",
     "MVA",
     "NH2",
     "NLE",
+    "NLW",
     "OCS",
     "ORN",
     "PCA",
     "PHE",
     "PRO",
+    "PSW",
     "PTR",
     "PVL",
     "PYL",
@@ -391,6 +652,7 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "CSX": "C",
     "CXM": "M",
     "CYS": "C",
+    "CYX": "C",
     "DAL": "A",
     "DAR": "R",
     "DCY": "C",
@@ -429,14 +691,17 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "LYS": "K",
     "MET": "M",
     "MLE": "L",
+    "MSE": "M",
     "MVA": "V",
     "NH2": "X",
     "NLE": "L",
+    "NLW": "L",
     "OCS": "C",
     "ORN": "A",
     "PCA": "Q",
     "PHE": "F",
     "PRO": "P",
+    "PSW": "U",
     "PTR": "Y",
     "PVL": "X",
     "PYL": "O",
@@ -571,9 +836,11 @@ NON_STANDARD_RESIS_PARENT: Dict[str, str] = {
     "MVA": "VAL",
     "NH2": "-",
     "NLE": "LEU",
+    "NLW": "LEU",
     "OCS": "CYS",
     "ORN": "ALA",
     "PCA": "GLU",
+    "PSW": "SEC",
     "PTR": "TYR",
     "PVL": "-",
     "PYL": "LYS",
@@ -765,14 +1032,25 @@ NEG_AA: List[str] = ["GLU", "ASP"]
 """Negatively charged amino acids."""
 
 AA_RING_ATOMS: Dict[str, List[str]] = {
-    "HIS": ["CG", "CD", "CE", "ND", "NE"],
-    "PHE": ["CG", "CD", "CE", "CZ"],
-    "TRP": ["CD", "CE", "CH", "CZ"],
-    "TYR": ["CG", "CD", "CE", "CZ"],
+    # "HIS": ["CG", "CD", "CE", "ND", "NE"],
+    "HIS": ["CG", "CD", "CE", "ND", "NE", "CD2", "ND1", "CE1", "NE2"],
+    # "PHE": ["CG", "CD", "CE", "CZ"],
+    "PHE": ["CG", "CD", "CE", "CZ", "CD1", "CD2", "CE1", "CE2"],
+    # "TRP": ["CD", "CE", "CH", "CZ"],
+    "TRP": ["CD2", "CE2", "CE3", "CZ2", "CZ3", "CH2"],
+    # "TYR": ["CG", "CD", "CE", "CZ"],
+    "TYR": ["CG", "CD", "CE", "CZ", "CD1", "CD2", "CE1", "CE2"],
 }
 """
 Dictionary mapping amino acid 3-letter codes to lists of atoms that are part of rings.
 """
+
+RING_NORMAL_ATOMS: Dict[str, List[str]] = {
+    "PHE": ["CG", "CE1", "CE2"],
+    "TRP": ["CD2", "CZ2", "CZ3"],
+    "TYR": ["CG", "CE1", "CE2"],
+}
+"""Dictionary of atoms used to compute ring normals for each residue."""
 
 AROMATIC_RESIS: List[str] = ["PHE", "TRP", "HIS", "TYR"]
 """List of aromatic residues."""
@@ -788,6 +1066,38 @@ PI_RESIS: List[str] = ["PHE", "TYR", "TRP"]
 
 SULPHUR_RESIS: List[str] = ["MET", "CYS"]
 """Residues containing sulphur atoms."""
+
+SALT_BRIDGE_ANIONS: List[str] = ["ASP", "GLU"]
+"""List of anionic residues that can form salt bridges."""
+
+SALT_BRIDGE_CATIONS: List[str] = ["LYS", "ARG"]
+"""List of cationic residues that can form salt bridges."""
+
+SALT_BRIDGE_RESIDUES: List[str] = SALT_BRIDGE_ANIONS + SALT_BRIDGE_CATIONS
+"""List of residues that can form salt bridges."""
+
+SALT_BRIDGE_ATOMS: List[str] = ["OD1", "OD2", "OE1", "OE2", "NZ", "NH1", "NH2"]
+"""List of atoms that can form salt bridges."""
+
+VDW_RADII: Dict[str, float] = {
+    "H": 1.2,  # 1.09
+    "C": 1.7,
+    "N": 1.55,
+    "O": 1.52,
+    "F": 1.47,
+    "P": 1.8,
+    "S": 1.8,
+    "Cl": 1.75,
+    "Cu": 1.4,
+}
+"""van der Waals radii of the most common atoms. Taken from:
+
+> Bondi, A. (1964). "van der Waals Volumes and Radii".
+> J. Phys. Chem. 68 (3): 441–451.
+
+https://pubs.acs.org/doi/10.1021/j100785a001
+"""
+
 
 ISOELECTRIC_POINTS: Dict[str, float] = {
     "ALA": 6.11,
@@ -1965,3 +2275,858 @@ ATOMIC_MASSES: Dict[str, float] = {
     "S": 32.065,
 }
 """Dictionary of atomic masses for standard protein elements."""
+
+
+CHI_ANGLES_ATOMS: Dict[str, List[List[str]]] = {
+    "ALA": [],
+    # Chi5 in arginine is always 0 +- 5 degrees, so ignore it.
+    "ARG": [
+        ["N", "CA", "CB", "CG"],
+        ["CA", "CB", "CG", "CD"],
+        ["CB", "CG", "CD", "NE"],
+        ["CG", "CD", "NE", "CZ"],
+    ],
+    "ASN": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "OD1"]],
+    "ASP": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "OD1"]],
+    "CYS": [["N", "CA", "CB", "SG"]],
+    "SEC": [["N", "CA", "CB", "SE"]],
+    "GLN": [
+        ["N", "CA", "CB", "CG"],
+        ["CA", "CB", "CG", "CD"],
+        ["CB", "CG", "CD", "OE1"],
+    ],
+    "GLU": [
+        ["N", "CA", "CB", "CG"],
+        ["CA", "CB", "CG", "CD"],
+        ["CB", "CG", "CD", "OE1"],
+    ],
+    "GLY": [],
+    "HIS": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "ND1"]],
+    "ILE": [["N", "CA", "CB", "CG1"], ["CA", "CB", "CG1", "CD1"]],
+    "LEU": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "CD1"]],
+    "LYS": [
+        ["N", "CA", "CB", "CG"],
+        ["CA", "CB", "CG", "CD"],
+        ["CB", "CG", "CD", "CE"],
+        ["CG", "CD", "CE", "NZ"],
+    ],
+    "MET": [
+        ["N", "CA", "CB", "CG"],
+        ["CA", "CB", "CG", "SD"],
+        ["CB", "CG", "SD", "CE"],
+    ],
+    "PHE": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "CD1"]],
+    "PRO": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "CD"]],
+    "SER": [["N", "CA", "CB", "OG"]],
+    "THR": [["N", "CA", "CB", "OG1"]],
+    "TRP": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "CD1"]],
+    "TYR": [["N", "CA", "CB", "CG"], ["CA", "CB", "CG", "CD1"]],
+    "VAL": [["N", "CA", "CB", "CG1"]],
+    "UNK": [],
+}
+"""Dictionary containing mapping of atoms to the chi angle used to compute them.
+
+The first nested list is chi1, the second chi2, etc.
+
+For residues with no chi angles (GLY, ALA), the list is empty.
+"""
+
+
+BB_BUILD_INFO: Dict[str, Dict[str, float]] = {
+    "BONDLENS": {
+        "n-ca": 1.442,
+        "ca-c": 1.498,
+        "c-n": 1.379,
+        "c-o": 1.229,  # From parm10.dat
+        "c-oh": 1.364,
+    },  # From parm10.dat, for OXT
+    # For placing oxygens
+    "BONDANGS": {
+        "ca-c-o": 2.0944,  # Approximated to be 2pi / 3; parm10.dat says 2.0350539
+        "ca-c-oh": 2.0944,
+    },  # Equal to 'ca-c-o', for OXT
+    "BONDTORSIONS": {
+        "n-ca-c-n": -0.785398163
+    },  # A simple approximation, not meant to be exact.
+}
+"""Dictionary containing bond lengths and angles for building protein backbones.
+
+Sourced from SideChainNet: https://github.com/jonathanking/sidechainnet/blob/master/sidechainnet/structure/build_info.py
+"""
+
+
+IDEAL_BB_BOND_LENGTHS: List[float] = [1.523, 1.329, 1.458]
+"""Idealised backbone bond lengths. ``[Ca-C, C-N, N-Ca]``.
+
+.. seealso::
+    :ref:`graphein.protein.tensor.geometry.idealize_backbone
+"""
+
+IDEAL_BB_BOND_ANGLES: List[float] = [2.124, 1.941, 2.028]
+"""Idealised backbone bond angles. ``[C-N-Ca, N-Ca-C, Ca-C-N]``.
+
+
+.. seealso::
+    :ref:`graphein.protein.tensor.geometry.idealize_backbone
+"""
+
+SC_BUILD_INFO: Dict[str, Dict[str, List[Union[str, float]]]] = {
+    "ALA": {
+        "angles-names": ["N-CA-CB"],
+        "angles-types": ["N -CX-CT"],
+        "angles-vals": [1.9146261894377796],
+        "atom-names": ["CB"],
+        "bonds-names": ["CA-CB"],
+        "bonds-types": ["CX-CT"],
+        "bonds-vals": [1.526],
+        "torsion-names": ["C-N-CA-CB"],
+        "torsion-types": ["C -N -CX-CT"],
+        "torsion-vals": ["p"],
+    },
+    "ARG": {
+        "angles-names": [
+            "N-CA-CB",
+            "CA-CB-CG",
+            "CB-CG-CD",
+            "CG-CD-NE",
+            "CD-NE-CZ",
+            "NE-CZ-NH1",
+            "NE-CZ-NH2",
+        ],
+        "angles-types": [
+            "N -CX-C8",
+            "CX-C8-C8",
+            "C8-C8-C8",
+            "C8-C8-N2",
+            "C8-N2-CA",
+            "N2-CA-N2",
+            "N2-CA-N2",
+        ],
+        "angles-vals": [
+            1.9146261894377796,
+            1.911135530933791,
+            1.911135530933791,
+            1.9408061282176945,
+            2.150245638457014,
+            2.0943951023931953,
+            2.0943951023931953,
+        ],
+        "atom-names": ["CB", "CG", "CD", "NE", "CZ", "NH1", "NH2"],
+        "bonds-names": [
+            "CA-CB",
+            "CB-CG",
+            "CG-CD",
+            "CD-NE",
+            "NE-CZ",
+            "CZ-NH1",
+            "CZ-NH2",
+        ],
+        "bonds-types": [
+            "CX-C8",
+            "C8-C8",
+            "C8-C8",
+            "C8-N2",
+            "N2-CA",
+            "CA-N2",
+            "CA-N2",
+        ],
+        "bonds-vals": [1.526, 1.526, 1.526, 1.463, 1.34, 1.34, 1.34],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-CD",
+            "CB-CG-CD-NE",
+            "CG-CD-NE-CZ",
+            "CD-NE-CZ-NH1",
+            "CD-NE-CZ-NH2",
+        ],
+        "torsion-types": [
+            "C -N -CX-C8",
+            "N -CX-C8-C8",
+            "CX-C8-C8-C8",
+            "C8-C8-C8-N2",
+            "C8-C8-N2-CA",
+            "C8-N2-CA-N2",
+            "C8-N2-CA-N2",
+        ],
+        "torsion-vals": ["p", "p", "p", "p", "p", "p", "i"],
+    },
+    "ASN": {
+        "angles-names": ["N-CA-CB", "CA-CB-CG", "CB-CG-OD1", "CB-CG-ND2"],
+        "angles-types": ["N -CX-2C", "CX-2C-C ", "2C-C -O ", "2C-C -N "],
+        "angles-vals": [
+            1.9146261894377796,
+            1.9390607989657,
+            2.101376419401173,
+            2.035053907825388,
+        ],
+        "atom-names": ["CB", "CG", "OD1", "ND2"],
+        "bonds-names": ["CA-CB", "CB-CG", "CG-OD1", "CG-ND2"],
+        "bonds-types": ["CX-2C", "2C-C ", "C -O ", "C -N "],
+        "bonds-vals": [1.526, 1.522, 1.229, 1.335],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-OD1",
+            "CA-CB-CG-ND2",
+        ],
+        "torsion-types": [
+            "C -N -CX-2C",
+            "N -CX-2C-C ",
+            "CX-2C-C -O ",
+            "CX-2C-C -N ",
+        ],
+        "torsion-vals": ["p", "p", "p", "i"],
+    },
+    "ASP": {
+        "angles-names": ["N-CA-CB", "CA-CB-CG", "CB-CG-OD1", "CB-CG-OD2"],
+        "angles-types": ["N -CX-2C", "CX-2C-CO", "2C-CO-O2", "2C-CO-O2"],
+        "angles-vals": [
+            1.9146261894377796,
+            1.9390607989657,
+            2.0420352248333655,
+            2.0420352248333655,
+        ],
+        "atom-names": ["CB", "CG", "OD1", "OD2"],
+        "bonds-names": ["CA-CB", "CB-CG", "CG-OD1", "CG-OD2"],
+        "bonds-types": ["CX-2C", "2C-CO", "CO-O2", "CO-O2"],
+        "bonds-vals": [1.526, 1.522, 1.25, 1.25],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-OD1",
+            "CA-CB-CG-OD2",
+        ],
+        "torsion-types": [
+            "C -N -CX-2C",
+            "N -CX-2C-CO",
+            "CX-2C-CO-O2",
+            "CX-2C-CO-O2",
+        ],
+        "torsion-vals": ["p", "p", "p", "i"],
+    },
+    "CYS": {
+        "angles-names": ["N-CA-CB", "CA-CB-SG"],
+        "angles-types": ["N -CX-2C", "CX-2C-SH"],
+        "angles-vals": [1.9146261894377796, 1.8954275676658419],
+        "atom-names": ["CB", "SG"],
+        "bonds-names": ["CA-CB", "CB-SG"],
+        "bonds-types": ["CX-2C", "2C-SH"],
+        "bonds-vals": [1.526, 1.81],
+        "torsion-names": ["C-N-CA-CB", "N-CA-CB-SG"],
+        "torsion-types": ["C -N -CX-2C", "N -CX-2C-SH"],
+        "torsion-vals": ["p", "p"],
+    },
+    "GLN": {
+        "angles-names": [
+            "N-CA-CB",
+            "CA-CB-CG",
+            "CB-CG-CD",
+            "CG-CD-OE1",
+            "CG-CD-NE2",
+        ],
+        "angles-types": [
+            "N -CX-2C",
+            "CX-2C-2C",
+            "2C-2C-C ",
+            "2C-C -O ",
+            "2C-C -N ",
+        ],
+        "angles-vals": [
+            1.9146261894377796,
+            1.911135530933791,
+            1.9390607989657,
+            2.101376419401173,
+            2.035053907825388,
+        ],
+        "atom-names": ["CB", "CG", "CD", "OE1", "NE2"],
+        "bonds-names": ["CA-CB", "CB-CG", "CG-CD", "CD-OE1", "CD-NE2"],
+        "bonds-types": ["CX-2C", "2C-2C", "2C-C ", "C -O ", "C -N "],
+        "bonds-vals": [1.526, 1.526, 1.522, 1.229, 1.335],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-CD",
+            "CB-CG-CD-OE1",
+            "CB-CG-CD-NE2",
+        ],
+        "torsion-types": [
+            "C -N -CX-2C",
+            "N -CX-2C-2C",
+            "CX-2C-2C-C ",
+            "2C-2C-C -O ",
+            "2C-2C-C -N ",
+        ],
+        "torsion-vals": ["p", "p", "p", "p", "i"],
+    },
+    "GLU": {
+        "angles-names": [
+            "N-CA-CB",
+            "CA-CB-CG",
+            "CB-CG-CD",
+            "CG-CD-OE1",
+            "CG-CD-OE2",
+        ],
+        "angles-types": [
+            "N -CX-2C",
+            "CX-2C-2C",
+            "2C-2C-CO",
+            "2C-CO-O2",
+            "2C-CO-O2",
+        ],
+        "angles-vals": [
+            1.9146261894377796,
+            1.911135530933791,
+            1.9390607989657,
+            2.0420352248333655,
+            2.0420352248333655,
+        ],
+        "atom-names": ["CB", "CG", "CD", "OE1", "OE2"],
+        "bonds-names": ["CA-CB", "CB-CG", "CG-CD", "CD-OE1", "CD-OE2"],
+        "bonds-types": ["CX-2C", "2C-2C", "2C-CO", "CO-O2", "CO-O2"],
+        "bonds-vals": [1.526, 1.526, 1.522, 1.25, 1.25],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-CD",
+            "CB-CG-CD-OE1",
+            "CB-CG-CD-OE2",
+        ],
+        "torsion-types": [
+            "C -N -CX-2C",
+            "N -CX-2C-2C",
+            "CX-2C-2C-CO",
+            "2C-2C-CO-O2",
+            "2C-2C-CO-O2",
+        ],
+        "torsion-vals": ["p", "p", "p", "p", "i"],
+    },
+    "GLY": {
+        "angles-names": [],
+        "angles-types": [],
+        "angles-vals": [],
+        "atom-names": [],
+        "bonds-names": [],
+        "bonds-types": [],
+        "bonds-vals": [],
+        "torsion-names": [],
+        "torsion-types": [],
+        "torsion-vals": [],
+    },
+    "HIS": {
+        "angles-names": [
+            "N-CA-CB",
+            "CA-CB-CG",
+            "CB-CG-ND1",
+            "CG-ND1-CE1",
+            "ND1-CE1-NE2",
+            "CE1-NE2-CD2",
+        ],
+        "angles-types": [
+            "N -CX-CT",
+            "CX-CT-CC",
+            "CT-CC-NA",
+            "CC-NA-CR",
+            "NA-CR-NB",
+            "CR-NB-CV",
+        ],
+        "angles-vals": [
+            1.9146261894377796,
+            1.9739673840055867,
+            2.0943951023931953,
+            1.8849555921538759,
+            1.8849555921538759,
+            1.8849555921538759,
+        ],
+        "atom-names": ["CB", "CG", "ND1", "CE1", "NE2", "CD2"],
+        "bonds-names": [
+            "CA-CB",
+            "CB-CG",
+            "CG-ND1",
+            "ND1-CE1",
+            "CE1-NE2",
+            "NE2-CD2",
+        ],
+        "bonds-types": ["CX-CT", "CT-CC", "CC-NA", "NA-CR", "CR-NB", "NB-CV"],
+        "bonds-vals": [1.526, 1.504, 1.385, 1.343, 1.335, 1.394],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-ND1",
+            "CB-CG-ND1-CE1",
+            "CG-ND1-CE1-NE2",
+            "ND1-CE1-NE2-CD2",
+        ],
+        "torsion-types": [
+            "C -N -CX-CT",
+            "N -CX-CT-CC",
+            "CX-CT-CC-NA",
+            "CT-CC-NA-CR",
+            "CC-NA-CR-NB",
+            "NA-CR-NB-CV",
+        ],
+        "torsion-vals": ["p", "p", "p", 3.141592653589793, 0.0, 0.0],
+    },
+    "ILE": {
+        "angles-names": ["N-CA-CB", "CA-CB-CG1", "CB-CG1-CD1", "CA-CB-CG2"],
+        "angles-types": ["N -CX-3C", "CX-3C-2C", "3C-2C-CT", "CX-3C-CT"],
+        "angles-vals": [
+            1.9146261894377796,
+            1.911135530933791,
+            1.911135530933791,
+            1.911135530933791,
+        ],
+        "atom-names": ["CB", "CG1", "CD1", "CG2"],
+        "bonds-names": ["CA-CB", "CB-CG1", "CG1-CD1", "CB-CG2"],
+        "bonds-types": ["CX-3C", "3C-2C", "2C-CT", "3C-CT"],
+        "bonds-vals": [1.526, 1.526, 1.526, 1.526],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG1",
+            "CA-CB-CG1-CD1",
+            "N-CA-CB-CG2",
+        ],
+        "torsion-types": [
+            "C -N -CX-3C",
+            "N -CX-3C-2C",
+            "CX-3C-2C-CT",
+            "N -CX-3C-CT",
+        ],
+        "torsion-vals": ["p", "p", "p", "p"],
+    },
+    "LEU": {
+        "angles-names": ["N-CA-CB", "CA-CB-CG", "CB-CG-CD1", "CB-CG-CD2"],
+        "angles-types": ["N -CX-2C", "CX-2C-3C", "2C-3C-CT", "2C-3C-CT"],
+        "angles-vals": [
+            1.9146261894377796,
+            1.911135530933791,
+            1.911135530933791,
+            1.911135530933791,
+        ],
+        "atom-names": ["CB", "CG", "CD1", "CD2"],
+        "bonds-names": ["CA-CB", "CB-CG", "CG-CD1", "CG-CD2"],
+        "bonds-types": ["CX-2C", "2C-3C", "3C-CT", "3C-CT"],
+        "bonds-vals": [1.526, 1.526, 1.526, 1.526],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-CD1",
+            "CA-CB-CG-CD2",
+        ],
+        "torsion-types": [
+            "C -N -CX-2C",
+            "N -CX-2C-3C",
+            "CX-2C-3C-CT",
+            "CX-2C-3C-CT",
+        ],
+        "torsion-vals": ["p", "p", "p", "p"],
+    },
+    "LYS": {
+        "angles-names": [
+            "N-CA-CB",
+            "CA-CB-CG",
+            "CB-CG-CD",
+            "CG-CD-CE",
+            "CD-CE-NZ",
+        ],
+        "angles-types": [
+            "N -CX-C8",
+            "CX-C8-C8",
+            "C8-C8-C8",
+            "C8-C8-C8",
+            "C8-C8-N3",
+        ],
+        "angles-vals": [
+            1.9146261894377796,
+            1.911135530933791,
+            1.911135530933791,
+            1.911135530933791,
+            1.9408061282176945,
+        ],
+        "atom-names": ["CB", "CG", "CD", "CE", "NZ"],
+        "bonds-names": ["CA-CB", "CB-CG", "CG-CD", "CD-CE", "CE-NZ"],
+        "bonds-types": ["CX-C8", "C8-C8", "C8-C8", "C8-C8", "C8-N3"],
+        "bonds-vals": [1.526, 1.526, 1.526, 1.526, 1.471],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-CD",
+            "CB-CG-CD-CE",
+            "CG-CD-CE-NZ",
+        ],
+        "torsion-types": [
+            "C -N -CX-C8",
+            "N -CX-C8-C8",
+            "CX-C8-C8-C8",
+            "C8-C8-C8-C8",
+            "C8-C8-C8-N3",
+        ],
+        "torsion-vals": ["p", "p", "p", "p", "p"],
+    },
+    "MET": {
+        "angles-names": ["N-CA-CB", "CA-CB-CG", "CB-CG-SD", "CG-SD-CE"],
+        "angles-types": ["N -CX-2C", "CX-2C-2C", "2C-2C-S ", "2C-S -CT"],
+        "angles-vals": [
+            1.9146261894377796,
+            1.911135530933791,
+            2.0018926520374962,
+            1.726130630222392,
+        ],
+        "atom-names": ["CB", "CG", "SD", "CE"],
+        "bonds-names": ["CA-CB", "CB-CG", "CG-SD", "SD-CE"],
+        "bonds-types": ["CX-2C", "2C-2C", "2C-S ", "S -CT"],
+        "bonds-vals": [1.526, 1.526, 1.81, 1.81],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-SD",
+            "CB-CG-SD-CE",
+        ],
+        "torsion-types": [
+            "C -N -CX-2C",
+            "N -CX-2C-2C",
+            "CX-2C-2C-S ",
+            "2C-2C-S -CT",
+        ],
+        "torsion-vals": ["p", "p", "p", "p"],
+    },
+    "PHE": {
+        "angles-names": [
+            "N-CA-CB",
+            "CA-CB-CG",
+            "CB-CG-CD1",
+            "CG-CD1-CE1",
+            "CD1-CE1-CZ",
+            "CE1-CZ-CE2",
+            "CZ-CE2-CD2",
+        ],
+        "angles-types": [
+            "N -CX-CT",
+            "CX-CT-CA",
+            "CT-CA-CA",
+            "CA-CA-CA",
+            "CA-CA-CA",
+            "CA-CA-CA",
+            "CA-CA-CA",
+        ],
+        "angles-vals": [
+            1.9146261894377796,
+            1.9896753472735358,
+            2.0943951023931953,
+            2.0943951023931953,
+            2.0943951023931953,
+            2.0943951023931953,
+            2.0943951023931953,
+        ],
+        "atom-names": ["CB", "CG", "CD1", "CE1", "CZ", "CE2", "CD2"],
+        "bonds-names": [
+            "CA-CB",
+            "CB-CG",
+            "CG-CD1",
+            "CD1-CE1",
+            "CE1-CZ",
+            "CZ-CE2",
+            "CE2-CD2",
+        ],
+        "bonds-types": [
+            "CX-CT",
+            "CT-CA",
+            "CA-CA",
+            "CA-CA",
+            "CA-CA",
+            "CA-CA",
+            "CA-CA",
+        ],
+        "bonds-vals": [1.526, 1.51, 1.4, 1.4, 1.4, 1.4, 1.4],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-CD1",
+            "CB-CG-CD1-CE1",
+            "CG-CD1-CE1-CZ",
+            "CD1-CE1-CZ-CE2",
+            "CE1-CZ-CE2-CD2",
+        ],
+        "torsion-types": [
+            "C -N -CX-CT",
+            "N -CX-CT-CA",
+            "CX-CT-CA-CA",
+            "CT-CA-CA-CA",
+            "CA-CA-CA-CA",
+            "CA-CA-CA-CA",
+            "CA-CA-CA-CA",
+        ],
+        "torsion-vals": ["p", "p", "p", 3.141592653589793, 0.0, 0.0, 0.0],
+    },
+    "PRO": {
+        "angles-names": ["N-CA-CB", "CA-CB-CG", "CB-CG-CD"],
+        "angles-types": ["N -CX-CT", "CX-CT-CT", "CT-CT-CT"],
+        "angles-vals": [
+            1.9146261894377796,
+            1.911135530933791,
+            1.911135530933791,
+        ],
+        "atom-names": ["CB", "CG", "CD"],
+        "bonds-names": ["CA-CB", "CB-CG", "CG-CD"],
+        "bonds-types": ["CX-CT", "CT-CT", "CT-CT"],
+        "bonds-vals": [1.526, 1.526, 1.526],
+        "torsion-names": ["C-N-CA-CB", "N-CA-CB-CG", "CA-CB-CG-CD"],
+        "torsion-types": ["C -N -CX-CT", "N -CX-CT-CT", "CX-CT-CT-CT"],
+        "torsion-vals": ["p", "p", "p"],
+    },
+    "SER": {
+        "angles-names": ["N-CA-CB", "CA-CB-OG"],
+        "angles-types": ["N -CX-2C", "CX-2C-OH"],
+        "angles-vals": [1.9146261894377796, 1.911135530933791],
+        "atom-names": ["CB", "OG"],
+        "bonds-names": ["CA-CB", "CB-OG"],
+        "bonds-types": ["CX-2C", "2C-OH"],
+        "bonds-vals": [1.526, 1.41],
+        "torsion-names": ["C-N-CA-CB", "N-CA-CB-OG"],
+        "torsion-types": ["C -N -CX-2C", "N -CX-2C-OH"],
+        "torsion-vals": ["p", "p"],
+    },
+    "THR": {
+        "angles-names": ["N-CA-CB", "CA-CB-OG1", "CA-CB-CG2"],
+        "angles-types": ["N -CX-3C", "CX-3C-OH", "CX-3C-CT"],
+        "angles-vals": [
+            1.9146261894377796,
+            1.911135530933791,
+            1.911135530933791,
+        ],
+        "atom-names": ["CB", "OG1", "CG2"],
+        "bonds-names": ["CA-CB", "CB-OG1", "CB-CG2"],
+        "bonds-types": ["CX-3C", "3C-OH", "3C-CT"],
+        "bonds-vals": [1.526, 1.41, 1.526],
+        "torsion-names": ["C-N-CA-CB", "N-CA-CB-OG1", "N-CA-CB-CG2"],
+        "torsion-types": ["C -N -CX-3C", "N -CX-3C-OH", "N -CX-3C-CT"],
+        "torsion-vals": ["p", "p", "p"],
+    },
+    "TRP": {
+        "angles-names": [
+            "N-CA-CB",
+            "CA-CB-CG",
+            "CB-CG-CD1",
+            "CG-CD1-NE1",
+            "CD1-NE1-CE2",
+            "NE1-CE2-CZ2",
+            "CE2-CZ2-CH2",
+            "CZ2-CH2-CZ3",
+            "CH2-CZ3-CE3",
+            "CZ3-CE3-CD2",
+        ],
+        "angles-types": [
+            "N -CX-CT",
+            "CX-CT-C*",
+            "CT-C*-CW",
+            "C*-CW-NA",
+            "CW-NA-CN",
+            "NA-CN-CA",
+            "CN-CA-CA",
+            "CA-CA-CA",
+            "CA-CA-CA",
+            "CA-CA-CB",
+        ],
+        "angles-vals": [
+            1.9146261894377796,
+            2.0176006153054447,
+            2.181661564992912,
+            1.8971728969178363,
+            1.9477874452256716,
+            2.3177972466484698,
+            2.0943951023931953,
+            2.0943951023931953,
+            2.0943951023931953,
+            2.0943951023931953,
+        ],
+        "atom-names": [
+            "CB",
+            "CG",
+            "CD1",
+            "NE1",
+            "CE2",
+            "CZ2",
+            "CH2",
+            "CZ3",
+            "CE3",
+            "CD2",
+        ],
+        "bonds-names": [
+            "CA-CB",
+            "CB-CG",
+            "CG-CD1",
+            "CD1-NE1",
+            "NE1-CE2",
+            "CE2-CZ2",
+            "CZ2-CH2",
+            "CH2-CZ3",
+            "CZ3-CE3",
+            "CE3-CD2",
+        ],
+        "bonds-types": [
+            "CX-CT",
+            "CT-C*",
+            "C*-CW",
+            "CW-NA",
+            "NA-CN",
+            "CN-CA",
+            "CA-CA",
+            "CA-CA",
+            "CA-CA",
+            "CA-CB",
+        ],
+        "bonds-vals": [
+            1.526,
+            1.495,
+            1.352,
+            1.381,
+            1.38,
+            1.4,
+            1.4,
+            1.4,
+            1.4,
+            1.404,
+        ],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-CD1",
+            "CB-CG-CD1-NE1",
+            "CG-CD1-NE1-CE2",
+            "CD1-NE1-CE2-CZ2",
+            "NE1-CE2-CZ2-CH2",
+            "CE2-CZ2-CH2-CZ3",
+            "CZ2-CH2-CZ3-CE3",
+            "CH2-CZ3-CE3-CD2",
+        ],
+        "torsion-types": [
+            "C -N -CX-CT",
+            "N -CX-CT-C*",
+            "CX-CT-C*-CW",
+            "CT-C*-CW-NA",
+            "C*-CW-NA-CN",
+            "CW-NA-CN-CA",
+            "NA-CN-CA-CA",
+            "CN-CA-CA-CA",
+            "CA-CA-CA-CA",
+            "CA-CA-CA-CB",
+        ],
+        "torsion-vals": [
+            "p",
+            "p",
+            "p",
+            3.141592653589793,
+            0.0,
+            3.141592653589793,
+            3.141592653589793,
+            0.0,
+            0.0,
+            0.0,
+        ],
+    },
+    "TYR": {
+        "angles-names": [
+            "N-CA-CB",
+            "CA-CB-CG",
+            "CB-CG-CD1",
+            "CG-CD1-CE1",
+            "CD1-CE1-CZ",
+            "CE1-CZ-OH",
+            "CE1-CZ-CE2",
+            "CZ-CE2-CD2",
+        ],
+        "angles-types": [
+            "N -CX-CT",
+            "CX-CT-CA",
+            "CT-CA-CA",
+            "CA-CA-CA",
+            "CA-CA-C ",
+            "CA-C -OH",
+            "CA-C -CA",
+            "C -CA-CA",
+        ],
+        "angles-vals": [
+            1.9146261894377796,
+            1.9896753472735358,
+            2.0943951023931953,
+            2.0943951023931953,
+            2.0943951023931953,
+            2.0943951023931953,
+            2.0943951023931953,
+            2.0943951023931953,
+        ],
+        "atom-names": ["CB", "CG", "CD1", "CE1", "CZ", "OH", "CE2", "CD2"],
+        "bonds-names": [
+            "CA-CB",
+            "CB-CG",
+            "CG-CD1",
+            "CD1-CE1",
+            "CE1-CZ",
+            "CZ-OH",
+            "CZ-CE2",
+            "CE2-CD2",
+        ],
+        "bonds-types": [
+            "CX-CT",
+            "CT-CA",
+            "CA-CA",
+            "CA-CA",
+            "CA-C ",
+            "C -OH",
+            "C -CA",
+            "CA-CA",
+        ],
+        "bonds-vals": [1.526, 1.51, 1.4, 1.4, 1.409, 1.364, 1.409, 1.4],
+        "torsion-names": [
+            "C-N-CA-CB",
+            "N-CA-CB-CG",
+            "CA-CB-CG-CD1",
+            "CB-CG-CD1-CE1",
+            "CG-CD1-CE1-CZ",
+            "CD1-CE1-CZ-OH",
+            "CD1-CE1-CZ-CE2",
+            "CE1-CZ-CE2-CD2",
+        ],
+        "torsion-types": [
+            "C -N -CX-CT",
+            "N -CX-CT-CA",
+            "CX-CT-CA-CA",
+            "CT-CA-CA-CA",
+            "CA-CA-CA-C ",
+            "CA-CA-C -OH",
+            "CA-CA-C -CA",
+            "CA-C -CA-CA",
+        ],
+        "torsion-vals": [
+            "p",
+            "p",
+            "p",
+            3.141592653589793,
+            0.0,
+            3.141592653589793,
+            0.0,
+            0.0,
+        ],
+    },
+    "VAL": {
+        "angles-names": ["N-CA-CB", "CA-CB-CG1", "CA-CB-CG2"],
+        "angles-types": ["N -CX-3C", "CX-3C-CT", "CX-3C-CT"],
+        "angles-vals": [
+            1.9146261894377796,
+            1.911135530933791,
+            1.911135530933791,
+        ],
+        "atom-names": ["CB", "CG1", "CG2"],
+        "bonds-names": ["CA-CB", "CB-CG1", "CB-CG2"],
+        "bonds-types": ["CX-3C", "3C-CT", "3C-CT"],
+        "bonds-vals": [1.526, 1.526, 1.526],
+        "torsion-names": ["C-N-CA-CB", "N-CA-CB-CG1", "N-CA-CB-CG2"],
+        "torsion-types": ["C -N -CX-3C", "N -CX-3C-CT", "N -CX-3C-CT"],
+        "torsion-vals": ["p", "p", "p"],
+    },
+}
+"""
+Dictionary containing bond lengths and angles for sidechains.
+
+Sourced from SideChainNet: https://github.com/jonathanking/sidechainnet/blob/master/sidechainnet/structure/build_info.py
+"""

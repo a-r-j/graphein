@@ -13,7 +13,7 @@ Many, perhaps the majority, of PDB files have coordinates for alternate location
 
 Sequence Irregularities: The following PDB files, published in the Protein Data Bank, have sequence irregularities that are handled incorrectly by PE.
 
-When inserted residues lack insertion letters (probably illegal according to the PDB format specification), PE fails to show the inserted residues in Sequences/Seq3D. For example, the single unnamed chain in 1DPO contains insertions at postions 184 (Gly, Phe), 188 (Gly, Lys), and 221 (Ala, Leu) but no insertion letters. Clicking on Gly184 in Seq3D highlights both Gly184 and Phe184.
+When inserted residues lack insertion letters (probably illegal according to the PDB format specification), PE fails to show the inserted residues in Sequences/Seq3D. For example, the single unnamed chain in 1DPO contains insertions at positions 184 (Gly, Phe), 188 (Gly, Lys), and 221 (Ala, Leu) but no insertion letters. Clicking on Gly184 in Seq3D highlights both Gly184 and Phe184.
 
 When insertions have more than one copy of the same amino acid (or nucleotide) in a single insertion block, clicking one copy in Seq3D highlights all copies within the same insertion block. For example, chain B in 1IGY contains a block of four residues inserted at sequence position 82. The block contains Leu-Ser-Ser-Leu. Clicking on either Leu highlights both of them in the molecular view, and similarly for either Ser. This results from the inability of Chime to use insertion codes in selecting atoms. For example, Chime cannot distinguish Leu82 from Leu82C.
 

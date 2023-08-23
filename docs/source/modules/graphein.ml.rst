@@ -16,6 +16,9 @@ Datasets
 .. automodule:: graphein.ml.datasets.torch_geometric_dataset
     :members:
 
+.. automodule:: graphein.ml.datasets.foldcomp_dataset
+    :members:
+
 Dataset Splitting
 -----------------
 .. automodule:: graphein.ml.clustering

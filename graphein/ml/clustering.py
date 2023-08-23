@@ -16,10 +16,7 @@ from typing import Dict, List, Optional
 
 import networkx as nx
 import numpy as np
-import pandas as pd
 from Bio import SeqIO
-
-from graphein.protein.utils import is_tool
 
 
 def build_fasta_file_from_mapping(
@@ -46,7 +43,7 @@ def build_fasta_file_from_graphs(
     if chains is None:
         chains = ["A"] * len(graphs)
     mapping = {
-        g.name + "_" + chain: g.graph[f"sequence_{chain}"]
+        f"{g.name}_{chain}": g.graph[f"sequence_{chain}"]
         for g, chain in zip(graphs, chains)
     }
 
@@ -104,9 +101,7 @@ def get_seq_records(
                             f"WARNING in {get_seq_records.__name__} sequence {record.seq.id} from file "
                             f"{filename} is not compatible with declared alphabet {str(alphabet)}\n"
                         )
-    if return_as_dictionary:
-        return SeqIO.to_dict(records)
-    return records
+    return SeqIO.to_dict(records) if return_as_dictionary else records
 
 
 def create_pairs_for_clustering(
@@ -497,8 +492,8 @@ def generate_random_sets(
     n = 0
     in_other_tests = []
     while n < number_of_sets:
-        train_set_name = train_set_key + f"_{n:02}"
-        test_set_name = test_set_key + f"_{n:02}"
+        train_set_name = f"{train_set_key}_{n:02}"
+        test_set_name = f"{test_set_key}_{n:02}"
         with open(train_set_name, mode="w") as train:
             with open(test_set_name, mode="w") as test:
                 ids_in_test = []

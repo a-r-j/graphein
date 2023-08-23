@@ -3,6 +3,9 @@ propy3
 pyaaisc
 prody
 mpl_chord_diagram==0.3.2
-rdkit-pypi
+rdkit
 selfies
 smilite
+einops
+foldcomp
+nest_asyncio

@@ -37,7 +37,6 @@ dependencies:
 - scikit-learn
 - scipy
 - tqdm
-- versioneer
 - python-wget
 - xarray
 - deepdiff
@@ -48,4 +47,3 @@ dependencies:
   - propy3
   - pyaaisc
   - git+https://github.com/a-r-j/graphein
-

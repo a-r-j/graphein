@@ -23,14 +23,18 @@ from graphein.molecule.utils import (
     get_qed_score,
     get_shape_moments,
 )
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     from rdkit import Chem
     from rdkit.Chem import Descriptors
 except ImportError:
     import_message(
-        "graphe in.molecule.features.graph.molecule", "rdkit", "rdkit", True
+        "graphe in.molecule.features.graph.molecule",
+        "rdkit",
+        "rdkit",
+        True,
+        extras=True,
     )
 
 

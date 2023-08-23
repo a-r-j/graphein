@@ -17,6 +17,10 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from Bio.Data.IUPACData import protein_letters_3to1
+from typing_extensions import Literal
+
+AggregationType: List["sum", "mean", "max", "min", "median"]
+"""Types of aggregations for features."""
 
 
 def onek_encoding_unk(
@@ -91,7 +95,7 @@ def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
 def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     """
-    Annotates nodes with metadata. Each function in ``funcs`` must take two arguments ``n`` and ``d``, where ``n`` is the node and ``d`` is the node data dictionary.
+    Annotates nodes with metadata. Each function in ``funcs`` must take two arguments ``n`` and ``d``, where ``n`` is the node and ``d`` is the node data dictionary. Some functions, like esm residue embeddings, should be used as graph metadata functions as they require access to the whole sequence.
 
     Additional parameters can be provided by using partial functions.
 
@@ -105,7 +109,13 @@ def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
     for func in funcs:
         for n, d in G.nodes(data=True):
-            func(n, d)
+            try:
+                func(n, d)
+            except (TypeError, AttributeError) as e:
+                raise type(e)(
+                    str(e)
+                    + "Please ensure that provided node metadata functions match the f(n: str, d: Dict) function signature, where n is the node ID and d is the node data dictionary "
+                ).with_traceback(sys.exc_info()[2])
     return G
 
 
@@ -323,49 +333,6 @@ def protein_letters_3to1_all_caps(amino_acid: str) -> str:
     return protein_letters_3to1[amino_acid]
 
 
-def import_message(
-    submodule: str,
-    package: str,
-    conda_channel: Optional[str] = None,
-    pip_install: bool = False,
-) -> str:
-    """
-    Return warning if package is not found.
-    Generic message for indicating to the user when a function relies on an
-    optional module / package that is not currently installed. Includes
-    installation instructions. Typically used in conjunction without optional featurisation libraries
-
-    :param submodule: graphein submodule that needs an external dependency.
-    :type submodule: str
-    :param package: External package this submodule relies on.
-    :type package: str
-    :param conda_channel: Conda channel package can be installed from, if at all. Defaults to None
-    :type conda_channel: str, optional
-    :param pip_install: Whether package can be installed via pip. Defaults to False
-    :type pip_install: bool
-    """
-    is_conda = os.path.exists(os.path.join(sys.prefix, "conda-meta"))
-    installable = True
-    if is_conda:
-        if conda_channel is None:
-            installable = False
-            installation = f"{package} cannot be installed via conda"
-        else:
-            installation = f"conda install -c {conda_channel} {package}"
-    elif pip_install:
-        installation = f"pip install {package}"
-    else:
-        installable = False
-        installation = f"{package} cannot be installed via pip"
-
-    message = f"To use the Graphein submodule {submodule}, you need to install: {package} "
-    if installable:
-        message += f"\nTo do so, use the following command: {installation}"
-    else:
-        message += f"\n{installation}"
-    return message
-
-
 def ping(host: str) -> bool:
     """
     Returns ``True`` if host (str) responds to a ping request.
@@ -373,7 +340,7 @@ def ping(host: str) -> bool:
 
     :param host: IP or hostname
     :type host: str
-    :returns: True if host responds to a ping request.
+    :returns: ``True`` if host responds to a ping request.
     :rtype: bool
     """
 
@@ -382,5 +349,31 @@ def ping(host: str) -> bool:
 
     # Building the command. Ex: "ping -c 1 google.com"
     command = ["ping", param, "1", host]
-
     return subprocess.call(command) == 0
+
+
+def parse_aggregation_type(aggregation_type: AggregationType) -> Callable:
+    """Returns an aggregation function by name
+
+    :param aggregation_type: One of: ``["max", "min", "mean", "median", "sum"]``.
+    :type aggregration_type: AggregationType
+    :returns: NumPy aggregation function.
+    :rtype: Callable
+    :raises ValueError: if aggregation type is not supported.
+    """
+    if aggregation_type == "max":
+        func = np.max
+    elif aggregation_type == "min":
+        func = np.min
+    elif aggregation_type == "mean":
+        func = np.mean
+    elif aggregation_type == "median":
+        func = np.median
+    elif aggregation_type == "sum":
+        func = np.sum
+    else:
+        raise ValueError(
+            f"Unsupported aggregator: {aggregation_type}."
+            f" Please use min, max, mean, median, sum"
+        )
+    return func

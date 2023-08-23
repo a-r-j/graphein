@@ -6,14 +6,11 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-import logging as log
-from functools import partial
 from typing import Any, Callable, Dict
 
 import networkx as nx
 import numpy as np
-
-from graphein.utils.utils import import_message
+from loguru import logger as log
 
 __all__ = [
     "compare_exact",
@@ -32,7 +29,8 @@ def compare_exact(first: Dict[str, Any], second: Dict[str, Any]) -> bool:
     :type first: Dict[str, Any]
     :param second: The second dictionary.
     :type second: Dict[str, Any]
-    :return: ``True`` if the dictionaries are exactly equal, ``False`` otherwise.
+    :return: ``True`` if the dictionaries are exactly equal, ``False``
+        otherwise.
     :rtype: bool
     """
     if first.keys() != second.keys():
@@ -128,11 +126,11 @@ def edge_data_equal(
     if not edges_equal(g, h):
         log.info("Edge lists do not match")
         return False
-    for (u, v) in g.edges():
+    for u, v in g.edges():
         if not compare_exact(g.edges[u, v], h.edges[u, v]):
             log.info(f"Edge {u}-{v} (graph g) features do not match graph h")
             return False
-    for (u, v) in h.edges():
+    for u, v in h.edges():
         if not compare_exact(g.edges[u, v], h.edges[u, v]):
             log.info(f"Edge {u}-{v} (graph h) features do not match graph g")
             return False
@@ -152,7 +150,8 @@ def node_data_equal(
         Takes two node dictionaries and returns True if they are equal.
         Defaults to :func:`compare_exact`
     :type comparison_func: Callable
-    :returns: ``True`` if the graphs have the same node features, ``False`` otherwise.
+    :returns: ``True`` if the graphs have the same node features, ``False``
+        otherwise.
     :rtype: bool
     """
     if not nodes_equal(g, h):
@@ -175,7 +174,7 @@ def graphs_equal(
     edge_match_func: Callable = compare_exact,
 ) -> bool:
     """Asserts whether two graphs are equal
-    (structural isomorphism and edge and node features match)
+    (structural isomorphism and edge and node features match).
 
     :param g: The first graph.
     :type g: :class:`networkx.Graph`

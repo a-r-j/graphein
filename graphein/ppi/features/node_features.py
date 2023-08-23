@@ -1,6 +1,4 @@
-"""Functions for adding nodes features to a PPI Graph"""
-import logging
-
+"""Functions for adding nodes features to a PPI Graph."""
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
@@ -10,22 +8,8 @@ import logging
 from typing import Any, Dict
 
 import networkx as nx
-
-from graphein.utils.utils import import_message
-
-log = logging.getLogger(__name__)
-
-
-try:
-    from bioservices import HGNC, UniProt
-except ImportError:
-    message = import_message(
-        submodule="graphein.ppi.features.nodes_features",
-        package="bioservices",
-        conda_channel="bioconda",
-        pip_install=True,
-    )
-    log.warning(message)
+from bioservices import HGNC, UniProt
+from loguru import logger as log
 
 
 def add_sequence_to_nodes(n: str, d: Dict[str, Any]):
@@ -48,7 +32,7 @@ def add_sequence_to_nodes(n: str, d: Dict[str, Any]):
     # Todo mapping with bioservices to support other protein IDs?
 
     for id in d["uniprot_ids"]:
-        d[f"sequence_{id}"] = u.get_fasta_sequence(id)
+        d[f"sequence_{id}"] = u.search(id, columns="sequence").split("\n")[1]
 
 
 if __name__ == "__main__":

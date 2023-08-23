@@ -7,30 +7,27 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-import logging
 import traceback
 from functools import partial
 from typing import Callable, Dict, List, Optional, Union
 
 import networkx as nx
 import numpy as np
-from tqdm.contrib.concurrent import thread_map
+from loguru import logger as log
+from tqdm.contrib.concurrent import process_map, thread_map
 
+from graphein.utils.dependencies import import_message
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
     compute_edges,
-    import_message,
 )
 
 from .chembl import get_smiles_from_chembl
 from .config import MoleculeGraphConfig
 from .utils import compute_fragments, get_clique_mol, get_smiles, tree_decomp
 from .zinc import get_smiles_from_zinc
-
-log = logging.getLogger(__name__)
-
 
 try:
     import rdkit
@@ -48,9 +45,10 @@ def initialise_graph_with_metadata(
     """
     Initializes the nx Graph object with initial metadata.
 
-    :param name: Name of the molecule. Either the smiles or filename depending on how the graph was created.
+    :param name: Name of the molecule. Either the smiles or filename depending
+        on how the graph was created.
     :type name: str
-    :param rdmol: Processed Dataframe of molecule structure.
+    :param rdmol: Processed DataFrame of molecule structure.
     :type rdmol: rdkit.Mol
     :return: Returns initial molecule structure graph with metadata.
     :rtype: nx.Graph
@@ -100,14 +98,17 @@ def generate_3d(
 
     Steps:
     1. Adds Hydrogens
-    2. Embeds molecule with ``AllChem.ETKDGv3`` (using ``useSmallRingTorsions=True``)
+    2. Embeds molecule with ``AllChem.ETKDGv3``
+    (using ``useSmallRingTorsions=True``)
     3. Optimizes molecule with ``AllChem.MMFFOptimizeMolecule``
     4. Removes Hydrogens
-    5. Returns molecule OR (optionally) recomputes the molecular graph (if ``recompute_graph=True``) using the new coordinates.
+    5. Returns molecule OR (optionally) recomputes the molecular graph
+    (if ``recompute_graph=True``) using the new coordinates.
 
     :param mol: input molecule
     :type mol: Union[nx.Graph, Chem.Mol]
-    :param recompute_graph: whether to recompute the graph based on the generated conformer.
+    :param recompute_graph: whether to recompute the graph based on the
+        generated conformer.
     :type recompute_graph: bool
     :return: molecule with 3D coordinates or recomputed molecular graph.
     :rtype: Union[nx.Graph, Chem.Mol]
@@ -142,18 +143,22 @@ def construct_graph(
     graph_annotation_funcs: Optional[List[Callable]] = None,
 ) -> nx.Graph:
     """
-    Constructs molecular structure graph from a ``sdf_path``, ``mol2_path``, ``smiles`` or RDKit Mol.
+    Constructs molecular structure graph from a ``sdf_path``, ``mol2_path``,
+    ``smiles`` or RDKit Mol.
 
     Users can provide a :class:`~graphein.molecule.config.MoleculeGraphConfig`
     object to specify construction parameters.
 
-    However, config parameters can be overridden by passing arguments directly to the function.
+    However, config parameters can be overridden by passing arguments directly
+    to the function.
 
-    :param config: :class:`~graphein.molecule.config.MoleculeGraphConfig` object. If None, defaults to config in ``graphein.molecule.config``.
+    :param config: :class:`~graphein.molecule.config.MoleculeGraphConfig`
+        object. If None, defaults to config in ``graphein.molecule.config``.
     :type config: graphein.molecule.config.MoleculeGraphConfig, optional
     :param mol: rdkit.Mol object to build graph from. Defaults to ``None``.
     :type mol: rdkit.Mol, optional
-    :param path: Path to either a ``.sdf``, ``.mol2``, ``.smi`` or ``pdb`` file. Defaults to ``None``.
+    :param path: Path to either a ``.sdf``, ``.mol2``, ``.smi`` or ``pdb`` file.
+        Defaults to ``None``.
     :type path: str
     :param smiles: smiles string to build graph from. Default is ``None``.
     :type smiles: str, optional
@@ -164,14 +169,20 @@ def construct_graph(
     :param junction_tree: boolean to indicate whether to use a junction tree or not. Default is ``False``.
     :type junction_tree: bool
     :param generate_conformer: Whether to generate a conformer for the molecule. Defaults to ``False``.
+    :param generate_conformer: Whether to generate a conformer for the molecule.
+        Defaults to ``False``.
     :type generate_conformer: bool, optional
-    :param edge_construction_funcs: List of edge construction functions. Default is ``None``.
+    :param edge_construction_funcs: List of edge construction functions.
+        Default is ``None``.
     :type edge_construction_funcs: List[Callable], optional
-    :param edge_annotation_funcs: List of edge annotation functions. Default is ``None``.
+    :param edge_annotation_funcs: List of edge annotation functions.
+        Default is ``None``.
     :type edge_annotation_funcs: List[Callable], optional
-    :param node_annotation_funcs: List of node annotation functions. Default is ``None``.
+    :param node_annotation_funcs: List of node annotation functions.
+        Default is ``None``.
     :type node_annotation_funcs: List[Callable], optional
-    :param graph_annotation_funcs: List of graph annotation function. Default is ``None``.
+    :param graph_annotation_funcs: List of graph annotation function.
+        Default is ``None``.
     :type graph_annotation_funcs: List[Callable]
     :return: Molecule Structure Graph
     :type: nx.Graph
@@ -363,7 +374,8 @@ def _mp_graph_constructor(
     use_smiles: bool = False,
 ) -> nx.Graph:
     """
-    Molecule graph constructor for use in multiprocessing several molecular graphs.
+    Molecule graph constructor for use in multiprocessing several molecular
+    graphs.
 
     :param args: Tuple of pdb code/path and the chain selection for that PDB
     :type args: Tuple[str, str]
@@ -378,7 +390,6 @@ def _mp_graph_constructor(
     :return: Molecule structure graph
     :rtype: nx.Graph
     """
-    # log.info(f"Constructing graph for: {args[0]}. Chain selection: {args[1]}")
     func = partial(construct_graph, config=config)
     try:
         if use_mol:
@@ -404,21 +415,26 @@ def construct_graphs_mp(
     return_dict: bool = True,
 ) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:
     """
-    Constructs molecular graphs for a list of smiles or paths using multiprocessing.
+    Constructs molecular graphs for a list of smiles or paths using
+    multiprocessing.
 
-    :param pdb_code_it: List of pdb codes to use for molecule graph construction
-    :type pdb_code_it: Optional[List[str]], defaults to None
-    :param pdb_path_it: List of paths to PDB files to use for protein graph construction
-    :type pdb_path_it: Optional[List[str]], defaults to None
-    :param chain_selections: List of chains to select from the protein structures (e.g. ["ABC", "A", "L", "CD"...])
-    :type chain_selections: Optional[List[str]], defaults to None
-    :param config: ProteinGraphConfig to use.
-    :type config: graphein.protein.config.ProteinGraphConfig, defaults to default config params
-    :param num_cores: Number of cores to use for multiprocessing. The more the merrier
+    :param path_it: List of paths to use for molecule graph construction.
+    :type path_it: Optional[List[str]], defaults to ``None``.
+    :param smiles_it: List of smiles to use for molecule graph construction.
+    :type smiles_it: Optional[List[str]], defaults to ``None``.
+    :param mol_it: List of rdkit Mols to use for molecule graph construction.
+    :type mol_it: Optional[List[Chem.Mol]], defaults to ``None``.
+    :param config: MoleculeGraphConfig to use.
+    :type config: graphein.molecule.config.MoleculeGraphConfig,
+        defaults to default config params
+    :param num_cores: Number of cores to use for multiprocessing.
+        The more the merrier
     :type num_cores: int, defaults to 16
-    :param return_dict: Whether or not to return a dictionary (indexed by pdb codes/paths) or a list of graphs.
+    :param return_dict: Whether or not to return a dictionary
+        (indexed by smiles/paths) or a list of graphs.
     :type return_dict: bool, default to True
-    :return: Iterable of protein graphs. None values indicate there was a problem in constructing the graph for this particular pdb
+    :return: Iterable of molecule graphs. None values indicate there was a
+        problem in constructing the graph for this particular molecule.
     :rtype: Union[List[nx.Graph], Dict[str, nx.Graph]]
     """
     assert (

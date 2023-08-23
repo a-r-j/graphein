@@ -13,7 +13,6 @@ from pprint import pprint
 from shutil import rmtree
 from typing import List
 
-import versioneer
 from setuptools import Command, find_packages, setup
 
 VERSION = None
@@ -85,7 +84,7 @@ def read_requirements(*parts):
 INSTALL_REQUIRES = read_requirements(".requirements/base.in")
 EXTRA_REQUIRES = {
     "dev": read_requirements(".requirements/dev.in"),
-    "extras": read_requirements(".requirements/dev.in"),
+    "extras": read_requirements(".requirements/extras.in"),
 }
 # Add all requires
 all_requires = []
@@ -135,15 +134,19 @@ class UploadCommand(Command):
 
 setup(
     name="graphein",
-    version="1.5.0rc1",
-    # versioneer.get_version(),
-    # cmdclass=versioneer.get_cmdclass(),
+    version="1.7.0",
     description="Protein & Interactomic Graph Construction for Machine Learning",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Arian Jamasb",
     author_email="arian@jamasb.io",
     url="https://github.com/a-r-j/graphein",
+    project_urls={
+        "homepage": "https://github.com/a-r-j/graphein",
+        "changelog": "https://github.com/a-r-j/graphein/blob/master/CHANGELOG.md",
+        "issue": "https://github.com/a-r-j/graphein/issues",
+        "documentation": "https://graphein.ai/",
+    },
     packages=find_packages(),
     package_data={
         "": ["LICENSE.txt", "README.md", "requirements.txt", "*.csv"]
@@ -166,6 +169,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Scientific/Engineering",
     ],
     # $ setup.py publish support.
