@@ -179,10 +179,12 @@ def add_sequence_neighbour_vector(
                 )
                 continue
             # Asserts residues are on the same chain
+            # TODO It seems redunant
             cond_1 = (
                 residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
             )
             # Asserts residue numbers are adjacent
+            # TODO What about insertions?
             cond_2 = (
                 abs(
                     residue[1]["residue_number"]
@@ -192,6 +194,7 @@ def add_sequence_neighbour_vector(
             )
 
             # If this checks out, we compute the vector
+            # TODO What if not? -> vec is unknown
             if (cond_1) and (cond_2):
                 vec = chain_residues[i + 1][1]["coords"] - residue[1]["coords"]
 
