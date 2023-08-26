@@ -190,7 +190,6 @@ def add_sequence_neighbour_vector(
             )
 
             # If this checks out, we compute the vector
-            # TODO What if not? -> vec is unknown
             if cond:
                 vec = chain_residues[i + 1][1]["coords"] - residue[1]["coords"]
 
@@ -198,6 +197,8 @@ def add_sequence_neighbour_vector(
                     vec = -vec
                 if scale:
                     vec = vec / np.linalg.norm(vec)
+            else:
+                vec = np.array([0.0, 0.0, 0.0])
 
             residue[1][f"sequence_neighbour_vector_{suffix}"] = vec
 
