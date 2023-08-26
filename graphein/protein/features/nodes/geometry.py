@@ -190,19 +190,25 @@ def add_sequence_neighbour_vector(
                 if chain_residues[i + 1][0].count(':') > 2
                 else ''
             )
+            if not n_to_c:
+                ins_current, ins_next = ins_next, ins_current
+
+            # Get sequence distance
+            dist = abs(
+                residue[1]["residue_number"]
+                - chain_residues[i + 1][1]["residue_number"]
+            )
             
             # Asserts residues are adjacent
             cond_adjacent = (
-                abs(
-                    residue[1]["residue_number"]
-                    - chain_residues[i + 1][1]["residue_number"]
-                )
-                == 1
+                dist == 1
                 or (
-                    not ins_current and ins_next == 'A'
+                    dist == 0
+                    and not ins_current and ins_next == 'A'
                 )
                 or (
-                    ins_current and ins_next 
+                    dist == 0
+                    and ins_current and ins_next 
                     and chr(ord(ins_current) + 1) == ins_next
                 )
             )
