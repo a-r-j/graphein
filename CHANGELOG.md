@@ -1,4 +1,4 @@
-### 1.7.1 - UNRELEASED
+### 1.7.1 - 26/07/2023
 
 #### New Features
 * [Feature] - [#305](https://github.com/a-r-j/graphein/pull/305) Adds the `add_virtual_beta_carbon_vector` function inspired by [RFdiffusion](https://github.com/RosettaCommons/RFdiffusion/blob/main/rfdiffusion/coords6d.py#L37) and ProteinMPNN.
@@ -25,6 +25,7 @@ https://github.com/a-r-j/graphein/pull/334
 * Fixes initialisation of `Protein` objects. [#317](https://github.com/a-r-j/graphein/issues/317) [#318](https://github.com/a-r-j/graphein/pull/318)
 * Fixes incorrect `rad` and `embed` argument logic in `graphein.protein.tensor.angles.dihedrals/sidechain_torsion` [#321](https://github.com/a-r-j/graphein/pull/321)
 * Fixes incorrect start padding in pNeRF output [#321](https://github.com/a-r-j/graphein/pull/321)
+* Fixes `pyyaml` breaking installation [#328](https://github.com/a-r-j/graphein/pull/328)
 * Fixes setting ID for PyG data objects when loading from a path to a `.pdb` file [#332](https://github.com/a-r-j/graphein/pull/332)
 
 #### Other Changes
