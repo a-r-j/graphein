@@ -179,18 +179,36 @@ def add_sequence_neighbour_vector(
                 )
                 continue
 
-            # Asserts residue numbers are adjacent
-            # TODO What about insertions?
-            cond = (
+            # Get insertion codes
+            ins_current = (
+                residue[0].split(':')[3] 
+                if residue[0].count(':') > 2
+                else ''
+            )
+            ins_next = (
+                chain_residues[i + 1][0].split(':')[3]
+                if chain_residues[i + 1][0].count(':') > 2
+                else ''
+            )
+            
+            # Asserts residues are adjacent
+            cond_adjacent = (
                 abs(
                     residue[1]["residue_number"]
                     - chain_residues[i + 1][1]["residue_number"]
                 )
                 == 1
+                or (
+                    not ins_current and ins_next == 'A'
+                )
+                or (
+                    ins_current and ins_next 
+                    and chr(ord(ins_current) + 1) == ins_next
+                )
             )
 
-            # If this checks out, we compute the vector
-            if cond:
+            # If this checks out, we compute the non-zero vector
+            if cond_adjacent:
                 vec = chain_residues[i + 1][1]["coords"] - residue[1]["coords"]
 
                 if reverse:
@@ -198,7 +216,7 @@ def add_sequence_neighbour_vector(
                 if scale:
                     vec = vec / np.linalg.norm(vec)
             else:
-                vec = np.array([0.0, 0.0, 0.0])
+                vec = np.array([0.0, 0.0, 0.0])            
 
             residue[1][f"sequence_neighbour_vector_{suffix}"] = vec
 
