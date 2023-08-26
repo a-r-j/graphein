@@ -8,16 +8,16 @@
 import operator
 from functools import partial
 
-import pytest
 import numpy as np
+import pytest
 from loguru import logger
 
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.features.nodes.geometry import (
     add_beta_carbon_vector,
+    add_sequence_neighbour_vector,
     add_sidechain_vector,
     add_virtual_beta_carbon_vector,
-    add_sequence_neighbour_vector
 )
 from graphein.protein.graphs import construct_graph
 
