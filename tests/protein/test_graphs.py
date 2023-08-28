@@ -45,8 +45,8 @@ from graphein.protein.graphs import (
     compute_secondary_structure_graph,
     construct_graph,
     construct_graphs_mp,
-    read_pdb_to_dataframe,
     deprotonate_structure,
+    read_pdb_to_dataframe,
 )
 from graphein.utils.dependencies import is_tool
 
@@ -570,6 +570,8 @@ def test_df_processing():
 
     assert len(g1) != len(g2), "Graphs should not be equal"
     for n, d in g3.nodes(data=True):
-        assert (
-            d["element_symbol"] not in ["H", "D", "T"]
-        ), "No hydrogen isotopes should present"
+        assert d["element_symbol"] not in [
+            "H",
+            "D",
+            "T",
+        ], "No hydrogen isotopes should present"
