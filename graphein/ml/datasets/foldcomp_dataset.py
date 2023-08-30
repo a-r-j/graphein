@@ -205,7 +205,7 @@ class FoldCompDataset(Dataset):
             os.path.exists(self.root / f) for f in self._database_files
         ):
             log.info(f"Downloading FoldComp dataset {self.database}...")
-            curr_dir = os.os.getcwd()
+            curr_dir = os.getcwd()
             os.chdir(self.root)
             try:
                 foldcomp.setup(self.database)
