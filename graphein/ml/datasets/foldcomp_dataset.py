@@ -214,9 +214,9 @@ class FoldCompDataset(Dataset):
                 asyncio.run(_)
             os.chdir(curr_dir)
             log.info("Download complete.")
-            #log.info("Moving files to raw directory...")
+            # log.info("Moving files to raw directory...")
 
-            #for f in self._database_files:
+            # for f in self._database_files:
             #    shutil.move(f, self.root)
         else:
             log.info(f"FoldComp database already downloaded: {self.root}.")
