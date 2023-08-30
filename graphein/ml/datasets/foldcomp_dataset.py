@@ -205,16 +205,19 @@ class FoldCompDataset(Dataset):
             os.path.exists(self.root / f) for f in self._database_files
         ):
             log.info(f"Downloading FoldComp dataset {self.database}...")
+            curr_dir = os.os.getcwd()
+            os.chdir(self.root)
             try:
                 foldcomp.setup(self.database)
             except RuntimeError:
                 _ = self.async_setup()
                 asyncio.run(_)
+            os.chdir(curr_dir)
             log.info("Download complete.")
-            log.info("Moving files to raw directory...")
+            #log.info("Moving files to raw directory...")
 
-            for f in self._database_files:
-                shutil.move(f, self.root)
+            #for f in self._database_files:
+            #    shutil.move(f, self.root)
         else:
             log.info(f"FoldComp database already downloaded: {self.root}.")
 
