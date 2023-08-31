@@ -399,20 +399,21 @@ def save_graph_to_pdb(
     :type gz: bool
     """
     ppd = PandasPdb()
+
+    # Add blank columns
+    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id", "line_idx"]
+    for col in blank_cols:
+        if col not in atom_df.columns:
+            df[col] = ""
+    # format charge correctly
+    df.charge = df.charge.replace("", np.nan)
+    df["charge"] = df.charge.apply(lambda x: float(x) if x != "" else "")
     atom_df = filter_dataframe(
         g.graph["pdb_df"], "record_name", ["ATOM"], boolean=True
     )
     hetatm_df = filter_dataframe(
         g.graph["pdb_df"], "record_name", ["HETATM"], boolean=True
     )
-
-    # Add blank columns
-    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
-    for col in blank_cols:
-        if col not in atom_df.columns:
-            atom_df[col] = [""] * len(atom_df)
-        if col not in hetatm_df.columns:
-            hetatm_df[col] = [""] * len(hetatm_df)
 
     if atoms:
         ppd.df["ATOM"] = atom_df
