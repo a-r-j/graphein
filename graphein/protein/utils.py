@@ -401,7 +401,14 @@ def save_graph_to_pdb(
     ppd = PandasPdb()
 
     # Add blank columns
-    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id", "line_idx"]
+    blank_cols = [
+        "blank_1",
+        "blank_2",
+        "blank_3",
+        "blank_4",
+        "segment_id",
+        "line_idx",
+    ]
     for col in blank_cols:
         if col not in atom_df.columns:
             df[col] = ""
