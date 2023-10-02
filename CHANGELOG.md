@@ -1,3 +1,7 @@
+### Unreleased
+
+* Fixes `add_sequence_neighbour_vector` to have a zero vector when no neighbor is feasible. Extend to handle insertion codes ([#336](https://github.com/a-r-j/graphein/pull/336)).
+
 ### 1.7.3 - 30/08/2023
 
 * Fixes edge case in FoldComp database download if target directory has same name as database ([#339](https://github.com/a-r-j/graphein/pull/339))
