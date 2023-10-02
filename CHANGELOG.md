@@ -1,3 +1,11 @@
+### 1.7.3 - 30/08/2023
+
+* Fixes edge case in FoldComp database download if target directory has same name as database ([#339](https://github.com/a-r-j/graphein/pull/339))
+
+### 1.7.2 - 28/08/2023
+
+* Pins BioPandas version to latest
+
 ### 1.7.1 - 26/07/2023
 
 #### New Features

@@ -134,7 +134,7 @@ class UploadCommand(Command):
 
 setup(
     name="graphein",
-    version="1.7.1",
+    version="1.7.3",
     description="Protein & Interactomic Graph Construction for Machine Learning",
     long_description=long_description,
     long_description_content_type="text/markdown",
