@@ -1,3 +1,7 @@
+### 1.7.4 - 24/10/2023
+
+* Adds support for PyG 2.4+ ([#350](https://www.github.com/a-r-j/graphein/pull/339))
+
 ### 1.7.3 - 30/08/2023
 
 * Fixes edge case in FoldComp database download if target directory has same name as database ([#339](https://github.com/a-r-j/graphein/pull/339))
