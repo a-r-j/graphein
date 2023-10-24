@@ -60,8 +60,8 @@ jobs:
       #  run: conda env create -n graphein-dev python=${{ matrix.python-version }}
       #- name: Activate Conda Environment
       #  run: source activate graphein-dev
-      - name: Install DSSP
-        run: sudo apt-get install dssp
+      - name: Install DSSP   
+        run: conda install dssp -c salilab
       - name: Install mmseqs
         run: mamba install -c conda-forge -c bioconda mmseqs2
       - name: Install PyTorch
