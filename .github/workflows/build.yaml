@@ -61,7 +61,7 @@ jobs:
       #- name: Activate Conda Environment
       #  run: source activate graphein-dev
       - name: Install DSSP
-	run: sudo apt install dssp
+        run: sudo apt-get install dssp
       - name: Install mmseqs
         run: mamba install -c conda-forge -c bioconda mmseqs2
       - name: Install PyTorch
