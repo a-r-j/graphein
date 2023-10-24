@@ -129,7 +129,7 @@ def test_construct_graph_with_dssp():
     dssp_prot_config = ProteinGraphConfig(**dssp_config_functions)
 
     g_pdb = construct_graph(
-        config=dssp_prot_config, pdb_code="6YC3"
+        config=dssp_prot_config, pdb_code="6yc3"
     )  # should download 6yc3.pdb to pdb_dir
 
     assert g_pdb.graph["pdb_code"] == "6YC3"
