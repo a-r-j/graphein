@@ -60,6 +60,8 @@ jobs:
       #  run: conda env create -n graphein-dev python=${{ matrix.python-version }}
       #- name: Activate Conda Environment
       #  run: source activate graphein-dev
+      - name: Install Boost 1.7.3 (for DSSP)
+        run: conda install -c anaconda libboost=1.73.0
       - name: Install DSSP
         run: conda install dssp -c salilab
       - name: Install mmseqs
