@@ -1,6 +1,6 @@
 pandas<2.0.0
 biopandas>=0.5.0.dev0
-biopython<=1.79
+biopython
 bioservices>=1.10.0
 deepdiff
 loguru
