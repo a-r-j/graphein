@@ -178,27 +178,47 @@ def add_sequence_neighbour_vector(
                     [0.0, 0.0, 0.0]
                 )
                 continue
-            # Asserts residues are on the same chain
-            cond_1 = (
-                residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
+
+            # Get insertion codes
+            ins_current = (
+                residue[0].split(":")[3] if residue[0].count(":") > 2 else ""
             )
-            # Asserts residue numbers are adjacent
-            cond_2 = (
-                abs(
-                    residue[1]["residue_number"]
-                    - chain_residues[i + 1][1]["residue_number"]
-                )
-                == 1
+            ins_next = (
+                chain_residues[i + 1][0].split(":")[3]
+                if chain_residues[i + 1][0].count(":") > 2
+                else ""
+            )
+            if not n_to_c:
+                ins_current, ins_next = ins_next, ins_current
+
+            # Get sequence distance
+            dist = abs(
+                residue[1]["residue_number"]
+                - chain_residues[i + 1][1]["residue_number"]
             )
 
-            # If this checks out, we compute the vector
-            if (cond_1) and (cond_2):
+            # Asserts residues are adjacent
+            cond_adjacent = (
+                dist == 1
+                or (dist == 0 and not ins_current and ins_next == "A")
+                or (
+                    dist == 0
+                    and ins_current
+                    and ins_next
+                    and chr(ord(ins_current) + 1) == ins_next
+                )
+            )
+
+            # If this checks out, we compute the non-zero vector
+            if cond_adjacent:
                 vec = chain_residues[i + 1][1]["coords"] - residue[1]["coords"]
 
                 if reverse:
                     vec = -vec
                 if scale:
                     vec = vec / np.linalg.norm(vec)
+            else:
+                vec = np.array([0.0, 0.0, 0.0])
 
             residue[1][f"sequence_neighbour_vector_{suffix}"] = vec
 
