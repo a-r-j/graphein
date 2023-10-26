@@ -4,6 +4,7 @@ biopython
 bioservices>=1.10.0
 deepdiff
 loguru
+looseversion
 matplotlib>=3.4.3
 multipledispatch
 networkx
