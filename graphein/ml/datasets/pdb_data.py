@@ -63,7 +63,7 @@ class PDBManager:
 
         # Constants
         self.pdb_sequences_url = (
-            "https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz"
+            "https://files.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz"
         )
         self.ligand_map_url = (
             "http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd"

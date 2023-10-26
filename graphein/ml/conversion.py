@@ -289,7 +289,8 @@ class GraphFormatConvertor:
                     data[key].append(value)
 
         # Add edge features
-        edge_feature_names = list(G.edges(data=True))[0][2].keys()
+        edge_list = list(G.edges(data=True))
+        edge_feature_names = edge_list[0][2].keys() if edge_list else []
         edge_feature_names = list(
             filter(
                 lambda x: x in self.columns and x != "kind", edge_feature_names

@@ -1,4 +1,17 @@
-### 1.7.1 - UNRELEASED
+### 1.7.4 - 26/10/2023
+
+* Adds support for PyG 2.4+ ([#350](https://www.github.com/a-r-j/graphein/pull/339))
+* Fixes `add_sequence_neighbour_vector` to have a zero vector when no neighbor is feasible. Extend to handle insertion codes ([#336](https://github.com/a-r-j/graphein/pull/336)).
+
+### 1.7.3 - 30/08/2023
+
+* Fixes edge case in FoldComp database download if target directory has same name as database ([#339](https://github.com/a-r-j/graphein/pull/339))
+
+### 1.7.2 - 28/08/2023
+
+* Pins BioPandas version to latest
+
+### 1.7.1 - 26/07/2023
 
 #### New Features
 * [Feature] - [#305](https://github.com/a-r-j/graphein/pull/305) Adds the `add_virtual_beta_carbon_vector` function inspired by [RFdiffusion](https://github.com/RosettaCommons/RFdiffusion/blob/main/rfdiffusion/coords6d.py#L37) and ProteinMPNN.
@@ -12,6 +25,9 @@
 * [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes the construction of geometric features when beta-carbons or side chains are missing in non-glycine residues (for example in `H:CYS:104` in 3SE8).
 * [Bugfix] - [#305](https://github.com/a-r-j/graphein/pull/305) Fixes data types of geometric feature vectors: `object` -> `float`.
 * [Bugfix] - [#301](https://github.com/a-r-j/graphein/pull/301) Fixes the conversion of undirected NetworkX graph to directed PyG data.
+* [Bugfix] - [#334](https://github.com/a-r-j/graphein/pull/334) Fixes the corner case of the NetworkX -> PyG conversion when input graph has no edges.
+
+https://github.com/a-r-j/graphein/pull/334
 
 #### Bugfixes
 * Adds missing `stage` parameter to `graphein.ml.datasets.foldcomp_data.FoldCompDataModule.setup()`. [#310](https://github.com/a-r-j/graphein/pull/310)
@@ -22,6 +38,7 @@
 * Fixes initialisation of `Protein` objects. [#317](https://github.com/a-r-j/graphein/issues/317) [#318](https://github.com/a-r-j/graphein/pull/318)
 * Fixes incorrect `rad` and `embed` argument logic in `graphein.protein.tensor.angles.dihedrals/sidechain_torsion` [#321](https://github.com/a-r-j/graphein/pull/321)
 * Fixes incorrect start padding in pNeRF output [#321](https://github.com/a-r-j/graphein/pull/321)
+* Fixes `pyyaml` breaking installation [#328](https://github.com/a-r-j/graphein/pull/328)
 * Fixes setting ID for PyG data objects when loading from a path to a `.pdb` file [#332](https://github.com/a-r-j/graphein/pull/332)
 
 #### Other Changes

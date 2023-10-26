@@ -106,7 +106,7 @@ def test_construct_graph():
 def test_construct_graph_with_dssp():
     """Makes sure protein graphs can be constructed with dssp
 
-    Uses uses both a pdb code (6REW) and a local pdb file to do so.
+    Uses uses both a pdb code (6YC3) and a local pdb file to do so.
     """
     dssp_config_functions = {
         "edge_construction_functions": [
@@ -129,10 +129,10 @@ def test_construct_graph_with_dssp():
     dssp_prot_config = ProteinGraphConfig(**dssp_config_functions)
 
     g_pdb = construct_graph(
-        config=dssp_prot_config, pdb_code="6rew"
-    )  # should download 6rew.pdb to pdb_dir
+        config=dssp_prot_config, pdb_code="6yc3"
+    )  # should download 6yc3.pdb to pdb_dir
 
-    assert g_pdb.graph["pdb_code"] == "6rew"
+    assert g_pdb.graph["pdb_code"] == "6yc3"
     assert g_pdb.graph["path"] is None
     assert g_pdb.graph["name"] == g_pdb.graph["pdb_code"]
     assert len(g_pdb.graph["dssp_df"]) == 1365

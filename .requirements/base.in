@@ -1,11 +1,12 @@
 pandas<2.0.0
-biopandas==0.5.0.dev0
+biopandas>=0.5.0.dev0
 biopython
 bioservices>=1.10.0
 cpdb-protein==0.2.0
 cython
 deepdiff
 loguru
+looseversion
 matplotlib>=3.4.3
 multipledispatch
 networkx
