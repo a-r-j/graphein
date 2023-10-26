@@ -1,6 +1,7 @@
-### 1.7.4 - 24/10/2023
+### 1.7.4 - UNRELEASED
 
 * Adds support for PyG 2.4+ ([#350](https://www.github.com/a-r-j/graphein/pull/339))
+* Fixes `add_sequence_neighbour_vector` to have a zero vector when no neighbor is feasible. Extend to handle insertion codes ([#336](https://github.com/a-r-j/graphein/pull/336)).
 
 ### 1.7.3 - 30/08/2023
 
