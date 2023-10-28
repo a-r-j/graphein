@@ -417,12 +417,8 @@ def save_graph_to_pdb(
     for col in blank_cols:
         if col not in df.columns:
             df[col] = ""
-    atom_df = filter_dataframe(
-        df, "record_name", ["ATOM"], boolean=True
-    )
-    hetatm_df = filter_dataframe(
-        df, "record_name", ["HETATM"], boolean=True
-    )
+    atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
+    hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
 
     if atoms:
         ppd.df["ATOM"] = atom_df
