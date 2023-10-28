@@ -15,8 +15,8 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import networkx as nx
-import numpy as np
 import pandas as pd
+import numpy as np
 import requests
 import wget
 from biopandas.pdb import PandasPdb
@@ -404,7 +404,7 @@ def save_graph_to_pdb(
     df = g.graph["pdb_df"]
     # format charge correctly
     df.charge = df.charge.replace("", np.nan)
-    df["charge"] = df.charge.apply(lambda x: float(x) if x != "" else "")
+    df.charge = df.charge.astype(float)
 
     # Add blank columns
     blank_cols = [
