@@ -15,8 +15,8 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import networkx as nx
-import pandas as pd
 import numpy as np
+import pandas as pd
 import requests
 import wget
 from biopandas.pdb import PandasPdb
