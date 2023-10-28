@@ -496,7 +496,7 @@ def save_rgroup_df_to_pdb(
     # format charge correctly
     df.charge = df.charge.replace("", np.nan)
     df.charge = df.charge.astype(float)
-    
+
     atom_df = filter_dataframe(
         g.graph["rgroup_df"], "record_name", ["ATOM"], boolean=True
     )
