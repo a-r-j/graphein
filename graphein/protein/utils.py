@@ -447,6 +447,11 @@ def save_pdb_df_to_pdb(
     """
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
     hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
+
+    # format charge correctly
+    df.charge = df.charge.replace("", np.nan)
+    df.charge = df.charge.astype(float)
+
     ppd = PandasPdb()
 
     # Add blank columns
@@ -487,6 +492,11 @@ def save_rgroup_df_to_pdb(
     :type gz: bool
     """
     ppd = PandasPdb()
+
+    # format charge correctly
+    df.charge = df.charge.replace("", np.nan)
+    df.charge = df.charge.astype(float)
+    
     atom_df = filter_dataframe(
         g.graph["rgroup_df"], "record_name", ["ATOM"], boolean=True
     )
