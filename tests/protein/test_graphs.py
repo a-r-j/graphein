@@ -427,8 +427,6 @@ def test_alt_loc_exclusion():
         g = construct_graph(config=config, pdb_code="2VVI")
         assert np.array_equal(
             g.nodes[node_id]["coords"], np.array(expected_coords, dtype=float)
-            g.nodes[node_id]["coords"],
-            np.array(expected_coords, dtype=np.float),
         )
 
 
