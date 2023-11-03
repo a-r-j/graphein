@@ -107,9 +107,13 @@ def add_dssp_df(
 
     # Check for existence of pdb file. If not, reconstructs it from the raw df.
     if pdb_file:
-        # get dssp version string 
-        dssp_version = os.popen(f"{executable} --version").read().strip().split()[-1]  # e.g. "4.0.4"
-        dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP=executable, dssp_version=dssp_version)
+        # get dssp version string
+        dssp_version = (
+            os.popen(f"{executable} --version").read().strip().split()[-1]
+        )  # e.g. "4.0.4"
+        dssp_dict = dssp_dict_from_pdb_file(
+            pdb_file, DSSP=executable, dssp_version=dssp_version
+        )
     else:
         with tempfile.TemporaryDirectory() as tmpdirname:
             save_pdb_df_to_pdb(
@@ -145,10 +149,14 @@ def add_dssp_df(
         + ":"
         + dssp_dict["resnum"].astype(str)
     )
-    if G.graph['config'].insertions:
-        dssp_dict["node_id"] = dssp_dict["node_id"] + ":" + dssp_dict["icode"].apply(str)
+    if G.graph["config"].insertions:
+        dssp_dict["node_id"] = (
+            dssp_dict["node_id"] + ":" + dssp_dict["icode"].apply(str)
+        )
         # Replace trailing : for non insertions
-        dssp_dict["node_id"] = dssp_dict["node_id"].str.replace(r":\s*$", "", regex=True)
+        dssp_dict["node_id"] = dssp_dict["node_id"].str.replace(
+            r":\s*$", "", regex=True
+        )
 
     dssp_dict.set_index("node_id", inplace=True)
 
