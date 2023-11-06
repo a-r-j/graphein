@@ -2,6 +2,11 @@
 
 * Fixes bug in sidechain torsion angle computation for structures containing `PYL`/other non-standard amino acids ([#357](https://github.com/a-r-j/graphein/pull/357)). Fixes [#356](https://github.com/a-r-j/graphein/issues/356).
 
+### 1.7.5 - 27/10/2024
+
+* Improves the tensor->PDB writer (`graphein.protein.tensor.io.to_pdb`) by automatically unravelling residue-level b-factor predictions/annotations ([#352](https://github.com/a-r-j/pull/352)).
+
+
 ### 1.7.4 - 26/10/2023
 
 * Adds support for PyG 2.4+ ([#350](https://www.github.com/a-r-j/graphein/pull/339))
