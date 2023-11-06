@@ -131,7 +131,7 @@ def test_pyl_torsion_angle():
     p = protein_to_pyg(pdb_code="1nth")
 
     pyl_index = p.residue_id.index("A:PYL:202:")
-    sc_angles = sidechain_torsion(p.coords, p.residue_id)
+    sc_angles = sidechain_torsion(p.coords, p.residues)
 
     torch.testing.assert_close(
         torch.zeros_like(sc_angles[pyl_index]), sc_angles[pyl_index], rtol=1e-5
