@@ -1,6 +1,6 @@
 # basic
-from functools import partial
-from pathlib import Path
+import functools
+import pathlib
 
 # test
 import pytest
@@ -15,7 +15,11 @@ from graphein.protein.subgraphs import extract_surface_subgraph
 from graphein.protein.utils import ProteinGraphConfigurationError
 
 # ---------- input ----------
-pdb_path = "example_pdb_with_cryst1_insertions.pdb"
+pdb_path = (
+    pathlib.Path(__file__).parent.parent.parent
+    / "test_data"
+    / "example_pdb_with_cryst1_insertions.pdb"
+)
 dssp_exe = "/usr/bin/mkdssp"
 RSA_THRESHOLD = 0.2
 
@@ -31,7 +35,7 @@ params_to_change = {
         D.add_backbone_carbonyl_carbonyl_interactions,
         D.add_salt_bridges,
         # distance
-        partial(
+        functools.partial(
             D.add_distance_threshold,
             long_interaction_threshold=4,
             threshold=4.5,
