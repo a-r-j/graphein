@@ -134,5 +134,5 @@ def test_pyl_torsion_angle():
     sc_angles = sidechain_torsion(p.coords, p.residues)
 
     torch.testing.assert_close(
-        torch.zeros_like(sc_angles[pyl_index]), sc_angles[pyl_index], rtol=1e-5
+        torch.zeros_like(sc_angles[pyl_index]), sc_angles[pyl_index], rtol=1e-5, atol=1e-5
     )
