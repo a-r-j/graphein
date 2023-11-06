@@ -10,6 +10,7 @@ from graphein.protein.edges import distance as D
 from graphein.protein.features.nodes import rsa
 
 # graphein
+from graphein.utils.dependencies import is_tool
 from graphein.protein.graphs import construct_graph
 from graphein.protein.subgraphs import extract_surface_subgraph
 from graphein.protein.utils import ProteinGraphConfigurationError
@@ -20,9 +21,10 @@ pdb_path = (
     / "test_data"
     / "input_pdb_cryst1.pdb"
 )
-dssp_exe = "/usr/bin/mkdssp"
+dssp_exe = "/opt/homebrew/bin/mkdssp"
 RSA_THRESHOLD = 0.2
 
+DSSP_AVAILABLE = is_tool("mkdssp")
 # ---------- graph config ----------
 params_to_change = {
     "granularity": "centroids",  # "atom", "CA", "centroids"
@@ -50,6 +52,7 @@ g = construct_graph(config=config, path=pdb_path, verbose=False)
 
 
 # ---------- test: dssp DataFrame ----------
+@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not available")
 def test_assert_nonempty_dssp_df():
     """if not provided dssp version to dssp.add_dssp_df, will output an empty DataFrame"""
     if g.graph["dssp_df"].empty:
@@ -57,6 +60,7 @@ def test_assert_nonempty_dssp_df():
 
 
 # ---------- test: surface subgraph nodes with insertion code ----------
+@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not available")
 def test_extract_surface_subgraph_insertion_node():
     """if not added insertion codes, will raise ProteinGraphConfigurationError"""
     try:
