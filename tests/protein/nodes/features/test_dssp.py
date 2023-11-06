@@ -18,7 +18,7 @@ from graphein.protein.utils import ProteinGraphConfigurationError
 pdb_path = (
     pathlib.Path(__file__).parent.parent.parent
     / "test_data"
-    / "example_pdb_with_cryst1_insertions.pdb"
+    / "input_pdb_cryst1.pdb"
 )
 dssp_exe = "/usr/bin/mkdssp"
 RSA_THRESHOLD = 0.2
