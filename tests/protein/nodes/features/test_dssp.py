@@ -21,7 +21,7 @@ pdb_path = (
     / "test_data"
     / "input_pdb_cryst1.pdb"
 )
-dssp_exe = "/opt/homebrew/bin/mkdssp"
+dssp_exe = "/usr/bin/mkdssp"
 RSA_THRESHOLD = 0.2
 
 DSSP_AVAILABLE = is_tool("mkdssp")
