@@ -1,3 +1,16 @@
+### 1.7.4 - 26/10/2023
+
+* Adds support for PyG 2.4+ ([#350](https://www.github.com/a-r-j/graphein/pull/339))
+* Fixes `add_sequence_neighbour_vector` to have a zero vector when no neighbor is feasible. Extend to handle insertion codes ([#336](https://github.com/a-r-j/graphein/pull/336)).
+
+### 1.7.3 - 30/08/2023
+
+* Fixes edge case in FoldComp database download if target directory has same name as database ([#339](https://github.com/a-r-j/graphein/pull/339))
+
+### 1.7.2 - 28/08/2023
+
+* Pins BioPandas version to latest
+
 ### 1.7.1 - 26/07/2023
 
 #### New Features
