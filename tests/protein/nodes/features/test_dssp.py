@@ -8,12 +8,12 @@ import pytest
 from graphein.protein.config import DSSPConfig, ProteinGraphConfig
 from graphein.protein.edges import distance as D
 from graphein.protein.features.nodes import rsa
-
-# graphein
-from graphein.utils.dependencies import is_tool
 from graphein.protein.graphs import construct_graph
 from graphein.protein.subgraphs import extract_surface_subgraph
 from graphein.protein.utils import ProteinGraphConfigurationError
+
+# graphein
+from graphein.utils.dependencies import is_tool
 
 # ---------- input ----------
 pdb_path = (
