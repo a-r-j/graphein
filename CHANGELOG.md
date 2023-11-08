@@ -1,3 +1,9 @@
+### 1.7.5 - UNRELEASED
+
+#### Bugfixes
+-   Remove hydrogen isotopes as well in `graphein.protein.graphs.deprotonate_structure`. [#337](https://github.com/a-r-j/graphein/pull/337)
+
+
 ### 1.7.4 - 26/10/2023
 
 * Adds support for PyG 2.4+ ([#350](https://www.github.com/a-r-j/graphein/pull/339))
@@ -34,7 +40,6 @@ https://github.com/a-r-j/graphein/pull/334
 
 #### Bugfixes
 
--   Remove hydrogen isotopes as well in `graphein.protein.graphs.deprotonate_structure`. [#337](https://github.com/a-r-j/graphein/pull/337)
 -   Adds missing `stage` parameter to `graphein.ml.datasets.foldcomp_data.FoldCompDataModule.setup()`. [#310](https://github.com/a-r-j/graphein/pull/310)
 -   Ensures exproting groups of PDB chains with PDBManager selects the first model for multu-model structures. [#311](https://github.com/a-r-j/graphein/pull/311)
 -   Fixes bug with exporting PDBs with only one splitting strategy in PDBManager [#311](https://github.com/a-r-j/graphein/pull/311)
