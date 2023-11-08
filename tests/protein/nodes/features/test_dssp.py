@@ -26,6 +26,7 @@ RSA_THRESHOLD = 0.2
 
 DSSP_AVAILABLE = is_tool("mkdssp")
 
+
 @pytest.fixture
 def dssp_graph():
     # ---------- graph config ----------
