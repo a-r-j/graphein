@@ -1291,7 +1291,7 @@ def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
     :return: Tuple of coordinates ``(x, y, z)``
     :rtype: Tuple[float, float, float]
     """
-    x, y, z = tuple(G.nodes[n]["coords"])
+    (x, y, z) = tuple(G.nodes[n]["coords"])
     return x, y, z
 
 
