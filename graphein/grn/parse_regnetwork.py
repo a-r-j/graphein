@@ -1,4 +1,5 @@
 """Functions for parsing GRNs from RegNetwork."""
+
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>

@@ -1,4 +1,5 @@
 """Functions to compute edges for an RNA secondary structure graph."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Emmanuele Rossi, Eric Ma

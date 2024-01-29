@@ -1,4 +1,5 @@
 """Functions for plotting protein graphs and meshes."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

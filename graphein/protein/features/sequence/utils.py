@@ -1,4 +1,5 @@
 """Utility functions for sequence-based featurisation."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

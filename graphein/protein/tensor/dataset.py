@@ -1,4 +1,5 @@
 """Pytorch Geometric Dataset classes for Protein Graphs."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

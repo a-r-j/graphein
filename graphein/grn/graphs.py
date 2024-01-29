@@ -1,4 +1,5 @@
 """Graph construction utilities for Gene Regulatory Networks."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas
@@ -152,11 +153,11 @@ if __name__ == "__main__":
     print(g.edges(data=True))
 
     edge_colors = [
-        "r"
-        if g[u][v]["kind"] == {"trrust"}
-        else "b"
-        if g[u][v]["kind"] == {"regnetwork"}
-        else "y"
+        (
+            "r"
+            if g[u][v]["kind"] == {"trrust"}
+            else "b" if g[u][v]["kind"] == {"regnetwork"} else "y"
+        )
         for u, v in g.edges()
     ]
 

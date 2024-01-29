@@ -1,4 +1,5 @@
 """Utilities for computing edges."""
+
 from typing import Optional
 
 from loguru import logger as log
