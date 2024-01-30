@@ -1,4 +1,5 @@
 """Utilities for working with graph objects."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
 # License: MIT

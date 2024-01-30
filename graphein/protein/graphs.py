@@ -1,4 +1,5 @@
 """Functions for working with Protein Structure Graphs."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma, Charlie Harris

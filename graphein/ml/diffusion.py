@@ -6,6 +6,7 @@ Each of the functions here accepts a NetworkX graph object
 and returns a 2D xarray.
 These arrays can then be stacked to generate a diffusion tensor.
 """
+
 from typing import Dict
 
 import networkx as nx

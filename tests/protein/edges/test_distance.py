@@ -1,4 +1,5 @@
 """Functions for working with Protein Structure Graphs. Based on tests written by Eric Ma in PIN Library"""
+
 import copy
 from functools import partial
 

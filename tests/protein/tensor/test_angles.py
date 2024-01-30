@@ -1,4 +1,5 @@
 """Tests for graphein.protein.tensor.angles."""
+
 import math
 
 import numpy as np

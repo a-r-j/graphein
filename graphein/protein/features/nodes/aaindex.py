@@ -1,4 +1,5 @@
 """Functions for adding node features from AAIndex."""
+
 from typing import Dict, Tuple
 
 import networkx as nx

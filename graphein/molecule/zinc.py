@@ -2,6 +2,7 @@
 
 Adapted from smilite (https://github.com/rasbt/smilite) by Sebastian Raschka.
 """
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

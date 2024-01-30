@@ -1,4 +1,5 @@
 """Functions for adding nodes features to a PPI Graph."""
+
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
@@ -71,11 +72,11 @@ if __name__ == "__main__":
 
     print(nx.get_node_attributes(g, "sequence"))
     edge_colors = [
-        "r"
-        if g[u][v]["kind"] == {"string"}
-        else "b"
-        if g[u][v]["kind"] == {"biogrid"}
-        else "y"
+        (
+            "r"
+            if g[u][v]["kind"] == {"string"}
+            else "b" if g[u][v]["kind"] == {"biogrid"} else "y"
+        )
         for u, v in g.edges()
     ]
 

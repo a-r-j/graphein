@@ -1,4 +1,5 @@
 """Utilities for working with protein sequences."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

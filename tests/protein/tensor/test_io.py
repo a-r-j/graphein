@@ -1,4 +1,5 @@
 """Tests for graphein.protein.tensor.io"""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

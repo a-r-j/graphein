@@ -1,4 +1,5 @@
 """Featurization functions for amino acids."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
 # License: MIT
