@@ -11,10 +11,10 @@ from graphein.protein.graphs import (
 from graphein.protein.utils import (
     download_pdb,
     download_pdb_multiprocessing,
+    get_obsolete_mapping,
     save_graph_to_pdb,
     save_pdb_df_to_pdb,
     save_rgroup_df_to_pdb,
-    get_obsolete_mapping,
 )
 
 
@@ -74,9 +74,9 @@ def test_save_rgroup_df_to_pdb():
     # We drop the line_idx columns as these will be renumbered
     assert_frame_equal(
         a.drop(["line_idx"], axis=1),
-        filter_dataframe(g.graph["rgroup_df"], "record_name", ["HETATM"], False).drop(
-            ["line_idx", "node_id", "residue_id"], axis=1
-        ),
+        filter_dataframe(
+            g.graph["rgroup_df"], "record_name", ["HETATM"], False
+        ).drop(["line_idx", "node_id", "residue_id"], axis=1),
     )
 
 
