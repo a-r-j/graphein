@@ -33,7 +33,7 @@ def test_save_graph_to_pdb():
     #    g.graph["pdb_df"].drop(["line_idx", "node_id", "residue_id"], axis=1),
     #)
     assert_frame_equal(
-        a, g.graph["pdb_df"].drop(["node_id", "residue_id", axis=1])
+        a, g.graph["pdb_df"].drop(["node_id", "residue_id"], axis=1)
     )
     h = construct_graph(path="/tmp/test_graph.pdb")
 
@@ -56,7 +56,7 @@ def test_save_pdb_df_to_pdb():
     #    g.graph["pdb_df"].drop(["line_idx", "node_id", "residue_id"], axis=1),
     #)
     assert_frame_equal(
-        a, g.graph["pdb_df"].drop(["node_id", "residue_id", axis=1])
+        a, g.graph["pdb_df"].drop(["node_id", "residue_id"], axis=1)
     )
 
     # Now check for raw, unprocessed DF
