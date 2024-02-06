@@ -1,4 +1,5 @@
 """Command line interface for graphein."""
+
 import pathlib
 import pickle
 

@@ -2,6 +2,7 @@
 
 Plotting functions for molecules wrap the methods defined on protein graphs and provide sane defaults.
 """
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>

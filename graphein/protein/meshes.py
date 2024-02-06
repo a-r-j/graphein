@@ -1,4 +1,5 @@
 """Functions to create protein meshes via pymol."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

@@ -45,6 +45,7 @@ from graphein.protein.graphs import (
     compute_secondary_structure_graph,
     construct_graph,
     construct_graphs_mp,
+    deprotonate_structure,
     read_pdb_to_dataframe,
 )
 from graphein.utils.dependencies import is_tool
@@ -562,6 +563,7 @@ def test_df_processing():
 
     g1 = construct_graph(config=config, pdb_code="3eiy")
     g2 = construct_graph(config=config2, pdb_code="3eiy")
+    g3 = construct_graph(config=config2, pdb_code="4cvi")
 
     for n, d in g1.nodes(data=True):
         assert (
@@ -569,3 +571,9 @@ def test_df_processing():
         ), "Only even residues should be present"
 
     assert len(g1) != len(g2), "Graphs should not be equal"
+    for n, d in g3.nodes(data=True):
+        assert d["element_symbol"] not in [
+            "H",
+            "D",
+            "T",
+        ], "No hydrogen isotopes should present"

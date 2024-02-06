@@ -1,4 +1,5 @@
 """Yaml parser for config objects"""
+
 from functools import partial
 from pathlib import Path
 from typing import Callable, Union

@@ -1,4 +1,5 @@
 """Tests for graphein.protein.features.nodes.amino_acids"""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma
 # License: MIT

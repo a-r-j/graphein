@@ -1,5 +1,6 @@
 """Functions to add embeddings from pre-trained language models protein
 structure graphs."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

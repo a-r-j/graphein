@@ -1,4 +1,5 @@
 """Utilities for parsing proteins into and out of tensors."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -392,7 +393,9 @@ def to_dataframe(
     :param insertions: List of insertion codes, defaults to ``None`` (``""``).
     :type insertions: Optional[List[Union[str, float]]], optional
     :param b_factors: List or tensor of b factors (length: num residues),
-        defaults to ``None`` (``""``).
+        defaults to ``None`` (``""``). If ``b_factors`` is of length/shape
+        number of residues (as opposed to number of atoms) it is automatically
+        unravelled to the correct length.
     :type b_factors: Optional[List[Union[str, float]]], optional
     :param occupancy: List or tensor of occupancy values (length: num residues),
         defaults to ``None`` (``1.0``).
@@ -434,12 +437,25 @@ def to_dataframe(
     element_symbols = [ELEMENT_SYMBOL_MAP[a] for a in atom_type]
 
     chains = ["A"] * len(res_nums) if chains is None else chains[res_nums - 1]
+    if b_factors is not None:
+        num_b_factors = (
+            len(b_factors)
+            if isinstance(b_factors, list)
+            else b_factors.shape[0]
+        )
+        b_factors = (
+            b_factors[res_nums - 1]
+            if num_b_factors == x.shape[0]
+            else b_factors
+        )
+        if isinstance(b_factors, torch.Tensor):
+            b_factors = b_factors.tolist()
+    else:
+        b_factors = [0.0] * len(res_nums)
     if segment_id is None:
         segment_id = [""] * len(res_nums)
     if insertions is None:
         insertions = [""] * len(res_nums)
-    if b_factors is None:
-        b_factors = [0.0] * len(res_nums)
     if occupancy is None:
         occupancy = [1.0] * len(res_nums)
     if charge is None:
@@ -480,7 +496,6 @@ def to_dataframe(
         "line_idx": atom_number,
     }
     df = pd.DataFrame().from_dict(out)
-
     if biopandas:
         ppdb = PandasPdb()
         ppdb.df["ATOM"] = df
@@ -501,7 +516,7 @@ def to_pdb(x: AtomTensor, out_path: str, gz: bool = False, **kwargs):
     :type x: AtomTensor
     :param out_path: Path to output pdb file.
     :type out_path: str
-    :param gz: Whether to gzip out the ouput, defaults to ``False``.
+    :param gz: Whether to gzip out the output, defaults to ``False``.
     :type gz: bool, optional
     :param kwargs: Keyword args for :func:`graphein.protein.tensor.to_dataframe`
     """

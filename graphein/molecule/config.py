@@ -1,4 +1,5 @@
 """Base Config object for use with Molecule Graph Construction."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

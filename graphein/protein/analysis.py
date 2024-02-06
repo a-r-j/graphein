@@ -1,4 +1,5 @@
 """Contains utilities for computing analytics on and plotting summaries of Protein Structure Graphs."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>

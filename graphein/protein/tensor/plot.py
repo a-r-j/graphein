@@ -2,6 +2,7 @@
 
 All plots are produced with Plotly and so are loggable to Weights and Biases.
 """
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

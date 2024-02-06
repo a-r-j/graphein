@@ -1,4 +1,5 @@
 """Functions for constructing a PPI PPIGraphConfig from STRINGdb and BIOGRID."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas
@@ -150,11 +151,11 @@ if __name__ == "__main__":
     )
 
     edge_colors = [
-        "r"
-        if g[u][v]["kind"] == {"string"}
-        else "b"
-        if g[u][v]["kind"] == {"biogrid"}
-        else "y"
+        (
+            "r"
+            if g[u][v]["kind"] == {"string"}
+            else "b" if g[u][v]["kind"] == {"biogrid"} else "y"
+        )
         for u, v in g.edges()
     ]
 
