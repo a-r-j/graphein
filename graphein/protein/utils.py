@@ -493,6 +493,7 @@ def save_rgroup_df_to_pdb(
     :type gz: bool
     """
     ppd = PandasPdb()
+    df = g.graph["rgroup_df"].copy()
 
     # format charge correctly
     df.charge = df.charge.replace("", np.nan)
