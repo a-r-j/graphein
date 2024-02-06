@@ -14,6 +14,7 @@ from graphein.protein.utils import (
     save_graph_to_pdb,
     save_pdb_df_to_pdb,
     save_rgroup_df_to_pdb,
+    get_obsolete_mapping,
 )
 
 
@@ -73,9 +74,9 @@ def test_save_rgroup_df_to_pdb():
     # We drop the line_idx columns as these will be renumbered
     assert_frame_equal(
         a.drop(["line_idx"], axis=1),
-        filter_dataframe(
-            g.graph["rgroup_df"], "record_name", ["HETATM"], False
-        ).drop(["line_idx", "node_id", "residue_id"], axis=1),
+        filter_dataframe(g.graph["rgroup_df"], "record_name", ["HETATM"], False).drop(
+            ["line_idx", "node_id", "residue_id"], axis=1
+        ),
     )
 
 
@@ -96,6 +97,11 @@ def test_download_structure_multi():
     for path in fps:
         assert os.path.exists(path)
         assert str(path).endswith("4hhb.pdb")
+
+
+def test_download_obsolete_map():
+    mapping = get_obsolete_mapping()
+    assert len(mapping) > 100
 
 
 if __name__ == "__main__":

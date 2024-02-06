@@ -9,7 +9,6 @@ import os
 import tempfile
 from functools import lru_cache, partial
 from pathlib import Path
-from shutil import which
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -47,7 +46,7 @@ def get_obsolete_mapping() -> Dict[str, str]:
     """
     obs_dict: Dict[str, str] = {}
 
-    response = urlopen("ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat")
+    response = urlopen("https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat")
     for line in response:
         entry = line.split()
         if len(entry) == 4:
@@ -128,9 +127,7 @@ def download_pdb_multiprocessing(
         overwrite=overwrite,
         strict=strict,
     )
-    return process_map(
-        func, pdb_codes, max_workers=max_workers, chunksize=chunksize
-    )
+    return process_map(func, pdb_codes, max_workers=max_workers, chunksize=chunksize)
 
 
 def download_pdb(
@@ -145,7 +142,7 @@ def download_pdb(
     Download PDB structure from PDB.
 
     If no structure is found, we perform a lookup against the record of
-    obsolete PDB codes (ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat)
+    obsolete PDB codes (https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat)
 
     :param pdb_code: 4 character PDB accession code.
     :type pdb_code: str
@@ -188,12 +185,8 @@ def download_pdb(
         obs_map = get_obsolete_mapping()
         try:
             new_pdb = obs_map[pdb_code.lower()].lower()
-            log.info(
-                f"{pdb_code} is deprecated. Downloading {new_pdb} instead."
-            )
-            return download_pdb(
-                new_pdb, out_dir, format=format, overwrite=overwrite
-            )
+            log.info(f"{pdb_code} is deprecated. Downloading {new_pdb} instead.")
+            return download_pdb(new_pdb, out_dir, format=format, overwrite=overwrite)
         except KeyError:
             log.warning(
                 f"PDB {pdb_code} not found. Possibly too large; large \
@@ -203,9 +196,7 @@ def download_pdb(
 
     # Check if PDB already exists
     if os.path.exists(out_dir / f"{pdb_code}{extension}") and not overwrite:
-        log.info(
-            f"{pdb_code} already exists: {out_dir / f'{pdb_code}{extension}'}"
-        )
+        log.info(f"{pdb_code} already exists: {out_dir / f'{pdb_code}{extension}'}")
         return out_dir / f"{pdb_code}{extension}"
 
     # Download
@@ -330,19 +321,13 @@ def download_alphafold_structure(
     try:
         structure_filename = wget.download(query_url, out=out_dir)
     except HTTPError:
-        log.warning(
-            f"No structure found for {uniprot_id}. Used URL: {query_url}"
-        )
+        log.warning(f"No structure found for {uniprot_id}. Used URL: {query_url}")
         return None
 
     if rename:
         extension = ".pdb" if pdb else ".cif"
-        os.rename(
-            structure_filename, Path(out_dir) / f"{uniprot_id}{extension}"
-        )
-        structure_filename = str(
-            (Path(out_dir) / f"{uniprot_id}{extension}").resolve()
-        )
+        os.rename(structure_filename, Path(out_dir) / f"{uniprot_id}{extension}")
+        structure_filename = str((Path(out_dir) / f"{uniprot_id}{extension}").resolve())
 
     log.info(f"Downloaded AlphaFold PDB file for: {uniprot_id}")
     if aligned_score:
@@ -355,9 +340,7 @@ def download_alphafold_structure(
         score_filename = wget.download(score_query, out=out_dir)
         if rename:
             os.rename(score_filename, Path(out_dir) / f"{uniprot_id}.json")
-            score_filename = str(
-                (Path(out_dir) / f"{uniprot_id}.json").resolve()
-            )
+            score_filename = str((Path(out_dir) / f"{uniprot_id}.json").resolve())
         return structure_filename, score_filename
 
     return structure_filename
@@ -399,9 +382,7 @@ def save_graph_to_pdb(
     :type gz: bool
     """
     ppd = PandasPdb()
-    atom_df = filter_dataframe(
-        g.graph["pdb_df"], "record_name", ["ATOM"], boolean=True
-    )
+    atom_df = filter_dataframe(g.graph["pdb_df"], "record_name", ["ATOM"], boolean=True)
     hetatm_df = filter_dataframe(
         g.graph["pdb_df"], "record_name", ["HETATM"], boolean=True
     )
@@ -507,18 +488,14 @@ def esmfold(
 
     cif = requests.post(URL, data=sequence, headers=headers).text
     # append header
-    header = "\n".join(
-        [f"data_{sequence}", "#", f"_entry.id\t{sequence}", "#\n"]
-    )
+    header = "\n".join([f"data_{sequence}", "#", f"_entry.id\t{sequence}", "#\n"])
     cif = header + cif
     if out_path is not None:
         with open(out_path, "w") as f:
             f.write(cif)
 
 
-def cast_pdb_column_to_type(
-    pdb: PandasPdb, column_name: str, type: Type
-) -> PandasPdb:
+def cast_pdb_column_to_type(pdb: PandasPdb, column_name: str, type: Type) -> PandasPdb:
     """Casts a specified column within a PandasPdb object to a given type
     and returns the typecasted PandasPdb object.
 
@@ -575,7 +552,5 @@ def extract_chains_to_file(
         df = ppdb.df["ATOM"].loc[ppdb.df["ATOM"]["chain_id"] == chain]
         out_df = PandasPdb()
         out_df.df["ATOM"] = df
-        out_df.to_pdb(
-            path=out_path, records=None, gz=False, append_newline=True
-        )
+        out_df.to_pdb(path=out_path, records=None, gz=False, append_newline=True)
     return out_files
