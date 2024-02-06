@@ -52,8 +52,7 @@ jobs:
       - name: Install PyG
         run: mamba install -c pyg pyg
       - name: Install torch-cluster
-        #run: mamba install pytorch-cluster -c pyg
-        run:  pip install torch-cluster -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
+        run: mamba install pytorch-cluster -c pyg
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
       - name: Install Graphein
