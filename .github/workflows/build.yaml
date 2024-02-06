@@ -4,11 +4,17 @@ on:
   push:
     paths-ignore:
       - "README.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTORS.md"
+      - "CONTRIBUTING.md"
       - "docs/**"
 
   pull_request:
     paths-ignore:
       - "README.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTORS.md"
+      - "CONTRIBUTING.md"
       - "docs/*"
 
 jobs:
@@ -18,24 +24,6 @@ jobs:
       matrix:
         python-version: [3.8, 3.9, "3.10"]
         torch: [1.13.0, 2.1.0, 2.2.0]
-        #include:
-        #  - torch: 1.6.0
-        #    torchvision: 0.7.0
-        #  - torch: 1.7.0
-        #    torchvision: 0.8.1
-        #  - torch: 1.8.0
-        #    torchvision: 0.9.0
-        #  - torch: 1.9.0
-        #    torchvision: 0.10.0
-        #  - torch: 1.8.0
-        #    torchvision: 0.9.0
-        #    python-version: 3.9
-        #  - torch: 1.9.0
-        #    torchvision: 0.10.0
-        #    python-version: 3.8
-        #  - torch: 1.9.0
-        #    torchvision: 0.10.0
-        #    python-version: 3.9
     # https://github.com/marketplace/actions/setup-miniconda#use-a-default-shell
     defaults:
       run:
@@ -52,14 +40,6 @@ jobs:
           channels: "conda-forge, salilab, pytorch, pyg"
           python-version: ${{ matrix.python-version }}
           use-mamba: true
-      #- name: Set up Python ${{ matrix.python-version }}
-      #  uses: actions/setup-python@v2
-      #  with:
-      #python-version: ${{ matrix.python-version }}
-      #- name: Setup conda environment
-      #  run: conda env create -n graphein-dev python=${{ matrix.python-version }}
-      #- name: Activate Conda Environment
-      #  run: source activate graphein-dev
       - name: Install Boost 1.7.3 (for DSSP)
         run: conda install -c anaconda libboost=1.73.0
       - name: Install DSSP
