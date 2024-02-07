@@ -12,13 +12,11 @@ from graphein.utils.utils import *
 from .testing import *
 
 __author__ = "Arian Jamasb <arian@jamasb.io>"
-__version__ = "1.7.5"
+__version__ = "1.7.6"
 
 
 logger.configure(
-    handlers=[
-        {"sink": RichHandler(rich_tracebacks=True), "format": "{message}"}
-    ]
+    handlers=[{"sink": RichHandler(rich_tracebacks=True), "format": "{message}"}]
 )
 
 

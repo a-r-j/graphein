@@ -118,9 +118,7 @@ class UploadCommand(Command):
             self.status("Removing previous builds…")
             rmtree(os.path.join(HERE, "dist"))
         self.status("Building Source and Wheel (universal) distribution…")
-        os.system(
-            "{0} setup.py sdist bdist_wheel --universal".format(sys.executable)
-        )
+        os.system("{0} setup.py sdist bdist_wheel --universal".format(sys.executable))
 
         self.status("Uploading the package to PyPI via Twine…")
         os.system("twine upload dist/*")
@@ -134,7 +132,7 @@ class UploadCommand(Command):
 
 setup(
     name="graphein",
-    version="1.7.5",
+    version="1.7.6",
     description="Protein & Interactomic Graph Construction for Machine Learning",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -148,9 +146,7 @@ setup(
         "documentation": "https://graphein.ai/",
     },
     packages=find_packages(),
-    package_data={
-        "": ["LICENSE.txt", "README.md", "requirements.txt", "*.csv"]
-    },
+    package_data={"": ["LICENSE.txt", "README.md", "requirements.txt", "*.csv"]},
     include_package_data=True,
     # install_requires=install_reqs,
     install_requires=INSTALL_REQUIRES,

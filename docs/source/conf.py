@@ -34,7 +34,7 @@ author = "Arian Jamasb"
 copyright = f"{datetime.datetime.now().year}, {author}"
 
 # The full version, including alpha/beta/rc tags
-release = "1.7.5"
+release = "1.7.6"
 
 
 # -- General configuration ---------------------------------------------------
@@ -97,7 +97,9 @@ intersphinx_mapping = {
     ),
 }
 
-mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+mathjax_path = (
+    "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+)
 mathjax2_config = {
     "tex2jax": {
         "inlineMath": [["$", "$"], ["\\(", "\\)"]],
