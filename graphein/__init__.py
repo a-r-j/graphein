@@ -16,7 +16,9 @@ __version__ = "1.7.6"
 
 
 logger.configure(
-    handlers=[{"sink": RichHandler(rich_tracebacks=True), "format": "{message}"}]
+    handlers=[
+        {"sink": RichHandler(rich_tracebacks=True), "format": "{message}"}
+    ]
 )
 
 
