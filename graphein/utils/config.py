@@ -1,4 +1,5 @@
 """Yaml parser for config objects"""
+
 from functools import partial
 
 from deepdiff.operator import BaseOperator

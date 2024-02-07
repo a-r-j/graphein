@@ -1,4 +1,5 @@
 """Provides utility functions for use across Graphein."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

@@ -1,4 +1,5 @@
 """Functions for retrieving molecular data from ChEMBL."""
+
 from typing import Any, Dict
 
 import networkx as nx

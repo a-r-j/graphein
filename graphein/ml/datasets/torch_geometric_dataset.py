@@ -1,4 +1,5 @@
 """Pytorch Geometric Dataset classes for Protein Graphs."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -164,9 +165,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         elif self.uniprot_ids:
             self.structures = uniprot_ids
         self.af_version = af_version
-        self.bad_pdbs: List[
-            str
-        ] = []  # list of pdb codes that failed to download
+        self.bad_pdbs: List[str] = (
+            []
+        )  # list of pdb codes that failed to download
 
         # Labels & Chains
         self.graph_label_map = graph_label_map
@@ -265,9 +266,11 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
 
         if self.chain_selection_map:
             chain_selections = [
-                self.chain_selection_map[pdb]
-                if pdb in self.chain_selection_map.keys()
-                else "all"
+                (
+                    self.chain_selection_map[pdb]
+                    if pdb in self.chain_selection_map.keys()
+                    else "all"
+                )
                 for pdb in self.structures
             ]
         else:

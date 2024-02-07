@@ -1,4 +1,5 @@
 """Utilities for manipulating tensor representations of proteins."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

@@ -1,4 +1,5 @@
 """Functions for computing atomic structure of molecules."""
+
 import networkx as nx
 
 # %%

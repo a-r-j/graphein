@@ -1,4 +1,5 @@
 """Functions for featurising Small Molecule Graphs."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>

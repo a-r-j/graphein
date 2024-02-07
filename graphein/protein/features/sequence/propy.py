@@ -1,4 +1,5 @@
 """Sequence featurisation functions wrapping ProPy."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma

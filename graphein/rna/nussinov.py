@@ -1,5 +1,6 @@
 """Nussinov algorithm for computing RNA secondary structure adopted from
 adopted from https://github.com/cgoliver/Nussinov/blob/master/nussinov.py """
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ryan Greenhalgh

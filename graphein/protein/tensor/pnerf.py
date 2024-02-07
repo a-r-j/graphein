@@ -10,6 +10,7 @@ Paper (preprint) by Mohammed AlQuraishi:
 PyTorch implementation modifield from the implementation by Felix Opolka:
     https://github.com/FelixOpolka/pnerf-pytorch
 """
+
 import collections
 import math
 from typing import Optional
