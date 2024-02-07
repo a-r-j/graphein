@@ -204,7 +204,9 @@ class FoldCompDataset(Dataset):
     def download(self):
         """Downloads foldcomp database if not already downloaded."""
 
-        if not all(os.path.exists(self.root / f) for f in self._database_files):
+        if not all(
+            os.path.exists(self.root / f) for f in self._database_files
+        ):
             log.info(f"Downloading FoldComp dataset {self.database}...")
             curr_dir = os.getcwd()
             os.chdir(self.root)
@@ -249,7 +251,9 @@ class FoldCompDataset(Dataset):
             ]
         # Sub sample
         log.info(f"Sampling fraction: {self.fraction}...")
-        accessions = random.sample(accessions, int(len(accessions) * self.fraction))
+        accessions = random.sample(
+            accessions, int(len(accessions) * self.fraction)
+        )
         self.ids = accessions
         log.info("Creating index...")
         indices = dict(enumerate(accessions))
@@ -382,7 +386,9 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         self.val_split = val_split
         self.test_split = test_split
         self.transform = (
-            self._compose_transforms(transform) if transform is not None else None
+            self._compose_transforms(transform)
+            if transform is not None
+            else None
         )
 
         if (
@@ -421,7 +427,9 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         self.ids = ds.ids
         ds.db.close()
 
-    def _split_data(self, train_split: float, val_split: float, test_split: float):
+    def _split_data(
+        self, train_split: float, val_split: float, test_split: float
+    ):
         """Split the database into non-overlapping train, validation and test"""
         if not hasattr(self, "ids"):
             self._get_indices()
