@@ -54,7 +54,7 @@ jobs:
         run: pip install torch_geometric
       - name: Install torch-cluster
         #run: mamba install pytorch-cluster -c pyg
-        run: pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}.html
+        run: pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
       - name: Install Graphein
