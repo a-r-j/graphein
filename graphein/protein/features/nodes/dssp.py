@@ -125,10 +125,10 @@ def add_dssp_df(
     dssp_dict["aa"] = dssp_dict["aa"].map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
 
     # Resolve UNKs
+    _raw_pdb_df = G.graph['raw_pdb_df'].copy().drop_duplicates('node_id')
     dssp_dict.loc[dssp_dict["aa"] == "UNK", "aa"] = (
-        G.graph["pdb_df"]
-        .loc[
-            G.graph["pdb_df"].residue_number.isin(
+        _raw_pdb_df.loc[
+            _raw_pdb_df.residue_number.isin(
                 dssp_dict.loc[dssp_dict["aa"] == "UNK"]["resnum"]
             )
         ]["residue_name"]
