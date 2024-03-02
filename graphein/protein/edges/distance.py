@@ -336,22 +336,24 @@ def add_disulfide_interactions(
 def add_hydrogen_bond_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
-    ACCEPTORS_ATOM: List[str] = ["ND",  # histidine and asparagine
-                             "NE",  # glutamate, tryptophan, arginine, histidine
-                             "NH",  # arginine
-                             "NZ",  # lysine
-                             "OH",
-                             "SD",  # cysteine
-                             "SG",  # methionine
-                             "OG",
-                             "N",
-                             ]
-    DONORS_ATOM: List[str] = ["OD1",
-                          "OD2",
-                          "OE1",
-                          "OE2",
-                          "O",
-                          ]
+    ACCEPTORS_ATOM: List[str] = [
+        "ND",  # histidine and asparagine
+        "NE",  # glutamate, tryptophan, arginine, histidine
+        "NH",  # arginine
+        "NZ",  # lysine
+        "OH",
+        "SD",  # cysteine
+        "SG",  # methionine
+        "OG",
+        "N",
+    ]
+    DONORS_ATOM: List[str] = [
+        "OD1",
+        "OD2",
+        "OE1",
+        "OE2",
+        "O",
+    ]
     """Add all hydrogen-bond interactions."""
     # For these atoms, find those that are within 3.5A of one another.
     if rgroup_df is None:
@@ -373,7 +375,7 @@ def add_hydrogen_bond_interactions(
         "N",
         "O",
     ]
-    
+
     hbond_df = filter_dataframe(rgroup_df, "atom_name", HBOND_ATOMS, True)
     if len(hbond_df.index) > 0:
         distmat = compute_distmat(hbond_df)
@@ -392,12 +394,12 @@ def add_hydrogen_bond_interactions(
     for r1, r2 in get_edges_by_bond_type(G, "hbond"):
         # print(G.nodes.data())
         condition1 = (
-                G.nodes[r1]["atom_type"] in ACCEPTORS_ATOM
-                and G.nodes[r2]["atom_type"] in DONORS_ATOM
+            G.nodes[r1]["atom_type"] in ACCEPTORS_ATOM
+            and G.nodes[r2]["atom_type"] in DONORS_ATOM
         )
         condition2 = (
-                G.nodes[r2]["atom_type"] in ACCEPTORS_ATOM
-                and G.nodes[r1]["atom_type"] in DONORS_ATOM
+            G.nodes[r2]["atom_type"] in ACCEPTORS_ATOM
+            and G.nodes[r1]["atom_type"] in DONORS_ATOM
         )
         is_ionic = condition1 or condition2
         if not is_ionic:
