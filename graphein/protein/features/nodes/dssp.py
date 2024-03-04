@@ -132,19 +132,27 @@ def add_dssp_df(
     dssp_dict["aa"] = dssp_dict["aa"].map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
 
     # Resolve UNKs NOTE: this didn't work if HETATM residues exist in DSSP output
-    _raw_pdb_df = G.graph['raw_pdb_df'].copy().drop_duplicates('node_id')
-    _dssp_df_unk = dssp_dict.loc[dssp_dict["aa"] == "UNK"][['chain', 'resnum', 'icode']]
+    _raw_pdb_df = G.graph["raw_pdb_df"].copy().drop_duplicates("node_id")
+    _dssp_df_unk = dssp_dict.loc[dssp_dict["aa"] == "UNK"][
+        ["chain", "resnum", "icode"]
+    ]
     for chain, resnum, icode in _dssp_df_unk.values:
         dssp_dict.loc[
-            (dssp_dict["chain"] == chain) &    # e.g. 'H'
-            (dssp_dict["resnum"] == resnum) &  # e.g. 100
-            (dssp_dict["icode"] == icode),     # e.g. 'E' or ' '
-            "aa"
+            (dssp_dict["chain"] == chain)
+            & (dssp_dict["resnum"] == resnum)  # e.g. 'H'
+            & (dssp_dict["icode"] == icode),  # e.g. 100  # e.g. 'E' or ' '
+            "aa",
         ] = _raw_pdb_df.loc[
-            (_raw_pdb_df["chain_id"] == chain) &
-            (_raw_pdb_df["residue_number"] == resnum) &
-            (_raw_pdb_df["insertion"] == icode.strip())  # why strip?: dssp icode is a space, raw_pdb_df is empty string
-        ]["residue_name"].values[0]
+            (_raw_pdb_df["chain_id"] == chain)
+            & (_raw_pdb_df["residue_number"] == resnum)
+            & (
+                _raw_pdb_df["insertion"] == icode.strip()
+            )  # why strip?: dssp icode is a space, raw_pdb_df is empty string
+        ][
+            "residue_name"
+        ].values[
+            0
+        ]
 
     # Construct node IDs
     dssp_dict["node_id"] = (
