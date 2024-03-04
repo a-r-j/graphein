@@ -1,4 +1,5 @@
 """Utilities for computing various protein angles."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -77,8 +78,14 @@ def _extract_torsion_coords(
     for i, res in enumerate(res_types):
         res_coords = []
 
-        angle_groups = CHI_ANGLES_ATOMS[res]
-        if not selenium and res == "SEC":
+        try:
+            angle_groups = CHI_ANGLES_ATOMS[res]
+        except KeyError:
+            log.warning(
+                f"Can't determine chi angle groups for non-standard residue: {res}. These will be set to 0"
+            )
+            angle_groups = []
+        if (not selenium and res == "SEC") or res == "PYL":
             angle_groups = []
 
         for angle_coord_set in angle_groups:

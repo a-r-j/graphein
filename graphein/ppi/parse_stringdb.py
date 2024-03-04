@@ -1,4 +1,5 @@
 """Functions for making and parsing API calls to STRINGdb."""
+
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
@@ -37,7 +38,7 @@ def params_STRING(
         "add_nodes",  # adds a number of proteins to the network based on their
         # confidence score, e.g., extends the interaction neighborhood of
         # selected proteins to desired value
-        "show_query_node_labels"  # when available use submitted names in the
+        "show_query_node_labels",  # when available use submitted names in the
         # preferredName column when
         # (0 or 1) (default:0)
     ]

@@ -1,4 +1,5 @@
 """Utilities for parsing the TRRUST database."""
+
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>

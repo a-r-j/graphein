@@ -1,4 +1,5 @@
 """Tests for graphein.utils.config"""
+
 from functools import partial
 from pathlib import Path
 

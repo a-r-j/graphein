@@ -1,4 +1,5 @@
 """Featurization functions for graph edges."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma, Charlie Harris
 # License: MIT

@@ -1,4 +1,5 @@
 """Tests for graphein.protein.tensor.angles."""
+
 import math
 
 import numpy as np
@@ -9,9 +10,11 @@ from graphein.protein.tensor.angles import (
     angle_to_unit_circle,
     dihedrals_to_rad,
     get_backbone_bond_angles,
+    sidechain_torsion,
     to_ang,
     torsion_to_rad,
 )
+from graphein.protein.tensor.io import protein_to_pyg
 
 try:
     import torch
@@ -122,3 +125,18 @@ def test_dihedrals_to_rad():
 
     delta = ((delta + 2 * np.pi) / np.pi) % 2
     np.testing.assert_allclose(delta, torch.zeros_like(delta), atol=1e-5)
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_pyl_torsion_angle():
+    p = protein_to_pyg(pdb_code="1nth")
+
+    pyl_index = p.residue_id.index("A:PYL:202:")
+    sc_angles = sidechain_torsion(p.coords, p.residues)
+
+    torch.testing.assert_close(
+        torch.zeros_like(sc_angles[pyl_index]),
+        sc_angles[pyl_index],
+        rtol=1e-5,
+        atol=1e-5,
+    )

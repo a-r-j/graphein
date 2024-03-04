@@ -1,4 +1,5 @@
 """Functions for computing graph-level features based on structure."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>

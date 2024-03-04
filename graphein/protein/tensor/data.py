@@ -1,4 +1,5 @@
 """Data and Batch Objects for working proteins in PyTorch Geometric"""
+
 import itertools
 import random
 import traceback
@@ -901,20 +902,22 @@ class ProteinBatch(Batch):
         proteins = [
             Protein().from_pdb_code(
                 pdb_code=pdb,
-                chain_selection=chain_selection[i]
-                if chain_selection is not None
-                else "all",
+                chain_selection=(
+                    chain_selection[i]
+                    if chain_selection is not None
+                    else "all"
+                ),
                 deprotonate=deprotonate,
                 keep_insertions=keep_insertions,
                 keep_hets=keep_hets,
                 model_index=model_index[i] if model_index is not None else 1,
                 atom_types=atom_types,
-                node_labels=node_labels[i]
-                if node_labels is not None
-                else None,
-                graph_labels=graph_labels[i]
-                if graph_labels is not None
-                else None,
+                node_labels=(
+                    node_labels[i] if node_labels is not None else None
+                ),
+                graph_labels=(
+                    graph_labels[i] if graph_labels is not None else None
+                ),
             )
             for i, pdb in enumerate(pdb_codes)
         ]
@@ -937,20 +940,22 @@ class ProteinBatch(Batch):
         proteins = [
             Protein().from_pdb_file(
                 path=pdb,
-                chain_selection=chain_selection[i]
-                if chain_selection is not None
-                else "all",
+                chain_selection=(
+                    chain_selection[i]
+                    if chain_selection is not None
+                    else "all"
+                ),
                 deprotonate=deprotonate,
                 keep_insertions=keep_insertions,
                 keep_hets=keep_hets,
                 model_index=model_index[i] if model_index is not None else 1,
                 atom_types=atom_types,
-                node_labels=node_labels[i]
-                if node_labels is not None
-                else None,
-                graph_labels=graph_labels[i]
-                if graph_labels is not None
-                else None,
+                node_labels=(
+                    node_labels[i] if node_labels is not None else None
+                ),
+                graph_labels=(
+                    graph_labels[i] if graph_labels is not None else None
+                ),
             )
             for i, pdb in enumerate(paths)
         ]

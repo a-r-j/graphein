@@ -1,4 +1,5 @@
 """Featurization functions for graph nodes using DSSP predicted features."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Charlie Harris
 # License: MIT

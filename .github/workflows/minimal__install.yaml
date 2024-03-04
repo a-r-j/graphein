@@ -5,6 +5,9 @@ on:
     paths-ignore:
       - "README.md"
       - "docs/**"
+      - "CHANGELOG.md"
+      - "CONTRIBUTORS.md"
+      - "CONTRIBUTING.md"
 
   pull_request:
     paths-ignore:
