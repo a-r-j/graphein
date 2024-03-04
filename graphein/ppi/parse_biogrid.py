@@ -1,4 +1,5 @@
 """Functions for making and parsing API calls to BIOGRID."""
+
 # %%
 # Graphein
 # Author: Ramon Vinas, Arian Jamasb <arian@jamasb.io>
@@ -68,7 +69,7 @@ def params_BIOGRID(
         "htpThreshold",  # Interactions whose Pubmed ID has more than this
         # number of interactions will be excluded from the results. Ignored if
         # excludePubmeds is ‘false’.
-        "throughputTag"  # If set to 'low or 'high', only interactions with
+        "throughputTag",  # If set to 'low or 'high', only interactions with
         # 'Low throughput' or 'High throughput' in the 'throughput' field
         # will be returned.
     ]

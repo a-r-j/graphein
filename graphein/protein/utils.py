@@ -1,4 +1,5 @@
 """Provides utility functions for use across Graphein."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -9,7 +10,6 @@ import os
 import tempfile
 from functools import lru_cache, partial
 from pathlib import Path
-from shutil import which
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -47,7 +47,9 @@ def get_obsolete_mapping() -> Dict[str, str]:
     """
     obs_dict: Dict[str, str] = {}
 
-    response = urlopen("ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat")
+    response = urlopen(
+        "https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat"
+    )
     for line in response:
         entry = line.split()
         if len(entry) == 4:
@@ -145,7 +147,7 @@ def download_pdb(
     Download PDB structure from PDB.
 
     If no structure is found, we perform a lookup against the record of
-    obsolete PDB codes (ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat)
+    obsolete PDB codes (https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat)
 
     :param pdb_code: 4 character PDB accession code.
     :type pdb_code: str

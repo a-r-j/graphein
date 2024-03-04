@@ -9,6 +9,7 @@ N.B. ESMFold functionality require torch & ESMFold to be installed.
     pip install 'openfold @ git+https://github.com/aqlaboratory/openfold.git@4b41059694619831a7db195b7e0988fc4ff3a307'
 
 """
+
 import os
 import subprocess
 from functools import lru_cache

@@ -1,4 +1,5 @@
 """Tests for graph format conversion procedures."""
+
 from functools import partial
 
 import pytest

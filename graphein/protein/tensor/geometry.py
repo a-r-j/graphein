@@ -1,4 +1,5 @@
 """Utilities for manipulating protein geometry."""
+
 import copy
 
 # Graphein

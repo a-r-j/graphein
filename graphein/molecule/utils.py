@@ -4,6 +4,7 @@ Many of these utilities are adapted from useful_rdkit_utils (https://github.com/
 
 Junction tree code adapted from Wengong Jin https://github.com/wengong-jin/icml18-jtnn
 """
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

@@ -1,4 +1,5 @@
 """Node featurisation utilities for Gene Regulatory Networks."""
+
 from typing import Any, Dict
 
 from bioservices import HGNC, UniProt

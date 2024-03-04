@@ -1,4 +1,5 @@
 """Utility functions for converting between representations of protein structures."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

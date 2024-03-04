@@ -1,4 +1,5 @@
 """Visualisation utilities for RNA Secondary Structure Graphs."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>

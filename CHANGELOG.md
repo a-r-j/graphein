@@ -1,8 +1,11 @@
 ### 1.7.6 - UNRELEASED
 
 #### Bugfixes
--   Remove hydrogen isotopes as well in `graphein.protein.graphs.deprotonate_structure`. [#337](https://github.com/a-r-j/graphein/pull/337)
--   Fixes bug in sidechain torsion angle computation for structures containing `PYL`/other non-standard amino acids ([#357](https://github.com/a-r-j/graphein/pull/357)). Fixes [#356](https://github.com/a-r-j/graphein/issues/356).
+
+*   Remove hydrogen isotopes as well in `graphein.protein.graphs.deprotonate_structure`. [#337](https://github.com/a-r-j/graphein/pull/337)
+*   Fixes bug in sidechain torsion angle computation for structures containing `PYL`/other non-standard amino acids ([#357](https://github.com/a-r-j/graphein/pull/357)). Fixes [#356](https://github.com/a-r-j/graphein/issues/356).
+*   Replaces RCSB PDB FTP urls with new API. [#364](https://github.com/a-r-j/graphein/pull/364)
+*   In Pandas `1.2.0` and later, The default value of regex for `Series.str.replace()` will change from `True` to `False`. So we need use regular expressions explicitly now, to suppress a FutureWarning. By @StevenAZy ([#359](https://www.github.com/a-r-j/graphein/pull/359))
 
 
 ### 1.7.5 - 27/10/2024

@@ -1,4 +1,5 @@
 """Utilities for parsing proteins into and out of tensors."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
