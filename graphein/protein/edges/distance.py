@@ -337,15 +337,15 @@ def add_hydrogen_bond_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
     DONORS_ATOM: List[str] = [
-        "ND2", # asparagine
+        "ND2",  # asparagine
         "NE",  # arginine
-        "NE1", # tryptophan
-        "NE2", # glutamate, histidine
-        "NH1", # arginine
-        "NH2", # arginine
+        "NE1",  # tryptophan
+        "NE2",  # glutamate, histidine
+        "NH1",  # arginine
+        "NH2",  # arginine
         "NZ",  # lysine
         "OH",  # tyrosine, threonine, serine
-        "SD",  # methionine, 
+        "SD",  # methionine,
         "SG",  # methionine
         "OG",
         "N",
@@ -356,7 +356,7 @@ def add_hydrogen_bond_interactions(
         "OE1",
         "OE2",
         "O",
-        "ND1" # histidine 
+        "ND1",  # histidine
     ]
     """Add all hydrogen-bond interactions."""
     # For these atoms, find those that are within 3.5A of one another.
@@ -364,13 +364,13 @@ def add_hydrogen_bond_interactions(
         rgroup_df = G.graph["rgroup_df"]
     rgroup_df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
     HBOND_ATOMS = [
-        "ND1", # histidine 
-        "ND2", # asparagine
+        "ND1",  # histidine
+        "ND2",  # asparagine
         "NE",  # arginine
-        "NE1", # tryptophan
-        "NE2", # glutamate, histidine
-        "NH1", # arginine
-        "NH2", # arginine
+        "NE1",  # tryptophan
+        "NE2",  # glutamate, histidine
+        "NH1",  # arginine
+        "NH2",  # arginine
         "NZ",  # lysine
         "OD1",
         "OD2",
