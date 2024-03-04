@@ -334,7 +334,7 @@ def add_disulfide_interactions(
 
 
 def add_hydrogen_bond_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+        G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
     DONORS_ATOM: List[str] = [
         "ND2",  # asparagine
@@ -347,17 +347,16 @@ def add_hydrogen_bond_interactions(
         "OH",  # tyrosine, threonine, serine
         "SD",  # methionine,
         "SG",  # methionine
-        "SE",  # selenocysteine
         "OG",  # serine
-        "OG1",  # threonine
-        "N",
+        "OG1", # threonine
+        "N",   # backbone
     ]
     ACCEPTORS_ATOM: List[str] = [
-        "OD1",
-        "OD2",
-        "OE1",
-        "OE2",
-        "O",
+        "OD1",    # asparagine, aspartic
+        "OD2",    # aspartic
+        "OE1",  # glutamate
+        "OE2",  # glutamate
+        "O",    # backbone
         "ND1",  # histidine
     ]
     """Add all hydrogen-bond interactions."""
@@ -368,23 +367,22 @@ def add_hydrogen_bond_interactions(
     HBOND_ATOMS = [
         "ND1",  # histidine
         "ND2",  # asparagine
-        "NE",  # arginine
+        "NE",   # arginine
         "NE1",  # tryptophan
         "NE2",  # glutamate, histidine
         "NH1",  # arginine
         "NH2",  # arginine
-        "NZ",  # lysine
-        "OD1",
-        "OD2",
-        "OE1",
-        "OE2",
-        "OG",  # serine
+        "NZ",   # lysine
+        "OD1",  # asparagine, aspartic
+        "OD2",  # aspartic
+        "OE1",  # glutamate
+        "OE2",  # glutamate
+        "OG",   # serine
         "OG1",  # threonine
         "OH",  # tyrosine, threonine, serine
         "SD",  # methionine
         "SG",  # cysteine
-        "SE",  # selenocysteine
-        "N",
+        "N", # backbone
         "O",
     ]
 
@@ -406,18 +404,19 @@ def add_hydrogen_bond_interactions(
     for r1, r2 in get_edges_by_bond_type(G, "hbond"):
         # print(G.nodes.data())
         condition1 = (
-            G.nodes[r1]["atom_type"] in ACCEPTORS_ATOM
-            and G.nodes[r2]["atom_type"] in DONORS_ATOM
+                G.nodes[r1]["atom_type"] in ACCEPTORS_ATOM
+                and G.nodes[r2]["atom_type"] in DONORS_ATOM
         )
         condition2 = (
-            G.nodes[r2]["atom_type"] in ACCEPTORS_ATOM
-            and G.nodes[r1]["atom_type"] in DONORS_ATOM
+                G.nodes[r2]["atom_type"] in ACCEPTORS_ATOM
+                and G.nodes[r1]["atom_type"] in DONORS_ATOM
         )
         is_ionic = condition1 or condition2
         if not is_ionic:
             G.edges[r1, r2]["kind"].remove("hbond")
             if len(G.edges[r1, r2]["kind"]) == 0:
                 G.remove_edge(r1, r2)
+
 
 
 def add_ionic_interactions(
