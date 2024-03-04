@@ -334,7 +334,7 @@ def add_disulfide_interactions(
 
 
 def add_hydrogen_bond_interactions(
-        G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
     DONORS_ATOM: List[str] = [
         "ND2",  # asparagine
@@ -406,18 +406,19 @@ def add_hydrogen_bond_interactions(
     for r1, r2 in get_edges_by_bond_type(G, "hbond"):
         # print(G.nodes.data())
         condition1 = (
-                G.nodes[r1]["atom_type"] in ACCEPTORS_ATOM
-                and G.nodes[r2]["atom_type"] in DONORS_ATOM
+            G.nodes[r1]["atom_type"] in ACCEPTORS_ATOM
+            and G.nodes[r2]["atom_type"] in DONORS_ATOM
         )
         condition2 = (
-                G.nodes[r2]["atom_type"] in ACCEPTORS_ATOM
-                and G.nodes[r1]["atom_type"] in DONORS_ATOM
+            G.nodes[r2]["atom_type"] in ACCEPTORS_ATOM
+            and G.nodes[r1]["atom_type"] in DONORS_ATOM
         )
         is_ionic = condition1 or condition2
         if not is_ionic:
             G.edges[r1, r2]["kind"].remove("hbond")
             if len(G.edges[r1, r2]["kind"]) == 0:
                 G.remove_edge(r1, r2)
+
 
 def add_ionic_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
