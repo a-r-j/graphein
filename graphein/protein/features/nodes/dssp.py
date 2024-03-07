@@ -131,7 +131,7 @@ def add_dssp_df(
     # Convert 1 letter aa code to 3 letter
     dssp_dict["aa"] = dssp_dict["aa"].map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
 
-    # Resolve UNKs NOTE: this didn't work if HETATM residues exist in DSSP output
+    # Resolve UNKs NOTE: the original didn't work if HETATM residues exist in DSSP output
     _raw_pdb_df = G.graph["raw_pdb_df"].copy().drop_duplicates("node_id")
     _dssp_df_unk = dssp_dict.loc[dssp_dict["aa"] == "UNK"][
         ["chain", "resnum", "icode"]
