@@ -109,9 +109,10 @@ def add_dssp_df(
     # Check for existence of pdb file. If not, reconstructs it from the raw df.
     if pdb_file:
         # get dssp version string
-        dssp_version = (
-            re.search(r"version ([\d\.]+)",
-            os.popen(f"{executable} --version").read()).group(1)
+        dssp_version = re.search(
+            r"version ([\d\.]+)", os.popen(f"{executable} --version").read()
+        ).group(
+            1
         )  # e.g. "4.0.4"
         dssp_dict = dssp_dict_from_pdb_file(
             pdb_file, DSSP=executable, dssp_version=dssp_version
