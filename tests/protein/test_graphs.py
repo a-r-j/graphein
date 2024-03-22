@@ -557,7 +557,7 @@ def test_df_processing():
     config = ProteinGraphConfig(**params_to_change)
     config.dict()
 
-    config2 = ProteinGraphConfig(granularity="atom")
+    config2 = ProteinGraphConfig(granularity="atom", deprotonate=True)
 
     g1 = construct_graph(config=config, pdb_code="3eiy")
     g2 = construct_graph(config=config2, pdb_code="3eiy")
@@ -574,4 +574,11 @@ def test_df_processing():
             "H",
             "D",
             "T",
-        ], "No hydrogen isotopes should present"
+        ], "No hydrogen isotopes should be present"
+
+    config3 = ProteinGraphConfig(granularity="atom", deprotonate=False)
+    has_H = []
+    for n, d in g4.nodes(data=True):
+        if d["element_symbol"] in {"H", "D", "T"}:
+            has_H.append(n)
+    assert len(n) > 0, "No hydrogen isotopes are present"
