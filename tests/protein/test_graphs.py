@@ -581,4 +581,4 @@ def test_df_processing():
     for n, d in g4.nodes(data=True):
         if d["element_symbol"] in {"H", "D", "T"}:
             has_H.append(n)
-    assert len(n) > 0, "No hydrogen isotopes are present"
+    assert len(has_H) > 0, "No hydrogen isotopes are present"
