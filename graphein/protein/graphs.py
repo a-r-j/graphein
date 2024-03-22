@@ -823,6 +823,7 @@ def construct_graph(
             keep_hets=config.keep_hets,
             atom_df_processing_funcs=config.protein_df_processing_functions,
             hetatom_df_processing_funcs=config.protein_df_processing_functions,
+            deprotonate=config.deprotonate,
         )
 
         if verbose:

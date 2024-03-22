@@ -1,4 +1,10 @@
-### 1.7.6 - UNRELEASED
+### 1.7.7 - UNRELEASED
+
+### Bugfixes
+
+* Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs`. [#375](https://github.com/a-r-j/graphein/pull/375)
+
+### 1.7.6
 
 #### Bugfixes
 *   Fixes bug in pdb_manager for clustering sequences via mmseqs [#377](https://github.com/a-r-j/graphein/pull/377)
