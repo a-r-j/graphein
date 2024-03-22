@@ -1,7 +1,7 @@
 ### 1.7.6 - UNRELEASED
 
 #### Bugfixes
-
+*   Fixes bug in pdb_manager for clustering sequences via mmseqs [#377](https://github.com/a-r-j/graphein/pull/377)
 *   Remove hydrogen isotopes as well in `graphein.protein.graphs.deprotonate_structure`. [#337](https://github.com/a-r-j/graphein/pull/337)
 *   Fixes bug in sidechain torsion angle computation for structures containing `PYL`/other non-standard amino acids ([#357](https://github.com/a-r-j/graphein/pull/357)). Fixes [#356](https://github.com/a-r-j/graphein/issues/356).
 *   Replaces RCSB PDB FTP urls with new API. [#364](https://github.com/a-r-j/graphein/pull/364)
