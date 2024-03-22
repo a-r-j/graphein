@@ -577,6 +577,7 @@ def test_df_processing():
         ], "No hydrogen isotopes should be present"
 
     config3 = ProteinGraphConfig(granularity="atom", deprotonate=False)
+    g4 = construct_graph(config=config3, pdb_code="4cvi")
     has_H = []
     for n, d in g4.nodes(data=True):
         if d["element_symbol"] in {"H", "D", "T"}:
