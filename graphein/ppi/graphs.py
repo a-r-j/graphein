@@ -154,9 +154,7 @@ if __name__ == "__main__":
         (
             "r"
             if g[u][v]["kind"] == {"string"}
-            else "b"
-            if g[u][v]["kind"] == {"biogrid"}
-            else "y"
+            else "b" if g[u][v]["kind"] == {"biogrid"} else "y"
         )
         for u, v in g.edges()
     ]

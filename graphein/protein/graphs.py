@@ -52,8 +52,6 @@ except ImportError:
     from typing_extensions import Literal
 
 
-
-
 def subset_structure_to_rna(
     df: pd.DataFrame,
 ) -> pd.DataFrame:

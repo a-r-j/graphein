@@ -156,9 +156,7 @@ if __name__ == "__main__":
         (
             "r"
             if g[u][v]["kind"] == {"trrust"}
-            else "b"
-            if g[u][v]["kind"] == {"regnetwork"}
-            else "y"
+            else "b" if g[u][v]["kind"] == {"regnetwork"} else "y"
         )
         for u, v in g.edges()
     ]

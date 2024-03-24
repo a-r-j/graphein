@@ -29,7 +29,6 @@ except ImportError:
     from typing_extensions import Literal
 
 
-
 GraphAtoms = Literal[
     "C",
     "H",

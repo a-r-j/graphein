@@ -25,8 +25,6 @@ except ImportError:
     from typing_extensions import Literal
 
 
-
-
 class DSSPConfig(BaseModel):
     executable: str = "mkdssp"
 
