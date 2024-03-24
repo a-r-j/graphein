@@ -11,10 +11,13 @@ import os
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Union
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel, validator
-from typing_extensions import Literal
 
 from graphein.protein.edges.distance import add_peptide_bonds
 from graphein.protein.features.nodes.amino_acid import meiler_embedding

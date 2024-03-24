@@ -14,6 +14,10 @@ from contextlib import nullcontext
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 import networkx as nx
 import numpy as np
@@ -23,7 +27,6 @@ from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
-from typing_extensions import Literal
 
 from graphein.protein.config import GetContactsConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (

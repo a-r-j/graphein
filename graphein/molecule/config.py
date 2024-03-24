@@ -10,10 +10,13 @@ from __future__ import annotations
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Union
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel
-from typing_extensions import Literal
 
 from graphein.molecule.edges.atomic import add_atom_bonds
 from graphein.molecule.edges.distance import (
