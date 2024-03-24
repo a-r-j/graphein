@@ -14,10 +14,6 @@ from contextlib import nullcontext
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
 
 import networkx as nx
 import numpy as np
@@ -49,6 +45,13 @@ from graphein.utils.utils import (
     annotate_node_metadata,
     compute_edges,
 )
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
+
 
 
 def subset_structure_to_rna(

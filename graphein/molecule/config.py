@@ -10,10 +10,6 @@ from __future__ import annotations
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Union
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel
@@ -26,6 +22,13 @@ from graphein.molecule.edges.distance import (
 )
 from graphein.molecule.features.nodes.atom_type import atom_type_one_hot
 from graphein.utils.config import PartialMatchOperator, PathMatchOperator
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
+
 
 GraphAtoms = Literal[
     "C",

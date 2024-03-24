@@ -11,10 +11,6 @@ import os
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Union
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel, validator
@@ -22,6 +18,13 @@ from pydantic import BaseModel, validator
 from graphein.protein.edges.distance import add_peptide_bonds
 from graphein.protein.features.nodes.amino_acid import meiler_embedding
 from graphein.utils.config import PartialMatchOperator, PathMatchOperator
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
+
 
 
 class DSSPConfig(BaseModel):
