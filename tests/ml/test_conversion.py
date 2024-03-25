@@ -1,4 +1,5 @@
 """Tests for graph format conversion procedures."""
+
 from functools import partial
 
 import pytest
@@ -12,6 +13,7 @@ from graphein.protein.graphs import construct_graph
 
 try:
     import torch_geometric
+    from torch_geometric.utils import is_undirected
 
     PYG_AVAIL = True
 except ImportError:
@@ -82,3 +84,6 @@ def test_nx_to_pyg(pdb_code):
         data.edge_index.shape[1]
         == data.edge_index_inter.shape[1] + data.edge_index_intra.shape[1]
     )
+
+    # Directed/undirected consistency
+    assert g.is_directed() is not is_undirected(data.edge_index)

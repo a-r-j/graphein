@@ -5,6 +5,9 @@ on:
     paths-ignore:
       - "README.md"
       - "docs/**"
+      - "CHANGELOG.md"
+      - "CONTRIBUTORS.md"
+      - "CONTRIBUTING.md"
 
   pull_request:
     paths-ignore:
@@ -17,20 +20,27 @@ on:
 
 jobs:
   build_cpu:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    # https://github.com/marketplace/actions/setup-miniconda#use-a-default-shell
+    defaults:
+      run:
+        shell: bash -l {0}
+
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, 3.11]
+        python-version: [3.8, 3.9, 3.11]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-        # See: https://github.com/marketplace/actions/setup-conda
-      - name: Setup anaconda
-        uses: s-weigand/setup-conda@v1
+        uses: actions/checkout@v3
+        # See: https://github.com/marketplace/actions/setup-miniconda
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
         with:
+          auto-update-conda: true
+          miniforge-variant: Mambaforge
+          conda-channels: conda-forge
           python-version: ${{ matrix.python-version }}
-          conda-channels: "conda-forge"
-
+          use-mamba: true
       - name: Install Graphein
         run: pip install -e .
       - name: Install Extras
@@ -38,6 +48,6 @@ jobs:
       - name: Install Dev Dependencies
         run: pip install -r .requirements/dev.in
       - name: Run unit tests and generate coverage report
-        run: pytest . --ignore-glob="tests/protein/tensor"
+        run: pytest . --ignore-glob="tests/protein/tensor" --ignore="tests/ml/test_conversion.py" --ignore="tests/ml/test_torch_geometric_dataset.py"
       - name: Test notebook execution
-        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/higher_order_graphs.ipynb" --ignore-glob="notebooks/protein_graph_analytics.ipynb" --ignore-glob="notebooks/subgraphing_tutorial.ipynb" --ignore-glob="notebooks/splitting_a_dataset.ipynb" --ignore-glob="notebooks/protein_tensors.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb"
+        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/higher_order_graphs.ipynb" --ignore-glob="notebooks/protein_graph_analytics.ipynb" --ignore-glob="notebooks/subgraphing_tutorial.ipynb" --ignore-glob="notebooks/splitting_a_dataset.ipynb" --ignore-glob="notebooks/protein_tensors.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/creating_datasets_from_the_pdb.ipynb"

@@ -1,5 +1,6 @@
 """Functions for graph-level featurization of the sequence of a protein. This submodule is focussed on physicochemical
 proporties of the sequence."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma

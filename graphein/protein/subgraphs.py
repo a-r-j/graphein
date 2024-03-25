@@ -1,4 +1,5 @@
 """Provides functions for extracting subgraphs from protein graphs."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT

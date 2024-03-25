@@ -2,6 +2,7 @@
 
 Graphein provides many types for commonly used tensors of specific shapes.
 """
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -9,13 +10,13 @@ Graphein provides many types for commonly used tensors of specific shapes.
 # Code Repository: https://github.com/a-r-j/graphein
 from typing import NewType, Optional, Union
 
-import torch
-from torchtyping import TensorType
+from jaxtyping import Float, Int
+from torch import Tensor
 
 # Positions
-AtomTensor = NewType("AtomTensor", TensorType[-1, 37, 3])
+AtomTensor = NewType("AtomTensor", Float[Tensor, "residues 37 3"])
 """
-``TensorType[-1, 37, 3]``
+``torch.float[-1, 37, 3]``
 
 Tensor of atom coordinates. The first dimension is the length of the protein,
 the second the number of canonical atom types. The last dimension contains the
@@ -24,9 +25,9 @@ x,y,z positions.
 .. seealso:: :class:`ResidueTensor` :class:`CoordTensor`
 """
 
-BackboneTensor = NewType("BackboneTensor", TensorType[-1, 4, 3])
+BackboneTensor = NewType("BackboneTensor", Float[Tensor, "residues 4 3"])
 """
-``TensorType[-1, 4, 3]``
+``torch.float[-1, 4, 3]``
 
 Tensor of backbone atomic coordinates. The first dimension is the length of the
 protein (or batch), the second dimension corresponds to ``[N, Ca, C, O]`` atoms
@@ -36,9 +37,9 @@ and the last dimension contains the x,y,z coordinates.
 
 """
 
-ResidueTensor = NewType("ResidueTensor", TensorType[37, 3])
+ResidueTensor = NewType("ResidueTensor", Float[Tensor, "37 3"])
 """
-``TensorType[37, 3]``
+``torch.float[37, 3]``
 
 Tensor of atom coordinates for a residue. Each index in dimension one
 corresponds to an atom (See: :ref:`graphein.protein.resi_atoms.ATOM_NUMBERING`).
@@ -49,9 +50,9 @@ fill value (default = ``1e-5``).
 """
 
 
-CoordTensor = NewType("CoordTensor", TensorType[-1, 3])
+CoordTensor = NewType("CoordTensor", Float[Tensor, "nodes 3"])
 """
-``TensorType[-1, 3]``
+``torch.float[-1, 3]``
 
 Tensor of coordinates. The first dimension is the length of the protein
 (or batch of proteins), the last dimension contains the x,y,z positions."""
@@ -68,9 +69,11 @@ Union of ``AtomTensor`` and ``CoordTensor``.
 """
 
 # Represenations
-BackboneFrameTensor = NewType("BackboneFrameTensor", TensorType[-1, 3, 3])
+BackboneFrameTensor = NewType(
+    "BackboneFrameTensor", Float[Tensor, "residues 3 3"]
+)
 """
-``TensorType[-1, 3, 3]``
+``torch.float[-1, 3, 3]``
 
 Tensor of backbone frames as rotation matrices. The first dimension is the
 length of the protein, the second and third dimensions specify a rotation matrix
@@ -80,20 +83,20 @@ relative to an idealised residue.
     :ref:`graphein.protein.tensor.reconstruction.get_ideal_backbone_coords
 """
 
-ResidueFrameTensor = NewType("ResidueFrameTensor", TensorType[3, 3])
+ResidueFrameTensor = NewType("ResidueFrameTensor", Float[Tensor, "3 3"])
 """
-``TensorType[3, 3]``
+``torch.float[3, 3]``
 
 .. seealso:: :class:`BackboneFrameTensor`
 """
 
 
 # Rotations
-EulerAngleTensor = NewType("EulerAngleTensor", TensorType[-1, 3])
+EulerAngleTensor = NewType("EulerAngleTensor", Float[Tensor, "nodes 3"])
 
-QuaternionTensor = NewType("QuaternionTensor", TensorType[-1, 4])
+QuaternionTensor = NewType("QuaternionTensor", Float[Tensor, "nodes 4"])
 """
-``TensorType[-1, 4]``
+``torch.float[-1, 4]``
 
 Tensor of quaternions. The first dimension is the length of the protein
 (or batch), the second dimension is the quaternion.
@@ -102,21 +105,21 @@ Tensor of quaternions. The first dimension is the length of the protein
 """
 
 
-TransformTensor = NewType("TransformTensor", TensorType[-1, 4, 4])
+TransformTensor = NewType("TransformTensor", Float[Tensor, "nodes 4 4"])
 
 
-RotationMatrix2D = NewType("RotationMatrix2D", TensorType[2, 2])
+RotationMatrix2D = NewType("RotationMatrix2D", Float[Tensor, "2 2"])
 """
-``TensorType[2, 2]``
+``torch.float[2, 2]``
 
 Specifies a 2D rotation matrix.
 
 .. seealso:: :class:`RotationMatrix3D` :class:`RotationMatrix` :class:`RotationTensor`
 """
 
-RotationMatrix3D = NewType("RotationMatrix3D", TensorType[3, 3])
+RotationMatrix3D = NewType("RotationMatrix3D", Float[Tensor, "3 3"])
 """
-``TensorType[3, 3]``
+``torch.float[3, 3]``
 
 Specifies a 3D rotation matrix.
 
@@ -135,7 +138,9 @@ Specifies a rotation matrix in either 2D or 3D.
 """
 
 
-RotationMatrixTensor = NewType("RotationMatrixTensor", TensorType[-1, 3, 3])
+RotationMatrixTensor = NewType(
+    "RotationMatrixTensor", Float[Tensor, "nodes 3 3"]
+)
 
 RotationTensor = NewType(
     "RotationTensor", Union[QuaternionTensor, RotationMatrixTensor]
@@ -144,10 +149,11 @@ RotationTensor = NewType(
 
 # Angles
 DihedralTensor = NewType(
-    "DihedralTensor", Union[TensorType[-1, 3], TensorType[-1, 6]]
+    "DihedralTensor",
+    Union[Float[Tensor, "residues 3"], Float[Tensor, "residues 6"]],
 )
 """
-``Union[TensorType[-1, 3], TensorType[-1, 6]]``
+``Union[torch.float[-1, 3], torch.float[-1, 6]]``
 
 Tensor of backbone dihedral angles (phi, psi, omega). Either in degrees/radians
 or embedded on the unit sphere ``[cos(phi), sin(phi), cos(psi), sin(psi), ...]``
@@ -161,10 +167,11 @@ or embedded on the unit sphere ``[cos(phi), sin(phi), cos(psi), sin(psi), ...]``
 """
 
 TorsionTensor = NewType(
-    "TorsionTensor", Union[TensorType[-1, 4], TensorType[-1, 8]]
+    "TorsionTensor",
+    Union[Float[Tensor, "residues 4"], Float[Tensor, "residues 8"]],
 )
 """
-``Union[TensorType[-1, 4], TensorType[-1, 8]]``
+``Union[torch.float[-1, 4], torch.float[-1, 8]]``
 
 Tensor of sidechain torsion angles ``[chi1, chi2, chi3, chi4]``. Either in
 degrees/radians or embedded on the unit sphere:
@@ -177,9 +184,11 @@ degrees/radians or embedded on the unit sphere:
 
 """
 
-BackboneFrameTensor = NewType("BackboneFrameTensor", TensorType[-1, 3, 3])
+BackboneFrameTensor = NewType(
+    "BackboneFrameTensor", Float[Tensor, "residues 3 3"]
+)
 """
-``TensorType[-1, 3, 3]``
+``torch.float[-1, 3, 3]``
 
 Tensor of backbone frames as rotation matrices. The first dimension is the
 length of the protein, the second and third dimensions specify a rotation matrix
@@ -191,16 +200,19 @@ relative to an idealised residue.
     :meth:`graphein.protein.tensor.representation.get_backbone_frames`
 """
 
-ResidueFrameTensor = NewType("ResidueFrameTensor", TensorType[3, 3])
+ResidueFrameTensor = NewType("ResidueFrameTensor", Float[Tensor, "3 3"])
 """
-``TensorType[-1, 3, 3]``
+``torch.float[-1, 3, 3]``
 
 .. seealso:: :class:`BackboneFrameTensor`
 """
 
-EdgeTensor = NewType("EdgeTensor", TensorType[2, -1])
+EdgeTensor = NewType("EdgeTensor", Int[Tensor, "2 edges"])
 
 
-ScalarTensor = NewType("ScalarTensor", TensorType[-1])
+OrientationTensor = NewType("OrientationTensor", Float[Tensor, "nodes 2 3"])
 
-OptTensor = NewType("OptTensor", Optional[torch.Tensor])
+
+ScalarTensor = NewType("ScalarTensor", Float[Tensor, "nodes"])
+
+OptTensor = NewType("OptTensor", Optional[Tensor])

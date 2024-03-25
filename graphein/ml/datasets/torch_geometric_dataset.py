@@ -1,4 +1,5 @@
 """Pytorch Geometric Dataset classes for Protein Graphs."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -22,7 +23,7 @@ from graphein.protein.utils import (
     download_pdb,
     download_pdb_multiprocessing,
 )
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     import torch
@@ -41,7 +42,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self,
         root: str,
         name: str,
-        pdb_paths: Optional[List[str]] = None,
+        paths: Optional[List[str]] = None,
         pdb_codes: Optional[List[str]] = None,
         uniprot_ids: Optional[List[str]] = None,
         graph_label_map: Optional[Dict[str, torch.Tensor]] = None,
@@ -73,9 +74,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         :type root: str
         :param name: Name of the dataset. Will be saved to ``data_$name.pt``.
         :type name: str
-        :param pdb_paths: List of full path of pdb files to load. Defaults to
-            ``None``.
-        :type pdb_paths: Optional[List[str]], optional
+        :param paths: List of full path of PDB or MMTF files to load. Defaults
+            to ``None``.
+        :type paths: Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
             Defaults to None.
         :type pdb_codes: Optional[List[str]], optional
@@ -139,8 +140,8 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             else None
         )
 
-        self.pdb_paths = pdb_paths
-        if self.pdb_paths is None:
+        self.paths = paths
+        if self.paths is None:
             if self.pdb_codes and self.uniprot_ids:
                 self.structures = self.pdb_codes + self.uniprot_ids
             elif self.pdb_codes:
@@ -150,12 +151,12 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         # Use local saved pdb_files instead of download or move them to
         # self.root/raw dir
         else:
-            if isinstance(self.pdb_paths, list):
+            if isinstance(self.paths, list):
                 self.structures = [
-                    os.path.splitext(os.path.split(pdb_path)[-1])[0]
-                    for pdb_path in self.pdb_paths
+                    os.path.splitext(os.path.split(path)[-1])[0]
+                    for path in self.paths
                 ]
-                self.pdb_path, _ = os.path.split(self.pdb_paths[0])
+                self.path, _ = os.path.split(self.paths[0])
 
         if self.pdb_codes and self.uniprot_ids:
             self.structures = self.pdb_codes + self.uniprot_ids
@@ -164,9 +165,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         elif self.uniprot_ids:
             self.structures = uniprot_ids
         self.af_version = af_version
-        self.bad_pdbs: List[
-            str
-        ] = []  # list of pdb codes that failed to download
+        self.bad_pdbs: List[str] = (
+            []
+        )  # list of pdb codes that failed to download
 
         # Labels & Chains
         self.graph_label_map = graph_label_map
@@ -201,8 +202,8 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
 
     @property
     def raw_dir(self) -> str:
-        if self.pdb_paths is not None:
-            return self.pdb_path  # replace raw dir with user local pdb_path
+        if self.paths is not None:
+            return self.path  # replace raw dir with user local path
         else:
             return os.path.join(self.root, "raw")
 
@@ -265,9 +266,11 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
 
         if self.chain_selection_map:
             chain_selections = [
-                self.chain_selection_map[pdb]
-                if pdb in self.chain_selection_map.keys()
-                else "all"
+                (
+                    self.chain_selection_map[pdb]
+                    if pdb in self.chain_selection_map.keys()
+                    else "all"
+                )
                 for pdb in self.structures
             ]
         else:
@@ -276,7 +279,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         # Create graph objects
         print("Constructing Graphs...")
         graphs = construct_graphs_mp(
-            pdb_path_it=structure_files,
+            path_it=structure_files,
             config=self.config,
             chain_selections=chain_selections,
             return_dict=True,
@@ -329,7 +332,7 @@ class ProteinGraphDataset(Dataset):
     def __init__(
         self,
         root: str,
-        pdb_paths: Optional[List[str]] = None,
+        paths: Optional[List[str]] = None,
         pdb_codes: Optional[List[str]] = None,
         uniprot_ids: Optional[List[str]] = None,
         # graph_label_map: Optional[Dict[str, int]] = None,
@@ -358,9 +361,9 @@ class ProteinGraphDataset(Dataset):
 
         :param root: Root directory where the dataset should be saved.
         :type root: str
-        :param pdb_paths: List of full path of pdb files to load. Defaults to
-            ``None``.
-        :type pdb_paths: Optional[List[str]], optional
+        :param paths: List of full path of PDB or MMTF files to load. Defaults
+            to ``None``.
+        :type paths: Optional[List[str]], optional
         :param pdb_codes: List of PDB codes to download and parse from the PDB.
             Defaults to ``None``.
         :type pdb_codes: Optional[List[str]], optional
@@ -422,8 +425,8 @@ class ProteinGraphDataset(Dataset):
             if uniprot_ids is not None
             else None
         )
-        self.pdb_paths = pdb_paths
-        if self.pdb_paths is None:
+        self.paths = paths
+        if self.paths is None:
             if self.pdb_codes and self.uniprot_ids:
                 self.structures = self.pdb_codes + self.uniprot_ids
             elif self.pdb_codes:
@@ -433,12 +436,12 @@ class ProteinGraphDataset(Dataset):
         # Use local saved pdb_files instead of download or move them to
         # self.root/raw dir
         else:
-            if isinstance(self.pdb_paths, list):
+            if isinstance(self.paths, list):
                 self.structures = [
-                    os.path.splitext(os.path.split(pdb_path)[-1])[0]
-                    for pdb_path in self.pdb_paths
+                    os.path.splitext(os.path.split(path)[-1])[0]
+                    for path in self.paths
                 ]
-                self.pdb_path, _ = os.path.split(self.pdb_paths[0])
+                self.path, _ = os.path.split(self.paths[0])
 
         # Labels & Chains
 
@@ -496,8 +499,8 @@ class ProteinGraphDataset(Dataset):
 
     @property
     def raw_dir(self) -> str:
-        if self.pdb_paths is not None:
-            return self.pdb_path  # replace raw dir with user local pdb_path
+        if self.paths is not None:
+            return self.path  # replace raw dir with user local path
         else:
             return os.path.join(self.root, "raw")
 
@@ -607,7 +610,7 @@ class ProteinGraphDataset(Dataset):
             file_names = [f"{self.raw_dir}/{pdb}.pdb" for pdb in pdbs]
 
             graphs = construct_graphs_mp(
-                pdb_path_it=file_names,
+                path_it=file_names,
                 config=self.config,
                 chain_selections=chain_selections,
                 return_dict=False,

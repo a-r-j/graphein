@@ -5,18 +5,24 @@ on: [pull_request]
 jobs:
   code-tests-docker:
     name: Run code tests (docker)
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-latest"
+    defaults:
+      run:
+        shell: bash -l {0}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-
-      # See: https://github.com/marketplace/actions/setup-conda
-      - name: Setup anaconda
-        uses: s-weigand/setup-conda@v1
+        uses: actions/checkout@v3
+      # See: https://github.com/marketplace/actions/setup-miniconda
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
         with:
+          auto-update-conda: true
+          miniforge-variant: Mambaforge
+          channels: conda-forge
           python-version: 3.8
-          conda-channels: "conda-forge"
+          use-mamba: true
+
 
       # # Build cache of environment
       # - name: Cache conda environment

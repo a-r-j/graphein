@@ -7,6 +7,7 @@ These include various collections of standard & non-standard/modified amino acid
 
 We also include mappings of covalent radii and bond lengths for the amino acids used in assembling atomic protein graphs.
 """
+
 # Graphein
 # Author: Eric J. Ma, Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -508,9 +509,11 @@ NON_STANDARD_RESI_NAMES: List[str] = [
     "MVA",
     "NH2",
     "NLE",
+    "NLW",
     "OCS",
     "ORN",
     "PCA",
+    "PSW",
     "PTR",
     "PVL",
     "PYL",
@@ -594,11 +597,13 @@ RESI_NAMES: List[str] = [
     "MVA",
     "NH2",
     "NLE",
+    "NLW",
     "OCS",
     "ORN",
     "PCA",
     "PHE",
     "PRO",
+    "PSW",
     "PTR",
     "PVL",
     "PYL",
@@ -649,6 +654,7 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "CSX": "C",
     "CXM": "M",
     "CYS": "C",
+    "CYX": "C",
     "DAL": "A",
     "DAR": "R",
     "DCY": "C",
@@ -691,11 +697,13 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "MVA": "V",
     "NH2": "X",
     "NLE": "L",
+    "NLW": "L",
     "OCS": "C",
     "ORN": "A",
     "PCA": "Q",
     "PHE": "F",
     "PRO": "P",
+    "PSW": "U",
     "PTR": "Y",
     "PVL": "X",
     "PYL": "O",
@@ -830,9 +838,11 @@ NON_STANDARD_RESIS_PARENT: Dict[str, str] = {
     "MVA": "VAL",
     "NH2": "-",
     "NLE": "LEU",
+    "NLW": "LEU",
     "OCS": "CYS",
     "ORN": "ALA",
     "PCA": "GLU",
+    "PSW": "SEC",
     "PTR": "TYR",
     "PVL": "-",
     "PYL": "LYS",

@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
+FROM pytorch/pytorch:1.13.0-cuda11.6-cudnn8-runtime
 
 RUN apt-get update \
     && apt-get -y install build-essential ffmpeg libsm6 libxext6 wget git \
@@ -10,6 +10,10 @@ RUN apt-get update && apt-get install -y iputils-ping && apt-get clean \
 
 # Install BLAST
 RUN apt-get update && apt-get install -y ncbi-blast+ && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install DSSP
+RUN apt-get update && apt-get install -y dssp && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 ENV CONDA_ALWAYS_YES=true
@@ -41,7 +45,6 @@ ENV PATH /getcontacts:$PATH
 RUN conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 RUN conda install -c pytorch3d pytorch3d
 RUN conda install -c dglteam dgl
-RUN conda install -c salilab dssp
 RUN conda install -c conda-forge ipywidgets
 
 RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace('.',''))") \

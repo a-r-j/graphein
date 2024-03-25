@@ -1,4 +1,5 @@
 """Base Config object for use with Molecule Graph Construction."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -12,7 +13,6 @@ from typing import Any, Callable, List, Optional, Union
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel
-from typing_extensions import Literal
 
 from graphein.molecule.edges.atomic import add_atom_bonds
 from graphein.molecule.edges.distance import (
@@ -22,6 +22,12 @@ from graphein.molecule.edges.distance import (
 )
 from graphein.molecule.features.nodes.atom_type import atom_type_one_hot
 from graphein.utils.config import PartialMatchOperator, PathMatchOperator
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
 
 GraphAtoms = Literal[
     "C",

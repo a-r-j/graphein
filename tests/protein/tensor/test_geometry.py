@@ -1,4 +1,5 @@
 """Tests for graphein.protein.tensor.geometry."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -73,18 +74,20 @@ def test_whole_protein_kabsch():
 
 def test_idealise_backbone():
     protein = gpt.Protein().from_pdb_code(pdb_code="5caj", chain_selection="A")
-    protein.x = protein.x[:20, :, :]
+    protein.coords = protein.coords[:20, :, :]
 
     ideal = protein.idealize_backbone(n_iter=100)
 
-    IDEAL_BL = torch.tensor(IDEAL_BB_BOND_LENGTHS, device=protein.x.device)
-    IDEAL_BA = torch.tensor(IDEAL_BB_BOND_ANGLES, device=protein.x.device)
+    IDEAL_BL = torch.tensor(
+        IDEAL_BB_BOND_LENGTHS, device=protein.coords.device
+    )
+    IDEAL_BA = torch.tensor(IDEAL_BB_BOND_ANGLES, device=protein.coords.device)
 
     ideal_bl = IDEAL_BL - get_backbone_bond_lengths(ideal[:, :4, :])
-    true_bl = IDEAL_BL - get_backbone_bond_lengths(protein.x[:, :4, :])
+    true_bl = IDEAL_BL - get_backbone_bond_lengths(protein.coords[:, :4, :])
 
     ideal_ba = IDEAL_BA - get_backbone_bond_angles(ideal[:, :4, :])
-    true_ba = IDEAL_BA - get_backbone_bond_angles(protein.x[:, :4, :])
+    true_ba = IDEAL_BA - get_backbone_bond_angles(protein.coords[:, :4, :])
 
     assert torch.mean(torch.abs(ideal_ba)) < torch.mean(
         torch.abs(true_ba)

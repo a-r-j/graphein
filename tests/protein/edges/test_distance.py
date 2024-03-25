@@ -1,4 +1,5 @@
 """Functions for working with Protein Structure Graphs. Based on tests written by Eric Ma in PIN Library"""
+
 import copy
 from functools import partial
 
@@ -51,7 +52,7 @@ def generate_graph():
     """Generate PDB network.
     This is a helper function.
     """
-    return construct_graph(pdb_path=str(DATA_PATH))
+    return construct_graph(path=str(DATA_PATH))
 
 
 @pytest.fixture(scope="module")
@@ -187,7 +188,7 @@ def test_add_cation_pi_interactions(net):
 def test_add_peptide_bonds():
     file_path = Path(__file__).parent.parent / "test_data/4hhb.pdb"
     # Peptide bonds are default
-    G = construct_graph(pdb_path=str(file_path))
+    G = construct_graph(path=str(file_path))
 
     for u, v in G.edges():
         assert abs(int(u.split(":")[2]) - int(v.split(":")[2])) == 1
@@ -203,7 +204,7 @@ def test_add_sequence_distance_edges():
                 partial(add_sequence_distance_edges, d=d)
             ]
         )
-        G = construct_graph(pdb_path=str(file_path), config=config)
+        G = construct_graph(path=str(file_path), config=config)
         for u, v in G.edges():
             assert abs(int(u.split(":")[2]) - int(v.split(":")[2])) == d
 
@@ -428,3 +429,28 @@ def test_add_k_nn_edges():
         add_k_nn_edges(g, **args)
         edges_real = list(g.edges())
         assert set(edges_real) == set(edges_expected)
+
+
+def test_insertion_codes_in_add_k_nn_edges():
+    pdb_df = pd.DataFrame(
+        {
+            "residue_number": [1, 2, 3],
+            "node_id": ["A:HIS:1", "A:TYR:2", "B:ALA:4:altB"],
+            "chain_id": ["A", "A", "B"],
+            "x_coord": [1.0, 2.0, 3.0],
+            "y_coord": [4.0, 5.0, 6.0],
+            "z_coord": [7.0, 8.0, 9.0],
+        },
+        index=[0, 1, 3],  # simulating dropped "B:ALA:4:altA"
+    )
+    g = nx.empty_graph(pdb_df["node_id"])
+    g.graph["pdb_df"] = pdb_df
+    add_k_nn_edges(g, k=3)
+
+    edges_expected = [
+        ("A:HIS:1", "A:TYR:2"),
+        ("A:HIS:1", "B:ALA:4:altB"),
+        ("A:TYR:2", "B:ALA:4:altB"),
+    ]
+
+    assert set(g.edges()) == set(edges_expected)

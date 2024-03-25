@@ -1,4 +1,5 @@
 """Featurization functions for graph nodes using DSSP predicted features."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Charlie Harris
 # License: MIT
@@ -15,7 +16,8 @@ import pandas as pd
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
 
 from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
-from graphein.protein.utils import is_tool, save_pdb_df_to_pdb
+from graphein.protein.utils import save_pdb_df_to_pdb
+from graphein.utils.dependencies import is_tool
 
 DSSP_COLS = [
     "chain",
@@ -84,7 +86,7 @@ def add_dssp_df(
 
     config = G.graph["config"]
     pdb_code = G.graph["pdb_code"]
-    pdb_path = G.graph["pdb_path"]
+    path = G.graph["path"]
     pdb_name = G.graph["name"]
 
     # Extract DSSP executable
@@ -96,9 +98,9 @@ def add_dssp_df(
     ), "DSSP must be on PATH and marked as an executable"
 
     pdb_file = None
-    if pdb_path:
-        if os.path.isfile(pdb_path):
-            pdb_file = pdb_path
+    if path:
+        if os.path.isfile(path):
+            pdb_file = path
     else:
         if config.pdb_dir:
             if os.path.isfile(config.pdb_dir / (pdb_code + ".pdb")):

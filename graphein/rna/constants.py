@@ -1,4 +1,5 @@
 """Constants for working with RNA Secondary Structure Graphs."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>

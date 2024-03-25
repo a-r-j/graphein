@@ -2,6 +2,7 @@
 
 Adapted from smilite (https://github.com/rasbt/smilite) by Sebastian Raschka.
 """
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -15,12 +16,14 @@ from urllib.error import URLError
 
 from tqdm.rich import tqdm
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     from smilite import *
 except ImportError:
-    import_message("graphein.molecule.zinc", "smilite", "smilite", True)
+    import_message(
+        "graphein.molecule.zinc", "smilite", "smilite", True, extras=True
+    )
 
 
 def get_smiles_from_zinc(zinc_id: str, backend="zinc15") -> str:

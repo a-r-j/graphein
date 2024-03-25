@@ -1,4 +1,5 @@
 """Tests for graphein.testing.utils"""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -27,8 +28,8 @@ from graphein.testing.utils import (
 def test_graph_isomorphism():
     """Test that the graph isomorphism is working."""
     file_path = Path(__file__).parent.parent / "protein" / "test_data/4hhb.pdb"
-    G_1 = construct_graph(pdb_path=str(file_path))
-    G_2 = construct_graph(pdb_path=str(file_path))
+    G_1 = construct_graph(path=str(file_path))
+    G_2 = construct_graph(path=str(file_path))
     assert graphs_isomorphic(G_1, G_2), "Graphs are not isomorphic."
     assert graphs_equal(G_1, G_2), "Graphs are not equal."
     assert nodes_equal(G_1, G_2), "Graphs do not contain the same nodes."
@@ -37,7 +38,7 @@ def test_graph_isomorphism():
     assert edge_data_equal(G_1, G_2), "Edge features differ."
 
     file_path = Path(__file__).parent.parent / "protein" / "test_data/1lds.pdb"
-    G_2 = construct_graph(pdb_path=str(file_path))
+    G_2 = construct_graph(path=str(file_path))
     assert not graphs_isomorphic(G_1, G_2), "Graphs not isomorphic."
     assert not graphs_equal(G_1, G_2), "Graphs are equal."
     assert not nodes_equal(G_1, G_2), "Graphs contain the same nodes."

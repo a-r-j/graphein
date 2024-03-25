@@ -4,6 +4,7 @@ Many of these utilities are adapted from useful_rdkit_utils (https://github.com/
 
 Junction tree code adapted from Wengong Jin https://github.com/wengong-jin/icml18-jtnn
 """
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -21,7 +22,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import minimum_spanning_tree
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     import rdkit
@@ -38,12 +39,16 @@ try:
     from rdkit.Chem.Descriptors3D import NPR1, NPR2
     from rdkit.Chem.rdMolTransforms import ComputeCentroid
 except ImportError:
-    import_message("graphein.molecule.utils", "rdkit", "rdkit", True)
+    import_message(
+        "graphein.molecule.utils", "rdkit", "rdkit", True, extras=True
+    )
 
 try:
     import selfies as sf
 except ImportError:
-    import_message("graphein.molecule.utils", "selfies", None, True)
+    import_message(
+        "graphein.molecule.utils", "selfies", None, True, extras=True
+    )
 
 
 MST_MAX_WEIGHT: int = 100

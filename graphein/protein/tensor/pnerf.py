@@ -10,6 +10,7 @@ Paper (preprint) by Mohammed AlQuraishi:
 PyTorch implementation modifield from the implementation by Felix Opolka:
     https://github.com/FelixOpolka/pnerf-pytorch
 """
+
 import collections
 import math
 from typing import Optional
@@ -280,10 +281,12 @@ def point_to_coordinate(
     # coords = F.pad(
     #    coords_trans[: total_num_angles - 1], (0, 0, 0, 0, 1, 0)
     # )  # original
-    # coords = F.pad(coords_trans[: total_num_angles - 2], (0, 0, 0, 0, 2, 0))
-    # coords = F.pad(coords_trans[: total_num_angles - 3], (0, 0, 0, 0, 3, 0))
-    # return coords
-    return coords_trans
+
+    # Pad and set first Ca to origin
+    coords = F.pad(coords_trans[: total_num_angles - 2], (0, 0, 0, 0, 2, 0))
+    # Set first N to canonical position
+    coords[0, 0] = torch.tensor([[-1.4584, 0, 0]])
+    return coords
 
 
 def sn_nerf(

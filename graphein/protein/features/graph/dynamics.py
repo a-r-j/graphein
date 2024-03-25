@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 
-from graphein.utils.utils import import_message
+from graphein.utils.dependencies import import_message
 
 try:
     import prody

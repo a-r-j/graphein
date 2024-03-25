@@ -11,6 +11,7 @@ from graphein.protein.graphs import (
 from graphein.protein.utils import (
     download_pdb,
     download_pdb_multiprocessing,
+    get_obsolete_mapping,
     save_graph_to_pdb,
     save_pdb_df_to_pdb,
     save_rgroup_df_to_pdb,
@@ -32,7 +33,7 @@ def test_save_graph_to_pdb():
         a.drop(["line_idx"], axis=1),
         g.graph["pdb_df"].drop(["line_idx", "node_id", "residue_id"], axis=1),
     )
-    h = construct_graph(pdb_path="/tmp/test_graph.pdb")
+    h = construct_graph(path="/tmp/test_graph.pdb")
 
     # We check for isomorphism rather than equality as array features are not
     # comparable
@@ -55,7 +56,7 @@ def test_save_pdb_df_to_pdb():
 
     # Now check for raw, unprocessed DF
     save_pdb_df_to_pdb(g.graph["raw_pdb_df"], "/tmp/test_pdb.pdb")
-    h = construct_graph(pdb_path="/tmp/test_pdb.pdb")
+    h = construct_graph(path="/tmp/test_pdb.pdb")
 
     # We check for isomorphism rather than equality as array features are not
     # comparable
@@ -96,6 +97,11 @@ def test_download_structure_multi():
     for path in fps:
         assert os.path.exists(path)
         assert str(path).endswith("4hhb.pdb")
+
+
+def test_download_obsolete_map():
+    mapping = get_obsolete_mapping()
+    assert len(mapping) > 100
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 """Functions to create protein meshes via pymol."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -14,8 +15,8 @@ from typing import List, NamedTuple, Optional, Tuple
 from loguru import logger as log
 
 from graphein.protein.config import ProteinMeshConfig
+from graphein.utils.dependencies import import_message
 from graphein.utils.pymol import MolViewer
-from graphein.utils.utils import import_message
 
 try:
     from pytorch3d.structures import Meshes
