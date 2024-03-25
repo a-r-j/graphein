@@ -645,7 +645,7 @@ def calculate_centroid_positions(
         atoms.groupby(
             ["residue_number", "chain_id", "residue_name", "insertion"]
         )
-        .mean()[["x_coord", "y_coord", "z_coord"]]
+        .mean(numeric_only=True)[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )
     if verbose:
