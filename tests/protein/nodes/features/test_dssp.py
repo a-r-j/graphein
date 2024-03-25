@@ -59,7 +59,7 @@ def dssp_graph():
 @pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not available")
 def test_assert_nonempty_dssp_df(dssp_graph):
     """if not provided dssp version to dssp.add_dssp_df, will output an empty DataFrame"""
-    if g.graph["dssp_df"].empty:
+    if dssp_graph.graph["dssp_df"].empty:
         pytest.fail("DSSP dataframe is empty")
 
 
@@ -70,7 +70,7 @@ def test_extract_surface_subgraph_insertion_node(dssp_graph):
     try:
         # without the modification, the following line will raise
         # ProteinGraphConfigurationError RSA not defined for all nodes (H:TYR:52:A).
-        s_g = extract_surface_subgraph(g, RSA_THRESHOLD)
+        s_g = extract_surface_subgraph(dssp_graph, RSA_THRESHOLD)
     except ProteinGraphConfigurationError as e:
         pytest.fail(
             "extract_surface_subgraph raised ProteinGraphConfigurationError:\n{e}"
