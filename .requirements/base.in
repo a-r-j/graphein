@@ -19,7 +19,6 @@ pyyaml!=6.0.0,!=5.4.0,!=5.4.1
 scikit-learn
 scipy>=1.8
 tqdm
-typing_extensions==4.5.0
 wget
 xarray
 jaxtyping

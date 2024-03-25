@@ -23,7 +23,6 @@ from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
-from typing_extensions import Literal
 
 from graphein.protein.config import GetContactsConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (
@@ -46,6 +45,11 @@ from graphein.utils.utils import (
     annotate_node_metadata,
     compute_edges,
 )
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 
 def subset_structure_to_rna(
