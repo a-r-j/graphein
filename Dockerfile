@@ -28,7 +28,6 @@ RUN echo "$(cat requirements/base.in)" >> requirements.txt \
     && echo "$(cat requirements/dev.in)" >> requirements.txt \
     && echo "$(cat requirements/extras.in)" >> requirements.txt
 
-RUN rm -r /opt/conda/lib/python3.9/site-packages/pluggy/
 RUN pip install pluggy>=1.4.0
 RUN pip install notebook==6.*
 RUN pip install -r requirements.txt --no-cache-dir
