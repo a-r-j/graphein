@@ -45,6 +45,7 @@ from graphein.protein.graphs import (
     compute_secondary_structure_graph,
     construct_graph,
     construct_graphs_mp,
+    deprotonate_structure,
     read_pdb_to_dataframe,
 )
 from graphein.utils.dependencies import is_tool
@@ -106,7 +107,7 @@ def test_construct_graph():
 def test_construct_graph_with_dssp():
     """Makes sure protein graphs can be constructed with dssp
 
-    Uses uses both a pdb code (6REW) and a local pdb file to do so.
+    Uses uses both a pdb code (6YC3) and a local pdb file to do so.
     """
     dssp_config_functions = {
         "edge_construction_functions": [
@@ -129,10 +130,10 @@ def test_construct_graph_with_dssp():
     dssp_prot_config = ProteinGraphConfig(**dssp_config_functions)
 
     g_pdb = construct_graph(
-        config=dssp_prot_config, pdb_code="6rew"
-    )  # should download 6rew.pdb to pdb_dir
+        config=dssp_prot_config, pdb_code="6yc3"
+    )  # should download 6yc3.pdb to pdb_dir
 
-    assert g_pdb.graph["pdb_code"] == "6rew"
+    assert g_pdb.graph["pdb_code"] == "6yc3"
     assert g_pdb.graph["path"] is None
     assert g_pdb.graph["name"] == g_pdb.graph["pdb_code"]
     assert len(g_pdb.graph["dssp_df"]) == 1365
@@ -556,10 +557,11 @@ def test_df_processing():
     config = ProteinGraphConfig(**params_to_change)
     config.dict()
 
-    config2 = ProteinGraphConfig(granularity="atom")
+    config2 = ProteinGraphConfig(granularity="atom", deprotonate=True)
 
     g1 = construct_graph(config=config, pdb_code="3eiy")
     g2 = construct_graph(config=config2, pdb_code="3eiy")
+    g3 = construct_graph(config=config2, pdb_code="4cvi")
 
     for n, d in g1.nodes(data=True):
         assert (
@@ -567,3 +569,17 @@ def test_df_processing():
         ), "Only even residues should be present"
 
     assert len(g1) != len(g2), "Graphs should not be equal"
+    for n, d in g3.nodes(data=True):
+        assert d["element_symbol"] not in [
+            "H",
+            "D",
+            "T",
+        ], "No hydrogen isotopes should be present"
+
+    config3 = ProteinGraphConfig(granularity="atom", deprotonate=False)
+    g4 = construct_graph(config=config3, pdb_code="4cvi")
+    has_H = []
+    for n, d in g4.nodes(data=True):
+        if d["element_symbol"] in {"H", "D", "T"}:
+            has_H.append(n)
+    assert len(has_H) > 0, "No hydrogen isotopes are present"

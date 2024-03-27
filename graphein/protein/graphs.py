@@ -1,4 +1,5 @@
 """Functions for working with Protein Structure Graphs."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Eric Ma, Charlie Harris
@@ -22,7 +23,6 @@ from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
-from typing_extensions import Literal
 
 from graphein.protein.config import GetContactsConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (
@@ -45,6 +45,11 @@ from graphein.utils.utils import (
     annotate_node_metadata,
     compute_edges,
 )
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 
 def subset_structure_to_rna(
@@ -158,10 +163,10 @@ def label_node_id(
     if insertions:
         df["node_id"] = df["node_id"] + ":" + df["insertion"].apply(str)
         # Replace trailing : for non insertions
-        df["node_id"] = df["node_id"].str.replace(":$", "")
+        df["node_id"] = df["node_id"].str.replace(":$", "", regex=True)
     # Add Alt Loc identifiers
     df["node_id"] = df["node_id"] + ":" + df["alt_loc"].apply(str)
-    df["node_id"] = df["node_id"].str.replace(":$", "")
+    df["node_id"] = df["node_id"].str.replace(":$", "", regex=True)
     df["residue_id"] = df["node_id"]
     if granularity == "atom":
         df["node_id"] = df["node_id"] + ":" + df["atom_name"]
@@ -181,14 +186,17 @@ def deprotonate_structure(df: pd.DataFrame) -> pd.DataFrame:
 
     :param df: Atomic dataframe.
     :type df: pd.DataFrame
-    :returns: Atomic dataframe with all ``atom_name == "H"`` removed.
+    :returns: Atomic dataframe with all ``element_symbol == "H" or "D" or "T"`` removed.
     :rtype: pd.DataFrame
     """
     log.debug(
         "Deprotonating protein. This removes H atoms from the pdb_df dataframe"
     )
     return filter_dataframe(
-        df, by_column="element_symbol", list_of_values=["H"], boolean=False
+        df,
+        by_column="element_symbol",
+        list_of_values=["H", "D", "T"],
+        boolean=False,
     )
 
 
@@ -534,7 +542,7 @@ def initialise_graph_with_metadata(
         chain_ids=list(protein_df["chain_id"].unique()),
         pdb_df=protein_df,
         raw_pdb_df=raw_pdb_df,
-        rgroup_df=compute_rgroup_dataframe(remove_insertions(raw_pdb_df)),
+        rgroup_df=compute_rgroup_dataframe(raw_pdb_df),
         coords=np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]]),
     )
 
@@ -819,6 +827,7 @@ def construct_graph(
             keep_hets=config.keep_hets,
             atom_df_processing_funcs=config.protein_df_processing_functions,
             hetatom_df_processing_funcs=config.protein_df_processing_functions,
+            deprotonate=config.deprotonate,
         )
 
         if verbose:

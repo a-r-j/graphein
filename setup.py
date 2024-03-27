@@ -84,7 +84,7 @@ def read_requirements(*parts):
 INSTALL_REQUIRES = read_requirements(".requirements/base.in")
 EXTRA_REQUIRES = {
     "dev": read_requirements(".requirements/dev.in"),
-    "extras": read_requirements(".requirements/dev.in"),
+    "extras": read_requirements(".requirements/extras.in"),
 }
 # Add all requires
 all_requires = []
@@ -134,7 +134,7 @@ class UploadCommand(Command):
 
 setup(
     name="graphein",
-    version="1.7.0",
+    version="1.7.6",
     description="Protein & Interactomic Graph Construction for Machine Learning",
     long_description=long_description,
     long_description_content_type="text/markdown",

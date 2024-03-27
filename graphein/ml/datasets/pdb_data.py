@@ -1,4 +1,5 @@
 import gzip
+import math
 import os
 import shutil
 import subprocess
@@ -63,7 +64,7 @@ class PDBManager:
 
         # Constants
         self.pdb_sequences_url = (
-            "https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz"
+            "https://files.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz"
         )
         self.ligand_map_url = (
             "http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd"
@@ -122,8 +123,8 @@ class PDBManager:
                 assert len(splits) == len(
                     split_ratios
                 ), f"Number of splits ({splits}) must match number of split ratios ({split_ratios})."
-                assert (
-                    sum(split_ratios) == 1.0
+                assert math.isclose(
+                    sum(split_ratios), 1.0
                 ), f"Split ratios must sum to 1.0: {split_ratios}."
                 self.split_ratios = split_ratios
             # Time-based splits
@@ -1381,7 +1382,7 @@ class PDBManager:
                 )
             else:
                 # Run MMSeqs
-                cmd = f"mmseqs easy-cluster {fasta_fname} pdb_cluster tmp --min-seq-id {min_seq_id} -c {coverage} --cov-mode 1"
+                cmd = f"mmseqs easy-cluster {str(self.root_dir / fasta_fname)} pdb_cluster tmp --min-seq-id {min_seq_id} -c {coverage} --cov-mode 1"
                 log.info(f"Clustering with: {cmd}")
                 subprocess.run(cmd.split())
                 os.rename(

@@ -1,9 +1,10 @@
 pandas<2.0.0
-biopandas==0.5.0.dev0
+biopandas>=0.5.0.dev0
 biopython
 bioservices>=1.10.0
 deepdiff
 loguru
+looseversion
 matplotlib>=3.4.3
 multipledispatch
 networkx
@@ -14,11 +15,10 @@ pydantic
 rich
 rich-click
 seaborn
-pyyaml>=5.1,<6.0
+pyyaml!=6.0.0,!=5.4.0,!=5.4.1
 scikit-learn
 scipy>=1.8
 tqdm
-typing_extensions==4.5.0
 wget
 xarray
 jaxtyping

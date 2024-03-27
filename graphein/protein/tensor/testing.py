@@ -1,4 +1,5 @@
 """Utilities for sanity checking protein tensors."""
+
 from functools import partial
 from typing import List, Tuple, Union
 

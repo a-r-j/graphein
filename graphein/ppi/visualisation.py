@@ -1,4 +1,5 @@
 """Contains utilities for plotting PPI NetworkX graphs."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
@@ -29,11 +30,11 @@ def plot_ppi_graph(
     """
     if colour_edges_by == "kind":
         edge_colors = [
-            "r"
-            if g[u][v]["kind"] == {"string"}
-            else "b"
-            if g[u][v]["kind"] == {"biogrid"}
-            else "y"
+            (
+                "r"
+                if g[u][v]["kind"] == {"string"}
+                else "b" if g[u][v]["kind"] == {"biogrid"} else "y"
+            )
             for u, v in g.edges()
         ]
     else:

@@ -1,4 +1,5 @@
 """Functions for adding edges to a PPI Graph from parsed STRING & BIOGRID API call outputs."""
+
 # %%
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>, Ramon Vinas

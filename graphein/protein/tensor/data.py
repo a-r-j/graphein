@@ -1,4 +1,5 @@
 """Data and Batch Objects for working proteins in PyTorch Geometric"""
+
 import itertools
 import random
 import traceback
@@ -11,10 +12,12 @@ from functools import partial
 # Code Repository: https://github.com/a-r-j/graphein
 from typing import Any, Callable, List, Optional, Tuple, Union
 
+import looseversion
 import pandas as pd
 import plotly.graph_objects as go
 import torch
 import torch.nn.functional as F
+import torch_geometric
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from torch_geometric.data import Batch, Data
@@ -63,6 +66,8 @@ from .types import (
     PositionTensor,
     TorsionTensor,
 )
+
+PYG_VERSION = looseversion.LooseVersion(torch_geometric.__version__)
 
 
 class Protein(Data):
@@ -249,7 +254,12 @@ class Protein(Data):
         :return: ``Protein`` object containing the same keys and values
         :rtype: Protein
         """
-        keys = data.keys
+        keys = (
+            data.keys()
+            if PYG_VERSION >= looseversion.LooseVersion("2.4.0")
+            else data.keys
+        )
+
         for key in keys:
             setattr(self, key, getattr(data, key))
         return self
@@ -271,7 +281,12 @@ class Protein(Data):
         :rtype: Data
         """
         data = Data()
-        for i in self.keys:
+        keys = (
+            self.keys()
+            if PYG_VERSION >= looseversion.LooseVersion("2.4.0")
+            else self.keys
+        )
+        for i in keys:
             setattr(data, i, getattr(self, i))
         return data
 
@@ -732,7 +747,13 @@ class Protein(Data):
 
     def __eq__(self, __o: object) -> bool:
         # sourcery skip: merge-duplicate-blocks, merge-else-if-into-elif
-        for i in self.keys:
+        keys = (
+            self.keys()
+            if PYG_VERSION >= looseversion.LooseVersion("2.4.0")
+            else self.keys
+        )
+
+        for i in keys:
             attr_self = getattr(self, i)
             attr_other = getattr(__o, i)
 
@@ -760,9 +781,15 @@ class Protein(Data):
         return plot_distance_matrix(x)
 
     def plot_dihedrals(self) -> go.Figure:
+        keys = (
+            self.keys()
+            if PYG_VERSION >= looseversion.LooseVersion("2.4.0")
+            else self.keys
+        )
+
         dh = (
             dihedrals(self.coords)
-            if "dihedrals" not in self.keys
+            if "dihedrals" not in keys
             else self.dihedrals
         )
         return plot_dihedrals(dh)
@@ -833,7 +860,12 @@ class ProteinBatch(Batch):
     def from_batch(
         self, batch: Batch, fill_value: float = 1e-5
     ) -> "ProteinBatch":
-        for key in batch.keys:
+        keys = (
+            batch.keys()
+            if PYG_VERSION >= looseversion.LooseVersion("2.4.0")
+            else batch.keys
+        )
+        for key in keys:
             setattr(self, key, getattr(batch, key))
 
         if hasattr(batch, "_slice_dict"):
@@ -870,20 +902,22 @@ class ProteinBatch(Batch):
         proteins = [
             Protein().from_pdb_code(
                 pdb_code=pdb,
-                chain_selection=chain_selection[i]
-                if chain_selection is not None
-                else "all",
+                chain_selection=(
+                    chain_selection[i]
+                    if chain_selection is not None
+                    else "all"
+                ),
                 deprotonate=deprotonate,
                 keep_insertions=keep_insertions,
                 keep_hets=keep_hets,
                 model_index=model_index[i] if model_index is not None else 1,
                 atom_types=atom_types,
-                node_labels=node_labels[i]
-                if node_labels is not None
-                else None,
-                graph_labels=graph_labels[i]
-                if graph_labels is not None
-                else None,
+                node_labels=(
+                    node_labels[i] if node_labels is not None else None
+                ),
+                graph_labels=(
+                    graph_labels[i] if graph_labels is not None else None
+                ),
             )
             for i, pdb in enumerate(pdb_codes)
         ]
@@ -906,20 +940,22 @@ class ProteinBatch(Batch):
         proteins = [
             Protein().from_pdb_file(
                 path=pdb,
-                chain_selection=chain_selection[i]
-                if chain_selection is not None
-                else "all",
+                chain_selection=(
+                    chain_selection[i]
+                    if chain_selection is not None
+                    else "all"
+                ),
                 deprotonate=deprotonate,
                 keep_insertions=keep_insertions,
                 keep_hets=keep_hets,
                 model_index=model_index[i] if model_index is not None else 1,
                 atom_types=atom_types,
-                node_labels=node_labels[i]
-                if node_labels is not None
-                else None,
-                graph_labels=graph_labels[i]
-                if graph_labels is not None
-                else None,
+                node_labels=(
+                    node_labels[i] if node_labels is not None else None
+                ),
+                graph_labels=(
+                    graph_labels[i] if graph_labels is not None else None
+                ),
             )
             for i, pdb in enumerate(paths)
         ]
@@ -930,7 +966,11 @@ class ProteinBatch(Batch):
     def to_batch(self) -> Batch:
         """Returns the ProteinBatch as a torch_geometric.data.Batch object."""
         batch = Batch()
-        keys = self.keys
+        keys = (
+            self.keys()
+            if PYG_VERSION >= looseversion.LooseVersion("2.4.0")
+            else self.keys
+        )
         for key in keys:
             setattr(batch, key, getattr(self, key))
         return batch
@@ -1190,8 +1230,12 @@ class ProteinBatch(Batch):
         proteins = [Protein() for _ in range(self.num_graphs)]
 
         # Iterate over attributes
-        for k in self.keys:
-            print(k)
+        keys = (
+            self.keys()
+            if PYG_VERSION >= looseversion.LooseVersion("2.4.0")
+            else self.keys
+        )
+        for k in keys:
             # Get attribute
             attr = getattr(self, k)
             # Skip ptr
@@ -1218,7 +1262,12 @@ class ProteinBatch(Batch):
 
     def __eq__(self, __o: object) -> bool:
         # sourcery skip: merge-duplicate-blocks, merge-else-if-into-elif
-        for i in self.keys:
+        keys = (
+            self.keys()
+            if PYG_VERSION >= looseversion.LooseVersion("2.4.0")
+            else self.keys
+        )
+        for i in keys:
             attr_self = getattr(self, i)
             attr_other = getattr(__o, i)
 

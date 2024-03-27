@@ -7,6 +7,7 @@ These include various collections of standard & non-standard/modified amino acid
 
 We also include mappings of covalent radii and bond lengths for the amino acids used in assembling atomic protein graphs.
 """
+
 # Graphein
 # Author: Eric J. Ma, Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -652,6 +653,7 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "CSX": "C",
     "CXM": "M",
     "CYS": "C",
+    "CYX": "C",
     "DAL": "A",
     "DAR": "R",
     "DCY": "C",

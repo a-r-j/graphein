@@ -1,4 +1,5 @@
 """Utilities for loading FoldComp databases for deep learning."""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
@@ -179,7 +180,9 @@ class FoldCompDataset(Dataset):
         self._get_indices()
 
         super().__init__(
-            root=self.root, transform=self.transform, pre_transform=None  # type: ignore
+            root=self.root,
+            transform=self.transform,
+            pre_transform=None,  # type: ignore
         )
 
     @property
@@ -205,16 +208,19 @@ class FoldCompDataset(Dataset):
             os.path.exists(self.root / f) for f in self._database_files
         ):
             log.info(f"Downloading FoldComp dataset {self.database}...")
+            curr_dir = os.getcwd()
+            os.chdir(self.root)
             try:
                 foldcomp.setup(self.database)
             except RuntimeError:
                 _ = self.async_setup()
                 asyncio.run(_)
+            os.chdir(curr_dir)
             log.info("Download complete.")
-            log.info("Moving files to raw directory...")
+            # log.info("Moving files to raw directory...")
 
-            for f in self._database_files:
-                shutil.move(f, self.root)
+            # for f in self._database_files:
+            #    shutil.move(f, self.root)
         else:
             log.info(f"FoldComp database already downloaded: {self.root}.")
 
@@ -260,7 +266,9 @@ class FoldCompDataset(Dataset):
         # Open the database
         log.info("Opening database...")
         if self.ids is not None:
-            self.db = foldcomp.open(self.root / self.database, ids=self.ids, decompress=False)  # type: ignore
+            self.db = foldcomp.open(
+                self.root / self.database, ids=self.ids, decompress=False
+            )  # type: ignore
         else:
             self.db = foldcomp.open(self.root / self.database, decompress=False)  # type: ignore
 
@@ -271,9 +279,10 @@ class FoldCompDataset(Dataset):
         residue_type = torch.tensor(
             [STANDARD_AMINO_ACIDS.index(res) for res in data["residues"]],
         )
+        n_res = len(res)
 
         # Get residue numbers
-        res_num = [i for i, _ in enumerate(res)]
+        res_num = np.arange(n_res)
 
         # Get list of atom types
         atom_types = []
@@ -288,7 +297,7 @@ class FoldCompDataset(Dataset):
         atom_idx = np.array([ATOM_NUMBERING[atm] for atm in atom_types])
 
         # Initialize coordinates
-        coords = np.ones((len(res), 37, 3)) * 1e-5
+        coords = np.ones((n_res, 37, 3)) * 1e-5
 
         res_idx = np.repeat(res_num, atom_counts)
         coords[res_idx, atom_idx, :] = np.array(data["coordinates"])
@@ -298,11 +307,12 @@ class FoldCompDataset(Dataset):
             coords=torch.from_numpy(coords).float(),
             residues=res,
             residue_id=[f"A:{m}:{str(n)}" for m, n in zip(res, res_num)],
-            chains=torch.zeros(len(res)),
+            chains=torch.zeros(n_res),
             residue_type=residue_type.long(),
             b_factor=torch.from_numpy(b_factor).float(),
             id=name,
-            x=torch.zeros(len(res)),
+            x=torch.zeros(n_res),
+            seq_pos=torch.from_numpy(res_num).unsqueeze(-1),
         )
 
     def len(self) -> int:

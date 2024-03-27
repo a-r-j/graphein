@@ -4,11 +4,17 @@ on:
   push:
     paths-ignore:
       - "README.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTORS.md"
+      - "CONTRIBUTING.md"
       - "docs/**"
 
   pull_request:
     paths-ignore:
       - "README.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTORS.md"
+      - "CONTRIBUTING.md"
       - "docs/*"
 
 jobs:
@@ -16,26 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
-        torch: [1.12.0, 1.13.0, 2.0.0]
-        #include:
-        #  - torch: 1.6.0
-        #    torchvision: 0.7.0
-        #  - torch: 1.7.0
-        #    torchvision: 0.8.1
-        #  - torch: 1.8.0
-        #    torchvision: 0.9.0
-        #  - torch: 1.9.0
-        #    torchvision: 0.10.0
-        #  - torch: 1.8.0
-        #    torchvision: 0.9.0
-        #    python-version: 3.9
-        #  - torch: 1.9.0
-        #    torchvision: 0.10.0
-        #    python-version: 3.8
-        #  - torch: 1.9.0
-        #    torchvision: 0.10.0
-        #    python-version: 3.9
+        python-version: [3.8, 3.9, "3.10"]
+        torch: [1.13.0, 2.1.0, 2.2.0]
     # https://github.com/marketplace/actions/setup-miniconda#use-a-default-shell
     defaults:
       run:
@@ -52,25 +40,21 @@ jobs:
           channels: "conda-forge, salilab, pytorch, pyg"
           python-version: ${{ matrix.python-version }}
           use-mamba: true
-      #- name: Set up Python ${{ matrix.python-version }}
-      #  uses: actions/setup-python@v2
-      #  with:
-      #python-version: ${{ matrix.python-version }}
-      #- name: Setup conda environment
-      #  run: conda env create -n graphein-dev python=${{ matrix.python-version }}
-      #- name: Activate Conda Environment
-      #  run: source activate graphein-dev
+      - name: Install Boost 1.7.3 (for DSSP)
+        run: conda install -c anaconda libboost=1.73.0
       - name: Install DSSP
-        run: conda install -c salilab dssp
+        run: conda install dssp -c salilab
       - name: Install mmseqs
         run: mamba install -c conda-forge -c bioconda mmseqs2
       - name: Install PyTorch
-        run: mamba install -c pytorch pytorch==${{matrix.torch}} cpuonly
-        #run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        #run: mamba install -c pytorch pytorch==${{matrix.torch}} cpuonly
+        run: pip install torch==${{matrix.torch}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install PyG
-        run: mamba install -c pyg pyg
+        #run: mamba install -c pyg pyg
+        run: pip install torch_geometric
       - name: Install torch-cluster
-        run: mamba install pytorch-cluster -c pyg
+        #run: mamba install pytorch-cluster -c pyg
+        run: pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
       - name: Install Graphein

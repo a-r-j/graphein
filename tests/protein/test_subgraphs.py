@@ -1,4 +1,5 @@
 """Tests for graphein.protein.subgraphs"""
+
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
