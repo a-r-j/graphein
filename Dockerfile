@@ -28,10 +28,10 @@ RUN echo "$(cat requirements/base.in)" >> requirements.txt \
     && echo "$(cat requirements/dev.in)" >> requirements.txt \
     && echo "$(cat requirements/extras.in)" >> requirements.txt
 
-RUN pip install pluggy>=1.4.0
 RUN pip install notebook==6.*
 RUN pip install -r requirements.txt --no-cache-dir
 
+RUN conda install conda-forge::pluggy
 RUN conda install -c conda-forge libgcc-ng
 RUN conda install scipy scikit-learn matplotlib pandas cython ipykernel
 RUN pip install ticc==0.1.4 --no-cache-dir
