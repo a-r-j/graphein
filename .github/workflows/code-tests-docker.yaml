@@ -23,7 +23,6 @@ jobs:
           python-version: 3.8
           use-mamba: true
 
-
       # # Build cache of environment
       # - name: Cache conda environment
       #   id: cache-environment
@@ -34,6 +33,10 @@ jobs:
       #     path: |
       #       /usr/share/miniconda/envs/graphein-dev/
       #     key: ${{ runner.os }}-env.${{ hashFiles('environment-dev.yml') }}
+      - name: Docker Compose Pull
+        run: docker-compose pull
+
+      - uses: satackey/action-docker-layer-caching@v0.0.11
 
       - name: Build Docker container
         # if: steps.cache-environment.outputs.cache-hit != 'true'
