@@ -1,3 +1,9 @@
+### 1.7.7 - UNRELEASED
+
+
+#### New Features
+* Adds RFAM Manager [#324](https://github.com/a-r-j/graphein/pull/324)
+
 ### 1.7.1 - UNRELEASED
 
 #### API Changes
