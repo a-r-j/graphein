@@ -1,6 +1,6 @@
 name: Code tests (docker)
 
-on: 
+on:
   pull_request:
       paths-ignore:
       - "README.md"
