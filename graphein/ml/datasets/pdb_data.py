@@ -1382,7 +1382,7 @@ class PDBManager:
                 )
             else:
                 # Run MMSeqs
-                cmd = f"mmseqs easy-cluster {fasta_fname} pdb_cluster tmp --min-seq-id {min_seq_id} -c {coverage} --cov-mode 1"
+                cmd = f"mmseqs easy-cluster {str(self.root_dir / fasta_fname)} pdb_cluster tmp --min-seq-id {min_seq_id} -c {coverage} --cov-mode 1"
                 log.info(f"Clustering with: {cmd}")
                 subprocess.run(cmd.split())
                 os.rename(
