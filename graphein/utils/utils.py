@@ -18,7 +18,12 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from Bio.Data.IUPACData import protein_letters_3to1
-from typing_extensions import Literal
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
 
 AggregationType: List["sum", "mean", "max", "min", "median"]
 """Types of aggregations for features."""

@@ -1,13 +1,16 @@
 ### 1.7.7 - UNRELEASED
 
+### Bugfixes
+* Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs`. [#375](https://github.com/a-r-j/graphein/pull/375)
+
 #### Misc
-*   Resolve issue with notebook version and `pluggy` in Dockerfile. [#372](https://github.com/a-r-j/graphein/pull/372)
+* Resolve issue with notebook version and `pluggy` in Dockerfile. [#372](https://github.com/a-r-j/graphein/pull/372)
+* Remove `typing_extension` as dependency since we now primarily support Python >=3.8 and `Literal` is included in `typing` there.
 
-
-### 1.7.6 - UNRELEASED
+### 1.7.6
 
 #### Bugfixes
-
+*   Fixes bug in pdb_manager for clustering sequences via mmseqs [#377](https://github.com/a-r-j/graphein/pull/377)
 *   Remove hydrogen isotopes as well in `graphein.protein.graphs.deprotonate_structure`. [#337](https://github.com/a-r-j/graphein/pull/337)
 *   Fixes bug in sidechain torsion angle computation for structures containing `PYL`/other non-standard amino acids ([#357](https://github.com/a-r-j/graphein/pull/357)). Fixes [#356](https://github.com/a-r-j/graphein/issues/356).
 *   Replaces RCSB PDB FTP urls with new API. [#364](https://github.com/a-r-j/graphein/pull/364)
