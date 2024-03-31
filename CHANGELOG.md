@@ -1,9 +1,11 @@
 ### 1.7.7 - UNRELEASED
 
 ### Bugfixes
-
 * Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs`. [#375](https://github.com/a-r-j/graphein/pull/375)
-* Remove `typing_extension` as dependency since we now only support Python >=3.8 and `Literal` is included in `typing` there.
+
+#### Misc
+* Resolve issue with notebook version and `pluggy` in Dockerfile. [#372](https://github.com/a-r-j/graphein/pull/372)
+* Remove `typing_extension` as dependency since we now primarily support Python >=3.8 and `Literal` is included in `typing` there.
 
 ### 1.7.6
 
