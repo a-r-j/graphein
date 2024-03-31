@@ -1,3 +1,9 @@
+### 1.7.7 - UNRELEASED
+
+#### Bugfixes
+* Add support for DSSP >4. Backwards compatibility is still supported. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#353](https://github.com/a-r-j/graphein/issues/353).
+* Fixes bug where RSA features are missing from nodes with insertion codes. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#354](https://github.com/a-r-j/graphein/issues/353).
+
 ### 1.7.6 - UNRELEASED
 
 #### Bugfixes
