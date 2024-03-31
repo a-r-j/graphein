@@ -1,3 +1,9 @@
+### 1.7.7 - UNRELEASED
+
+#### Misc
+*   Resolve issue with notebook version and `pluggy` in Dockerfile. [#372](https://github.com/a-r-j/graphein/pull/372)
+
+
 ### 1.7.6 - UNRELEASED
 
 #### Bugfixes

@@ -1,6 +1,13 @@
 name: Code tests (docker)
 
-on: [pull_request]
+on: 
+  pull_request:
+      paths-ignore:
+      - "README.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTORS.md"
+      - "CONTRIBUTING.md"
+      - "docs/**"
 
 jobs:
   code-tests-docker:
