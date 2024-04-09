@@ -430,7 +430,7 @@ class FoldCompLightningDataModule(L.LightningDataModule):
             return T.Compose(transforms)
 
     def setup(self, stage: Optional[str] = None):
-        if stage == "fit":
+        if stage == "fit" or stage is None:
             self.train_dataset()
         elif stage == "validate":
             self.val_dataset()
