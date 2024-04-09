@@ -11,7 +11,16 @@ import os
 import random
 import shutil
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Literal,
+    Optional,
+    Union,
+)
 
 import numpy as np
 import torch
@@ -58,11 +67,13 @@ except ImportError:
     log.warning(message)
 
 FOLDCOMP_DATABASE_TYPES: List[str] = [
-    "afdb_swissprot_v4",
-    "afdb_uniprot_v4",
-    "afdb_rep_dark_v4",
-    "highquality_clust30",
-    "afdb_rep_v4",
+    "afdb_swissprot_v4",  # AlphaFoldDB Swiss-Prot
+    "afdb_uniprot_v4",  # AlphaFoldDB Uniprot
+    "afdb_rep_v4",  # AlphaFoldDB Cluster Representatives
+    "afdb_rep_dark_v4",  # AlphaFoldDB Cluster Representatives (Dark Clusters)
+    "esmatlas",  # ESMAtlas full (v0 + v2023_02)
+    "esmatlas_v2023_02",  # ESMAtlas v2023_02
+    "highquality_clust30",  # ESMAtlas high-quality
 ]
 """
 Currently supported FoldComp databases. See:
@@ -129,7 +140,15 @@ class FoldCompDataset(Dataset):
     def __init__(
         self,
         root: str,
-        database: str,
+        database: Literal[
+            "afdb_swissprot_v4",
+            "afdb_uniprot_v4",
+            "afdb_rep_v4",
+            "afdb_rep_dark_v4",
+            "esmatlas",
+            "esmatlas_v2023_02",
+            "highquality_clust30",
+        ],
         ids: Optional[List[str]] = None,
         exclude_ids: Optional[List[str]] = None,
         fraction: float = 1.0,
@@ -142,7 +161,7 @@ class FoldCompDataset(Dataset):
         :type root: str
         :param database: Name of the database. See:
             :const:`FOLDCOMP_DATABASE_TYPES`.
-        :type database: str
+        :type database: Literal
         :param ids: List of protein IDs to include in the dataset. If ``None``,
             all proteins are included. Default is ``None``.
         :type ids: Optional[List[str]]
@@ -411,9 +430,12 @@ class FoldCompLightningDataModule(L.LightningDataModule):
             return T.Compose(transforms)
 
     def setup(self, stage: Optional[str] = None):
-        self.train_dataset()
-        self.val_dataset()
-        self.test_dataset()
+        if stage == "fit" or stage is None:
+            self.train_dataset()
+        elif stage == "validate":
+            self.val_dataset()
+        elif stage == "test":
+            self.test_dataset()
 
     def _get_indices(self):
         """Loads the whole database to extract the indices."""
