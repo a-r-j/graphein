@@ -108,7 +108,7 @@ def protein_to_pyg(
     atom_types: List[str] = PROTEIN_ATOMS,
     remove_nonstandard: bool = True,
     store_het: bool = False,
-    fill_value_coords: float = 1e-5
+    fill_value_coords: float = 1e-5,
 ) -> Data:
     """
     Parses a protein (from either: a PDB code, PDB file or a UniProt ID
@@ -238,7 +238,9 @@ def protein_to_pyg(
         df["residue_id"] = df.residue_id + ":" + df.insertion
 
     out = Data(
-        coords=protein_df_to_tensor(df, atoms_to_keep=atom_types, fill_value=fill_value_coords),
+        coords=protein_df_to_tensor(
+            df, atoms_to_keep=atom_types, fill_value=fill_value_coords
+        ),
         residues=get_sequence(
             df,
             chains=chain_selection,
