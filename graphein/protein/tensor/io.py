@@ -263,7 +263,7 @@ def protein_to_pyg(
         out.hetatms = [het_coords]
     
     if store_bfactor:
-        out.bfactor = torch.tensor(df["b_factor"].values)
+        out.bfactor = torch.from_numpy(df["b_factor"].values)
 
     return out
 
