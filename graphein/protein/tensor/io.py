@@ -163,7 +163,7 @@ def protein_to_pyg(
     :param store_bfactor: Whether or not to store bfactors in the ``Data``
         object. Default is ``False.
     :type store_bfactor: bool
-    :param fill_value_coords: Fill value to use for positions in atom37 
+    :param fill_value_coords: Fill value to use for positions in atom37
         representation that are not filled. Defaults to 1e-5
     :type fill_value_coords: float
     :returns: ``Data`` object with attributes: ``x`` (AtomTensor), ``residues``
@@ -261,7 +261,7 @@ def protein_to_pyg(
     )
     if store_het:
         out.hetatms = [het_coords]
-    
+
     if store_bfactor:
         # group by residue_id and average b_factor per residue
         residue_bfactors = df.groupby("residue_id")["b_factor"].mean()
