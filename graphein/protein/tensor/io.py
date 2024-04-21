@@ -263,7 +263,9 @@ def protein_to_pyg(
         out.hetatms = [het_coords]
     
     if store_bfactor:
-        out.bfactor = torch.from_numpy(df["b_factor"].values)
+        # group by residue_id and average b_factor per residue
+        residue_bfactors = df.groupby("residue_id")["b_factor"].mean()
+        out.bfactor = torch.from_numpy(residue_bfactors.values)
 
     return out
 
