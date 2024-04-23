@@ -6,6 +6,7 @@
 * Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs`. [#375](https://github.com/a-r-j/graphein/pull/375)
 
 #### Misc
+* bumped logging level down from `INFO` to `DEBUG` at several places to reduced output length [#391](https://github.com/a-r-j/graphein/pull/391)
 * exposed `fill_value` and `bfactor` option to `protein_to_pyg` function. [#385](https://github.com/a-r-j/graphein/pull/385) and [#388](https://github.com/a-r-j/graphein/pull/388)
 * Updated Foldcomp datasets with improved setup function and updated database choices such as ESMAtlas. [#382](https://github.com/a-r-j/graphein/pull/382)
 * Resolve issue with notebook version and `pluggy` in Dockerfile. [#372](https://github.com/a-r-j/graphein/pull/372)
