@@ -49,7 +49,7 @@ except ImportError:
         conda_channel="pyg",
         pip_install=True,
     )
-    log.warning(message)
+    log.debug(message)
 
 try:
     import torch

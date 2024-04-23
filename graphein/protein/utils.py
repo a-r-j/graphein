@@ -205,7 +205,7 @@ def download_pdb(
 
     # Check if PDB already exists
     if os.path.exists(out_dir / f"{pdb_code}{extension}") and not overwrite:
-        log.info(
+        log.debug(
             f"{pdb_code} already exists: {out_dir / f'{pdb_code}{extension}'}"
         )
         return out_dir / f"{pdb_code}{extension}"
@@ -224,7 +224,7 @@ def download_pdb(
         assert os.path.exists(
             out_dir / f"{pdb_code}{extension}"
         ), f"{pdb_code} download failed. Not found in {out_dir}"
-    log.info(f"{pdb_code} downloaded to {out_dir}")
+    log.debug(f"{pdb_code} downloaded to {out_dir}")
     return out_dir / f"{pdb_code}{extension}"
 
 
@@ -346,7 +346,7 @@ def download_alphafold_structure(
             (Path(out_dir) / f"{uniprot_id}{extension}").resolve()
         )
 
-    log.info(f"Downloaded AlphaFold PDB file for: {uniprot_id}")
+    log.debug(f"Downloaded AlphaFold PDB file for: {uniprot_id}")
     if aligned_score:
         score_query = (
             BASE_URL
@@ -412,7 +412,7 @@ def save_graph_to_pdb(
     if hetatms:
         ppd.df["HETATM"] = hetatm_df
     ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
-    log.info(f"Successfully saved graph to {path}")
+    log.debug(f"Successfully saved graph to {path}")
 
 
 def save_pdb_df_to_pdb(
@@ -439,7 +439,7 @@ def save_pdb_df_to_pdb(
     if hetatms:
         ppd.df["HETATM"] = hetatm_df
     ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
-    log.info(f"Successfully saved PDB dataframe to {path}")
+    log.debug(f"Successfully saved PDB dataframe to {path}")
 
 
 def save_rgroup_df_to_pdb(
@@ -475,7 +475,7 @@ def save_rgroup_df_to_pdb(
     if hetatms:
         ppd.df["HETATM"] = hetatm_df
     ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
-    log.info(f"Successfully saved rgroup data to {path}")
+    log.debug(f"Successfully saved rgroup data to {path}")
 
 
 def esmfold(
