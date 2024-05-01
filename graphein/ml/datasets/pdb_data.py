@@ -341,7 +341,7 @@ class PDBManager:
         ):
             log.info("Downloading PDB sequences...")
             wget.download(self.pdb_sequences_url, out=str(self.root_dir))
-            log.info("Downloaded sequences")
+            log.debug("Downloaded sequences")
 
         # Unzip all collected sequences
         if not os.path.exists(self.root_dir / self.pdb_seqres_filename):
@@ -353,7 +353,7 @@ class PDBManager:
                     self.root_dir / self.pdb_seqres_filename, "wb"
                 ) as f_out:
                     shutil.copyfileobj(f_in, f_out)
-            log.info("Unzipped sequences")
+            log.debug("Unzipped sequences")
 
     def _download_ligand_map(self):
         """Download ligand map from
@@ -362,7 +362,7 @@ class PDBManager:
         if not os.path.exists(self.root_dir / self.ligand_map_filename):
             log.info("Downloading ligand map...")
             wget.download(self.ligand_map_url, out=str(self.root_dir))
-            log.info("Downloaded ligand map")
+            log.debug("Downloaded ligand map")
 
     def _download_source_map(self):
         """Download source map from
@@ -371,7 +371,7 @@ class PDBManager:
         if not os.path.exists(self.root_dir / self.source_map_filename):
             log.info("Downloading source map...")
             wget.download(self.source_map_url, out=str(self.root_dir))
-            log.info("Downloaded source map")
+            log.debug("Downloaded source map")
 
     def _download_resolution(self):
         """Download source map from
@@ -380,7 +380,7 @@ class PDBManager:
         if not os.path.exists(self.root_dir / self.resolution_filename):
             log.info("Downloading resolution map...")
             wget.download(self.resolution_url, out=str(self.root_dir))
-            log.info("Downloaded resolution map")
+            log.debug("Downloaded resolution map")
 
     def _download_entry_metadata(self):
         """Download PDB entry metadata from
@@ -391,7 +391,7 @@ class PDBManager:
         ):
             log.info("Downloading entry metadata...")
             wget.download(self.pdb_deposition_date_url, out=str(self.root_dir))
-            log.info("Downloaded entry metadata")
+            log.debug("Downloaded entry metadata")
 
     def _download_exp_type(self):
         """Download PDB experiment metadata from
@@ -400,7 +400,7 @@ class PDBManager:
         if not os.path.exists(self.root_dir / self.pdb_entry_type_filename):
             log.info("Downloading experiment type map...")
             wget.download(self.pdb_entry_type_url, out=str(self.root_dir))
-            log.info("Downloaded experiment type map")
+            log.debug("Downloaded experiment type map")
 
     def _download_pdb_availability(self):
         """Download PDB availability metadata from
@@ -409,7 +409,7 @@ class PDBManager:
         if not os.path.exists(self.root_dir / self.pdb_availability_filename):
             log.info("Downloading PDB availability map...")
             wget.download(self.pdb_availability_url, out=str(self.root_dir))
-            log.info("Downloaded PDB availability map")
+            log.debug("Downloaded PDB availability map")
 
     def _parse_ligand_map(self) -> Dict[str, List[str]]:
         """Parse the ligand maps for all PDB records.
@@ -1300,7 +1300,7 @@ class PDBManager:
             self.split_ratios,
             self.assign_leftover_rows_to_split_n,
         )
-        log.info("Done splitting clusters")
+        log.debug("Done splitting clusters")
 
         # Update splits
         for split in self.splits:
