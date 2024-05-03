@@ -9,6 +9,7 @@
 import os
 import tempfile
 from functools import lru_cache, partial
+from multiprocessing import Pool
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from urllib.error import HTTPError
@@ -20,7 +21,7 @@ import requests
 import wget
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
-from tqdm.contrib.concurrent import process_map
+from tqdm import tqdm
 
 from .resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 
@@ -130,9 +131,16 @@ def download_pdb_multiprocessing(
         overwrite=overwrite,
         strict=strict,
     )
-    return process_map(
-        func, pdb_codes, max_workers=max_workers, chunksize=chunksize
-    )
+    with Pool(processes=max_workers) as pool:
+        results = list(
+            tqdm(
+                pool.imap_unordered(func, pdb_codes, chunksize=chunksize),
+                total=len(pdb_codes),
+                desc="Downloading PDB files",
+                unit="file",
+            )
+        )
+    return results
 
 
 def download_pdb(
@@ -215,6 +223,7 @@ def download_pdb(
         wget.download(
             f"{BASE_URL}{pdb_code}{extension}",
             out=str(out_dir / f"{pdb_code}{extension}"),
+            bar=None,
         )
     except HTTPError:
         log.warning(f"PDB {pdb_code} not found.")
