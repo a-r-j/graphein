@@ -1397,7 +1397,7 @@ class PDBManager:
 
         # Read FASTA
         df = self.from_fasta(
-            ids="chain", filename=str(self.root_dir / cluster_fname)
+            ids="chain", filename=str(cluster_fname)
         )
         if update:
             self.df = df
