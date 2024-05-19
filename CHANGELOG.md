@@ -1,6 +1,7 @@
 ### 1.7.7 - UNRELEASED
 
 #### Bugfixes
+* Fixes progress bar for `download_pdb_multiprocessing`. [#394](https://github.com/a-r-j/graphein/pull/394)
 * Add support for DSSP >4. Backwards compatibility is still supported. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#353](https://github.com/a-r-j/graphein/issues/353).
 * Fixes bug where RSA features are missing from nodes with insertion codes. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#354](https://github.com/a-r-j/graphein/issues/353).
 * Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs` [#375](https://github.com/a-r-j/graphein/pull/375)
