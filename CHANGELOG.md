@@ -3,7 +3,8 @@
 #### Bugfixes
 * Add support for DSSP >4. Backwards compatibility is still supported. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#353](https://github.com/a-r-j/graphein/issues/353).
 * Fixes bug where RSA features are missing from nodes with insertion codes. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#354](https://github.com/a-r-j/graphein/issues/353).
-* Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs`. [#375](https://github.com/a-r-j/graphein/pull/375)
+* Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs` [#375](https://github.com/a-r-j/graphein/pull/375)
+* Fix cluster file loading bug in `pdb_data.py` [#396](https://github.com/a-r-j/graphein/pull/396)
 
 #### Misc
 * bumped logging level down from `INFO` to `DEBUG` at several places to reduced output length [#391](https://github.com/a-r-j/graphein/pull/391)
