@@ -553,7 +553,7 @@ class PDBManager:
         df.dropna(subset=["id"], inplace=True)
 
         df.id = df.id.str.lower()
-        df.date = pd.to_datetime(df.date)
+        df.date = pd.to_datetime(df.date, format = "%m/%d/%y")
         return pd.Series(df["date"].values, index=df["id"]).to_dict()
 
     def _parse_experiment_type(self) -> Dict[str, str]:
@@ -704,7 +704,7 @@ class PDBManager:
         df["deposition_date"] = df.pdb.map(self._parse_entries())
         df["experiment_type"] = df.pdb.map(self._parse_experiment_type())
         df["pdb_file_available"] = df.pdb.map(self._parse_pdb_availability())
-        df.pdb_file_available.fillna(True, inplace=True)
+        df["pdb_file_available"] = df["pdb_file_available"].fillna(True)
         if labels:
             if "uniprot_id" in labels:
                 df["uniprot_id"] = df.id.map(self._parse_uniprot_id())
@@ -1771,8 +1771,8 @@ class PDBManager:
 
     def download_pdbs(
         self,
-        out_dir=".",
-        format="pdb",
+        out_dir: str = ".",
+        format: str = "pdb",
         splits: Optional[List[str]] = None,
         overwrite: bool = False,
         max_workers: int = 8,
