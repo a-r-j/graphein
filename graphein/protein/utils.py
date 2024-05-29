@@ -108,7 +108,7 @@ def download_pdb_multiprocessing(
     :type pdb_codes: List[str]
     :param out_dir: Path to directory to download PDB structures to.
     :type out_dir: Union[str, Path]
-    :param format: Filetype to download. ``pdb`` or ``mmtf``.
+    :param format: Filetype to download. ``pdb``, ``mmtf``, ``mmcif`` or ``bcif``.
     :type format: str
     :param overwrite: Whether to overwrite existing files, defaults to
         ``False``.
@@ -162,7 +162,7 @@ def download_pdb(
     :param out_dir: Path to directory to download PDB structure to. If ``None``,
         will download to a temporary directory.
     :type out_dir: Optional[Union[str, Path]]
-    :param format: Filetype to download. ``pdb`` or ``mmtf``.
+    :param format: Filetype to download. ``pdb``, ``mmtf``, ``mmcif`` or ``bcif``.
     :type format: str
     :param check_obsolete: Whether to check for obsolete PDB codes,
         defaults to ``False``. If an obsolete PDB code is found, the updated PDB
@@ -183,8 +183,14 @@ def download_pdb(
     elif format == "mmtf":
         BASE_URL = "https://mmtf.rcsb.org/v1.0/full/"
         extension = ".mmtf.gz"
+    elif format == "mmcif":
+        BASE_URL = "https://files.rcsb.org/download/"
+        extension = ".cif.gz"
+    elif format == "bcif":
+        BASE_URL = "https://models.rcsb.org/"
+        extension = ".bcif.gz"
     else:
-        raise ValueError(f"Invalid format: {format}. Must be 'pdb' or 'mmtf'.")
+        raise ValueError(f"Invalid format: {format}. Must be 'pdb', 'mmtf', 'mmcif' or 'bcif'.")
 
     # Make output directory if it doesn't exist or set it to tempdir if None
     if out_dir is not None:

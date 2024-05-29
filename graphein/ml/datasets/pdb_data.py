@@ -36,13 +36,14 @@ class PDBManager:
         split_ratios: Optional[List[float]] = None,
         split_time_frames: Optional[List[np.datetime64]] = None,
         assign_leftover_rows_to_split_n: int = 0,
+        labels: Optional[List[str]] = None,
     ):
         """Instantiate a selection of experimental PDB structures.
 
         :param root_dir: The directory in which to store all PDB entries,
             defaults to ``"."``.
         :type root_dir: str, optional
-        :param structure_format: Whether to use ``.pdb`` or ``.mmtf`` file.
+        :param structure_format: Whether to use ``.pdb``, ``.mmtf`` or ``mmcif`` file.
             Defaults to ``"pdb"``.
         :type structure_format: str, optional
         :param splits: A list of names corresponding to each dataset split,
@@ -58,6 +59,9 @@ class PDBManager:
             to assign any rows remaining after creation of new dataset splits,
             defaults to ``0``.
         :type assign_leftover_rows_to_split_n: int, optional
+        :param labels: A list of names corresponding to metadata labels that should be included in PDB manager dataframe,
+            defaults to ``None``.
+        :type labels: Optional[List[str]], optional
         """
         # Arguments
         self.root_dir = Path(root_dir)
@@ -83,6 +87,14 @@ class PDBManager:
         )
         self.pdb_availability_url = "https://files.wwpdb.org/pub/pdb/compatible/pdb_bundle/pdb_bundle_index.txt"
 
+        self.pdb_chain_cath_uniprot_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz"
+
+        self.cath_id_cath_code_url = "http://download.cathdb.info/cath/releases/daily-release/newest/cath-b-newest-all.gz"
+
+        self.pdb_chain_ec_number_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz"
+
+
+
         self.pdb_dir = self.root_dir / "pdb"
         if not os.path.exists(self.pdb_dir):
             os.makedirs(self.pdb_dir)
@@ -99,12 +111,15 @@ class PDBManager:
             self.pdb_deposition_date_url
         ).name
         self.pdb_availability_filename = Path(self.pdb_availability_url).name
+        self.pdb_chain_cath_uniprot_filename = Path(self.pdb_chain_cath_uniprot_url).name
+        self.cath_id_cath_code_filename = Path(self.cath_id_cath_code_url).name
+        self.pdb_chain_ec_number_filename = Path(self.pdb_chain_ec_number_url).name
 
         self.list_columns = ["ligands"]
 
         # Data
         self.download_metadata()
-        self.df = self.parse()
+        self.df = self.parse(labels)
         self.source = self.df.copy()
 
         # Splits
@@ -146,6 +161,9 @@ class PDBManager:
         self._download_entry_metadata()
         self._download_exp_type()
         self._download_pdb_availability()
+        self._download_pdb_chain_cath_uniprot_map()
+        self._download_cath_id_cath_code_map()
+        self._download_pdb_chain_ec_number_map()
 
     def get_unavailable_pdb_files(
         self, splits: Optional[List[str]] = None
@@ -410,6 +428,33 @@ class PDBManager:
             log.info("Downloading PDB availability map...")
             wget.download(self.pdb_availability_url, out=str(self.root_dir))
             log.debug("Downloaded PDB availability map")
+    
+    def _download_pdb_chain_cath_uniprot_map(self):
+        """Download mapping from PDB chain to uniprot accession and CATH ID from
+        https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz
+        """
+        if not os.path.exists(self.root_dir / self.pdb_chain_cath_uniprot_filename):
+            log.info("Downloading Uniprot CATH map...")
+            wget.download(self.pdb_chain_cath_uniprot_url, out=str(self.root_dir))
+            log.debug("Downloaded Uniprot CATH map")
+    
+    def _download_cath_id_cath_code_map(self):
+        """Download mapping from CATH IDs to CATH code from
+        http://download.cathdb.info/cath/releases/daily-release/newest/cath-b-newest-all.gz
+        """
+        if not os.path.exists(self.root_dir / self.cath_id_cath_code_filename):
+            log.info("Downloading CATH ID to CATH code map...")
+            wget.download(self.cath_id_cath_code_url, out=str(self.root_dir))
+            log.debug("Downloaded CATH ID to CATH code map")
+
+    def _download_pdb_chain_ec_number_map(self):
+        """Download mapping from PDB chains to EC number from
+        https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz
+        """
+        if not os.path.exists(self.root_dir / self.pdb_chain_ec_number_filename):
+            log.info("Downloading EC number map...")
+            wget.download(self.pdb_chain_ec_number_url, out=str(self.root_dir))
+            log.debug("Downloaded EC number map")
 
     def _parse_ligand_map(self) -> Dict[str, List[str]]:
         """Parse the ligand maps for all PDB records.
@@ -536,8 +581,89 @@ class PDBManager:
         ids = {id: False for id in ids}
         return ids
 
-    def parse(self) -> pd.DataFrame:
+    def _parse_uniprot_id(self) -> Dict[str, str]:
+        """Parse the uniprot ID for all PDB chains.
+
+        :return: Dictionary of PDB chain ID with their
+            corresponding uniprot ID.
+        :rtype: Dict[str, str]
+        """
+        uniprot_mapping = {}
+        with gzip.open(self.root_dir / self.pdb_chain_cath_uniprot_filename, 'rt') as f:
+            for line in f:
+                try:
+                    pdb, chain, uniprot_id, cath_id = line.strip().split('\t')
+                    key = f"{pdb}_{chain}"
+                    uniprot_mapping[key] = uniprot_id
+                except ValueError:
+                    continue
+        return uniprot_mapping
+    
+    def _parse_cath_id(self) -> Dict[str, str]:
+        """Parse the CATH ID for all PDB chains.
+
+        :return: Dictionary of PDB chain ID with their
+            corresponding CATH ID.
+        :rtype: Dict[str, str]
+        """
+        cath_mapping = {}
+        with gzip.open(self.root_dir / self.pdb_chain_cath_uniprot_filename, 'rt') as f:
+            next(f) # Skip header line
+            for line in f:
+                try:
+                    pdb, chain, uniprot_id, cath_id = line.strip().split('\t')
+                    key = f"{pdb}_{chain}"
+                    cath_mapping[key] = cath_id
+                except ValueError:
+                    continue
+        return cath_mapping
+    
+    def _parse_cath_code(self) -> Dict[str, str]:
+        """Parse the CATH code for all CATH IDs.
+
+        :return: Dictionary of CATH ID with their
+            corresponding CATH code.
+        :rtype: Dict[str, str]
+        """
+        cath_mapping = {}
+        with gzip.open(self.root_dir / self.cath_id_cath_code_filename, 'rt') as f:
+            print(f)
+            for line in f:
+                print(line)
+                try:
+                    cath_id, cath_version, cath_code, cath_segment = line.strip().split()
+                    cath_mapping[cath_id] = cath_code
+                    print(cath_id, cath_code)
+                except ValueError:
+                    continue
+        return cath_mapping
+    
+    def _parse_ec_number(self) -> Dict[str, str]:
+        """Parse the CATH ID for all PDB chains and adds None when no EC number is present.
+
+        :return: Dictionary of PDB chain ID with their
+            corresponding EC number.
+        :rtype: Dict[str, str]
+        """
+        ec_mapping = {}
+        with gzip.open(self.root_dir / self.pdb_chain_ec_number_filename, 'rt') as f:
+            next(f) # Skip header line
+            for line in f:
+                try:
+                    pdb, chain, uniprot_id, ec_number = line.strip().split('\t')
+                    key = f"{pdb}_{chain}"
+                    ec_number = None if ec_number == '?' else ec_number
+                    ec_mapping[key] = ec_number
+                except ValueError:
+                    continue
+        return ec_mapping
+
+    def parse(self, labels: List[str]) -> pd.DataFrame:
         """Parse all PDB sequence records.
+
+        :param labels: A list of names corresponding to metadata labels that should be included in PDB manager dataframe,
+            defaults to ``None``.
+        :type labels: Optional[List[str]], optional
 
         :return: DataFrame containing PDB sequence entries
             with their corresponding metadata.
@@ -579,6 +705,14 @@ class PDBManager:
         df["experiment_type"] = df.pdb.map(self._parse_experiment_type())
         df["pdb_file_available"] = df.pdb.map(self._parse_pdb_availability())
         df.pdb_file_available.fillna(True, inplace=True)
+        if labels:
+            if "uniprot_id" in labels:
+                df["uniprot_id"] = df.id.map(self._parse_uniprot_id())
+            if "cath_code" in labels:
+                df["cath_id"] = df.id.map(self._parse_cath_id())
+                df["cath_code"] = df.cath_id.map(self._parse_cath_code())
+            if "ec_number" in labels:
+                df["ec_number"] = df.id.map(self._parse_ec_number())
 
         return df
 
@@ -1150,6 +1284,82 @@ class PDBManager:
         if update:
             self.df = df
 
+    def has_uniprot_id(
+        self,
+        splits: Optional[List[str]] = None,
+        update: bool = False,
+    ) -> pd.DataFrame:
+        """
+        Select entries that have a uniprot ID.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param update: Whether to modify the DataFrame in place, defaults to
+            ``False``.
+        :type update: bool, optional
+
+        :return: DataFrame of selected molecules.
+        :rtype: pd.DataFrame
+        """
+        splits_df = self.get_splits(splits)
+        df = splits_df.dropna(subset=['uniprot_id'])
+
+        if update:
+            self.df = df
+        return df
+
+
+    def has_cath_code(
+        self,
+        splits: Optional[List[str]] = None,
+        update: bool = False,
+    ) -> pd.DataFrame:
+        """
+        Select entries that have a cath code.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param update: Whether to modify the DataFrame in place, defaults to
+            ``False``.
+        :type update: bool, optional
+
+        :return: DataFrame of selected molecules.
+        :rtype: pd.DataFrame
+        """
+        splits_df = self.get_splits(splits)
+        df = splits_df.dropna(subset=['cath_code'])
+
+        if update:
+            self.df = df
+        return df
+
+    def has_ec_number(
+        self,
+        splits: Optional[List[str]] = None,
+        update: bool = False,
+    ) -> pd.DataFrame:
+        """
+        Select entries that have an EC number.
+
+        :param splits: Names of splits for which to perform the operation,
+            defaults to ``None``.
+        :type splits: Optional[List[str]], optional
+        :param update: Whether to modify the DataFrame in place, defaults to
+            ``False``.
+        :type update: bool, optional
+
+        :return: DataFrame of selected molecules.
+        :rtype: pd.DataFrame
+        """
+        splits_df = self.get_splits(splits)
+        df = splits_df.dropna(subset=['ec_number'])
+
+        if update:
+            self.df = df
+        return df
+
     def split_df_proportionally(
         self,
         df: pd.DataFrame,
@@ -1572,7 +1782,7 @@ class PDBManager:
 
         :param out_dir: Output directory, defaults to ``"."``
         :type out_dir: str, optional
-        :param format: Filetype to download. ``pdb`` or ``mmtf``.
+        :param format: Filetype to download. ``pdb``, ``mmtf``, ``mmcif`` or ``bcif``.
         :type format: str
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
