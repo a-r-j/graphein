@@ -6,7 +6,7 @@ import subprocess
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, Literal
 
 import numpy as np
 import pandas as pd
@@ -36,7 +36,7 @@ class PDBManager:
         split_ratios: Optional[List[float]] = None,
         split_time_frames: Optional[List[np.datetime64]] = None,
         assign_leftover_rows_to_split_n: int = 0,
-        labels: Optional[List[str]] = None,
+        labels: Optional[List[Literal["uniprot_id", "cath_code", "ec_number"]]] = None,
     ):
         """Instantiate a selection of experimental PDB structures.
 
@@ -61,7 +61,7 @@ class PDBManager:
         :type assign_leftover_rows_to_split_n: int, optional
         :param labels: A list of names corresponding to metadata labels that should be included in PDB manager dataframe,
             defaults to ``None``.
-        :type labels: Optional[List[str]], optional
+        :type labels: Optional[List[Literal["uniprot_id", "cath_code", "ec_number"]]], optional
         """
         # Arguments
         self.root_dir = Path(root_dir)
@@ -658,7 +658,7 @@ class PDBManager:
                     continue
         return ec_mapping
 
-    def parse(self, labels: List[str]) -> pd.DataFrame:
+    def parse(self, labels: Optional[List[Literal["uniprot_id", "cath_code", "ec_number"]]] = None) -> pd.DataFrame:
         """Parse all PDB sequence records.
 
         :param labels: A list of names corresponding to metadata labels that should be included in PDB manager dataframe,
@@ -1286,12 +1286,17 @@ class PDBManager:
 
     def has_uniprot_id(
         self,
+        select_ids: Optional[List[str]] = None,
         splits: Optional[List[str]] = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
         Select entries that have a uniprot ID.
 
+        :param select_ids: If present, filter for only these IDs. If not present, filter for entries
+            that have any uniprot ID.
+            defaults to ``None``.
+        :type select_ids: Optional[List[str]], optional
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
@@ -1305,6 +1310,9 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         df = splits_df.dropna(subset=['uniprot_id'])
 
+        if select_ids:
+            df = df[df['uniprot_id'].isin(select_ids)]
+
         if update:
             self.df = df
         return df
@@ -1312,12 +1320,17 @@ class PDBManager:
 
     def has_cath_code(
         self,
+        select_ids: Optional[List[str]] = None,
         splits: Optional[List[str]] = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
         Select entries that have a cath code.
 
+        :param select_ids: If present, filter for only these CATH codes. If not present, filter for entries
+            that have any cath code.
+            defaults to ``None``.
+        :type select_ids: Optional[List[str]], optional
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
@@ -1331,18 +1344,27 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         df = splits_df.dropna(subset=['cath_code'])
 
+        if select_ids:
+            df = df[df['cath_code'].isin(select_ids)]
+
+
         if update:
             self.df = df
         return df
 
     def has_ec_number(
         self,
+        select_ids: Optional[List[str]] = None,
         splits: Optional[List[str]] = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
         Select entries that have an EC number.
 
+        :param select_ids: If present, filter for only these ec_numbers. If not present, filter for entries
+            that have any EC number
+            defaults to ``None``.
+        :type select_ids: Optional[List[str]], optional
         :param splits: Names of splits for which to perform the operation,
             defaults to ``None``.
         :type splits: Optional[List[str]], optional
@@ -1355,6 +1377,9 @@ class PDBManager:
         """
         splits_df = self.get_splits(splits)
         df = splits_df.dropna(subset=['ec_number'])
+
+        if select_ids:
+            df = df[df['ec_number'].isin(select_ids)]
 
         if update:
             self.df = df

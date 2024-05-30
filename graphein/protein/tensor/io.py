@@ -349,7 +349,7 @@ def protein_df_to_tensor(
     """
     num_residues = get_protein_length(df, insertions=insertions)
     df = df.loc[df["atom_name"].isin(atoms_to_keep)]
-    residue_indices = pd.factorize(get_residue_id(df, unique=False))[0]
+    residue_indices = pd.factorize(pd.Series(get_residue_id(df, unique=False)))[0]
     atom_indices = df["atom_name"].map(lambda x: atoms_to_keep.index(x)).values
 
     positions: AtomTensor = (
