@@ -6,7 +6,7 @@ import subprocess
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union, Literal
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -36,7 +36,9 @@ class PDBManager:
         split_ratios: Optional[List[float]] = None,
         split_time_frames: Optional[List[np.datetime64]] = None,
         assign_leftover_rows_to_split_n: int = 0,
-        labels: Optional[List[Literal["uniprot_id", "cath_code", "ec_number"]]] = None,
+        labels: Optional[
+            List[Literal["uniprot_id", "cath_code", "ec_number"]]
+        ] = None,
     ):
         """Instantiate a selection of experimental PDB structures.
 
@@ -93,8 +95,6 @@ class PDBManager:
 
         self.pdb_chain_ec_number_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz"
 
-
-
         self.pdb_dir = self.root_dir / "pdb"
         if not os.path.exists(self.pdb_dir):
             os.makedirs(self.pdb_dir)
@@ -111,9 +111,13 @@ class PDBManager:
             self.pdb_deposition_date_url
         ).name
         self.pdb_availability_filename = Path(self.pdb_availability_url).name
-        self.pdb_chain_cath_uniprot_filename = Path(self.pdb_chain_cath_uniprot_url).name
+        self.pdb_chain_cath_uniprot_filename = Path(
+            self.pdb_chain_cath_uniprot_url
+        ).name
         self.cath_id_cath_code_filename = Path(self.cath_id_cath_code_url).name
-        self.pdb_chain_ec_number_filename = Path(self.pdb_chain_ec_number_url).name
+        self.pdb_chain_ec_number_filename = Path(
+            self.pdb_chain_ec_number_url
+        ).name
 
         self.list_columns = ["ligands"]
 
@@ -428,16 +432,20 @@ class PDBManager:
             log.info("Downloading PDB availability map...")
             wget.download(self.pdb_availability_url, out=str(self.root_dir))
             log.debug("Downloaded PDB availability map")
-    
+
     def _download_pdb_chain_cath_uniprot_map(self):
         """Download mapping from PDB chain to uniprot accession and CATH ID from
         https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz
         """
-        if not os.path.exists(self.root_dir / self.pdb_chain_cath_uniprot_filename):
+        if not os.path.exists(
+            self.root_dir / self.pdb_chain_cath_uniprot_filename
+        ):
             log.info("Downloading Uniprot CATH map...")
-            wget.download(self.pdb_chain_cath_uniprot_url, out=str(self.root_dir))
+            wget.download(
+                self.pdb_chain_cath_uniprot_url, out=str(self.root_dir)
+            )
             log.debug("Downloaded Uniprot CATH map")
-    
+
     def _download_cath_id_cath_code_map(self):
         """Download mapping from CATH IDs to CATH code from
         http://download.cathdb.info/cath/releases/daily-release/newest/cath-b-newest-all.gz
@@ -451,7 +459,9 @@ class PDBManager:
         """Download mapping from PDB chains to EC number from
         https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz
         """
-        if not os.path.exists(self.root_dir / self.pdb_chain_ec_number_filename):
+        if not os.path.exists(
+            self.root_dir / self.pdb_chain_ec_number_filename
+        ):
             log.info("Downloading EC number map...")
             wget.download(self.pdb_chain_ec_number_url, out=str(self.root_dir))
             log.debug("Downloaded EC number map")
@@ -553,7 +563,7 @@ class PDBManager:
         df.dropna(subset=["id"], inplace=True)
 
         df.id = df.id.str.lower()
-        df.date = pd.to_datetime(df.date, format = "%m/%d/%y")
+        df.date = pd.to_datetime(df.date, format="%m/%d/%y")
         return pd.Series(df["date"].values, index=df["id"]).to_dict()
 
     def _parse_experiment_type(self) -> Dict[str, str]:
@@ -589,16 +599,18 @@ class PDBManager:
         :rtype: Dict[str, str]
         """
         uniprot_mapping = {}
-        with gzip.open(self.root_dir / self.pdb_chain_cath_uniprot_filename, 'rt') as f:
+        with gzip.open(
+            self.root_dir / self.pdb_chain_cath_uniprot_filename, "rt"
+        ) as f:
             for line in f:
                 try:
-                    pdb, chain, uniprot_id, cath_id = line.strip().split('\t')
+                    pdb, chain, uniprot_id, cath_id = line.strip().split("\t")
                     key = f"{pdb}_{chain}"
                     uniprot_mapping[key] = uniprot_id
                 except ValueError:
                     continue
         return uniprot_mapping
-    
+
     def _parse_cath_id(self) -> Dict[str, str]:
         """Parse the CATH ID for all PDB chains.
 
@@ -607,17 +619,19 @@ class PDBManager:
         :rtype: Dict[str, str]
         """
         cath_mapping = {}
-        with gzip.open(self.root_dir / self.pdb_chain_cath_uniprot_filename, 'rt') as f:
-            next(f) # Skip header line
+        with gzip.open(
+            self.root_dir / self.pdb_chain_cath_uniprot_filename, "rt"
+        ) as f:
+            next(f)  # Skip header line
             for line in f:
                 try:
-                    pdb, chain, uniprot_id, cath_id = line.strip().split('\t')
+                    pdb, chain, uniprot_id, cath_id = line.strip().split("\t")
                     key = f"{pdb}_{chain}"
                     cath_mapping[key] = cath_id
                 except ValueError:
                     continue
         return cath_mapping
-    
+
     def _parse_cath_code(self) -> Dict[str, str]:
         """Parse the CATH code for all CATH IDs.
 
@@ -626,18 +640,22 @@ class PDBManager:
         :rtype: Dict[str, str]
         """
         cath_mapping = {}
-        with gzip.open(self.root_dir / self.cath_id_cath_code_filename, 'rt') as f:
+        with gzip.open(
+            self.root_dir / self.cath_id_cath_code_filename, "rt"
+        ) as f:
             print(f)
             for line in f:
                 print(line)
                 try:
-                    cath_id, cath_version, cath_code, cath_segment = line.strip().split()
+                    cath_id, cath_version, cath_code, cath_segment = (
+                        line.strip().split()
+                    )
                     cath_mapping[cath_id] = cath_code
                     print(cath_id, cath_code)
                 except ValueError:
                     continue
         return cath_mapping
-    
+
     def _parse_ec_number(self) -> Dict[str, str]:
         """Parse the CATH ID for all PDB chains and adds None when no EC number is present.
 
@@ -646,19 +664,28 @@ class PDBManager:
         :rtype: Dict[str, str]
         """
         ec_mapping = {}
-        with gzip.open(self.root_dir / self.pdb_chain_ec_number_filename, 'rt') as f:
-            next(f) # Skip header line
+        with gzip.open(
+            self.root_dir / self.pdb_chain_ec_number_filename, "rt"
+        ) as f:
+            next(f)  # Skip header line
             for line in f:
                 try:
-                    pdb, chain, uniprot_id, ec_number = line.strip().split('\t')
+                    pdb, chain, uniprot_id, ec_number = line.strip().split(
+                        "\t"
+                    )
                     key = f"{pdb}_{chain}"
-                    ec_number = None if ec_number == '?' else ec_number
+                    ec_number = None if ec_number == "?" else ec_number
                     ec_mapping[key] = ec_number
                 except ValueError:
                     continue
         return ec_mapping
 
-    def parse(self, labels: Optional[List[Literal["uniprot_id", "cath_code", "ec_number"]]] = None) -> pd.DataFrame:
+    def parse(
+        self,
+        labels: Optional[
+            List[Literal["uniprot_id", "cath_code", "ec_number"]]
+        ] = None,
+    ) -> pd.DataFrame:
         """Parse all PDB sequence records.
 
         :param labels: A list of names corresponding to metadata labels that should be included in PDB manager dataframe,
@@ -1308,15 +1335,14 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         splits_df = self.get_splits(splits)
-        df = splits_df.dropna(subset=['uniprot_id'])
+        df = splits_df.dropna(subset=["uniprot_id"])
 
         if select_ids:
-            df = df[df['uniprot_id'].isin(select_ids)]
+            df = df[df["uniprot_id"].isin(select_ids)]
 
         if update:
             self.df = df
         return df
-
 
     def has_cath_code(
         self,
@@ -1342,11 +1368,10 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         splits_df = self.get_splits(splits)
-        df = splits_df.dropna(subset=['cath_code'])
+        df = splits_df.dropna(subset=["cath_code"])
 
         if select_ids:
-            df = df[df['cath_code'].isin(select_ids)]
-
+            df = df[df["cath_code"].isin(select_ids)]
 
         if update:
             self.df = df
@@ -1376,10 +1401,10 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         splits_df = self.get_splits(splits)
-        df = splits_df.dropna(subset=['ec_number'])
+        df = splits_df.dropna(subset=["ec_number"])
 
         if select_ids:
-            df = df[df['ec_number'].isin(select_ids)]
+            df = df[df["ec_number"].isin(select_ids)]
 
         if update:
             self.df = df

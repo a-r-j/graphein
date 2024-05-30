@@ -190,7 +190,9 @@ def download_pdb(
         BASE_URL = "https://models.rcsb.org/"
         extension = ".bcif.gz"
     else:
-        raise ValueError(f"Invalid format: {format}. Must be 'pdb', 'mmtf', 'mmcif' or 'bcif'.")
+        raise ValueError(
+            f"Invalid format: {format}. Must be 'pdb', 'mmtf', 'mmcif' or 'bcif'."
+        )
 
     # Make output directory if it doesn't exist or set it to tempdir if None
     if out_dir is not None:

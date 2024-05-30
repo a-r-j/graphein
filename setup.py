@@ -156,7 +156,7 @@ setup(
     install_requires=INSTALL_REQUIRES,
     extras_require=EXTRA_REQUIRES,
     python_requires=">=3.7",
-    setup_requires=['setuptools==69.5.1'],
+    setup_requires=["setuptools==69.5.1"],
     license="MIT",
     platforms="any",
     classifiers=[
