@@ -40,6 +40,8 @@ jobs:
           channels: "conda-forge, salilab, pytorch, pyg"
           python-version: ${{ matrix.python-version }}
           use-mamba: true
+      - name: Install setuptools
+        run: pip install setuptools==69.5.1
       - name: Install Boost 1.7.3 (for DSSP)
         run: conda install -c anaconda libboost=1.73.0
       - name: Install DSSP
