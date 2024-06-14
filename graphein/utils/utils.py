@@ -355,7 +355,6 @@ def ping(host: str) -> bool:
 
     # Building the command. Ex: "ping -c 1 google.com"
     command = ["ping", param, "1", host]
-
     return subprocess.call(command) == 0
 
 
