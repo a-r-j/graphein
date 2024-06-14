@@ -16,6 +16,7 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import networkx as nx
+import numpy as np
 import pandas as pd
 import requests
 import wget
@@ -418,12 +419,27 @@ def save_graph_to_pdb(
     :type gz: bool
     """
     ppd = PandasPdb()
-    atom_df = filter_dataframe(
-        g.graph["pdb_df"], "record_name", ["ATOM"], boolean=True
-    )
-    hetatm_df = filter_dataframe(
-        g.graph["pdb_df"], "record_name", ["HETATM"], boolean=True
-    )
+
+    df = g.graph["pdb_df"]
+    # format charge correctly
+    df.charge = df.charge.replace("", np.nan)
+    df.charge = df.charge.astype(float)
+
+    # Add blank columns
+    blank_cols = [
+        "blank_1",
+        "blank_2",
+        "blank_3",
+        "blank_4",
+        "segment_id",
+        "line_idx",
+    ]
+    for col in blank_cols:
+        if col not in df.columns:
+            df[col] = ""
+    atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
+    hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
+
     if atoms:
         ppd.df["ATOM"] = atom_df
     if hetatms:
@@ -450,7 +466,21 @@ def save_pdb_df_to_pdb(
     """
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
     hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
+
+    # format charge correctly
+    df.charge = df.charge.replace("", np.nan)
+    df.charge = df.charge.astype(float)
+
     ppd = PandasPdb()
+
+    # Add blank columns
+    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
+    for col in blank_cols:
+        if col not in atom_df.columns:
+            atom_df[col] = [""] * len(atom_df)
+        if col not in hetatm_df.columns:
+            hetatm_df[col] = [""] * len(hetatm_df)
+
     if atoms:
         ppd.df["ATOM"] = atom_df
     if hetatms:
@@ -481,12 +511,27 @@ def save_rgroup_df_to_pdb(
     :type gz: bool
     """
     ppd = PandasPdb()
+    df = g.graph["rgroup_df"].copy()
+
+    # format charge correctly
+    df.charge = df.charge.replace("", np.nan)
+    df.charge = df.charge.astype(float)
+
     atom_df = filter_dataframe(
         g.graph["rgroup_df"], "record_name", ["ATOM"], boolean=True
     )
     hetatm_df = filter_dataframe(
         g.graph["rgroup_df"], "record_name", ["HETATM"], boolean=True
     )
+
+    # Add blank columns
+    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
+    for col in blank_cols:
+        if col not in atom_df.columns:
+            atom_df[col] = [""] * len(atom_df)
+        if col not in hetatm_df.columns:
+            hetatm_df[col] = [""] * len(hetatm_df)
+
     if atoms:
         ppd.df["ATOM"] = atom_df
     if hetatms:
