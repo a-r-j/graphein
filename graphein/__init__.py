@@ -23,6 +23,7 @@ logger.configure(
 
 logger.disable("graphein")
 
+
 def verbose(enabled: bool = True):
     """Enable/Disable logging.
 

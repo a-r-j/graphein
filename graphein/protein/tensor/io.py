@@ -263,10 +263,13 @@ def protein_to_pyg(
         residue_type=residue_type_tensor(df),
         chains=protein_df_to_chain_tensor(df),
     )
-    
+
     if return_coord_mask:
         out.coords, out.coord_mask = protein_df_to_tensor(
-            df, atoms_to_keep=atom_types, fill_value=fill_value_coords, return_coord_mask=return_coord_mask
+            df,
+            atoms_to_keep=atom_types,
+            fill_value=fill_value_coords,
+            return_coord_mask=return_coord_mask,
         )
     else:
         out.coords = protein_df_to_tensor(
@@ -344,7 +347,7 @@ def protein_df_to_tensor(
     atoms_to_keep: List[str] = PROTEIN_ATOMS,
     insertions: bool = True,
     fill_value: float = 1e-5,
-    return_coord_mask: bool = False
+    return_coord_mask: bool = False,
 ) -> AtomTensor:
     """
     Transforms a DataFrame of a protein structure into a
