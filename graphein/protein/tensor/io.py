@@ -262,11 +262,11 @@ def protein_to_pyg(
     )
     
     if return_coord_mask:
-        out.coords,out.coord_mask=protein_df_to_tensor(
+        out.coords, out.coord_mask = protein_df_to_tensor(
             df, atoms_to_keep=atom_types, fill_value=fill_value_coords, return_coord_mask=return_coord_mask
         )
     else:
-        out.coords=protein_df_to_tensor(
+        out.coords = protein_df_to_tensor(
             df, atoms_to_keep=atom_types, fill_value=fill_value_coords
         )
 
@@ -376,7 +376,7 @@ def protein_df_to_tensor(
     if return_coord_mask:
         coord_mask = torch.zeros((num_residues, len(atoms_to_keep)))
         coord_mask[residue_indices, atom_indices] = 1
-        return coords, coord_mask
+        return positions, coord_mask
     else:
         return positions
 
