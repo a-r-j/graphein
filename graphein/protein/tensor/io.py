@@ -161,6 +161,9 @@ def protein_to_pyg(
     :param store_het: Whether or not to store heteroatoms in the ``Data``
         object. Default is ``False``.
     :type store_het: bool
+    :param fill_value_coords: Fill value to use for positions in atom37
+        representation that are not filled. Defaults to 1e-5
+    :type fill_value_coords: float
     :param return_coord_mask: Whether to include the coordinate mask as a feature. Default is
         ``False``.
     :type keep_insertions: bool
