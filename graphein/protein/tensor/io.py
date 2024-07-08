@@ -110,7 +110,6 @@ def protein_to_pyg(
     store_het: bool = False,
     store_bfactor: bool = False,
     fill_value_coords: float = 1e-5,
-    return_coord_mask: bool = False,
 ) -> Data:
     """
     Parses a protein (from either: a PDB code, PDB file or a UniProt ID
@@ -161,18 +160,12 @@ def protein_to_pyg(
     :param store_het: Whether or not to store heteroatoms in the ``Data``
         object. Default is ``False``.
     :type store_het: bool
-    :param fill_value_coords: Fill value to use for positions in atom37
-        representation that are not filled. Defaults to 1e-5
-    :type fill_value_coords: float
-    :param return_coord_mask: Whether to include the coordinate mask as a feature. Default is
-        ``False``.
-    :type keep_insertions: bool
     :param store_bfactor: Whether or not to store bfactors in the ``Data``
         object. Default is ``False.
     :type store_bfactor: bool
-    :param return_coord_mask: Whether to include the coordinate mask as a feature. Default is
-        ``False``.
-    :type keep_insertions: bool
+    :param fill_value_coords: Fill value to use for positions in atom37
+        representation that are not filled. Defaults to 1e-5
+    :type fill_value_coords: float
     :returns: ``Data`` object with attributes: ``x`` (AtomTensor), ``residues``
         (list of 3-letter residue codes), id (ID of protein), residue_id (E.g.
         ``"A:SER:1"``), residue_type (torch.Tensor), ``chains`` (torch.Tensor).
@@ -252,6 +245,11 @@ def protein_to_pyg(
         df["residue_id"] = df.residue_id + ":" + df.insertion
 
     out = Data(
+        coords = protein_df_to_tensor(
+            df, 
+            atoms_to_keep=atom_types, 
+            fill_value=fill_value_coords,
+        ),
         residues=get_sequence(
             df,
             chains=chain_selection,
@@ -263,18 +261,6 @@ def protein_to_pyg(
         residue_type=residue_type_tensor(df),
         chains=protein_df_to_chain_tensor(df),
     )
-
-    if return_coord_mask:
-        out.coords, out.coord_mask = protein_df_to_tensor(
-            df,
-            atoms_to_keep=atom_types,
-            fill_value=fill_value_coords,
-            return_coord_mask=return_coord_mask,
-        )
-    else:
-        out.coords = protein_df_to_tensor(
-            df, atoms_to_keep=atom_types, fill_value=fill_value_coords
-        )
 
     if store_het:
         out.hetatms = [het_coords]
@@ -347,7 +333,6 @@ def protein_df_to_tensor(
     atoms_to_keep: List[str] = PROTEIN_ATOMS,
     insertions: bool = True,
     fill_value: float = 1e-5,
-    return_coord_mask: bool = False,
 ) -> AtomTensor:
     """
     Transforms a DataFrame of a protein structure into a
@@ -362,9 +347,7 @@ def protein_df_to_tensor(
     :type insertions: bool
     :param fill_value: Value to fill missing entries with. Defaults to ``1e-5``.
     :type fill_value: float
-    :param return_coord_mask: Whether to return the coord mask created. Defaults to ``False``.
-    :type insertions: bool
-    :returns: ``Length x Num_Atoms (default 37) x 3`` tensor and, if return_coord_mask==True, also the coord_mask tensor.
+    :returns: ``Length x Num_Atoms (default 37) x 3`` tensor.
     :rtype: graphein.protein.tensor.types.AtomTensor
     """
     num_residues = get_protein_length(df, insertions=insertions)
@@ -378,13 +361,8 @@ def protein_df_to_tensor(
     positions[residue_indices, atom_indices] = torch.tensor(
         df[["x_coord", "y_coord", "z_coord"]].values
     ).float()
-
-    if return_coord_mask:
-        coord_mask = torch.zeros((num_residues, len(atoms_to_keep)))
-        coord_mask[residue_indices, atom_indices] = 1
-        return positions, coord_mask
-    else:
-        return positions
+        
+    return positions
 
 
 def to_dataframe(
