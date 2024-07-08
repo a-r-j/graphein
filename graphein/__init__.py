@@ -24,10 +24,10 @@ logger.configure(
 logger.disable("graphein")
 
 
-def verbose(enabled: bool = True):
+def verbose(enabled: bool = False):
     """Enable/Disable logging.
 
-    :param enabled: Whether or not to enable logging, defaults to ``True``.
+    :param enabled: Whether or not to enable logging, defaults to ``False``.
     :type enabled: bool, optional
     """
     if not enabled:

@@ -183,7 +183,7 @@ def download_pdb(
     elif format == "mmtf":
         BASE_URL = "https://mmtf.rcsb.org/v1.0/full/"
         extension = ".mmtf.gz"
-    elif format == "mmcif":
+    elif format == "cif":
         BASE_URL = "https://files.rcsb.org/download/"
         extension = ".cif.gz"
     elif format == "bcif":
