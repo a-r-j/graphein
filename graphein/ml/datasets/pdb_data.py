@@ -120,6 +120,7 @@ class PDBManager:
         ).name
 
         self.list_columns = ["ligands"]
+        self.labels = labels
 
         # Data
         self.download_metadata()
@@ -165,9 +166,10 @@ class PDBManager:
         self._download_entry_metadata()
         self._download_exp_type()
         self._download_pdb_availability()
-        self._download_pdb_chain_cath_uniprot_map()
-        self._download_cath_id_cath_code_map()
-        self._download_pdb_chain_ec_number_map()
+        if self.labels:
+            self._download_pdb_chain_cath_uniprot_map()
+            self._download_cath_id_cath_code_map()
+            self._download_pdb_chain_ec_number_map()
 
     def get_unavailable_pdb_files(
         self, splits: Optional[List[str]] = None
