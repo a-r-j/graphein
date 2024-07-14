@@ -162,7 +162,7 @@ def download_pdb(
     :param out_dir: Path to directory to download PDB structure to. If ``None``,
         will download to a temporary directory.
     :type out_dir: Optional[Union[str, Path]]
-    :param format: Filetype to download. ``pdb``, ``mmtf``, ``mmcif`` or ``bcif``.
+    :param format: Filetype to download. ``pdb``, ``mmtf``, ``mmcif``/``cif`` or ``bcif``.
     :type format: str
     :param check_obsolete: Whether to check for obsolete PDB codes,
         defaults to ``False``. If an obsolete PDB code is found, the updated PDB
@@ -183,7 +183,7 @@ def download_pdb(
     elif format == "mmtf":
         BASE_URL = "https://mmtf.rcsb.org/v1.0/full/"
         extension = ".mmtf.gz"
-    elif format == "mmcif":
+    elif format == "cif" or format == "mmcif":
         BASE_URL = "https://files.rcsb.org/download/"
         extension = ".cif.gz"
     elif format == "bcif":
@@ -191,7 +191,7 @@ def download_pdb(
         extension = ".bcif.gz"
     else:
         raise ValueError(
-            f"Invalid format: {format}. Must be 'pdb', 'mmtf', 'mmcif' or 'bcif'."
+            f"Invalid format: {format}. Must be 'pdb', 'mmtf', '(mm)cif' or 'bcif'."
         )
 
     # Make output directory if it doesn't exist or set it to tempdir if None
