@@ -74,6 +74,7 @@ def pdb_df():
     """Generate pdb_df from 4HHB.pdb."""
     return read_pdb_to_dataframe(PDB_DATA_PATH)
 
+
 @pytest.fixture()
 def cif_to_pdb_df():
     """Generate pdb_df from 4HHB.cif."""
@@ -88,11 +89,13 @@ def test_nodes_are_strings(net):
     for n in net.nodes():
         assert isinstance(n, str)
 
+
 def test_pdb_vs_cif_file_parsing():
     """Generate graph from cif and pdb file and compare them"""
     G_pdb = construct_graph(path=str(PDB_DATA_PATH))
     G_cif = construct_graph(path=str(CIF_DATA_PATH))
     assert len(G_cif.nodes()) == len(G_pdb.nodes())
+
 
 # Example-based Graph Construction test
 def test_construct_graph():
