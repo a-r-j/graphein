@@ -50,7 +50,8 @@ from graphein.protein.graphs import (
 )
 from graphein.utils.dependencies import is_tool
 
-DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
+PDB_DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
+CIF_DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.cif"
 
 DSSP_AVAILABLE = is_tool("mkdssp")
 
@@ -59,19 +60,24 @@ def generate_graph():
     """Generate PDB network.
     This is a helper function.
     """
-    return construct_graph(path=str(DATA_PATH))
+    return construct_graph(path=str(PDB_DATA_PATH))
 
 
 @pytest.fixture(scope="module")
 def net():
-    """Generate proteingraph from 2VUI.pdb."""
+    """Generate proteingraph from 4HHB.pdb."""
     return generate_graph()
 
 
 @pytest.fixture()
 def pdb_df():
-    """Generate pdb_df from 2VIU.pdb."""
-    return read_pdb_to_dataframe(DATA_PATH)
+    """Generate pdb_df from 4HHB.pdb."""
+    return read_pdb_to_dataframe(PDB_DATA_PATH)
+
+@pytest.fixture()
+def cif_to_pdb_df():
+    """Generate pdb_df from 4HHB.cif."""
+    return read_pdb_to_dataframe(CIF_DATA_PATH)
 
 
 def test_nodes_are_strings(net):
@@ -82,6 +88,11 @@ def test_nodes_are_strings(net):
     for n in net.nodes():
         assert isinstance(n, str)
 
+def test_pdb_vs_cif_file_parsing():
+    """Generate graph from cif and pdb file and compare them"""
+    G_pdb = construct_graph(path=str(PDB_DATA_PATH))
+    G_cif = construct_graph(path=str(CIF_DATA_PATH))
+    assert len(G_cif.nodes()) == len(G_pdb.nodes())
 
 # Example-based Graph Construction test
 def test_construct_graph():
@@ -89,8 +100,7 @@ def test_construct_graph():
 
     Uses 4hhb PDB file as an example test case.
     """
-    file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
-    G = construct_graph(path=str(file_path))
+    G = construct_graph(path=str(PDB_DATA_PATH))
     assert isinstance(G, nx.Graph)
     assert len(G) == 574
 
