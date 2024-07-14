@@ -643,15 +643,12 @@ class PDBManager:
         with gzip.open(
             self.root_dir / self.cath_id_cath_code_filename, "rt"
         ) as f:
-            print(f)
             for line in f:
-                print(line)
                 try:
                     cath_id, cath_version, cath_code, cath_segment = (
                         line.strip().split()
                     )
                     cath_mapping[cath_id] = cath_code
-                    print(cath_id, cath_code)
                 except ValueError:
                     continue
         return cath_mapping
