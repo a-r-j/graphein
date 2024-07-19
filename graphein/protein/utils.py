@@ -11,7 +11,7 @@ import tempfile
 from functools import lru_cache, partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union, Literal
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
@@ -96,7 +96,7 @@ def read_fasta(file_path: str) -> Dict[str, str]:
 def download_pdb_multiprocessing(
     pdb_codes: List[str],
     out_dir: Union[str, Path],  # type: ignore
-    format: str = "pdb",
+    format: Literal["pdb", "mmtf", "mmcif", "cif", "bcif"] = "pdb",
     overwrite: bool = False,
     strict: bool = False,
     max_workers: int = 16,
@@ -108,7 +108,7 @@ def download_pdb_multiprocessing(
     :type pdb_codes: List[str]
     :param out_dir: Path to directory to download PDB structures to.
     :type out_dir: Union[str, Path]
-    :param format: Filetype to download. ``pdb``, ``mmtf``, ``mmcif`` or ``bcif``.
+    :param format: Filetype to download. ``pdb``, ``mmtf``, ``mmcif``/``cif`` or ``bcif``.
     :type format: str
     :param overwrite: Whether to overwrite existing files, defaults to
         ``False``.
@@ -146,7 +146,7 @@ def download_pdb_multiprocessing(
 def download_pdb(
     pdb_code: str,
     out_dir: Optional[Union[str, Path]] = None,
-    format: str = "pdb",
+    format: Literal["pdb", "mmtf", "mmcif", "cif", "bcif"] = "pdb",
     check_obsolete: bool = False,
     overwrite: bool = False,
     strict: bool = True,
