@@ -11,7 +11,7 @@ import tempfile
 from functools import lru_cache, partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type, Union, Literal
+from typing import Any, Dict, List, Literal, Optional, Tuple, Type, Union
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
