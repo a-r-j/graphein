@@ -15,15 +15,16 @@ from __future__ import annotations
 
 from typing import Dict, List
 
+from loguru import logger
+
 from graphein.utils.dependencies import import_message
 
 try:
     import rdkit.Chem as Chem
-except ImportError:
-    import_message(
-        "graphein.molecule.atoms", "rdkit", "rdkit", True, extras=True
+except (ImportError, ModuleNotFoundError):
+    logger.warning(
+        import_message(__name__, "rdkit", "rdkit", True, extras=True)
     )
-
 
 BASE_ATOMS: List[str] = [
     "C",
