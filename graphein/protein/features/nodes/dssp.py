@@ -19,7 +19,7 @@ from loguru import logger
 
 from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
 from graphein.protein.utils import save_pdb_df_to_pdb
-from graphein.utils.dependencies import is_tool
+from graphein.utils.dependencies import is_tool, requires_external_dependencies
 
 DSSP_COLS = [
     "chain",
@@ -71,6 +71,7 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
     return pd.DataFrame.from_records(appender, columns=DSSP_COLS)
 
 
+@requires_external_dependencies("mkdssp")
 def add_dssp_df(
     G: nx.Graph,
     dssp_config: Optional[DSSPConfig],
@@ -131,11 +132,7 @@ def add_dssp_df(
                 dssp_version=dssp_version,
             )
 
-    # Newer versions of Biopython return a tuple
-    if isinstance(dssp_dict, tuple):
-        dssp_dict = dssp_dict[0]
-
-    if len(dssp_dict) == 0:
+    if len(dssp_dict[0]) == 0:
         raise ValueError(
             "DSSP could not be calculated. Check DSSP version "
             f"({dssp_version}) orthat the input PDB file is valid."
