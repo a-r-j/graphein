@@ -1,5 +1,6 @@
 import os
 import sys
+from functools import wraps
 from shutil import which
 from typing import Optional
 
@@ -84,3 +85,70 @@ def is_tool(name: str, error: bool = False) -> bool:
     if not found and error:
         raise MissingDependencyError(name)
     return found
+
+
+# Decorator for checking if a function has the required dependencies
+def requires_external_dependencies(*deps):
+    """
+    A decorator to check if all required dependencies are installed before
+    calling the decorated function. If a dependency is missing, it raises
+    a MissingDependencyError.
+
+    :param deps: A list of dependencies (as strings) to check for.
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            missing_deps = [dep for dep in deps if not is_tool(dep)]
+            if missing_deps:
+                missing = ", ".join(missing_deps)
+                raise MissingDependencyError(
+                    f"Missing dependencies: {missing}"
+                )
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+_lib_check_cache = {}
+
+
+def requires_python_libs(*libs):
+    """
+    A decorator to check if all required Python library dependencies are installed
+    before calling the decorated function. If a library is missing, it raises
+    an ImportError with details about the missing libraries. Caches check results
+    to avoid repeated imports.
+
+    :param libs: A list of library names (as strings) to check for.
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            missing_libs = []
+            for lib in libs:
+                # Check if the library check result is cached
+                if lib in _lib_check_cache:
+                    if not _lib_check_cache[lib]:
+                        missing_libs.append(lib)
+                else:
+                    try:
+                        __import__(lib)
+                        _lib_check_cache[lib] = True
+                    except ImportError:
+                        _lib_check_cache[lib] = False
+                        missing_libs.append(lib)
+            if missing_libs:
+                missing = ", ".join(missing_libs)
+                raise ImportError(
+                    f"Missing Python library dependencies: {missing}"
+                )
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
