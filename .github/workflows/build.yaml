@@ -50,7 +50,7 @@ jobs:
         run: mamba install -c conda-forge -c bioconda mmseqs2
       - name: Install PyTorch
         #run: mamba install -c pytorch pytorch==${{matrix.torch}} cpuonly
-        run: pip install torch==${{matrix.torch}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: pip install torch==${{matrix.torch}}+cpu -f https://download.pytorch.org/whl/cpu
       - name: Install PyG
         #run: mamba install -c pyg pyg
         run: pip install torch_geometric
