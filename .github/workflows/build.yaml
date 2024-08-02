@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8, 3.9, "3.10"]
-        torch: [1.13.0, 2.1.0, 2.2.0]
+        torch: [1.13.0, 2.1.0, 2.2.0, 2.3.0, 2.4.0]
     # https://github.com/marketplace/actions/setup-miniconda#use-a-default-shell
     defaults:
       run:
@@ -48,8 +48,11 @@ jobs:
         run: conda install dssp -c salilab
       - name: Install mmseqs
         run: mamba install -c conda-forge -c bioconda mmseqs2
-      - name: Install PyTorch
-        #run: mamba install -c pytorch pytorch==${{matrix.torch}} cpuonly
+      - name: Install PyTorch (1.13.0)
+        if: matrix.torch == '1.13.0'
+        run: pip install torch==${{matrix.torch}}+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+      - name: Install PyTorch (2.0+)
+        if: matrix.torch != '1.13.0'
         run: pip install torch==${{matrix.torch}}+cpu -f https://download.pytorch.org/whl/cpu
       - name: Install PyG
         #run: mamba install -c pyg pyg
