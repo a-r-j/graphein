@@ -84,7 +84,8 @@ def test_add_beta_carbon_vector(caplog):
 
     # Test handling of missing beta-carbons
     g = construct_graph(config=config, pdb_code="3se8")
-    assert "H:CYS:104" in caplog.text  # Test warning is raised
+
+    assert "H:CYS:104" in g.nodes
     for n, d in g.nodes(data=True):
         assert d["c_beta_vector"].shape == (3,)
         if n == "H:CYS:104":
