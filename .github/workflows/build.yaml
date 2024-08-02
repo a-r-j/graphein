@@ -53,7 +53,7 @@ jobs:
         run: pip install torch==${{matrix.torch}}+cpu --extra-index-url https://download.pytorch.org/whl/cpu
       - name: Install PyTorch (2.0+)
         if: matrix.torch != '1.13.0'
-        run: pip install torch==${{matrix.torch}}+cpu -f https://download.pytorch.org/whl/cpu
+        run: pip install torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
       - name: Install PyG
         #run: mamba install -c pyg pyg
         run: pip install torch_geometric
