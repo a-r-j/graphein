@@ -85,7 +85,9 @@ def test_torsion_to_rad():
     delta[delta.nonzero()] = torch.abs(delta[torch.nonzero(delta)] - 2 * np.pi)
 
     delta = ((delta + 2 * np.pi) / np.pi) % 2
-    np.testing.assert_allclose(delta, torch.zeros_like(delta), atol=1e-4, rtol=1e-4)
+    np.testing.assert_allclose(
+        delta, torch.zeros_like(delta), atol=1e-4, rtol=1e-4
+    )
 
 
 @pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
