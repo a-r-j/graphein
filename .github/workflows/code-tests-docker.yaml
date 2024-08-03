@@ -45,7 +45,7 @@ jobs:
       - name: Build Docker container
         # if: steps.cache-environment.outputs.cache-hit != 'true'
         run: |
-          docker-compose -f docker-compose.cpu.yml up -d --build
+          docker compose -f docker-compose.cpu.yml up -d --build
 
       - name: Install Graphein (Docker)
         run: |
