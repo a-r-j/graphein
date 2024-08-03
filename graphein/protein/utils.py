@@ -26,7 +26,6 @@ from tqdm import tqdm
 
 from .resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 
-
 pdb_df_columns = [
     "record_name",
     "atom_number",
@@ -50,6 +49,7 @@ pdb_df_columns = [
     "charge",
     "line_idx",
 ]
+
 
 class ProteinGraphConfigurationError(Exception):
     """
@@ -447,7 +447,7 @@ def save_graph_to_pdb(
     df = g.graph["pdb_df"].copy()
     # format charge correctly
     df.charge = pd.to_numeric(df.charge, errors="coerce")
-    
+
     # Add blank columns
     blank_cols = [
         "blank_1",
@@ -546,12 +546,8 @@ def save_rgroup_df_to_pdb(
     df["line_idx"] = list(range(1, len(df) + 1))
     df = df[pdb_df_columns]
 
-    atom_df = filter_dataframe(
-        df, "record_name", ["ATOM"], boolean=True
-    )
-    hetatm_df = filter_dataframe(
-        df, "record_name", ["HETATM"], boolean=True
-    )
+    atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
+    hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
 
     if atoms:
         ppd.df["ATOM"] = atom_df

@@ -27,16 +27,20 @@ def test_save_graph_to_pdb():
     # Check file exists
     assert os.path.isfile("/tmp/test_graph.pdb")
 
-    graph_df = g.graph["pdb_df"].drop(
+    graph_df = (
+        g.graph["pdb_df"]
+        .drop(
             [
                 "node_id",
                 "residue_id",
             ],
             axis=1,
-        ).reset_index(drop=True)
+        )
+        .reset_index(drop=True)
+    )
 
     a.reset_index(drop=True, inplace=True)
-    a = a[graph_df.columns] # Reorder columns
+    a = a[graph_df.columns]  # Reorder columns
 
     assert_frame_equal(
         a,
@@ -59,13 +63,15 @@ def test_save_pdb_df_to_pdb():
 
     assert_frame_equal(
         a,
-        g.graph["pdb_df"].drop(
+        g.graph["pdb_df"]
+        .drop(
             [
                 "node_id",
                 "residue_id",
             ],
             axis=1,
-        ).reset_index(drop=True),
+        )
+        .reset_index(drop=True),
     )
 
     # Now check for raw, unprocessed DF
