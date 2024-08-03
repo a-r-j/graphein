@@ -34,7 +34,7 @@ author = "Arian Jamasb"
 copyright = f"{datetime.datetime.now().year}, {author}"
 
 # The full version, including alpha/beta/rc tags
-release = "1.7.6"
+release = "1.7.7"
 
 
 # -- General configuration ---------------------------------------------------
