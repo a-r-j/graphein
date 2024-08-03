@@ -11,6 +11,7 @@ from graphein.protein.graphs import (
 from graphein.protein.utils import (
     download_pdb,
     download_pdb_multiprocessing,
+    get_obsolete_mapping,
     save_graph_to_pdb,
     save_pdb_df_to_pdb,
     save_rgroup_df_to_pdb,
@@ -128,6 +129,11 @@ def test_download_structure_multi():
     for path in fps:
         assert os.path.exists(path)
         assert str(path).endswith("4hhb.pdb")
+
+
+def test_download_obsolete_map():
+    mapping = get_obsolete_mapping()
+    assert len(mapping) > 100
 
 
 if __name__ == "__main__":

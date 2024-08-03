@@ -33,7 +33,7 @@ except ImportError:
         package="pytorch3d",
         conda_channel="pytorch3d",
     )
-    log.warning(message)
+    log.debug(message)
 
 try:
     from mpl_chord_diagram import chord_diagram
@@ -44,6 +44,7 @@ except ImportError:
         pip_install=True,
         extras=True,
     )
+    log.debug(message)
 
 
 def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:

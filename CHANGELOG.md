@@ -1,9 +1,32 @@
-### 1.7.6 - UNRELEASED
+### 1.7.7 - UNRELEASED
 
 #### Bugfixes
--   Remove hydrogen isotopes as well in `graphein.protein.graphs.deprotonate_structure`. [#337](https://github.com/a-r-j/graphein/pull/337)
--   Fixes bug in sidechain torsion angle computation for structures containing `PYL`/other non-standard amino acids ([#357](https://github.com/a-r-j/graphein/pull/357)). Fixes [#356](https://github.com/a-r-j/graphein/issues/356).
-- In Pandas 1.2.0 and later, The default value of regex for `Series.str.replace()` will change from `True` to False. So we need use regular expressions explicitly now, to suppress a FutureWarning. By @StevenAZy ([#359](https://www.github.com/a-r-j/graphein/pull/359))
+* Fixes progress bar for `download_pdb_multiprocessing`. [#394](https://github.com/a-r-j/graphein/pull/394)
+* Add support for DSSP >4. Backwards compatibility is still supported. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#353](https://github.com/a-r-j/graphein/issues/353).
+* Fixes bug where RSA features are missing from nodes with insertion codes. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#354](https://github.com/a-r-j/graphein/issues/353).
+* Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs`. [#375](https://github.com/a-r-j/graphein/pull/375)
+* Add missing modified residue `AYA` to constants [#390](https://github.com/a-r-j/graphein/pull/390)
+* Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs` [#375](https://github.com/a-r-j/graphein/pull/375)
+* Fix cluster file loading bug in `pdb_data.py` [#396](https://github.com/a-r-j/graphein/pull/396)
+
+#### Misc
+* set logging to false by default and added mmcif support [#402](https://github.com/a-r-j/graphein/pull/402)
+* add metadata options for uniprot, ecnumber and CATH code to pdb manager [#398](https://github.com/a-r-j/graphein/pull/398)
+* bumped logging level down from `INFO` to `DEBUG` at several places to reduced output length [#391](https://github.com/a-r-j/graphein/pull/391)
+* exposed `fill_value` and `bfactor` option to `protein_to_pyg` function. [#385](https://github.com/a-r-j/graphein/pull/385) and [#388](https://github.com/a-r-j/graphein/pull/388)
+* Updated Foldcomp datasets with improved setup function and updated database choices such as ESMAtlas. [#382](https://github.com/a-r-j/graphein/pull/382)
+* Resolve issue with notebook version and `pluggy` in Dockerfile. [#372](https://github.com/a-r-j/graphein/pull/372)
+* Remove `typing_extension` as dependency since we now primarily support Python >=3.8 and `Literal` is included in `typing` there.
+
+
+### 1.7.6
+
+#### Bugfixes
+*   Fixes bug in pdb_manager for clustering sequences via mmseqs [#377](https://github.com/a-r-j/graphein/pull/377)
+*   Remove hydrogen isotopes as well in `graphein.protein.graphs.deprotonate_structure`. [#337](https://github.com/a-r-j/graphein/pull/337)
+*   Fixes bug in sidechain torsion angle computation for structures containing `PYL`/other non-standard amino acids ([#357](https://github.com/a-r-j/graphein/pull/357)). Fixes [#356](https://github.com/a-r-j/graphein/issues/356).
+*   Replaces RCSB PDB FTP urls with new API. [#364](https://github.com/a-r-j/graphein/pull/364)
+*   In Pandas `1.2.0` and later, The default value of regex for `Series.str.replace()` will change from `True` to `False`. So we need use regular expressions explicitly now, to suppress a FutureWarning. By @StevenAZy ([#359](https://www.github.com/a-r-j/graphein/pull/359))
 
 
 ### 1.7.5 - 27/10/2024

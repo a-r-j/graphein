@@ -85,7 +85,7 @@ def get_seq_records(
             "Alphabet given. Only checking for terminating *!\n"
         )
         check_sequences = False
-    with open(filename, "rU") as handle:
+    with open(filename, "r") as handle:
         records = list(SeqIO.parse(handle, file_format, alphabet=alphabet))
     del handle
     if check_sequences:

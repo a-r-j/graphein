@@ -19,12 +19,12 @@ import cpdb
 import networkx as nx
 import numpy as np
 import pandas as pd
+from biopandas.mmcif import PandasMmcif
 from biopandas.mmtf import PandasMmtf
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
-from typing_extensions import Literal
 
 from graphein.protein.config import GetContactsConfig, ProteinGraphConfig
 from graphein.protein.edges.distance import (
@@ -47,6 +47,11 @@ from graphein.utils.utils import (
     annotate_node_metadata,
     compute_edges,
 )
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 
 def subset_structure_to_rna(
@@ -112,9 +117,16 @@ def read_pdb_to_dataframe(
             atomic_df = pd.concat(
                 [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
             )
+        elif (
+            path.endswith(".cif")
+            or path.endswith(".cif.gz")
+            or path.endswith(".mmcif")
+            or path.endswith(".mmcif.gz")
+        ):
+            atomic_df = PandasMmcif().read_mmcif(path)
         else:
             raise ValueError(
-                f"File {path} must be either .pdb(.gz), .mmtf(.gz) or .ent, not {path.split('.')[-1]}"
+                f"File {path} must be either .pdb(.gz), .mmtf(.gz), .(mm)cif(.gz) or .ent, not {path.split('.')[-1]}"
             )
     elif uniprot_id is not None:
         atomic_df = cpdb.parse(uniprot_id=uniprot_id)
@@ -277,7 +289,7 @@ def remove_alt_locs(
     # Unsort
     if keep in ["max_occupancy", "min_occupancy"]:
         df = df.sort_index()
-
+    df = df.reset_index(drop=True)
     return df
 
 
@@ -645,7 +657,7 @@ def calculate_centroid_positions(
         atoms.groupby(
             ["residue_number", "chain_id", "residue_name", "insertion"]
         )
-        .mean()[["x_coord", "y_coord", "z_coord"]]
+        .mean(numeric_only=True)[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )
     if verbose:
@@ -827,6 +839,7 @@ def construct_graph(
             keep_hets=config.keep_hets,
             atom_df_processing_funcs=config.protein_df_processing_functions,
             hetatom_df_processing_funcs=config.protein_df_processing_functions,
+            deprotonate=config.deprotonate,
         )
 
         if verbose:

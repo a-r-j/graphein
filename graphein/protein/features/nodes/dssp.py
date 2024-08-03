@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import os
+import re
 import tempfile
 from typing import Any, Dict, Optional
 
@@ -108,7 +109,15 @@ def add_dssp_df(
 
     # Check for existence of pdb file. If not, reconstructs it from the raw df.
     if pdb_file:
-        dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP=executable)
+        # get dssp version string
+        dssp_version = re.search(
+            r"version ([\d\.]+)", os.popen(f"{executable} --version").read()
+        ).group(
+            1
+        )  # e.g. "4.0.4"
+        dssp_dict = dssp_dict_from_pdb_file(
+            pdb_file, DSSP=executable, dssp_version=dssp_version
+        )
     else:
         with tempfile.TemporaryDirectory() as tmpdirname:
             save_pdb_df_to_pdb(
@@ -125,16 +134,28 @@ def add_dssp_df(
     # Convert 1 letter aa code to 3 letter
     dssp_dict["aa"] = dssp_dict["aa"].map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
 
-    # Resolve UNKs
-    dssp_dict.loc[dssp_dict["aa"] == "UNK", "aa"] = (
-        G.graph["pdb_df"]
-        .loc[
-            G.graph["pdb_df"].residue_number.isin(
-                dssp_dict.loc[dssp_dict["aa"] == "UNK"]["resnum"]
-            )
-        ]["residue_name"]
-        .values
-    )
+    # Resolve UNKs NOTE: the original didn't work if HETATM residues exist in DSSP output
+    _raw_pdb_df = G.graph["raw_pdb_df"].copy().drop_duplicates("node_id")
+    _dssp_df_unk = dssp_dict.loc[dssp_dict["aa"] == "UNK"][
+        ["chain", "resnum", "icode"]
+    ]
+    for chain, resnum, icode in _dssp_df_unk.values:
+        dssp_dict.loc[
+            (dssp_dict["chain"] == chain)
+            & (dssp_dict["resnum"] == resnum)  # e.g. 'H'
+            & (dssp_dict["icode"] == icode),  # e.g. 100  # e.g. 'E' or ' '
+            "aa",
+        ] = _raw_pdb_df.loc[
+            (_raw_pdb_df["chain_id"] == chain)
+            & (_raw_pdb_df["residue_number"] == resnum)
+            & (
+                _raw_pdb_df["insertion"] == icode.strip()
+            )  # why strip?: dssp icode is a space, raw_pdb_df is empty string
+        ][
+            "residue_name"
+        ].values[
+            0
+        ]
 
     # Construct node IDs
     dssp_dict["node_id"] = (
@@ -144,6 +165,14 @@ def add_dssp_df(
         + ":"
         + dssp_dict["resnum"].astype(str)
     )
+    if G.graph["config"].insertions:
+        dssp_dict["node_id"] = (
+            dssp_dict["node_id"] + ":" + dssp_dict["icode"].apply(str)
+        )
+        # Replace trailing : for non insertions
+        dssp_dict["node_id"] = dssp_dict["node_id"].str.replace(
+            r":\s*$", "", regex=True
+        )
 
     dssp_dict.set_index("node_id", inplace=True)
 

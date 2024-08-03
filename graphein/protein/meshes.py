@@ -27,7 +27,7 @@ except ImportError:
         conda_channel="pytorch3d",
         pip_install=True,
     )
-    log.warning(message)
+    log.debug(message)
 
 
 def check_for_pymol_installation():
