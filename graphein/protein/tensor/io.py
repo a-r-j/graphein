@@ -49,7 +49,7 @@ except ImportError:
         conda_channel="pyg",
         pip_install=True,
     )
-    log.debug(message)
+    log.warning(message)
 
 try:
     import torch
@@ -60,7 +60,7 @@ except ImportError:
         conda_channel="pytorch",
         pip_install=True,
     )
-    log.debug(message)
+    log.warning(message)
 
 
 def get_protein_length(df: pd.DataFrame, insertions: bool = True) -> int:
@@ -246,7 +246,9 @@ def protein_to_pyg(
 
     out = Data(
         coords=protein_df_to_tensor(
-            df, atoms_to_keep=atom_types, fill_value=fill_value_coords
+            df,
+            atoms_to_keep=atom_types,
+            fill_value=fill_value_coords,
         ),
         residues=get_sequence(
             df,
@@ -259,6 +261,7 @@ def protein_to_pyg(
         residue_type=residue_type_tensor(df),
         chains=protein_df_to_chain_tensor(df),
     )
+
     if store_het:
         out.hetatms = [het_coords]
 
@@ -360,6 +363,7 @@ def protein_df_to_tensor(
     positions[residue_indices, atom_indices] = torch.tensor(
         df[["x_coord", "y_coord", "z_coord"]].values
     ).float()
+
     return positions
 
 
