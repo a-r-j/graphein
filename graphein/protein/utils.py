@@ -27,6 +27,30 @@ from tqdm import tqdm
 from .resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 
 
+pdb_df_columns = [
+    "record_name",
+    "atom_number",
+    "blank_1",
+    "atom_name",
+    "alt_loc",
+    "residue_name",
+    "blank_2",
+    "chain_id",
+    "residue_number",
+    "insertion",
+    "blank_3",
+    "x_coord",
+    "y_coord",
+    "z_coord",
+    "occupancy",
+    "b_factor",
+    "blank_4",
+    "segment_id",
+    "element_symbol",
+    "charge",
+    "line_idx",
+]
+
 class ProteinGraphConfigurationError(Exception):
     """
     Exception when an invalid Graph configuration if provided to a downstream
@@ -420,11 +444,10 @@ def save_graph_to_pdb(
     """
     ppd = PandasPdb()
 
-    df = g.graph["pdb_df"]
+    df = g.graph["pdb_df"].copy()
     # format charge correctly
-    df.charge = df.charge.replace("", np.nan)
-    df.charge = df.charge.astype(float)
-
+    df.charge = pd.to_numeric(df.charge, errors="coerce")
+    
     # Add blank columns
     blank_cols = [
         "blank_1",
@@ -432,11 +455,12 @@ def save_graph_to_pdb(
         "blank_3",
         "blank_4",
         "segment_id",
-        "line_idx",
     ]
     for col in blank_cols:
         if col not in df.columns:
             df[col] = ""
+    df["line_idx"] = list(range(1, len(df) + 1))
+    df = df[pdb_df_columns]
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
     hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
 
@@ -464,22 +488,21 @@ def save_pdb_df_to_pdb(
     :param gz: Whether to gzip the file. Defaults to ``False``.
     :type gz: bool
     """
+    df = df.copy()
+    # format charge correctly
+    df.charge = pd.to_numeric(df.charge, errors="coerce")
+    df.alt_loc = df.alt_loc.fillna(" ")
+    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
+    for col in blank_cols:
+        if col not in df.columns:
+            df[col] = ""
+    df["line_idx"] = list(range(1, len(df) + 1))
+    df = df[pdb_df_columns]
+
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
     hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
 
-    # format charge correctly
-    df.charge = df.charge.replace("", np.nan)
-    df.charge = df.charge.astype(float)
-
     ppd = PandasPdb()
-
-    # Add blank columns
-    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
-    for col in blank_cols:
-        if col not in atom_df.columns:
-            atom_df[col] = [""] * len(atom_df)
-        if col not in hetatm_df.columns:
-            hetatm_df[col] = [""] * len(hetatm_df)
 
     if atoms:
         ppd.df["ATOM"] = atom_df
@@ -514,23 +537,21 @@ def save_rgroup_df_to_pdb(
     df = g.graph["rgroup_df"].copy()
 
     # format charge correctly
-    df.charge = df.charge.replace("", np.nan)
-    df.charge = df.charge.astype(float)
+    df.charge = pd.to_numeric(df.charge, errors="coerce")
 
-    atom_df = filter_dataframe(
-        g.graph["rgroup_df"], "record_name", ["ATOM"], boolean=True
-    )
-    hetatm_df = filter_dataframe(
-        g.graph["rgroup_df"], "record_name", ["HETATM"], boolean=True
-    )
-
-    # Add blank columns
     blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
     for col in blank_cols:
-        if col not in atom_df.columns:
-            atom_df[col] = [""] * len(atom_df)
-        if col not in hetatm_df.columns:
-            hetatm_df[col] = [""] * len(hetatm_df)
+        if col not in df.columns:
+            df[col] = [""] * len(df)
+    df["line_idx"] = list(range(1, len(df) + 1))
+    df = df[pdb_df_columns]
+
+    atom_df = filter_dataframe(
+        df, "record_name", ["ATOM"], boolean=True
+    )
+    hetatm_df = filter_dataframe(
+        df, "record_name", ["HETATM"], boolean=True
+    )
 
     if atoms:
         ppd.df["ATOM"] = atom_df

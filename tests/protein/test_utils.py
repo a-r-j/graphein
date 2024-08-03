@@ -27,27 +27,20 @@ def test_save_graph_to_pdb():
     # Check file exists
     assert os.path.isfile("/tmp/test_graph.pdb")
 
-    # Check for equivalence between saved and existing DFs.
-    # We drop the line_idx columns as these will be renumbered
-    # assert_frame_equal(
-    #    a.drop(["line_idx"], axis=1),
-    #    g.graph["pdb_df"].drop(["line_idx", "node_id", "residue_id"], axis=1),
-    # )
-    assert_frame_equal(
-        a,
-        g.graph["pdb_df"].drop(
+    graph_df = g.graph["pdb_df"].drop(
             [
                 "node_id",
                 "residue_id",
-                "line_idx",
-                "blank_1",
-                "blank_2",
-                "blank_3",
-                "blank_4",
-                "segment_id",
             ],
             axis=1,
-        ),
+        ).reset_index(drop=True)
+
+    a.reset_index(drop=True, inplace=True)
+    a = a[graph_df.columns] # Reorder columns
+
+    assert_frame_equal(
+        a,
+        graph_df,
     )
     h = construct_graph(path="/tmp/test_graph.pdb")
 
@@ -64,26 +57,15 @@ def test_save_pdb_df_to_pdb():
     # Check file exists
     assert os.path.isfile("/tmp/test_graph.pdb")
 
-    # We drop the line_idx columns as these will be renumbered
-    # assert_frame_equal(
-    #    a.drop(["line_idx"], axis=1),
-    #    g.graph["pdb_df"].drop(["line_idx", "node_id", "residue_id"], axis=1),
-    # )
     assert_frame_equal(
         a,
         g.graph["pdb_df"].drop(
             [
                 "node_id",
                 "residue_id",
-                "line_idx",
-                "blank_1",
-                "blank_2",
-                "blank_3",
-                "blank_4",
-                "segment_id",
             ],
             axis=1,
-        ),
+        ).reset_index(drop=True),
     )
 
     # Now check for raw, unprocessed DF
@@ -105,10 +87,10 @@ def test_save_rgroup_df_to_pdb():
 
     # We drop the line_idx columns as these will be renumbered
     assert_frame_equal(
-        a.drop(["line_idx"], axis=1),
+        a,
         filter_dataframe(
             g.graph["rgroup_df"], "record_name", ["HETATM"], False
-        ).drop(["line_idx", "node_id", "residue_id"], axis=1),
+        ).drop(["node_id", "residue_id"], axis=1),
     )
 
 

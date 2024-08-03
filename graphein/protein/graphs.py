@@ -124,6 +124,11 @@ def read_pdb_to_dataframe(
             or path.endswith(".mmcif.gz")
         ):
             atomic_df = PandasMmcif().read_mmcif(path)
+            atomic_df = atomic_df.get_model(model_index)
+            atomic_df = atomic_df.convert_to_pandas_pdb()
+            atomic_df = pd.concat(
+                [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
+            )
         else:
             raise ValueError(
                 f"File {path} must be either .pdb(.gz), .mmtf(.gz), .(mm)cif(.gz) or .ent, not {path.split('.')[-1]}"
@@ -133,7 +138,8 @@ def read_pdb_to_dataframe(
     else:
         atomic_df = cpdb.parse(pdb_code=pdb_code)
 
-    atomic_df = atomic_df.loc[atomic_df["model_idx"] == model_index]
+    if "model_idx" in atomic_df.columns:
+        atomic_df = atomic_df.loc[atomic_df["model_idx"] == model_index]
 
     if len(atomic_df) == 0:
         raise ValueError(f"No model found for index: {model_index}")
