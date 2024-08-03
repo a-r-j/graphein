@@ -7,6 +7,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 import os
+from pathlib import Path
 
 import pytest
 from biopandas.pdb import PandasPdb
@@ -16,6 +17,7 @@ from graphein.protein.tensor import Protein
 from graphein.protein.tensor.io import (
     protein_df_to_chain_tensor,
     protein_df_to_tensor,
+    protein_to_pyg,
     to_dataframe,
     to_pdb,
 )
@@ -27,6 +29,13 @@ try:
     TORCH_AVAIL = True
 except ImportError:
     TORCH_AVAIL = False
+
+PDB_DATA_PATH = (
+    Path(__file__).resolve().parent.parent / "test_data" / "4hhb.pdb"
+)
+CIF_DATA_PATH = (
+    Path(__file__).resolve().parent.parent / "test_data" / "4hhb.cif"
+)
 
 
 def get_example_df():
@@ -99,3 +108,17 @@ def test_to_pdb():
         ppdb1.df["ATOM"][["atom_name", "residue_name", "element_symbol"]][:50],
         ppdb2.df["ATOM"][["atom_name", "residue_name", "element_symbol"]][:50],
     )
+
+
+def test_pdb_to_pyg():
+    pyg_object = protein_to_pyg(PDB_DATA_PATH)
+
+
+def test_cif_to_pyg():
+    pyg_object = protein_to_pyg(CIF_DATA_PATH)
+
+
+def test_pdb_and_cif_parsing():
+    pdb_pyg = protein_to_pyg(PDB_DATA_PATH)
+    cif_pyg = protein_to_pyg(CIF_DATA_PATH)
+    assert pdb_pyg.coords.shape == cif_pyg.coords.shape

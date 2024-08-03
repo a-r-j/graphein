@@ -50,7 +50,7 @@ except ImportError:
         conda_channel="pyg",
         pip_install=True,
     )
-    log.debug(message)
+    log.warning(message)
 
 try:
     import torch
@@ -61,7 +61,7 @@ except ImportError:
         conda_channel="pytorch",
         pip_install=True,
     )
-    log.debug(message)
+    log.warning(message)
 
 
 def get_protein_length(df: pd.DataFrame, insertions: bool = True) -> int:
@@ -258,7 +258,9 @@ def protein_to_pyg(
 
     out = Data(
         coords=protein_df_to_tensor(
-            df, atoms_to_keep=atom_types, fill_value=fill_value_coords
+            df,
+            atoms_to_keep=atom_types,
+            fill_value=fill_value_coords,
         ),
         residues=get_sequence(
             df,
@@ -271,6 +273,7 @@ def protein_to_pyg(
         residue_type=residue_type_tensor(df),
         chains=protein_df_to_chain_tensor(df),
     )
+
     if store_het:
         out.hetatms = [het_data]
 
@@ -361,7 +364,9 @@ def protein_df_to_tensor(
     """
     num_residues = get_protein_length(df, insertions=insertions)
     df = df.loc[df["atom_name"].isin(atoms_to_keep)]
-    residue_indices = pd.factorize(get_residue_id(df, unique=False))[0]
+    residue_indices = pd.factorize(
+        pd.Series(get_residue_id(df, unique=False))
+    )[0]
     atom_indices = df["atom_name"].map(lambda x: atoms_to_keep.index(x)).values
 
     positions: AtomTensor = (
@@ -370,6 +375,7 @@ def protein_df_to_tensor(
     positions[residue_indices, atom_indices] = torch.tensor(
         df[["x_coord", "y_coord", "z_coord"]].values
     ).float()
+
     return positions
 
 
