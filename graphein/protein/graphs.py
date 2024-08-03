@@ -18,6 +18,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import networkx as nx
 import numpy as np
 import pandas as pd
+from biopandas.mmcif import PandasMmcif
 from biopandas.mmtf import PandasMmtf
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
@@ -111,9 +112,16 @@ def read_pdb_to_dataframe(
             atomic_df = PandasPdb().read_pdb(path)
         elif path.endswith(".mmtf") or path.endswith(".mmtf.gz"):
             atomic_df = PandasMmtf().read_mmtf(path)
+        elif (
+            path.endswith(".cif")
+            or path.endswith(".cif.gz")
+            or path.endswith(".mmcif")
+            or path.endswith(".mmcif.gz")
+        ):
+            atomic_df = PandasMmcif().read_mmcif(path)
         else:
             raise ValueError(
-                f"File {path} must be either .pdb(.gz), .mmtf(.gz) or .ent, not {path.split('.')[-1]}"
+                f"File {path} must be either .pdb(.gz), .mmtf(.gz), .(mm)cif(.gz) or .ent, not {path.split('.')[-1]}"
             )
     elif uniprot_id is not None:
         atomic_df = PandasPdb().fetch_pdb(
@@ -121,11 +129,11 @@ def read_pdb_to_dataframe(
         )
     else:
         atomic_df = PandasPdb().fetch_pdb(pdb_code)
-
     atomic_df = atomic_df.get_model(model_index)
     if len(atomic_df.df["ATOM"]) == 0:
         raise ValueError(f"No model found for index: {model_index}")
-
+    if isinstance(atomic_df, PandasMmcif):
+        atomic_df = atomic_df.convert_to_pandas_pdb()
     return pd.concat([atomic_df.df["ATOM"], atomic_df.df["HETATM"]])
 
 

@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v3
         # See: https://github.com/marketplace/actions/setup-miniconda
       - name: Setup miniconda
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
           miniforge-variant: Mambaforge
@@ -50,4 +50,4 @@ jobs:
       - name: Run unit tests and generate coverage report
         run: pytest . --ignore-glob="tests/protein/tensor" --ignore="tests/ml/test_conversion.py" --ignore="tests/ml/test_torch_geometric_dataset.py"
       - name: Test notebook execution
-        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/higher_order_graphs.ipynb" --ignore-glob="notebooks/protein_graph_analytics.ipynb" --ignore-glob="notebooks/subgraphing_tutorial.ipynb" --ignore-glob="notebooks/splitting_a_dataset.ipynb" --ignore-glob="notebooks/protein_tensors.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/creating_datasets_from_the_pdb.ipynb"
+        run: pytest --nbval-lax notebooks/ --current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/higher_order_graphs.ipynb" --ignore-glob="notebooks/protein_graph_analytics.ipynb" --ignore-glob="notebooks/subgraphing_tutorial.ipynb" --ignore-glob="notebooks/splitting_a_dataset.ipynb" --ignore-glob="notebooks/protein_tensors.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/creating_datasets_from_the_pdb.ipynb" --ignore-glob="notebooks/grn_tutorial.ipynb"

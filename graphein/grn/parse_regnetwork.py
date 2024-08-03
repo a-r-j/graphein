@@ -18,9 +18,12 @@ import pandas as pd
 import wget
 from loguru import logger as log
 
-from graphein.utils.utils import filter_dataframe, ping
+from graphein.utils.utils import deprecated, filter_dataframe, ping
 
 
+@deprecated(
+    "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
+)
 def _download_RegNetwork(
     root_dir: Optional[Path] = None, network_type: str = "human"
 ) -> str:
@@ -86,6 +89,9 @@ def _download_RegNetwork(
     return file
 
 
+@deprecated(
+    "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
+)
 def _download_RegNetwork_regtypes(root_dir: Optional[Path] = None) -> str:
     """
     Downloads RegNetwork regulatory interactions types to the root directory.
@@ -124,6 +130,9 @@ def _download_RegNetwork_regtypes(root_dir: Optional[Path] = None) -> str:
     return file
 
 
+@deprecated(
+    "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
+)
 @functools.lru_cache()
 def load_RegNetwork_interactions(
     root_dir: Optional[Path] = None,
@@ -144,6 +153,9 @@ def load_RegNetwork_interactions(
     )
 
 
+@deprecated(
+    "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
+)
 @functools.lru_cache()
 def load_RegNetwork_regulation_types(
     root_dir: Optional[Path] = None,
@@ -168,6 +180,9 @@ def load_RegNetwork_regulation_types(
     )
 
 
+@deprecated(
+    "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
+)
 def parse_RegNetwork(
     gene_list: List[str], root_dir: Optional[Path] = None
 ) -> pd.DataFrame:
@@ -244,6 +259,9 @@ def standardise_RegNetwork(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+@deprecated(
+    "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
+)
 def RegNetwork_df(
     gene_list: List[str],
     root_dir: Optional[Path] = None,
