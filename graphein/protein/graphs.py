@@ -285,7 +285,7 @@ def remove_alt_locs(
     # Unsort
     if keep in ["max_occupancy", "min_occupancy"]:
         df = df.sort_index()
-
+    df = df.reset_index(drop=True)
     return df
 
 
