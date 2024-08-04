@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 import time
 
+from ..dependencies import requires_external_dependencies
 from .compat import Server
 
 HOST = os.environ.get("PYMOL_RPCHOST", "localhost")
@@ -29,6 +30,7 @@ class MolViewer(object):
     def _process_is_running(self):
         return self._process is not None and self._process.poll() is None
 
+    @requires_external_dependencies("pymol")
     def start(self, args=("-Q",), exe="pymol"):
         """Start the PyMOL RPC server and connect to it
         Start simple GUI (-xi), suppress all output (-Q):
