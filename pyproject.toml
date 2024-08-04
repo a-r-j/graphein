@@ -43,6 +43,8 @@ ignore-semiprivate = false
 quiet = false
 verbose = 2
 
+[tool.ruff.lint]
+select = ["NPY201"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
