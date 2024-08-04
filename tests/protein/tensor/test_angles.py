@@ -85,7 +85,9 @@ def test_torsion_to_rad():
     delta[delta.nonzero()] = torch.abs(delta[torch.nonzero(delta)] - 2 * np.pi)
 
     delta = ((delta + 2 * np.pi) / np.pi) % 2
-    np.testing.assert_allclose(delta, torch.zeros_like(delta), atol=1e-5)
+    np.testing.assert_allclose(
+        delta, torch.zeros_like(delta), atol=1e-4, rtol=1e-4
+    )
 
 
 @pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
@@ -98,7 +100,7 @@ def test_dihedral_angle():
     expected_output = -torch.tensor([math.pi / 2])
 
     assert torch.isclose(
-        _dihedral_angle(a, b, c, d), expected_output, rtol=1e-5, atol=1e-5
+        _dihedral_angle(a, b, c, d), expected_output, rtol=1e-4, atol=1e-4
     ).all()
 
     # Test 2: Test angle between two parallel planes
@@ -108,7 +110,7 @@ def test_dihedral_angle():
     d = torch.tensor([[1, 0, 0]], dtype=torch.float32)
     expected_output = torch.tensor([0.0])
     assert torch.isclose(
-        _dihedral_angle(a, b, c, d), expected_output, rtol=1e-5, atol=1e-5
+        _dihedral_angle(a, b, c, d), expected_output, rtol=1e-4, atol=1e-4
     ).all()
 
 

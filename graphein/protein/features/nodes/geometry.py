@@ -47,7 +47,9 @@ def add_sidechain_vector(
     if "rgroup_df" not in g.graph.keys():
         g.graph["rgroup_df"] = compute_rgroup_dataframe(g.graph["raw_pdb_df"])
 
-    sc_centroid = g.graph["rgroup_df"].groupby("node_id").mean()
+    sc_centroid = (
+        g.graph["rgroup_df"].groupby("node_id").mean(numeric_only=True)
+    )
 
     # Iterate over nodes and compute vector
     for n, d in g.nodes(data=True):
