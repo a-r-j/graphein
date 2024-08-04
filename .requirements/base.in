@@ -8,7 +8,7 @@ looseversion
 matplotlib>=3.4.3
 multipledispatch
 networkx
-numpy>2.0.0
+numpy
 pandas
 plotly
 pydantic
