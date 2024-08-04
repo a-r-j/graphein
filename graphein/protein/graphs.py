@@ -1138,7 +1138,7 @@ def number_groups_of_runs(list_of_values: List[Any]) -> List[str]:
     """
     df = pd.DataFrame({"val": list_of_values})
     df["idx"] = df["val"].shift() != df["val"]
-    df["sum"] = df.groupby("val")["idx"].cumsum()
+    df["sum"] = df.groupby("val")["idx"].cumsum(numeric_only=True)
     return list(df["val"].astype(str) + df["sum"].astype(str))
 
 

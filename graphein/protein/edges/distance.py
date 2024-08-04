@@ -1210,7 +1210,7 @@ def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
     """
     return (
         ring_atom_df.groupby("node_id")
-        .mean()[["x_coord", "y_coord", "z_coord"]]
+        .mean(numeric_only=True)[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
     )
 

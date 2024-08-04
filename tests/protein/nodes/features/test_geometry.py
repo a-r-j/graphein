@@ -138,7 +138,7 @@ def test_add_sidechain_vector():
             sc_true = np.array(
                 g.graph["rgroup_df"]
                 .groupby("node_id")
-                .mean()
+                .mean(numeric_only=True)
                 .loc[n][["x_coord", "y_coord", "z_coord"]]
             )
             np.testing.assert_almost_equal(
