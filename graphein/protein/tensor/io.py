@@ -6,6 +6,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+import collections
 import os
 from typing import List, Optional, Union
 
@@ -218,13 +219,24 @@ def protein_to_pyg(
     if store_het:
         hetatms = df.loc[df.record_name == "HETATM"]
         all_hets = list(set(hetatms.residue_name))
-        het_coords = {}
+        het_data = collections.defaultdict(dict)
         for het in all_hets:
-            het_coords[het] = torch.tensor(
+            het_data[het]["coords"] = torch.tensor(
                 hetatms.loc[hetatms.residue_name == het][
                     ["x_coord", "y_coord", "z_coord"]
                 ].values
             )
+            het_data[het]["atoms"] = hetatms.loc[hetatms.residue_name == het][
+                "atom_name"
+            ].values
+            het_data[het]["residue_number"] = torch.tensor(
+                hetatms.loc[hetatms.residue_name == het][
+                    "residue_number"
+                ].values
+            )
+            het_data[het]["element_symbol"] = hetatms.loc[
+                hetatms.residue_name == het
+            ]["element_symbol"].values
 
     df = df.loc[df.record_name == "ATOM"]
     if remove_nonstandard:
@@ -263,7 +275,7 @@ def protein_to_pyg(
     )
 
     if store_het:
-        out.hetatms = [het_coords]
+        out.hetatms = [het_data]
 
     if store_bfactor:
         # group by residue_id and average b_factor per residue
