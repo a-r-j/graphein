@@ -1,4 +1,4 @@
-pandas>=2.0.0
+pandas
 biopandas>=0.5.1
 biopython
 bioservices>=1.10.0
@@ -8,7 +8,7 @@ looseversion
 matplotlib>=3.4.3
 multipledispatch
 networkx
-numpy<1.24.0
+numpy>2.0.0
 pandas
 plotly
 pydantic
