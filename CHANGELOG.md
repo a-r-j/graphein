@@ -8,6 +8,7 @@
 * Add missing modified residue `AYA` to constants [#390](https://github.com/a-r-j/graphein/pull/390)
 * Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs` [#375](https://github.com/a-r-j/graphein/pull/375)
 * Fix cluster file loading bug in `pdb_data.py` [#396](https://github.com/a-r-j/graphein/pull/396)
+* Improves storage of hetatm data in `graphein.protein.tensor.io.protein_to_pyg` [#397](https://github.com/a-r-j/graphein/pull/397).
 
 #### Misc
 * set logging to false by default and added mmcif support [#402](https://github.com/a-r-j/graphein/pull/402)
