@@ -15,6 +15,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+import cpdb
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -109,9 +110,13 @@ def read_pdb_to_dataframe(
             or path.endswith(".pdb.gz")
             or path.endswith(".ent")
         ):
-            atomic_df = PandasPdb().read_pdb(path)
+            atomic_df = cpdb.parse(path)
         elif path.endswith(".mmtf") or path.endswith(".mmtf.gz"):
             atomic_df = PandasMmtf().read_mmtf(path)
+            atomic_df = atomic_df.get_model(model_index)
+            atomic_df = pd.concat(
+                [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
+            )
         elif (
             path.endswith(".cif")
             or path.endswith(".cif.gz")
@@ -119,22 +124,27 @@ def read_pdb_to_dataframe(
             or path.endswith(".mmcif.gz")
         ):
             atomic_df = PandasMmcif().read_mmcif(path)
+            atomic_df = atomic_df.get_model(model_index)
+            atomic_df = atomic_df.convert_to_pandas_pdb()
+            atomic_df = pd.concat(
+                [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
+            )
         else:
             raise ValueError(
                 f"File {path} must be either .pdb(.gz), .mmtf(.gz), .(mm)cif(.gz) or .ent, not {path.split('.')[-1]}"
             )
     elif uniprot_id is not None:
-        atomic_df = PandasPdb().fetch_pdb(
-            uniprot_id=uniprot_id, source="alphafold2-v3"
-        )
+        atomic_df = cpdb.parse(uniprot_id=uniprot_id)
     else:
-        atomic_df = PandasPdb().fetch_pdb(pdb_code)
-    atomic_df = atomic_df.get_model(model_index)
-    if len(atomic_df.df["ATOM"]) == 0:
+        atomic_df = cpdb.parse(pdb_code=pdb_code)
+
+    if "model_idx" in atomic_df.columns:
+        atomic_df = atomic_df.loc[atomic_df["model_idx"] == model_index]
+
+    if len(atomic_df) == 0:
         raise ValueError(f"No model found for index: {model_index}")
-    if isinstance(atomic_df, PandasMmcif):
-        atomic_df = atomic_df.convert_to_pandas_pdb()
-    return pd.concat([atomic_df.df["ATOM"], atomic_df.df["HETATM"]])
+
+    return atomic_df
 
 
 def label_node_id(

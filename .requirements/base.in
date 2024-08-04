@@ -2,13 +2,15 @@ pandas<2.0.0
 biopandas>=0.5.1
 biopython
 bioservices>=1.10.0
+cpdb-protein==0.2.0
+cython
 deepdiff
 loguru
 looseversion
 matplotlib>=3.4.3
 multipledispatch
 networkx
-numpy<1.24.0
+numpy
 pandas
 plotly
 pydantic
