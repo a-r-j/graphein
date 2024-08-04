@@ -4,6 +4,8 @@
 * Fixes progress bar for `download_pdb_multiprocessing`. [#394](https://github.com/a-r-j/graphein/pull/394)
 * Add support for DSSP >4. Backwards compatibility is still supported. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#353](https://github.com/a-r-j/graphein/issues/353).
 * Fixes bug where RSA features are missing from nodes with insertion codes. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#354](https://github.com/a-r-j/graphein/issues/353).
+* Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs`. [#375](https://github.com/a-r-j/graphein/pull/375)
+* Add missing modified residue `AYA` to constants [#390](https://github.com/a-r-j/graphein/pull/390)
 * Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs` [#375](https://github.com/a-r-j/graphein/pull/375)
 * Fix cluster file loading bug in `pdb_data.py` [#396](https://github.com/a-r-j/graphein/pull/396)
 
@@ -80,6 +82,7 @@ https://github.com/a-r-j/graphein/pull/334
 
 #### Other Changes
 
+-   Uses [`cpdb`](https://github.com/a-r-j/CPDB) as default PDB file parser for improved performance. [#323](https://github.com/a-r-j/graphein/pull/323).
 -   Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
 -   Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
 -   Adds support for `.ent` files to `graphein.protein.graphs.read_pdb_to_dataframe`. [#310](https://github.com/a-r-j/graphein/pull/310)

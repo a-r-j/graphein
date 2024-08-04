@@ -16,5 +16,5 @@ except ImportError:
 def test_save_and_load_protein():
     a = Protein().from_pdb_code("4hhb")
     torch.save(a, "4hhb.pt")
-    b = torch.load("4hhb.pt")
+    b = torch.load("4hhb.pt", weights_only=False)
     assert a == b
