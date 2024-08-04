@@ -148,7 +148,7 @@ def initialize(
     """
 
     DP = np.empty((N, N))
-    DP[:] = np.NAN
+    DP[:] = np.nan
     for k in range(MIN_LOOP_LENGTH):
         for i in range(N - k):
             j = i + k
