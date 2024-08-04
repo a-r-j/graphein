@@ -10,6 +10,7 @@
 * Fix bug where the `deprotonate` argument is not wired up to `graphein.protein.graphs.construct_graphs` [#375](https://github.com/a-r-j/graphein/pull/375)
 * Fix cluster file loading bug in `pdb_data.py` [#396](https://github.com/a-r-j/graphein/pull/396)
 * Uses [`cpdb`](https://github.com/a-r-j/CPDB) as default PDB file parser for improved performance. [#323](https://github.com/a-r-j/graphein/pull/323).
+* Improves storage of hetatm data in `graphein.protein.tensor.io.protein_to_pyg` [#397](https://github.com/a-r-j/graphein/pull/397).
 
 #### Misc
 
