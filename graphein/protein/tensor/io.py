@@ -267,7 +267,9 @@ def protein_to_pyg(
 
     if store_bfactor:
         # group by residue_id and average b_factor per residue
-        residue_bfactors = df.groupby("residue_id")["b_factor"].mean(numeric_only=True)
+        residue_bfactors = df.groupby("residue_id")["b_factor"].mean(
+            numeric_only=True
+        )
         out.bfactor = torch.from_numpy(residue_bfactors.values)
 
     return out
