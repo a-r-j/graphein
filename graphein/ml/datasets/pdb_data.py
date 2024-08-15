@@ -1085,7 +1085,10 @@ class PDBManager:
         update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules with a given oligmeric length.
-        I.e. ``df.n_chains ==/</>  oligomer``
+        I.e. ``df.n_chains ==/ =< / >=  oligomer``
+
+        N.b. the `comparison` arguments for `"greater"` and `"less"` are
+        `>=` and `=<` respectively.
 
         :param length: Oligomeric length of molecule, defaults to ``1``.
         :type length: int
@@ -1106,9 +1109,9 @@ class PDBManager:
         if comparison == "equal":
             df = splits_df.loc[splits_df.n_chains == oligomer]
         elif comparison == "less":
-            df = splits_df.loc[splits_df.n_chains < oligomer]
+            df = splits_df.loc[splits_df.n_chains <= oligomer]
         elif comparison == "greater":
-            df = splits_df.loc[splits_df.n_chains > oligomer]
+            df = splits_df.loc[splits_df.n_chains >= oligomer]
         else:
             raise ValueError(
                 "Comparison must be one of 'equal', 'less', or 'greater'."
