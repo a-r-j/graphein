@@ -1,6 +1,7 @@
 ### 1.7.7 - 03/08/2024
 
 #### Bugfixes
+
 * Hotfix greater than/less than operations in PDBManager oligmer selection to include equality. [#408](https://github.com/a-r-j/graphein/pull/408).
 * Fixes progress bar for `download_pdb_multiprocessing`. [#394](https://github.com/a-r-j/graphein/pull/394)
 * Add support for DSSP >4. Backwards compatibility is still supported. [#355](https://github.com/a-r-j/graphein/pull/355). Fixes [#353](https://github.com/a-r-j/graphein/issues/353).
