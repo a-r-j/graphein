@@ -120,7 +120,6 @@ class PDBManager:
         ).name
 
         self.list_columns = ["ligands"]
-        self.labels = labels
 
         # Data
         self.download_metadata()
@@ -166,10 +165,9 @@ class PDBManager:
         self._download_entry_metadata()
         self._download_exp_type()
         self._download_pdb_availability()
-        if self.labels:
-            self._download_pdb_chain_cath_uniprot_map()
-            self._download_cath_id_cath_code_map()
-            self._download_pdb_chain_ec_number_map()
+        self._download_pdb_chain_cath_uniprot_map()
+        self._download_cath_id_cath_code_map()
+        self._download_pdb_chain_ec_number_map()
 
     def get_unavailable_pdb_files(
         self, splits: Optional[List[str]] = None
@@ -645,12 +643,15 @@ class PDBManager:
         with gzip.open(
             self.root_dir / self.cath_id_cath_code_filename, "rt"
         ) as f:
+            print(f)
             for line in f:
+                print(line)
                 try:
                     cath_id, cath_version, cath_code, cath_segment = (
                         line.strip().split()
                     )
                     cath_mapping[cath_id] = cath_code
+                    print(cath_id, cath_code)
                 except ValueError:
                     continue
         return cath_mapping
@@ -1085,7 +1086,10 @@ class PDBManager:
         update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules with a given oligmeric length.
-        I.e. ``df.n_chains ==/</>  oligomer``
+        I.e. ``df.n_chains ==/ =< / >=  oligomer``
+
+        N.b. the `comparison` arguments for `"greater"` and `"less"` are
+        `>=` and `=<` respectively.
 
         :param length: Oligomeric length of molecule, defaults to ``1``.
         :type length: int
@@ -1106,9 +1110,9 @@ class PDBManager:
         if comparison == "equal":
             df = splits_df.loc[splits_df.n_chains == oligomer]
         elif comparison == "less":
-            df = splits_df.loc[splits_df.n_chains < oligomer]
+            df = splits_df.loc[splits_df.n_chains <= oligomer]
         elif comparison == "greater":
-            df = splits_df.loc[splits_df.n_chains > oligomer]
+            df = splits_df.loc[splits_df.n_chains >= oligomer]
         else:
             raise ValueError(
                 "Comparison must be one of 'equal', 'less', or 'greater'."
