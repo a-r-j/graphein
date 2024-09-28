@@ -1,5 +1,8 @@
 ### 1.7.7 - 03/08/2024
 
+#### New Features
+* Adds RFAM Manager [#324](https://github.com/a-r-j/graphein/pull/324)
+
 #### Bugfixes
 
 * Hotfix greater than/less than operations in PDBManager oligmer selection to include equality. [#408](https://github.com/a-r-j/graphein/pull/408).
