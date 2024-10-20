@@ -12,7 +12,7 @@ from graphein.utils.utils import *
 from .testing import *
 
 __author__ = "Arian Jamasb <arian@jamasb.io>"
-__version__ = "1.7.6"
+__version__ = "1.7.7"
 
 
 logger.configure(
@@ -20,6 +20,8 @@ logger.configure(
         {"sink": RichHandler(rich_tracebacks=True), "format": "{message}"}
     ]
 )
+
+logger.disable("graphein")
 
 
 def verbose(enabled: bool = False):

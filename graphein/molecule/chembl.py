@@ -12,7 +12,10 @@ import networkx as nx
 # Code Repository: https://github.com/a-r-j/graphein
 from bioservices import ChEMBL
 
+from graphein.utils.dependencies import requires_python_libs
 
+
+@requires_python_libs("bioservices")
 def get_smiles_from_chembl(chembl_id: str) -> str:
     """Retrieves a SMILE string from a ChEMBL ID.
 
@@ -27,6 +30,7 @@ def get_smiles_from_chembl(chembl_id: str) -> str:
     return data["molecule_structures"]["canonical_smiles"]
 
 
+@requires_python_libs("bioservices")
 def get_chembl_id_from_smiles(smiles: str) -> str:
     """Retrieves a ChEMBL ID from a SMILE string.
 

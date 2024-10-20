@@ -31,7 +31,7 @@ except ImportError:
         conda_channel="pytorch",
         pip_install=True,
     )
-    log.warning(message)
+    log.debug(message)
 
 
 def get_sequence(

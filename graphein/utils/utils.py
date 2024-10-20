@@ -7,11 +7,13 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-import os
+import functools
+import inspect
 import platform
 import subprocess
 import sys
-from typing import Any, Callable, Iterable, List, Optional
+import warnings
+from typing import Any, Callable, Iterable, List
 
 import networkx as nx
 import numpy as np
@@ -23,10 +25,6 @@ try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
-
-
-AggregationType: List["sum", "mean", "max", "min", "median"]
-"""Types of aggregations for features."""
 
 
 def onek_encoding_unk(
@@ -401,11 +399,13 @@ def get_graph_attribute_names(g: nx.Graph) -> List[str]:
     return list(g.graph.keys())
 
 
-def parse_aggregation_type(aggregation_type: AggregationType) -> Callable:
+def parse_aggregation_type(
+    aggregation_type: Literal["sum", "mean", "max", "min", "median"]
+) -> Callable:
     """Returns an aggregation function by name
 
     :param aggregation_type: One of: ``["max", "min", "mean", "median", "sum"]``.
-    :type aggregration_type: AggregationType
+    :type aggregration_type: Literal["sum", "mean", "max", "min", "median"]
     :returns: NumPy aggregation function.
     :rtype: Callable
     :raises ValueError: if aggregation type is not supported.
@@ -426,3 +426,61 @@ def parse_aggregation_type(aggregation_type: AggregationType) -> Callable:
             f" Please use min, max, mean, median, sum"
         )
     return func
+
+
+_string_types = (type(b""), type(""))
+
+
+def deprecated(reason):
+    """
+    This is a decorator which can be used to mark functions
+    as deprecated. It will result in a warning being emitted
+    when the function is used.
+    """
+
+    if isinstance(reason, _string_types):
+
+        def decorator(func1):
+            if inspect.isclass(func1):
+                fmt1 = "Call to deprecated class {name} ({reason})."
+            else:
+                fmt1 = "Call to deprecated function {name} ({reason})."
+
+            @functools.wraps(func1)
+            def new_func1(*args, **kwargs):
+                warnings.simplefilter("always", DeprecationWarning)
+                warnings.warn(
+                    fmt1.format(name=func1.__name__, reason=reason),
+                    category=DeprecationWarning,
+                    stacklevel=2,
+                )
+                warnings.simplefilter("default", DeprecationWarning)
+                return func1(*args, **kwargs)
+
+            return new_func1
+
+        return decorator
+
+    elif inspect.isclass(reason) or inspect.isfunction(reason):
+        func2 = reason
+
+        if inspect.isclass(func2):
+            fmt2 = "Call to deprecated class {name}."
+        else:
+            fmt2 = "Call to deprecated function {name}."
+
+        @functools.wraps(func2)
+        def new_func2(*args, **kwargs):
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                fmt2.format(name=func2.__name__),
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            warnings.simplefilter("default", DeprecationWarning)
+            return func2(*args, **kwargs)
+
+        return new_func2
+
+    else:
+        raise TypeError(repr(type(reason)))

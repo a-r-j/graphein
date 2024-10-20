@@ -17,7 +17,7 @@ import numpy as np
 from loguru import logger as log
 from tqdm.contrib.concurrent import process_map, thread_map
 
-from graphein.utils.dependencies import import_message
+from graphein.utils.dependencies import import_message, requires_python_libs
 from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
@@ -36,9 +36,11 @@ try:
     from rdkit import Chem
     from rdkit.Chem import AllChem
 except ImportError:
-    import_message("graphein.molecule.graphs", "rdkit", "rdkit", True)
+    msg = import_message("graphein.molecule.graphs", "rdkit", "rdkit", True)
+    log.warning(msg)
 
 
+@requires_python_libs("rdkit")
 def initialise_graph_with_metadata(
     name: str,
     rdmol: rdkit.Mol,
@@ -60,6 +62,7 @@ def initialise_graph_with_metadata(
     )
 
 
+@requires_python_libs("rdkit")
 def add_nodes_to_graph(
     G: nx.Graph,
     verbose: bool = False,
@@ -92,6 +95,7 @@ def add_nodes_to_graph(
     return G
 
 
+@requires_python_libs("rdkit")
 def generate_3d(
     mol: Union[nx.Graph, Chem.Mol], recompute_graph: bool = False
 ) -> Union[nx.Graph, rdkit.Chem.rdchem.Mol]:
@@ -130,6 +134,7 @@ def generate_3d(
     return rdmol
 
 
+@requires_python_libs("rdkit")
 def construct_graph(
     config: Optional[MoleculeGraphConfig] = None,
     mol: Optional[rdkit.Mol] = None,

@@ -6,6 +6,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+import collections
 import os
 from typing import List, Optional, Union
 
@@ -108,6 +109,8 @@ def protein_to_pyg(
     atom_types: List[str] = PROTEIN_ATOMS,
     remove_nonstandard: bool = True,
     store_het: bool = False,
+    store_bfactor: bool = False,
+    fill_value_coords: float = 1e-5,
 ) -> Data:
     """
     Parses a protein (from either: a PDB code, PDB file or a UniProt ID
@@ -158,6 +161,12 @@ def protein_to_pyg(
     :param store_het: Whether or not to store heteroatoms in the ``Data``
         object. Default is ``False``.
     :type store_het: bool
+    :param store_bfactor: Whether or not to store bfactors in the ``Data``
+        object. Default is ``False.
+    :type store_bfactor: bool
+    :param fill_value_coords: Fill value to use for positions in atom37
+        representation that are not filled. Defaults to 1e-5
+    :type fill_value_coords: float
     :returns: ``Data`` object with attributes: ``x`` (AtomTensor), ``residues``
         (list of 3-letter residue codes), id (ID of protein), residue_id (E.g.
         ``"A:SER:1"``), residue_type (torch.Tensor), ``chains`` (torch.Tensor).
@@ -210,13 +219,24 @@ def protein_to_pyg(
     if store_het:
         hetatms = df.loc[df.record_name == "HETATM"]
         all_hets = list(set(hetatms.residue_name))
-        het_coords = {}
+        het_data = collections.defaultdict(dict)
         for het in all_hets:
-            het_coords[het] = torch.tensor(
+            het_data[het]["coords"] = torch.tensor(
                 hetatms.loc[hetatms.residue_name == het][
                     ["x_coord", "y_coord", "z_coord"]
                 ].values
             )
+            het_data[het]["atoms"] = hetatms.loc[hetatms.residue_name == het][
+                "atom_name"
+            ].values
+            het_data[het]["residue_number"] = torch.tensor(
+                hetatms.loc[hetatms.residue_name == het][
+                    "residue_number"
+                ].values
+            )
+            het_data[het]["element_symbol"] = hetatms.loc[
+                hetatms.residue_name == het
+            ]["element_symbol"].values
 
     df = df.loc[df.record_name == "ATOM"]
     if remove_nonstandard:
@@ -237,7 +257,11 @@ def protein_to_pyg(
         df["residue_id"] = df.residue_id + ":" + df.insertion
 
     out = Data(
-        coords=protein_df_to_tensor(df, atoms_to_keep=atom_types),
+        coords=protein_df_to_tensor(
+            df,
+            atoms_to_keep=atom_types,
+            fill_value=fill_value_coords,
+        ),
         residues=get_sequence(
             df,
             chains=chain_selection,
@@ -249,8 +273,17 @@ def protein_to_pyg(
         residue_type=residue_type_tensor(df),
         chains=protein_df_to_chain_tensor(df),
     )
+
     if store_het:
-        out.hetatms = [het_coords]
+        out.hetatms = [het_data]
+
+    if store_bfactor:
+        # group by residue_id and average b_factor per residue
+        residue_bfactors = df.groupby("residue_id")["b_factor"].mean(
+            numeric_only=True
+        )
+        out.bfactor = torch.from_numpy(residue_bfactors.values)
+
     return out
 
 
@@ -333,7 +366,9 @@ def protein_df_to_tensor(
     """
     num_residues = get_protein_length(df, insertions=insertions)
     df = df.loc[df["atom_name"].isin(atoms_to_keep)]
-    residue_indices = pd.factorize(get_residue_id(df, unique=False))[0]
+    residue_indices = pd.factorize(
+        pd.Series(get_residue_id(df, unique=False))
+    )[0]
     atom_indices = df["atom_name"].map(lambda x: atoms_to_keep.index(x)).values
 
     positions: AtomTensor = (
@@ -342,6 +377,7 @@ def protein_df_to_tensor(
     positions[residue_indices, atom_indices] = torch.tensor(
         df[["x_coord", "y_coord", "z_coord"]].values
     ).float()
+
     return positions
 
 

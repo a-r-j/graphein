@@ -8,16 +8,18 @@
 from __future__ import annotations
 
 import os
+import re
 import tempfile
 from typing import Any, Dict, Optional
 
 import networkx as nx
 import pandas as pd
 from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
+from loguru import logger
 
 from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
 from graphein.protein.utils import save_pdb_df_to_pdb
-from graphein.utils.dependencies import is_tool
+from graphein.utils.dependencies import is_tool, requires_external_dependencies
 
 DSSP_COLS = [
     "chain",
@@ -69,6 +71,7 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
     return pd.DataFrame.from_records(appender, columns=DSSP_COLS)
 
 
+@requires_external_dependencies("mkdssp")
 def add_dssp_df(
     G: nx.Graph,
     dssp_config: Optional[DSSPConfig],
@@ -78,12 +81,13 @@ def add_dssp_df(
 
     :param G: Input protein graph
     :param G: nx.Graph
-    :param dssp_config: DSSPConfig object. Specifies which executable to run. Located in graphein.protein.config
+    :param dssp_config: DSSPConfig object. Specifies which executable to run.
+        Located in `:obj:graphein.protein.config`.
     :type dssp_config: DSSPConfig, optional
     :return: Protein graph with DSSP dataframe added
     :rtype: nx.Graph
     """
-
+    # if dssp_config is None:
     config = G.graph["config"]
     pdb_code = G.graph["pdb_code"]
     path = G.graph["path"]
@@ -106,35 +110,64 @@ def add_dssp_df(
             if os.path.isfile(config.pdb_dir / (pdb_code + ".pdb")):
                 pdb_file = config.pdb_dir / (pdb_code + ".pdb")
 
+    # get dssp version string
+    dssp_version = re.search(
+        r"version ([\d\.]+)", os.popen(f"{executable} --version").read()
+    ).group(
+        1
+    )  # e.g. "4.0.4"
     # Check for existence of pdb file. If not, reconstructs it from the raw df.
     if pdb_file:
-        dssp_dict = dssp_dict_from_pdb_file(pdb_file, DSSP=executable)
+        dssp_dict = dssp_dict_from_pdb_file(
+            pdb_file, DSSP=executable, dssp_version=dssp_version
+        )
     else:
         with tempfile.TemporaryDirectory() as tmpdirname:
             save_pdb_df_to_pdb(
                 G.graph["raw_pdb_df"], tmpdirname + f"/{pdb_name}.pdb"
             )
             dssp_dict = dssp_dict_from_pdb_file(
-                tmpdirname + f"/{pdb_name}.pdb", DSSP=executable
+                tmpdirname + f"/{pdb_name}.pdb",
+                DSSP=executable,
+                dssp_version=dssp_version,
             )
 
+    if len(dssp_dict[0]) == 0:
+        raise ValueError(
+            "DSSP could not be calculated. Check DSSP version "
+            f"({dssp_version}) orthat the input PDB file is valid."
+        )
+
     if config.verbose:
-        print(f"Using DSSP executable '{executable}'")
+        logger.debug(f"Using DSSP executable '{executable}'")
 
     dssp_dict = parse_dssp_df(dssp_dict)
     # Convert 1 letter aa code to 3 letter
     dssp_dict["aa"] = dssp_dict["aa"].map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
 
     # Resolve UNKs
-    dssp_dict.loc[dssp_dict["aa"] == "UNK", "aa"] = (
-        G.graph["pdb_df"]
-        .loc[
-            G.graph["pdb_df"].residue_number.isin(
-                dssp_dict.loc[dssp_dict["aa"] == "UNK"]["resnum"]
-            )
-        ]["residue_name"]
-        .values
-    )
+    # NOTE: the original didn't work if HETATM residues exist in DSSP output
+    _raw_pdb_df = G.graph["raw_pdb_df"].copy().drop_duplicates("node_id")
+    _dssp_df_unk = dssp_dict.loc[dssp_dict["aa"] == "UNK"][
+        ["chain", "resnum", "icode"]
+    ]
+    for chain, resnum, icode in _dssp_df_unk.values:
+        dssp_dict.loc[
+            (dssp_dict["chain"] == chain)
+            & (dssp_dict["resnum"] == resnum)  # e.g. 'H'
+            & (dssp_dict["icode"] == icode),  # e.g. 100  # e.g. 'E' or ' '
+            "aa",
+        ] = _raw_pdb_df.loc[
+            (_raw_pdb_df["chain_id"] == chain)
+            & (_raw_pdb_df["residue_number"] == resnum)
+            & (
+                _raw_pdb_df["insertion"] == icode.strip()
+            )  # why strip?: dssp icode is a space, raw_pdb_df is empty string
+        ][
+            "residue_name"
+        ].values[
+            0
+        ]
 
     # Construct node IDs
     dssp_dict["node_id"] = (
@@ -144,11 +177,19 @@ def add_dssp_df(
         + ":"
         + dssp_dict["resnum"].astype(str)
     )
+    if G.graph["config"].insertions:
+        dssp_dict["node_id"] = (
+            dssp_dict["node_id"] + ":" + dssp_dict["icode"].apply(str)
+        )
+        # Replace trailing : for non insertions
+        dssp_dict["node_id"] = dssp_dict["node_id"].str.replace(
+            r":\s*$", "", regex=True
+        )
 
     dssp_dict.set_index("node_id", inplace=True)
 
     if config.verbose:
-        print(dssp_dict)
+        logger.debug(dssp_dict)
 
     # Assign DSSP Dict
     G.graph["dssp_df"] = dssp_dict
@@ -212,7 +253,7 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
         nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
 
     if config.verbose:
-        print("Added " + feature + " features to graph nodes")
+        logger.debug("Added " + feature + " features to graph nodes")
 
     return G
 

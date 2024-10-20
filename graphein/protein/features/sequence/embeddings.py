@@ -31,7 +31,7 @@ except ImportError:
         pip_install=True,
         conda_channel="pytorch",
     )
-    log.warning(message)
+    log.debug(message)
 
 try:
     import biovec
@@ -42,7 +42,7 @@ except ImportError:
         pip_install=True,
         extras=True,
     )
-    log.warning(message)
+    log.debug(message)
 
 
 @lru_cache()

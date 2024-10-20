@@ -15,7 +15,11 @@ from typing import List, NamedTuple, Optional, Tuple
 from loguru import logger as log
 
 from graphein.protein.config import ProteinMeshConfig
-from graphein.utils.dependencies import import_message
+from graphein.utils.dependencies import (
+    import_message,
+    requires_external_dependencies,
+    requires_python_libs,
+)
 from graphein.utils.pymol import MolViewer
 
 try:
@@ -27,7 +31,7 @@ except ImportError:
         conda_channel="pytorch3d",
         pip_install=True,
     )
-    log.warning(message)
+    log.debug(message)
 
 
 def check_for_pymol_installation():
@@ -61,6 +65,7 @@ def configure_pymol_session(
     pymol.start([config.pymol_command_line_options])
 
 
+@requires_external_dependencies("pymol")
 def get_obj_file(
     pdb_file: Optional[str] = None,
     pdb_code: Optional[str] = None,
@@ -83,8 +88,6 @@ def get_obj_file(
     :rtype: str
     """
     pymol = MolViewer()
-
-    check_for_pymol_installation()
 
     # Check inputs
     if not pdb_code and not pdb_file:
@@ -136,6 +139,7 @@ def parse_pymol_commands(config: ProteinMeshConfig) -> List[str]:
         return config.pymol_commands
 
 
+@requires_external_dependencies("pymol")
 def run_pymol_commands(commands: List[str]) -> None:
     """
     Runs Pymol Commands.
@@ -150,6 +154,7 @@ def run_pymol_commands(commands: List[str]) -> None:
         pymol.do(c)
 
 
+@requires_python_libs("pytorch3d")
 def create_mesh(
     pdb_file: Optional[str] = None,
     pdb_code: Optional[str] = None,
@@ -186,6 +191,7 @@ def create_mesh(
     return verts, faces, aux
 
 
+@requires_python_libs("torch")
 def normalize_and_center_mesh_vertices(
     verts: torch.FloatTensor,
 ) -> torch.FloatTensor:
@@ -207,6 +213,7 @@ def normalize_and_center_mesh_vertices(
     return verts
 
 
+@requires_python_libs("torch", "pytorch3d")
 def convert_verts_and_face_to_mesh(
     verts: torch.FloatTensor, faces: NamedTuple
 ) -> Meshes:
