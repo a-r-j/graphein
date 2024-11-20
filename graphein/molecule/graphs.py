@@ -27,8 +27,7 @@ from graphein.utils.utils import (
 
 from .chembl import get_smiles_from_chembl
 from .config import MoleculeGraphConfig
-from .edges.atomic import add_atom_bonds
-from .utils import compute_fragments
+from .utils import compute_fragments, get_clique_mol, get_smiles, tree_decomp
 from .zinc import get_smiles_from_zinc
 
 try:
@@ -142,6 +141,7 @@ def construct_graph(
     smiles: Optional[str] = None,
     zinc_id: Optional[str] = None,
     chembl_id: Optional[str] = None,
+    junction_tree: bool = False,
     generate_conformer: Optional[bool] = False,
     edge_construction_funcs: Optional[str] = None,
     edge_annotation_funcs: Optional[List[Callable]] = None,
@@ -172,6 +172,9 @@ def construct_graph(
     :type zinc_id: str, optional
     :param chembl_id: ChEMBL ID to build graph from. Default is ``None``.
     :type chembl_id: str, optional
+    :param junction_tree: boolean to indicate whether to use a junction tree or not. Default is ``False``.
+    :type junction_tree: bool
+    :param generate_conformer: Whether to generate a conformer for the molecule. Defaults to ``False``.
     :param generate_conformer: Whether to generate a conformer for the molecule.
         Defaults to ``False``.
     :type generate_conformer: bool, optional
@@ -277,30 +280,21 @@ def construct_graph(
     if config.add_hs:
         rdmol = Chem.AddHs(rdmol)
 
-    if coords is None:
-        # If no coords are provided, add edges by bonds
-        config.edge_construction_functions = [add_atom_bonds]
-        g = initialise_graph_with_metadata(
-            name=name,
-            rdmol=rdmol,
-            coords=None,
-        )
-    else:
-        # If config params are provided, overwrite them
-        config.edge_construction_functions = (
-            edge_construction_funcs
-            if config.edge_construction_functions is None
-            else config.edge_construction_functions
-        )
-
-        g = initialise_graph_with_metadata(
-            name=name,
-            rdmol=rdmol,
-            coords=np.asarray(coords),
-        )
+    # If no coords are provided, add edges by bonds
+    # config.edge_construction_functions = [add_atom_bonds]
+    g = initialise_graph_with_metadata(
+        name=name,
+        rdmol=rdmol,
+        coords=coords,
+    )
 
     # Add nodes to graph
-    g = add_nodes_to_graph(g)
+    if junction_tree:
+        jt = construct_junction_tree(rdmol)
+        jt.graph = g.graph
+        g = jt
+    else:
+        g = add_nodes_to_graph(g)
 
     # Add config to graph
     g.graph["config"] = config
@@ -323,6 +317,34 @@ def construct_graph(
     if config.edge_metadata_functions is not None:
         g = annotate_edge_metadata(g, config.edge_metadata_functions)
 
+    return g
+
+
+def construct_junction_tree(mol=Chem.Mol) -> nx.Graph:
+    """
+    Constructs molecule structure junction tree graph from a ``smiles``.
+
+    :param mol: smiles string to build graph from. Default is ``None``.
+    :type mol: str, optional # TODO docstring
+    :return: Molecule Structure Junction Tree Graph
+    :type: nx.Graph
+    """
+    g = nx.Graph()
+
+    cliques, edges = tree_decomp(mol)
+    clique_map = {}
+    for i, c in enumerate(cliques):
+        cmol = get_clique_mol(mol, c)
+        id = f"{get_smiles(cmol)}:{str(i)}"
+        g.add_node(id)
+        clique_map[i] = id
+
+    for n1, n2 in edges:
+        n1, n2 = clique_map[n1], clique_map[n2]
+        if g.has_edge(n1, n2):
+            g.edges[n1, n2]["kind"].add("junction_tree")
+        else:
+            g.add_edge(n1, n2, kind={"junction_tree"})
     return g
 
 
