@@ -337,7 +337,7 @@ def get_mol_weight(mol: Union[nx.Graph, Chem.Mol]) -> float:
 
 @requires_python_libs("rdkit")
 def get_qed_score(
-    mol: Union[nx.Graph, rdkit.Chem.rdchem.Mol]
+    mol: Union[nx.Graph, rdkit.Chem.rdchem.Mol],
 ) -> Union[float, None]:
     """Computes the Quantitative Estimate of Druglikeness (QED) score for a molecule or molecular graph.
 
