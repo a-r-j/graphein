@@ -50,8 +50,8 @@ from graphein.protein.graphs import (
 )
 from graphein.utils.dependencies import is_tool
 
-PDB_DATA_PATH   = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
-CIF_DATA_PATH   = Path(__file__).resolve().parent / "test_data" / "4hhb.cif"
+PDB_DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
+CIF_DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.cif"
 
 DSSP_AVAILABLE = is_tool("mkdssp")
 
@@ -246,7 +246,7 @@ def test_intramolecular_edges():
 
 def test_distance_edges():
     """Example-based test that distance-based edge construction works correctly,
-    and that edges fulfill the distance threshold condition. 
+    and that edges fulfill the distance threshold condition.
 
     Uses 4hhb and P04629 PDB file as an example test case.
     """
@@ -278,27 +278,25 @@ def test_distance_edges():
 
     """Use AlphaFold structure."""
     file_path = Path(__file__).parent / "test_data" / "P04629.pdb"
-
     threshold_distance = 10.0
-    new_edge_funcs = {"edge_construction_functions": [
-        partial(add_distance_threshold, 
-                long_interaction_threshold=-1, 
-                threshold=threshold_distance)]}
+    new_edge_funcs = {
+        "edge_construction_functions": [
+            partial(
+                add_distance_threshold,
+                long_interaction_threshold=-1,
+                threshold=threshold_distance,
+            )
+        ]
+    }
     config = ProteinGraphConfig(**new_edge_funcs)
     G2 = construct_graph(
-        path = file_path,
+        path=file_path,
         config=config,
     )
-    assert G2 is not None 
+    assert G2 is not None
     # Check that the distance values of each edge are less than the threshold
     for u, v, d in G2.edges(data=True):
-        assert d["distance"] < threshold_distance 
-        
-    
-
-
-
-
+        assert d["distance"] < threshold_distance
 
 
 # Featurisation tests
