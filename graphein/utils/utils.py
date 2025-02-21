@@ -358,7 +358,7 @@ def ping(host: str) -> bool:
 
 
 def parse_aggregation_type(
-    aggregation_type: Literal["sum", "mean", "max", "min", "median"]
+    aggregation_type: Literal["sum", "mean", "max", "min", "median"],
 ) -> Callable:
     """Returns an aggregation function by name
 

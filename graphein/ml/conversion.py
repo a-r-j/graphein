@@ -1,5 +1,4 @@
-"""Utilities for converting Graphein Networks to Geometric Deep Learning formats.
-"""
+"""Utilities for converting Graphein Networks to Geometric Deep Learning formats."""
 
 # %%
 # Graphein
