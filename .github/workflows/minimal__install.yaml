@@ -38,9 +38,9 @@ jobs:
         with:
           micromamba-version: 'latest'
           init-shell: bash
-          cache-environment: true
-          cache-environment-key: environment-${{ steps.date.outputs.date }}
-          cache-downloads-key: downloads-${{ steps.date.outputs.date }}
+          #cache-environment: true
+          #cache-environment-key: environment-${{ steps.date.outputs.date }}
+          #cache-downloads-key: downloads-${{ steps.date.outputs.date }}
           post-cleanup: 'all'
       - name: Install Graphein
         run: pip install -e .
