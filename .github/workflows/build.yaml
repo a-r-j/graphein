@@ -44,11 +44,11 @@ jobs:
       - name: Install setuptools
         run: pip install setuptools==69.5.1
       - name: Install Boost 1.7.3 (for DSSP)
-        run: mamba install -c anaconda libboost=1.73.0
+        run: micromamba install -c anaconda libboost=1.73.0
       - name: Install DSSP
-        run: mamba install dssp -c salilab
+        run: micromamba install dssp -c salilab
       - name: Install mmseqs
-        run: mamba install -c conda-forge -c bioconda mmseqs2
+        run: micromamba install -c conda-forge -c bioconda mmseqs2
       - name: Install PyTorch (1.13.0)
         if: matrix.torch == '1.13.0'
         run: pip install torch==${{matrix.torch}}+cpu --extra-index-url https://download.pytorch.org/whl/cpu
@@ -56,10 +56,10 @@ jobs:
         if: matrix.torch != '1.13.0'
         run: pip install torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
       - name: Install PyG
-        #run: mamba install -c pyg pyg
+        #run: micromamba install -c pyg pyg
         run: pip install torch_geometric
       - name: Install torch-cluster
-        #run: mamba install pytorch-cluster -c pyg
+        #run: micromamba install pytorch-cluster -c pyg
         run: pip install torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
