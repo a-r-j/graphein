@@ -32,15 +32,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        # See: https://github.com/marketplace/actions/setup-miniconda
-      - name: Setup miniconda
-        uses: conda-incubator/setup-miniconda@v3
+        # See: https://github.com/mamba-org/setup-micromamba/tree/main
+      - name: Setup micromamba
+      - uses: mamba-org/setup-micromamba@v2
         with:
-          auto-update-conda: true
-          miniforge-variant: Mambaforge
-          conda-channels: conda-forge
-          python-version: ${{ matrix.python-version }}
-          use-mamba: true
+          micromamba-version: 'latest'
+          init-shell: bash
+          cache-environment: true
+          cache-environment-key: environment-${{ steps.date.outputs.date }}
+          cache-downloads-key: downloads-${{ steps.date.outputs.date }}
+          post-cleanup: 'all'
       - name: Install Graphein
         run: pip install -e .
       - name: Install Extras
