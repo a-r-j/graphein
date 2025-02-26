@@ -1,3 +1,9 @@
+### 1.7.8 - UNRELEASED
+
+#### Bugfixes
+
+* Hotfix for incorrect dataframe indexing resulting in correct edge addition in `add_distance_threshold` [#419](https://github.com/a-r-j/graphein/pull/419)
+
 ### 1.7.7 - 03/08/2024
 
 #### Bugfixes
