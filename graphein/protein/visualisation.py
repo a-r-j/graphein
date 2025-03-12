@@ -878,7 +878,6 @@ def asteroid_plot(
                     title="Shell",
                     tickvals=list(range(k)),
                     xanchor="left",
-                    titleside="right",
                 ),
                 line_width=2,
             ),

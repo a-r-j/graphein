@@ -165,7 +165,6 @@ def get_node_trace(
                 thickness=15,
                 title="Node Connections",
                 xanchor="left",
-                titleside="right",
             ),
             line_width=2,
         ),
