@@ -37,6 +37,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           micromamba-version: 'latest'
+          environment-name: test_env
           init-shell: bash
           #cache-environment: true
           #cache-environment-key: environment-${{ steps.date.outputs.date }}

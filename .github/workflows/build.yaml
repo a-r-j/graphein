@@ -36,6 +36,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           micromamba-version: 'latest'
+          environment-name: test_env
           init-shell: bash
           create-args: python=${{matrix.python-version}}
           #cache-environment: true
