@@ -47,6 +47,10 @@ jobs:
         run: pip install setuptools==69.5.1
       - name: Update build tools
         run: pip install --upgrade pip setuptools wheel
+      - name: Install boost (apt)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libboost-thread1.73.0
       - name: Install Boost 1.7.3 (for DSSP)
         run: micromamba install -c anaconda libboost=1.73.0
       - name: Install DSSP
