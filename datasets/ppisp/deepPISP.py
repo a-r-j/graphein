@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 from Bio.PDB import *
 from torch_geometric.data import Data
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 from graphein.construct_graphs import ProteinGraph
 

@@ -22,7 +22,7 @@ import requests
 import wget
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 from .resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 
