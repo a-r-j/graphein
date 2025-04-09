@@ -969,7 +969,7 @@ def add_distance_threshold(
 
         n1 = index_to_node_id[a1]
         n2 = index_to_node_id[a2]
-        
+
         row1 = G.graph["pdb_df"].set_index("node_id").loc[n1]
         row2 = G.graph["pdb_df"].set_index("node_id").loc[n2]
 
