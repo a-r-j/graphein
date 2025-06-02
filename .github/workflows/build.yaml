@@ -49,10 +49,10 @@ jobs:
         run: pip install --upgrade pip setuptools wheel
       - name: Install DSSP
         run: micromamba install dssp -c salilab
-      - name: Install Boost 1.7.3 (for DSSP)
-        run: micromamba install -c anaconda libboost=1.73.0
       - name: Install mmseqs
         run: micromamba install -c conda-forge -c bioconda mmseqs2
+      - name: Install Boost 1.7.3 (for DSSP)
+        run: micromamba install -c anaconda libboost=1.73.0
       - name: Install PyTorch (1.13.0)
         if: matrix.torch == '1.13.0'
         run: pip install torch==${{matrix.torch}}+cpu --extra-index-url https://download.pytorch.org/whl/cpu
