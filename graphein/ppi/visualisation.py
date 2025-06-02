@@ -115,7 +115,6 @@ def plotly_ppi_graph(
         data=traces,
         layout=go.Layout(
             title=title,
-            titlefont_size=16,
             showlegend=False,
             width=width,
             height=height,
