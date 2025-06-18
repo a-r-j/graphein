@@ -16,7 +16,7 @@ from typing import Callable, Dict, Generator, List, Optional, Union
 import networkx as nx
 import numpy as np
 from loguru import logger as log
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 from graphein.protein.utils import (  # download_pdb,
     download_alphafold_structure,

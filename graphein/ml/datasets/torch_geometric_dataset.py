@@ -13,7 +13,7 @@ from typing import Callable, Dict, Generator, List, Optional
 
 import networkx as nx
 from loguru import logger as log
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
