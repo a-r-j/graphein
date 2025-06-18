@@ -456,8 +456,9 @@ def process_dataframe(
 
     log.debug(f"Detected {len(protein_df)} total nodes")
 
-    # Sort dataframe to place HETATMs
+    # Sort dataframe to place HETATMs and reset index
     protein_df = sort_dataframe(protein_df)
+    protein_df = protein_df.reset_index(drop=True)
 
     return protein_df
 
