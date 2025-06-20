@@ -165,9 +165,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         elif self.uniprot_ids:
             self.structures = uniprot_ids
         self.af_version = af_version
-        self.bad_pdbs: List[str] = (
-            []
-        )  # list of pdb codes that failed to download
+        self.bad_pdbs: List[
+            str
+        ] = []  # list of pdb codes that failed to download
 
         # Labels & Chains
         self.graph_label_map = graph_label_map
