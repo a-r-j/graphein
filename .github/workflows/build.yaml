@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11"]
-        torch: [1.13.0, 2.1.0, 2.2.0, 2.3.0, 2.4.0]
+        python-version: [3.9, "3.10", "3.11"]
+        torch: [2.3.0, 2.4.0, 2.5.0]
     # https://github.com/marketplace/actions/setup-miniconda#use-a-default-shell
     defaults:
       run:
@@ -31,23 +31,28 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        # See: https://github.com/marketplace/actions/setup-miniconda
-      - name: Setup miniconda
-        uses: conda-incubator/setup-miniconda@v3
+        # See: https://github.com/mamba-org/setup-micromamba/tree/main
+      - name: Setup micromamba
+        uses: mamba-org/setup-micromamba@v2
         with:
-          auto-update-conda: true
-          miniforge-variant: Mambaforge
-          channels: "conda-forge, salilab, pytorch, pyg"
-          python-version: ${{ matrix.python-version }}
-          use-mamba: true
+          micromamba-version: 'latest'
+          environment-name: test_env
+          init-shell: bash
+          create-args: python=${{matrix.python-version}}
+          #cache-environment: true
+          #cache-environment-key: environment-${{ steps.date.outputs.date }}
+          #cache-downloads-key: downloads-${{ steps.date.outputs.date }}
+          post-cleanup: 'all'
       - name: Install setuptools
         run: pip install setuptools==69.5.1
-      - name: Install Boost 1.7.3 (for DSSP)
-        run: conda install -c anaconda libboost=1.73.0
+      - name: Update build tools
+        run: pip install --upgrade pip setuptools wheel
       - name: Install DSSP
-        run: conda install dssp -c salilab
+        run: micromamba install dssp -c salilab
       - name: Install mmseqs
-        run: mamba install -c conda-forge -c bioconda mmseqs2
+        run: micromamba install -c conda-forge -c bioconda mmseqs2
+      - name: Install Boost 1.7.3 (for DSSP)
+        run: micromamba install -c anaconda libboost=1.73.0
       - name: Install PyTorch (1.13.0)
         if: matrix.torch == '1.13.0'
         run: pip install torch==${{matrix.torch}}+cpu --extra-index-url https://download.pytorch.org/whl/cpu
@@ -55,10 +60,10 @@ jobs:
         if: matrix.torch != '1.13.0'
         run: pip install torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
       - name: Install PyG
-        #run: mamba install -c pyg pyg
+        #run: micromamba install -c pyg pyg
         run: pip install torch_geometric
       - name: Install torch-cluster
-        #run: mamba install pytorch-cluster -c pyg
+        #run: micromamba install pytorch-cluster -c pyg
         run: pip install torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
