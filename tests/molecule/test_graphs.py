@@ -4,6 +4,7 @@ from pathlib import Path
 
 import networkx as nx
 import numpy as np
+import pytest
 
 from graphein.molecule.config import MoleculeGraphConfig
 from graphein.molecule.graphs import construct_graph
@@ -17,6 +18,8 @@ except ImportError:
     )
 
 config = MoleculeGraphConfig()
+add_hs_config = MoleculeGraphConfig(add_hs=True)
+CONFIGS = [config, add_hs_config]
 
 
 LONG_SDF = str(
@@ -31,94 +34,43 @@ LONG_PDB = str(
 )
 
 
-def test_generate_graph_sdf():
+@pytest.mark.parametrize("config", CONFIGS)
+def test_generate_graph_sdf(config):
     """Tests graph construction from an SDF file."""
     g = construct_graph(config=config, path=LONG_SDF)
-
     assert isinstance(g, nx.Graph), f"{g} is not a graph"
-
     assert g.graph["name"] == "long_test"
-
-    # Check nodes
-    for n, d in g.nodes(data=True):
-        assert isinstance(
-            d["atomic_num"], int
-        ), f"{n} atomic_num {d['atomic_num']} is not an int"
-        assert isinstance(d["element"], str), f"{n} element is not a string"
-        assert isinstance(
-            d["rdmol_atom"], rdkit.Chem.rdchem.Atom
-        ), f"{n} rdmol_atom is not an rdmol.Atom"
-        assert isinstance(
-            d["atom_type_one_hot"], np.ndarray
-        ), f"{n} atom_type_one_hot is not a numpy array"
-        assert (
-            sum(d["atom_type_one_hot"]) == 1
-        ), f"{n} atom_type_one_hot is not a one-hot vector"
+    check_nodes(g)
 
 
-def test_generate_graph_smiles():
+@pytest.mark.parametrize("config", CONFIGS)
+def test_generate_graph_smiles(config):
     """Tests graph construction from a SMILES string."""
     g = construct_graph(config=config, smiles=SMILES)
     assert g.graph["name"] == SMILES
-
-    # Check nodes
-    for n, d in g.nodes(data=True):
-        assert isinstance(
-            d["atomic_num"], int
-        ), f"{n} atomic_num is not an int"
-        assert isinstance(d["element"], str), f"{n} element is not a string"
-        assert isinstance(
-            d["rdmol_atom"], rdkit.Chem.rdchem.Atom
-        ), f"{n} rdmol_atom is not an rdmol.Atom"
-        assert isinstance(
-            d["atom_type_one_hot"], np.ndarray
-        ), f"{n} atom_type_one_hot is not a numpy array"
-        assert (
-            sum(d["atom_type_one_hot"]) == 1
-        ), f"{n} atom_type_one_hot is not a one-hot vector"
-
-    # Check edges
-    for u, v, d in g.edges(data=True):
-        assert d["kind"] == {"bond"}, f"{u}-{v} kind is not bond"
-        assert isinstance(
-            d["bond"], rdkit.Chem.rdchem.Bond
-        ), f"edge {u}-{v} does not have an RDKit bond associated with it."
+    check_nodes(g)
+    check_edges(g)
 
 
-def test_generate_graph_mol2():
+@pytest.mark.parametrize("config", CONFIGS)
+def test_generate_graph_mol2(config):
     """Tests graph construction from a Mol2 file."""
     g = construct_graph(config=config, path=SHORT_MOL2)
     assert g.graph["name"] == "short_test"
-
-    # Check nodes
-    for n, d in g.nodes(data=True):
-        assert isinstance(
-            d["atomic_num"], int
-        ), f"{n} atomic_num is not an int"
-        assert isinstance(d["element"], str), f"{n} element is not a string"
-        assert isinstance(
-            d["rdmol_atom"], rdkit.Chem.rdchem.Atom
-        ), f"{n} rdmol_atom is not an rdmol.Atom"
-        assert isinstance(
-            d["atom_type_one_hot"], np.ndarray
-        ), f"{n} atom_type_one_hot is not a numpy array"
-        assert (
-            sum(d["atom_type_one_hot"]) == 1
-        ), f"{n} atom_type_one_hot is not a one-hot vector"
-
-    # Check edges
-    for u, v, d in g.edges(data=True):
-        assert d["kind"] == {"bond"}, f"{u}-{v} kind is not bond"
-        assert isinstance(
-            d["bond"], rdkit.Chem.rdchem.Bond
-        ), f"edge {u}-{v} does not have an RDKit bond associated with it."
+    check_nodes(g)
+    check_edges(g)
 
 
-def test_generate_graph_pdb():
+@pytest.mark.parametrize("config", CONFIGS)
+def test_generate_graph_pdb(config):
     """Tests graph construction from a PDB file."""
     g = construct_graph(config=config, path=LONG_PDB)
     assert g.graph["name"] == "long_test"
+    check_nodes(g)
+    check_edges(g)
 
+
+def check_nodes(g):
     # Check nodes
     for n, d in g.nodes(data=True):
         assert isinstance(
@@ -135,7 +87,8 @@ def test_generate_graph_pdb():
             sum(d["atom_type_one_hot"]) == 1
         ), f"{n} atom_type_one_hot is not a one-hot vector"
 
-    # Check edges
+
+def check_edges(g):
     for u, v, d in g.edges(data=True):
         assert d["kind"] == {"bond"}, f"{u}-{v} kind is not bond"
         assert isinstance(
