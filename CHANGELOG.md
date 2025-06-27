@@ -1,3 +1,10 @@
+### 1.7.8 - UNRELEASED
+
+#### Bugfixes
+
+* Fixes H coords are included when constructing molecule graph from SD file [#427](https://github.com/a-r-j/graphein/issues/427).
+
+
 ### 1.7.7 - 03/08/2024
 
 #### Bugfixes
