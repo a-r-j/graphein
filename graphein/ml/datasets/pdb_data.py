@@ -647,9 +647,12 @@ class PDBManager:
             for line in f:
                 print(line)
                 try:
-                    cath_id, cath_version, cath_code, cath_segment = (
-                        line.strip().split()
-                    )
+                    (
+                        cath_id,
+                        cath_version,
+                        cath_code,
+                        cath_segment,
+                    ) = line.strip().split()
                     cath_mapping[cath_id] = cath_code
                     print(cath_id, cath_code)
                 except ValueError:

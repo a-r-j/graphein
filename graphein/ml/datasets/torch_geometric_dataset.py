@@ -548,6 +548,11 @@ class ProteinGraphDataset(Dataset):
                 if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
             ]
         if self.uniprot_ids:
+            to_download = [
+                uniprot
+                for uniprot in set(self.uniprot_ids)
+                if not os.path.exists(Path(self.raw_dir) / f"{uniprot}.pdb")
+            ]
             [
                 download_alphafold_structure(
                     uniprot,
@@ -555,7 +560,7 @@ class ProteinGraphDataset(Dataset):
                     version=self.af_version,
                     aligned_score=False,
                 )
-                for uniprot in tqdm(self.uniprot_ids)
+                for uniprot in tqdm(to_download)
             ]
 
     def len(self) -> int:

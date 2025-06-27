@@ -115,7 +115,6 @@ def plotly_ppi_graph(
         data=traces,
         layout=go.Layout(
             title=title,
-            titlefont_size=16,
             showlegend=False,
             width=width,
             height=height,
@@ -165,7 +164,6 @@ def get_node_trace(
                 thickness=15,
                 title="Node Connections",
                 xanchor="left",
-                titleside="right",
             ),
             line_width=2,
         ),
