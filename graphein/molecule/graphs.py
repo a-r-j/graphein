@@ -15,7 +15,7 @@ from typing import Callable, Dict, List, Optional, Union
 import networkx as nx
 import numpy as np
 from loguru import logger as log
-from tqdm.contrib.concurrent import process_map, thread_map
+from tqdm.contrib.concurrent import thread_map
 
 from graphein.utils.dependencies import import_message, requires_python_libs
 from graphein.utils.utils import (
@@ -163,7 +163,7 @@ def construct_graph(
     :type config: graphein.molecule.config.MoleculeGraphConfig, optional
     :param mol: rdkit.Mol object to build graph from. Defaults to ``None``.
     :type mol: rdkit.Mol, optional
-    :param path: Path to either a ``.sdf``, ``.mol2``, ``.smi`` or ``pdb`` file.
+    :param path: Path to either a ``.sdf``, ``.mol2``, ``.smi`` or ``pdb`` file. # noqa: E501
         Defaults to ``None``.
     :type path: str
     :param smiles: smiles string to build graph from. Default is ``None``.
@@ -172,7 +172,7 @@ def construct_graph(
     :type zinc_id: str, optional
     :param chembl_id: ChEMBL ID to build graph from. Default is ``None``.
     :type chembl_id: str, optional
-    :param generate_conformer: Whether to generate a conformer for the molecule.
+    :param generate_conformer: Whether to generate a conformer for the molecule. # noqa: E501
         Defaults to ``False``.
     :type generate_conformer: bool, optional
     :param edge_construction_funcs: List of edge construction functions.
@@ -228,32 +228,28 @@ def construct_graph(
         rdmol = Chem.MolFromSmiles(smiles)
         if config.generate_conformer or generate_conformer:
             rdmol = generate_3d(mol=rdmol, recompute_graph=False)
-            coords = [
-                list(rdmol.GetConformer(0).GetAtomPosition(idx))
-                for idx in range(rdmol.GetNumAtoms())
-            ]
+            if config.add_hs:
+                rdmol = Chem.AddHs(rdmol, addCoords=True)
+            coords = get_coords(rdmol)
 
     if path is not None:
         name = path.split("/")[-1].split(".")[0]
         if path.lower().endswith(".sdf"):
             rdmol = Chem.SDMolSupplier(path)[0]
-            coords = [
-                list(rdmol.GetConformer(0).GetAtomPosition(idx))
-                for idx in range(rdmol.GetNumAtoms())
-            ]
+            if config.add_hs:
+                rdmol = Chem.AddHs(rdmol, addCoords=True)
+            coords = get_coords(rdmol)
         elif path.lower().endswith(".mol2"):
             rdmol = Chem.MolFromMol2File(path)
-            coords = [
-                list(rdmol.GetConformer(0).GetAtomPosition(idx))
-                for idx in range(rdmol.GetNumAtoms())
-            ]
+            if config.add_hs:
+                rdmol = Chem.AddHs(rdmol, addCoords=True)
+            coords = get_coords(rdmol)
         elif path.lower().endswith(".pdb"):
             name = path.split("/")[-1].split(".")[0]
             rdmol = Chem.MolFromPDBFile(path)
-            coords = [
-                list(rdmol.GetConformer(0).GetAtomPosition(idx))
-                for idx in range(rdmol.GetNumAtoms())
-            ]
+            if config.add_hs:
+                rdmol = Chem.AddHs(rdmol, addCoords=True)
+            coords = get_coords(rdmol)
         elif path.lower().endswith(".smi"):
             with open(path) as f:
                 smiles = f.readlines()[0]
@@ -261,21 +257,16 @@ def construct_graph(
             rdmol = Chem.MolFromSmiles(smiles)
             if config.generate_conformer or generate_conformer:
                 rdmol = generate_3d(mol=rdmol, recompute_graph=False)
-                coords = [
-                    list(rdmol.GetConformer(0).GetAtomPosition(idx))
-                    for idx in range(rdmol.GetNumAtoms())
-                ]
+                if config.add_hs:
+                    rdmol = Chem.AddHs(rdmol, addCoords=True)
+                coords = get_coords(rdmol)
 
     elif mol is not None:
         name = Chem.MolToSmiles(mol)
         rdmol = mol
-        coords = [
-            list(rdmol.GetConformer(0).GetAtomPosition(idx))
-            for idx in range(rdmol.GetNumAtoms())
-        ]
-
-    if config.add_hs:
-        rdmol = Chem.AddHs(rdmol)
+        if config.add_hs:
+            rdmol = Chem.AddHs(rdmol, addCoords=True)
+        coords = get_coords(rdmol)
 
     if coords is None:
         # If no coords are provided, add edges by bonds
@@ -451,3 +442,19 @@ def construct_graphs_mp(
         graphs = {molecule: graphs[i] for i, molecule in enumerate(inputs)}
 
     return graphs
+
+
+@requires_python_libs("rdkit")
+def get_coords(mol: rdkit.Chem.rdchem.Mol) -> List[List[float]]:
+    """
+    Function for getting the coordinates of an RDKit molecule.
+
+    :param mol: RDKit molecule.
+    :type mol: rdkit.Chem.rdchem.Mol
+    :return: Coordinates.
+    :rtype: List[List[float]]
+    """
+    return [
+        list(mol.GetConformer(0).GetAtomPosition(idx))
+        for idx in range(mol.GetNumAtoms())
+    ]
