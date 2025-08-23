@@ -214,6 +214,8 @@
 * [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) explicitly installs `jupyter_contrib_nbextensions` in Docker.
 
 ### 1.5.1
+* [Feature] - [#197](https://github.com/a-r-j/graphein/pull/197/) adds support for sizing and colouring nodes in asteroid plots
+* [Feature] - [#197](https://github.com/a-r-j/graphein/pull/197/) adds utilities for retrieving a list of graph/node/edge attribute names in `graphein.utils.utils`.
 
 #### Protein
 
@@ -222,6 +224,7 @@
 * [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) adds support for: van der waals interactions, vdw clashes, pi-stacking interactions, t_stacking interactions, backbone carbonyl-carbonyl interactions, salt bridges
 * [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) adds a `residue_id` column to PDB dfs to enable easier accounting in atom graphs.
 * [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) refactors torch geometric datasets to use parallelised download for faster dataset preparation.
+
 
 #### Bugfixes
 
