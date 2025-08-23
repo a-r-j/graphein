@@ -83,6 +83,7 @@
 
 #### Other Changes
 
+* Uses [`cpdb`](https://github.com/a-r-j/CPDB) as default PDB file parser for improved performance. [#323](https://github.com/a-r-j/graphein/pull/323).
 * Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
 * Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
 * Adds support for `.ent` files to `graphein.protein.graphs.read_pdb_to_dataframe`. [#310](https://github.com/a-r-j/graphein/pull/310)
@@ -94,7 +95,7 @@
 * Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
 * Improve FoldComp dataloading performance and include B factors (pLDDT) in output. [#313](https://github.com/a-r-j/graphein/pull/313) [#315](https://github.com/a-r-j/graphein/pull/315)
 * Add new helper functions to PDBManager [#322](https://github.com/a-r-j/graphein/pull/322) (@amorehead)
-* Add non-standard 'CYX' to `RESI_THREE_TO_1`.
+* Add non-standard `'CYX'` to `RESI_THREE_TO_1`.
 
 ### 1.7.0 - 10 /04/2023
 

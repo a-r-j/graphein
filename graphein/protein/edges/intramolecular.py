@@ -77,7 +77,7 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
 ####################################
 
 
-def get_contacts_df(config: GetContactsConfig, pdb_name: str) -> pd.DataFrame:
+def get_contacts_df(config: GetContactsConfig, pdb_path: str) -> pd.DataFrame:
     """
     Reads GetContact File and returns it as a ``pd.DataFrame``.
 
@@ -92,12 +92,12 @@ def get_contacts_df(config: GetContactsConfig, pdb_name: str) -> pd.DataFrame:
     if not config.contacts_dir:
         config.contacts_dir = Path("/tmp/")
 
-    contacts_file = config.contacts_dir / f"{pdb_name}_contacts.tsv"
+    contacts_file = config.contacts_dir / f"{Path(pdb_path).stem}_contacts.tsv"
 
     # Check for existence of GetContacts file
     if not os.path.isfile(contacts_file):
         log.info("GetContacts file not found. Running GetContacts...")
-        run_get_contacts(config, pdb_name)
+        run_get_contacts(config, file_name=pdb_path)
 
     contacts_df = read_contacts_file(config, contacts_file)
 
@@ -142,14 +142,18 @@ def run_get_contacts(
                 f"No pdb file found for {config.pdb_dir / pdb_id}. \
                 Downloading..."
             )
-            pdb_file = download_pdb(pdb_code=pdb_id, out_dir=config.pdb_dir)
+            file_name = download_pdb(pdb_code=pdb_id, out_dir=config.pdb_dir)
         else:
-            pdb_file = config.pdb_dir + pdb_id + ".pdb"
+            file_name = config.pdb_dir + pdb_id + ".pdb"
+
+    output_path = config.contacts_dir / (
+        Path(file_name).stem + "_contacts.tsv"
+    )
 
     # Run GetContacts
     command = f"{config.get_contacts_path}/get_static_contacts.py "
-    command += f"--structure {pdb_file} "
-    command += f'--output {(config.contacts_dir / (pdb_id + "_contacts.tsv")).as_posix()} '
+    command += f"--structure {file_name} "
+    command += f"--output {output_path.as_posix()} "
     command += "--itypes all"  # --sele "protein"'
 
     log.info(f"Running GetContacts with command: {command}")
@@ -157,7 +161,9 @@ def run_get_contacts(
     subprocess.run(command, shell=True)
 
     # Check it all checks out
-    assert os.path.isfile(config.contacts_dir / (pdb_id + "_contacts.tsv"))
+    assert os.path.isfile(
+        output_path
+    ), "GetContacts failed. No output file found."
     log.info(f"Computed Contacts for: {pdb_id}")
 
 
@@ -220,9 +226,17 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
 
     if "contacts_df" not in G.graph:
         log.info("No 'contacts_df' found in G.graph. Running GetContacts.")
+        if G.graph["path"]:
+            pdb_path = str(G.graph["path"])
+        else:
+            pdb_path = (
+                G.graph["config"].get_contacts_config.pdb_path
+                / G.graph["name"]
+                + ".pdb"
+            )
 
         G.graph["contacts_df"] = get_contacts_df(
-            G.graph["config"].get_contacts_config, G.graph["pdb_id"]
+            G.graph["config"].get_contacts_config, pdb_path
         )
 
     contacts = G.graph["contacts_df"]
