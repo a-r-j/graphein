@@ -2,6 +2,7 @@
 
 #### Bugfixes
 
+* Fix computation of `GetContacts` edges for local renamed structures [#436](https://github.com/a-r-j/graphein/pull/436). Fixes [#435](https://github.com/a-r-j/graphein/issues/435)
 * Hotfix for incorrect dataframe indexing resulting in correct edge addition in `add_distance_threshold` [#419](https://github.com/a-r-j/graphein/pull/419)
 * Fixes unnecessary download for pre-existing structure files retrieved from AlphaFold database in `graphein.ml.ProteinGraphDataset`[#426](https://github.com/a-r-j/graphein/pull/426)
 * Fixes H coords are included when constructing molecule graph from SD file [#427](https://github.com/a-r-j/graphein/issues/427).
@@ -94,19 +95,18 @@
 
 #### Other Changes
 
-
--   Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
--   Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
--   Adds support for `.ent` files to `graphein.protein.graphs.read_pdb_to_dataframe`. [#310](https://github.com/a-r-j/graphein/pull/310)
--   Obsolete residues with no replacement are now returned by `graphein.protein.utils.get_obsolete_mapping`. [#310](https://github.com/a-r-j/graphein/pull/310)
--   Adds the ability to store a dictionary of HETATM positions in `Data`/`Protein` objects created in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
--   Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
--   Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
--   `plot_pyg_data` now also plots some geometric features if present. [#305](https://github.com/a-r-j/graphein/pull/305)
--   Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
--   Improve FoldComp dataloading performance and include B factors (pLDDT) in output. [#313](https://github.com/a-r-j/graphein/pull/313) [#315](https://github.com/a-r-j/graphein/pull/315)
--   Add new helper functions to PDBManager [#322](https://github.com/a-r-j/graphein/pull/322) (@amorehead)
--   Add non-standard 'CYX' to `RESI_THREE_TO_1`.
+* Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
+* Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Adds support for `.ent` files to `graphein.protein.graphs.read_pdb_to_dataframe`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Obsolete residues with no replacement are now returned by `graphein.protein.utils.get_obsolete_mapping`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Adds the ability to store a dictionary of HETATM positions in `Data`/`Protein` objects created in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
+* Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
+* Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
+* `plot_pyg_data` now also plots some geometric features if present. [#305](https://github.com/a-r-j/graphein/pull/305)
+* Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
+* Improve FoldComp dataloading performance and include B factors (pLDDT) in output. [#313](https://github.com/a-r-j/graphein/pull/313) [#315](https://github.com/a-r-j/graphein/pull/315)
+* Add new helper functions to PDBManager [#322](https://github.com/a-r-j/graphein/pull/322) (@amorehead)
+* Add non-standard 'CYX' to `RESI_THREE_TO_1`.
 
 ### 1.7.0 - 10 /04/2023
 
