@@ -672,11 +672,13 @@ class ProteinGraphDataset(Dataset):
                     self.processed_dir,
                     f"{self.structures[idx]}_\
                         {self.chain_selection_map[idx]}.pt",
-                )
+                ),
+                weights_only=False,
             )
         else:
             return torch.load(
-                os.path.join(self.processed_dir, f"{self.structures[idx]}.pt")
+                os.path.join(self.processed_dir, f"{self.structures[idx]}.pt"),
+                weights_only=False,
             )
 
 
