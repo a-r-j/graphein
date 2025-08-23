@@ -2,7 +2,7 @@ name: Code tests (docker)
 
 on:
   pull_request:
-      paths-ignore:
+    paths-ignore:
       - "README.md"
       - "CHANGELOG.md"
       - "CONTRIBUTORS.md"
@@ -21,15 +21,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       # See: https://github.com/marketplace/actions/setup-miniconda
-      - name: Setup miniconda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Setup micromamba
+        uses: mamba-org/setup-micromamba@v2
         with:
-          auto-update-conda: true
-          miniforge-variant: Mambaforge
-          channels: conda-forge
-          python-version: 3.8
-          use-mamba: true
-
+          micromamba-version: "latest"
+          environment-name: test_env
+          init-shell: bash
+          create-args: python=3.11
+          #cache-environment: true
+          #cache-environment-key: environment-${{ steps.date.outputs.date }}
+          #cache-downloads-key: downloads-${{ steps.date.outputs.date }}
+          post-cleanup: "all"
 
       # # Build cache of environment
       # - name: Cache conda environment
