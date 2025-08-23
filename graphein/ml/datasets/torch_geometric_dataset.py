@@ -188,7 +188,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             pre_filter=pre_filter,
         )
         self.config.pdb_dir = Path(self.raw_dir)
-        self.data, self.slices = torch.load(self.processed_paths[0])
+        self.data, self.slices = torch.load(
+            self.processed_paths[0], weights_only=False
+        )
 
     @property
     def raw_file_names(self) -> List[str]:
@@ -672,11 +674,13 @@ class ProteinGraphDataset(Dataset):
                     self.processed_dir,
                     f"{self.structures[idx]}_\
                         {self.chain_selection_map[idx]}.pt",
-                )
+                ),
+                weights_only=False,
             )
         else:
             return torch.load(
-                os.path.join(self.processed_dir, f"{self.structures[idx]}.pt")
+                os.path.join(self.processed_dir, f"{self.structures[idx]}.pt"),
+                weights_only=False,
             )
 
 
@@ -702,7 +706,9 @@ class ProteinGraphListDataset(InMemoryDataset):
         self.data_list = data_list
         self.name = name
         super().__init__(root, transform)
-        self.data, self.slices = torch.load(self.processed_paths[0])
+        self.data, self.slices = torch.load(
+            self.processed_paths[0], weights_only=False
+        )
 
     @property
     def processed_file_names(self):

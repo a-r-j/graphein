@@ -18,6 +18,8 @@ from loguru import logger as log
 
 from graphein.protein.utils import download_pdb
 
+CONTACTS_FILE_SUFFIX = "_contacts.tsv"
+
 
 def peptide_bonds(G: nx.Graph) -> nx.Graph:
     """
@@ -38,7 +40,7 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
 
         # Iterate over every residue in chain
         for i, residue in enumerate(chain_residues):
-            # Checks not at chain terminus - is this versatile enough?
+            # Checks not at chain terminus
             if i == len(chain_residues) - 1:
                 continue
             # Asserts residues are on the same chain
@@ -77,7 +79,7 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
 ####################################
 
 
-def get_contacts_df(config: GetContactsConfig, pdb_name: str) -> pd.DataFrame:
+def get_contacts_df(config: GetContactsConfig, pdb_path: str) -> pd.DataFrame:
     """
     Reads GetContact File and returns it as a ``pd.DataFrame``.
 
@@ -92,12 +94,14 @@ def get_contacts_df(config: GetContactsConfig, pdb_name: str) -> pd.DataFrame:
     if not config.contacts_dir:
         config.contacts_dir = Path("/tmp/")
 
-    contacts_file = config.contacts_dir / f"{pdb_name}_contacts.tsv"
+    contacts_file = (
+        config.contacts_dir / f"{Path(pdb_path).stem}{CONTACTS_FILE_SUFFIX}"
+    )
 
     # Check for existence of GetContacts file
     if not os.path.isfile(contacts_file):
         log.info("GetContacts file not found. Running GetContacts...")
-        run_get_contacts(config, pdb_name)
+        run_get_contacts(config, file_name=pdb_path)
 
     contacts_df = read_contacts_file(config, contacts_file)
 
@@ -106,6 +110,34 @@ def get_contacts_df(config: GetContactsConfig, pdb_name: str) -> pd.DataFrame:
         os.remove(contacts_file)
 
     return contacts_df
+
+
+def _validate_get_contacts_installation(config: GetContactsConfig) -> None:
+    """Validate GetContacts installation."""
+    get_contacts_script = (
+        Path(config.get_contacts_path) / "get_static_contacts.py"
+    )
+    if not get_contacts_script.is_file():
+        raise FileNotFoundError(
+            f"GetContacts installation not found at {get_contacts_script}. "
+            "Please install from: https://getcontacts.github.io"
+        )
+
+
+def _get_or_download_pdb(
+    config: GetContactsConfig, pdb_id: Optional[str], file_name: Optional[str]
+) -> Path:
+    """Get PDB file path, downloading if necessary."""
+    if file_name and Path(file_name).exists():
+        return Path(file_name)
+
+    pdb_path = config.pdb_dir / f"{pdb_id}{'.pdb'}"
+    if not pdb_path.exists():
+        log.debug(f"Downloading PDB file for {pdb_id}")
+        downloaded_path = download_pdb(pdb_code=pdb_id, out_dir=config.pdb_dir)
+        return Path(downloaded_path)
+
+    return pdb_path
 
 
 def run_get_contacts(
@@ -125,39 +157,28 @@ def run_get_contacts(
         the PDB
     :type file_name: str, optional
     """
-    # Check for GetContacts Installation
-    assert os.path.isfile(
-        f"{config.get_contacts_path}/get_static_contacts.py"
-    ), "No GetContacts Installation Detected. Please install from: \
-    https://getcontacts.github.io"
+    _validate_get_contacts_installation(config)
+
+    if not file_name and not pdb_id:
+        raise ValueError("Either file_name or pdb_id must be provided")
 
     # Check for existence of pdb file. If not, download it.
-    if not os.path.isfile(config.pdb_dir / file_name):
-        log.debug(
-            f"No pdb file found for {config.pdb_dir / file_name}. \
-            Checking pdb_id..."
-        )
-        if not os.path.isfile(config.pdb_dir / pdb_id):
-            log.debug(
-                f"No pdb file found for {config.pdb_dir / pdb_id}. \
-                Downloading..."
-            )
-            pdb_file = download_pdb(pdb_code=pdb_id, out_dir=config.pdb_dir)
-        else:
-            pdb_file = config.pdb_dir + pdb_id + ".pdb"
+    pdb_path = _get_or_download_pdb(config, pdb_id, file_name)
+    output_path = config.contacts_dir / (pdb_path.stem + CONTACTS_FILE_SUFFIX)
 
-    # Run GetContacts
     command = f"{config.get_contacts_path}/get_static_contacts.py "
-    command += f"--structure {pdb_file} "
-    command += f'--output {(config.contacts_dir / (pdb_id + "_contacts.tsv")).as_posix()} '
+    command += f"--structure {str(pdb_path)} "
+    command += f"--output {str(output_path)} "
     command += "--itypes all"  # --sele "protein"'
 
-    log.info(f"Running GetContacts with command: {command}")
+    log.info(f"Running GetContacts: {command}")
+    subprocess.run(command, shell=True, check=True)
 
-    subprocess.run(command, shell=True)
+    if not output_path.exists():
+        raise FileNotFoundError(
+            f"GetContacts failed to create output file: {output_path}"
+        )
 
-    # Check it all checks out
-    assert os.path.isfile(config.contacts_dir / (pdb_id + "_contacts.tsv"))
     log.info(f"Computed Contacts for: {pdb_id}")
 
 
@@ -175,34 +196,54 @@ def read_contacts_file(
     :return: Pandas Dataframe of edge list
     :rtype: pd.DataFrame
     """
+    if not Path(contacts_file).exists():
+        raise FileNotFoundError(f"Contacts file not found: {contacts_file}")
+
     log.debug(f"Parsing GetContacts output file at: {contacts_file}")
 
-    contacts_file = open(contacts_file, "r").readlines()
     contacts = []
 
     # Extract every contact and residue types
-    for contact in contacts_file[2:]:
-        contact = contact.strip().split("\t")
+    with open(contacts_file, "r") as f:
+        # Skip header lines
+        for _ in range(2):
+            next(f)
 
-        interaction_type = contact[1]
-        res1 = contact[2]
-        res2 = contact[3]
+        for line in f:
+            contact = line.strip().split("\t")
 
-        # Remove atom names if not using atom granularity
-        if config.granularity != "atom":
-            res1 = res1.split(":")
-            res2 = res2.split(":")
+            interaction_type = contact[1]
+            res1, res2 = contact[2], contact[3]
 
-            res1 = res1[0] + ":" + res1[1] + ":" + res1[2]
-            res2 = res2[0] + ":" + res2[1] + ":" + res2[2]
+            # Remove atom names if not using atom granularity
+            if config.granularity != "atom":
+                res1 = ":".join(res1.split(":")[:3])
+                res2 = ":".join(res2.split(":")[:3])
 
-        contacts.append([res1, res2, interaction_type])
+            contacts.append([res1, res2, interaction_type])
 
-    edges = pd.DataFrame(
+    if not contacts:
+        log.warning(f"No contacts found in file: {contacts_file}")
+        return pd.DataFrame(columns=["res1", "res2", "interaction_type"])
+
+    return pd.DataFrame(
         contacts, columns=["res1", "res2", "interaction_type"]
-    )
+    ).drop_duplicates()
 
-    return edges.drop_duplicates()
+
+def _get_pdb_path_from_graph(G: nx.Graph) -> Path:
+    """Extract PDB path from graph metadata."""
+    if G.graph.get("path"):
+        return Path(G.graph["path"])
+
+    config = G.graph.get("config")
+    if not config:
+        raise KeyError("Graph missing required 'config' attribute")
+
+    return (
+        config.get_contacts_config.pdb_dir
+        / f"{G.graph['name']}{'.pdb' if not str(G.graph['name']).endswith('.pdb') else ''}"
+    )
 
 
 def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
@@ -218,21 +259,20 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     """
     log.debug(f"Adding {interaction_type} edges to graph")
 
+    # Ensure contacts_df exists
     if "contacts_df" not in G.graph:
         log.info("No 'contacts_df' found in G.graph. Running GetContacts.")
-
+        pdb_path = _get_pdb_path_from_graph(G)
         G.graph["contacts_df"] = get_contacts_df(
-            G.graph["config"].get_contacts_config, G.graph["pdb_id"]
+            G.graph["config"].get_contacts_config, str(pdb_path)
         )
 
     contacts = G.graph["contacts_df"]
 
     # Select specific interaction type
-    interactions = contacts.loc[
-        contacts["interaction_type"] == interaction_type
-    ]
+    interactions = contacts[contacts["interaction_type"] == interaction_type]
 
-    for label, [res1, res2, interaction_type] in interactions.iterrows():
+    for _, [res1, res2, interaction_type] in interactions.iterrows():
         # Check residues are actually in graph
         if not (G.has_node(res1) and G.has_node(res2)):
             continue
@@ -245,86 +285,32 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     return G
 
 
-def hydrogen_bond(G: nx.Graph) -> nx.Graph:
-    """
-    Adds hydrogen bonds to protein structure graph.
+def _create_interaction_function(interaction_code: str, description: str):
+    """Factory function to create interaction edge functions."""
 
-    :param G: nx.Graph to add hydrogen bonds to.
-    :type G: nx.Graph
-    :return: nx.Graph with hydrogen bonds added.
-    :rtype: nx.Graph
-    """
-    return add_contacts_edge(G, "hb")
+    def interaction_func(G: nx.Graph) -> nx.Graph:
+        """
+        Adds {description} to protein structure graph.
 
+        :param G: nx.Graph to add {description} to.
+        :return: nx.Graph with {description} added.
+        """
+        return add_contacts_edge(G, interaction_code)
 
-def salt_bridge(G: nx.Graph) -> nx.Graph:
-    """
-    Adds salt bridges to protein structure graph.
-
-    :param G: nx.Graph to add salt bridges to.
-    :type G: nx.Graph
-    :return: nx.Graph with salt bridges added.
-    :rtype: nx.Graph
-    """
-    return add_contacts_edge(G, "sb")
+    interaction_func.__name__ = description.replace(" ", "_").replace("-", "_")
+    interaction_func.__doc__ = (
+        f"Adds {description} to protein structure graph."
+    )
+    return interaction_func
 
 
-def pi_cation(G: nx.Graph) -> nx.Graph:
-    """
-    Adds pi-cation interactions to protein structure graph.
-
-    :param G: nx.Graph to add pi-cation interactions to.
-    :type G: nx.Graph
-    :return: nx.Graph with pi-pi_cation interactions added.
-    :rtype: nx.Graph
-    """
-
-    return add_contacts_edge(G, "pc")
-
-
-def pi_stacking(G: nx.Graph) -> nx.Graph:
-    """
-    Adds pi-stacking interactions to protein structure graph
-
-    :param G: nx.Graph to add pi-stacking interactions to
-    :type G: nx.Graph
-    :return: nx.Graph with pi-stacking interactions added
-    :rtype: nx.Graph
-    """
-    return add_contacts_edge(G, "ps")
-
-
-def t_stacking(G: nx.Graph) -> nx.Graph:
-    """
-    Adds t-stacking interactions to protein structure graph.
-
-    :param G: nx.Graph to add t-stacking interactions to.
-    :type G: nx.Graph
-    :return: nx.Graph with t-stacking interactions added.
-    :rtype: nx.Graph
-    """
-    return add_contacts_edge(G, "ts")
-
-
-def hydrophobic(G: nx.Graph) -> nx.Graph:
-    """
-    Adds hydrophobic interactions to protein structure graph.
-
-    :param G: nx.Graph to add hydrophobic interaction edges to.
-    :type G: nx.Graph
-    :return: nx.Graph with hydrophobic interactions added.
-    :rtype: nx.Graph
-    """
-    return add_contacts_edge(G, "hp")
-
-
-def van_der_waals(G: nx.Graph) -> nx.Graph:
-    """
-    Adds van der Waals interactions to protein structure graph.
-
-    :param G: nx.Graph to add van der Waals interactions to.
-    :type G: nx.Graph
-    :return: nx.Graph with van der Waals interactions added.
-    :rtype: nx.Graph
-    """
-    return add_contacts_edge(G, "vdw")
+# Create all interaction functions
+hydrogen_bond = _create_interaction_function("hb", "hydrogen bonds")
+salt_bridge = _create_interaction_function("sb", "salt bridges")
+pi_cation = _create_interaction_function("pc", "pi-cation interactions")
+pi_stacking = _create_interaction_function("ps", "pi-stacking interactions")
+t_stacking = _create_interaction_function("ts", "t-stacking interactions")
+hydrophobic = _create_interaction_function("hp", "hydrophobic interactions")
+van_der_waals = _create_interaction_function(
+    "vdw", "van der Waals interactions"
+)
