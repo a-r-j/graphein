@@ -1,3 +1,4 @@
+import copy
 import gzip
 import math
 import os
@@ -14,6 +15,7 @@ import wget
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from pandas.core.groupby.generic import DataFrameGroupBy
+from scipy.spatial.distance import cdist
 from tqdm import tqdm
 
 from graphein.protein.utils import (
@@ -23,6 +25,23 @@ from graphein.protein.utils import (
     read_fasta,
 )
 from graphein.utils.dependencies import is_tool
+
+PRIMARY_INTERCHAIN_CONTACT_ATOMS_FOR_FILTERING: List[str] = ["CA", "C4'"]
+SECONDARY_INTERCHAIN_CONTACT_ATOMS_NOT_FOR_FILTERING: List[str] = ["H"]
+PRIMARY_HYDROGEN_BOND_ATOMS_FOR_FILTERING: List[str] = [
+    "N",
+    "O",
+    "N1",
+    "N9",
+    "N3",
+]
+SECONDARY_HYDROGEN_BOND_ATOMS_FOR_FILTERING: List[str] = [
+    "N",
+    "O",
+    "N1",
+    "N9",
+    "N3",
+]
 
 
 class PDBManager:
@@ -2083,6 +2102,162 @@ class PDBManager:
                 pdb.df[key] = filtered_pdb
         return pdb
 
+    def filter_chains_by_interface_criteria(
+        self,
+        pdb: PandasPdb,
+        primary_interchain_contact_atoms_for_filtering: List[
+            str
+        ] = PRIMARY_INTERCHAIN_CONTACT_ATOMS_FOR_FILTERING,
+        secondary_interchain_contact_atoms_not_for_filtering: List[
+            str
+        ] = SECONDARY_INTERCHAIN_CONTACT_ATOMS_NOT_FOR_FILTERING,
+        primary_hydrogen_bond_atoms_for_filtering: List[
+            str
+        ] = PRIMARY_HYDROGEN_BOND_ATOMS_FOR_FILTERING,
+        secondary_hydrogen_bond_atoms_for_filtering: List[
+            str
+        ] = SECONDARY_HYDROGEN_BOND_ATOMS_FOR_FILTERING,
+        interface_contact_criterion: float = 7.0,
+        hydrogen_bond_criterion: float = 3.5,
+        interface_contact_count: int = 16,
+        hydrogen_bond_count: int = 10,
+        chain_id_col: str = "chain_id",
+        atom_name_col: str = "atom_name",
+        atom_df_name: str = "ATOM",
+    ) -> PandasPdb:
+        """Filter a PDB using interface criteria.
+
+        :param pdb: The PDB object to filter by interface criteria.
+        :type pdb: PandasPdb
+        :param primary_interchain_contact_atoms_for_filtering: The main atoms in each residue with
+            which to measure inter-chain pairwise residue distances.
+        :type primary_interchain_contact_atoms_for_filtering: List[str], optional
+        :param secondary_interchain_contact_atoms_not_for_filtering: The secondary atoms in each residue without
+            which to measure inter-chain pairwise residue distances.
+        :type secondary_interchain_contact_atoms_not_for_filtering: List[str], optional
+        :param primary_hydrogen_bond_atoms_for_filtering: The main atoms in each residue with
+            which to measure inter-chain atom distances for hydrogen bonding.
+        :type primary_hydrogen_bond_atoms_for_filtering: List[str], optional
+        :param secondary_hydrogen_bond_atoms_for_filtering: The secondary atoms in each residue with
+            which to measure inter-chain atom distances for hydrogen bonding.
+        :type secondary_hydrogen_bond_atoms_for_filtering: List[str], optional
+        :param interface_contact_criterion: Distance between two inter-chain
+            residues at which to classify a residue pair as interface contacts.
+        :type interface_contact_criterion: float, optional
+        :param hydrogen_bond_criterion: Distance between two inter-chain
+            atoms at which to classify an atom pair as hydrogen-bonded.
+        :type hydrogen_bond_criterion: float, optional
+        :param interface_contact_count: Number of interface contacts required
+            to select a chain to be exported.
+        :type interface_contact_count: int, optional
+        :param hydrogen_bond_count: Number of hydrogen bonds required
+            to select a chain to be exported.
+        :type hydrogen_bond_count: int, optional
+        :param chain_id_col: Name of the chain ID DataFrame column.
+        type: chain_id_col: str, optional
+        :param atom_name_col: Name of the atom name DataFrame column.
+        type: atom_name_col: str, optional
+        :param atom_df_name: Name of the DataFrame by which to access
+            ATOM entries within a PandasPdb object.
+        :type atom_df_name: str, defaults to ``ATOM``
+
+        :return: The filtered PDB object.
+        :rtype: PandasPdb
+        """
+        filtered_pdb = copy.deepcopy(pdb)
+
+        atom_data = pdb.df[atom_df_name]
+        unique_chain_ids = atom_data[chain_id_col].unique()
+
+        interface_contact_atom_mask = atom_data[atom_name_col].isin(
+            primary_interchain_contact_atoms_for_filtering
+        )
+        interface_contact_other_atom_mask = ~atom_data[atom_name_col].isin(
+            secondary_interchain_contact_atoms_not_for_filtering
+        )
+        hydrogen_bond_atom_mask = atom_data[atom_name_col].isin(
+            primary_hydrogen_bond_atoms_for_filtering
+        )
+        hydrogen_bond_other_atom_mask = atom_data[atom_name_col].isin(
+            secondary_hydrogen_bond_atoms_for_filtering
+        )
+
+        for chain1 in unique_chain_ids:
+            interface_contact_chain1_mask = (
+                atom_data[chain_id_col] == chain1
+            ) & interface_contact_atom_mask
+            hydrogen_bond_chain1_mask = (
+                atom_data[chain_id_col] == chain1
+            ) & hydrogen_bond_atom_mask
+            interface_contact_chain1_residues = atom_data[
+                interface_contact_chain1_mask
+            ]
+            hydrogen_bond_chain1_atoms = atom_data[hydrogen_bond_chain1_mask]
+
+            if (
+                np.sum(interface_contact_chain1_mask) == 0
+                or np.sum(hydrogen_bond_chain1_mask) == 0
+            ):
+                continue
+
+            interface_contact_chain1_coords = (
+                interface_contact_chain1_residues[
+                    ["x_coord", "y_coord", "z_coord"]
+                ].to_numpy()
+            )
+            interface_contact_non_chain1_coords = atom_data.loc[
+                interface_contact_other_atom_mask
+                & (atom_data[chain_id_col] != chain1),
+                ["x_coord", "y_coord", "z_coord"],
+            ].to_numpy()
+            hydrogen_bond_chain1_coords = hydrogen_bond_chain1_atoms[
+                ["x_coord", "y_coord", "z_coord"]
+            ].to_numpy()
+            hydrogen_bond_non_chain1_coords = atom_data.loc[
+                hydrogen_bond_other_atom_mask
+                & (atom_data[chain_id_col] != chain1),
+                ["x_coord", "y_coord", "z_coord"],
+            ].to_numpy()
+
+            interface_contact_distances = cdist(
+                interface_contact_chain1_coords,
+                interface_contact_non_chain1_coords,
+                metric="euclidean",
+            )
+            hydrogen_bond_distances = cdist(
+                hydrogen_bond_chain1_coords,
+                hydrogen_bond_non_chain1_coords,
+                metric="euclidean",
+            )
+
+            num_interface_contacts = np.sum(
+                interface_contact_distances <= interface_contact_criterion,
+                axis=1,
+            ).sum()
+            chain_within_interface = (
+                num_interface_contacts >= interface_contact_count
+            ).item()
+
+            num_hydrogen_bonds = np.sum(
+                hydrogen_bond_distances <= hydrogen_bond_criterion, axis=1
+            ).sum()
+            chain_with_sufficient_bond_count = (
+                num_hydrogen_bonds >= hydrogen_bond_count
+            ).item()
+
+            if (
+                not chain_within_interface
+                or not chain_with_sufficient_bond_count
+            ):
+                log.info(
+                    f"Filtering out chain {chain1} within PDB {pdb.pdb_path}, as it contains {num_interface_contacts} (of {interface_contact_count} required) interface contacts and {num_hydrogen_bonds} (of {hydrogen_bond_count} required) hydrogen bonds"
+                )
+                filtered_pdb.df[atom_df_name] = filtered_pdb.df[atom_df_name][
+                    filtered_pdb.df[atom_df_name][chain_id_col] != chain1
+                ]
+
+        return filtered_pdb
+
     def write_out_pdb_chain_groups(
         self,
         df: pd.DataFrame,
@@ -2093,6 +2268,11 @@ class PDBManager:
         atom_df_name: str = "ATOM",
         max_num_chains_per_pdb_code: int = -1,
         models: List[int] = [1],
+        filter_for_interface_contacts: bool = False,
+        interface_contact_criterion: float = 7.0,
+        hydrogen_bond_criterion: float = 3.5,
+        interface_contact_count: int = 16,
+        hydrogen_bond_count: int = 10,
     ):
         """Record groups of PDB codes and associated chains
         as collated PDB files.
@@ -2117,6 +2297,28 @@ class PDBManager:
         :param models: List of indices of models from which to extract chains,
             defaults to ``[1]``.
         :type models: List[int], optional
+        :param filter_for_interface_contacts: Whether to filter for complex
+            chains that constitute at least one inter-chain interface, as
+            defined by the subsequent parameters ``interface_contact_criterion``,
+            ``hydrogen_bond_criterion``, ``interface_contact_count``,
+            and ``hydrogen_bond_count``.
+        :param filter_for_interface_contacts: bool, optional
+        :param interface_contact_criterion: Distance between two inter-chain
+            residues at which to classify a residue pair as interface contacts.
+            Only referenced if ``filter_for_interface_contacts`` is ``True``.
+        :type interface_contact_criterion: float, optional
+        :param hydrogen_bond_criterion: Distance between two inter-chain
+            atoms at which to classify an atom pair as hydrogen-bonded.
+            Only referenced if ``filter_for_interface_contacts`` is ``True``.
+        :type hydrogen_bond_criterion: float, optional
+        :param interface_contact_count: Number of interface contacts required
+            to select a chain to be exported. Only referenced if
+            ``filter_for_interface_contacts`` is ``True``.
+        :type interface_contact_count: int, optional
+        :param hydrogen_bond_count: Number of hydrogen bonds required
+            to select a chain to be exported. Only referenced if
+            ``filter_for_interface_contacts`` is ``True``.
+        :type hydrogen_bond_count: int, optional
         """
         if len(df) > 0:
             split_dir = Path(out_dir) / split
@@ -2161,14 +2363,31 @@ class PDBManager:
                         for chain in entry_chains
                         if chain in pdb_atom_chains
                     ]
-                    chains = (
-                        chains
-                        if max_num_chains_per_pdb_code == -1
-                        else chains[:max_num_chains_per_pdb_code]
-                    )
+                    if not filter_for_interface_contacts:
+                        chains = (
+                            chains
+                            if max_num_chains_per_pdb_code == -1
+                            else chains[:max_num_chains_per_pdb_code]
+                        )
                     pdb_chains = self.select_pdb_by_criterion(
                         pdb, "chain_id", chains, entry_pdb_code
                     )
+                    num_pdb_chains = len(
+                        pdb_chains.df[atom_df_name].chain_id.unique().tolist()
+                    )
+                    if filter_for_interface_contacts and num_pdb_chains > 1:
+                        pdb_chains = self.filter_chains_by_interface_criteria(
+                            pdb=pdb_chains,
+                            interface_contact_criterion=interface_contact_criterion,
+                            hydrogen_bond_criterion=hydrogen_bond_criterion,
+                            interface_contact_count=interface_contact_count,
+                            hydrogen_bond_count=hydrogen_bond_count,
+                        )
+                        pdb_chains = (
+                            pdb_chains
+                            if max_num_chains_per_pdb_code == -1
+                            else pdb_chains[:max_num_chains_per_pdb_code]
+                        )
                     # export selected chains within the same PDB file
                     pdb_chains.to_pdb(str(output_pdb_filepath))
 
@@ -2180,6 +2399,11 @@ class PDBManager:
         splits: Optional[List[str]] = None,
         max_num_chains_per_pdb_code: int = -1,
         models: List[int] = [1],
+        filter_for_interface_contacts: bool = False,
+        interface_contact_criterion: float = 7.0,
+        hydrogen_bond_criterion: float = 3.5,
+        interface_contact_count: int = 16,
+        hydrogen_bond_count: int = 10,
     ):
         """Write the given selection as a collection of PDB files.
 
@@ -2200,6 +2424,28 @@ class PDBManager:
         :param models: List of indices of models from which to extract chains,
             defaults to ``[1]``.
         :type models: List[int], optional
+        :param filter_for_interface_contacts: Whether to filter for complex
+            chains that constitute at least one inter-chain interface, as
+            defined by the subsequent parameters ``interface_contact_criterion``,
+            ``hydrogen_bond_criterion``, ``interface_contact_count``,
+            and ``hydrogen_bond_count``.
+        :param filter_for_interface_contacts: bool, optional
+        :param interface_contact_criterion: Distance between two inter-chain
+            residues at which to classify a residue pair as interface contacts.
+            Only referenced if ``filter_for_interface_contacts`` is ``True``.
+        :type interface_contact_criterion: float, optional
+        :param hydrogen_bond_criterion: Distance between two inter-chain
+            atoms at which to classify an atom pair as hydrogen-bonded.
+            Only referenced if ``filter_for_interface_contacts`` is ``True``.
+        :type hydrogen_bond_criterion: float, optional
+        :param interface_contact_count: Number of interface contacts required
+            to select a chain to be exported. Only referenced if
+            ``filter_for_interface_contacts`` is ``True``.
+        :type interface_contact_count: int, optional
+        :param hydrogen_bond_count: Number of hydrogen bonds required
+            to select a chain to be exported. Only referenced if
+            ``filter_for_interface_contacts`` is ``True``.
+        :type hydrogen_bond_count: int, optional
         """
         out_dir = Path(pdb_dir) / out_dir
         os.makedirs(out_dir, exist_ok=True)
@@ -2215,6 +2461,11 @@ class PDBManager:
                     merge_fn=self.merge_pdb_chain_groups,
                     max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
                     models=models,
+                    filter_for_interface_contacts=filter_for_interface_contacts,
+                    interface_contact_criterion=interface_contact_criterion,
+                    hydrogen_bond_criterion=hydrogen_bond_criterion,
+                    interface_contact_count=interface_contact_count,
+                    hydrogen_bond_count=hydrogen_bond_count,
                 )
         else:
             self.write_out_pdb_chain_groups(
@@ -2225,6 +2476,11 @@ class PDBManager:
                 merge_fn=self.merge_pdb_chain_groups,
                 max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
                 models=models,
+                filter_for_interface_contacts=filter_for_interface_contacts,
+                interface_contact_criterion=interface_contact_criterion,
+                hydrogen_bond_criterion=hydrogen_bond_criterion,
+                interface_contact_count=interface_contact_count,
+                hydrogen_bond_count=hydrogen_bond_count,
             )
 
     def export_pdbs(
@@ -2233,6 +2489,11 @@ class PDBManager:
         splits: Optional[List[str]] = None,
         max_num_chains_per_pdb_code: int = -1,
         models: List[int] = [1],
+        filter_for_interface_contacts: bool = False,
+        interface_contact_criterion: float = 7.0,
+        hydrogen_bond_criterion: float = 3.5,
+        interface_contact_count: int = 16,
+        hydrogen_bond_count: int = 10,
         force: bool = False,
     ):
         """Write the selection as a collection of PDB files.
@@ -2248,6 +2509,28 @@ class PDBManager:
         :param models: List of indices of models from which to extract chains,
             defaults to ``[1]``.
         :type models: List[int], optional
+        :param filter_for_interface_contacts: Whether to filter for complex
+            chains that constitute at least one inter-chain interface, as
+            defined by the subsequent parameters ``interface_contact_criterion``,
+            ``hydrogen_bond_criterion``, ``interface_contact_count``,
+            and ``hydrogen_bond_count``.
+        :param filter_for_interface_contacts: bool, optional
+        :param interface_contact_criterion: Distance between two inter-chain
+            residues at which to classify a residue pair as interface contacts.
+            Only referenced if ``filter_for_interface_contacts`` is ``True``.
+        :type interface_contact_criterion: float, optional
+        :param hydrogen_bond_criterion: Distance between two inter-chain
+            atoms at which to classify an atom pair as hydrogen-bonded.
+            Only referenced if ``filter_for_interface_contacts`` is ``True``.
+        :type hydrogen_bond_criterion: float, optional
+        :param interface_contact_count: Number of interface contacts required
+            to select a chain to be exported. Only referenced if
+            ``filter_for_interface_contacts`` is ``True``.
+        :type interface_contact_count: int, optional
+        :param hydrogen_bond_count: Number of hydrogen bonds required
+            to select a chain to be exported. Only referenced if
+            ``filter_for_interface_contacts`` is ``True``.
+        :type hydrogen_bond_count: int, optional
         :param force: Whether to raise an error if the download selection
             contains PDBs which are not available in PDB format.
         """
@@ -2264,5 +2547,10 @@ class PDBManager:
             splits=splits,
             max_num_chains_per_pdb_code=max_num_chains_per_pdb_code,
             models=models,
+            filter_for_interface_contacts=filter_for_interface_contacts,
+            interface_contact_criterion=interface_contact_criterion,
+            hydrogen_bond_criterion=hydrogen_bond_criterion,
+            interface_contact_count=interface_contact_count,
+            hydrogen_bond_count=hydrogen_bond_count,
         )
         log.info("Done writing selection of PDB chains")
