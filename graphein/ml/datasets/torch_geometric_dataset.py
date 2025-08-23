@@ -188,7 +188,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             pre_filter=pre_filter,
         )
         self.config.pdb_dir = Path(self.raw_dir)
-        self.data, self.slices = torch.load(self.processed_paths[0])
+        self.data, self.slices = torch.load(
+            self.processed_paths[0], weights_only=False
+        )
 
     @property
     def raw_file_names(self) -> List[str]:
