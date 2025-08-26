@@ -14,7 +14,7 @@ import wget
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from pandas.core.groupby.generic import DataFrameGroupBy
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 from graphein.protein.utils import (
     cast_pdb_column_to_type,
