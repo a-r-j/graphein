@@ -1,5 +1,8 @@
 ### 1.7.8 - UNRELEASED
 
+#### New Features
+* Adds RFAM Manager [#324](https://github.com/a-r-j/graphein/pull/324)
+
 #### Bugfixes
 
 * Fix computation of `GetContacts` edges for local renamed structures [#436](https://github.com/a-r-j/graphein/pull/436). Fixes [#435](https://github.com/a-r-j/graphein/issues/435)
