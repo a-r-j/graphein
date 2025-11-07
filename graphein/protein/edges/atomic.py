@@ -23,6 +23,10 @@ from graphein.protein.resi_atoms import (
     RESIDUE_ATOM_BOND_STATE,
 )
 
+MIN_BOND_DISTANCE = 0.4  # Minimum bond distance in Angstroms
+DEFAULT_COVALENT_BOND_TOLERANCE = 0.56  # Angstroms
+MAX_BOND_DISTANCE = 3.0  # Maximum reasonable bond distance
+
 # TODO dealing with metals
 # TODO There are other check and balances that can be implemented from here:
 # https://www.daylight.com/meetings/mug01/Sayle/m4xbondage.html
@@ -91,7 +95,9 @@ def assign_covalent_radii_to_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_atomic_edges(G: nx.Graph, tolerance: float = 0.56) -> nx.Graph:
+def add_atomic_edges(
+    G: nx.Graph, tolerance: float = DEFAULT_COVALENT_BOND_TOLERANCE
+) -> nx.Graph:
     """
     Computes covalent edges based on atomic distances. Covalent radii are
     assigned to each atom based on its bond assign_bond_states_to_dataframe.
@@ -238,7 +244,7 @@ def add_bond_order(G: nx.Graph) -> nx.Graph:
 
 def identify_bond_type_from_mapping(
     G: nx.Graph, u: str, v: str, a: Dict[str, Any], query: str
-):
+) -> nx.Graph:
     """
     Compares the bond length between two atoms in the graph, and the relevant
     experimental value by performing a lookup against the watershed values in:
@@ -286,88 +292,3 @@ def identify_bond_type_from_mapping(
         else:
             G.edges[u, v]["kind"].add("SINGLE")
     return G
-
-
-# The codeblock below was used in an initial pass at solving the bond order
-# assignment problem based on hybridisation state.
-# We instead use a simpler method of construction based on bond lengths,
-# but I am loathe to remove this code as it may prove useful later
-"""
-def cosinus(x0, x1, x2):
-    e0 = x0 - x1
-    e1 = x2 - x1
-    e0 = e0 / np.linalg.norm(e0)
-    e1 = e1 / np.linalg.norm(e1)
-    cosinus = np.dot(e0, e1)
-    angle = np.arccos(cosinus)
-
-    return 180 - np.degrees(angle)
-
-
-def dihedral(x0, x1, x2, x3):
-    b0 = -1.0 * (x1 - x0)
-    b1 = x2 - x1
-    b2 = x3 - x2
-
-    b0xb1 = np.cross(b0, b1)
-    b1xb2 = np.cross(b2, b1)
-
-    b0xb1_x_b1xb2 = np.cross(b0xb1, b1xb2)
-
-    y = np.dot(b0xb1_x_b1xb2, b1) * (1.0 / np.linalg.norm(b1))
-    x = np.dot(b0xb1, b1xb2)
-
-    grad = 180 - np.degrees(np.arctan2(y, x))
-    return grad
-
-
-def assign_bond_orders(G: nx.Graph) -> nx.Graph:
-
-    bond_angles: Dict[str, float] = {}
-    for n, d in G.nodes(data=True):
-        neighbours = list(G.neighbors(n))
-
-        if len(neighbours) == 1:
-            G.edges[n, neighbours[0]]["kind"].add("SINGLE")
-            bond_angles[n] = 0.0
-        elif len(neighbours) == 2:
-            cos_angle = cosinus(
-                G.nodes[n]["coords"],
-                G.nodes[neighbours[0]]["coords"],
-                G.nodes[neighbours[1]]["coords"],
-            )
-            bond_angles[n] = cos_angle
-        elif len(neighbours) == 3:
-            dihed = dihedral(
-                G.nodes[n]["coords"],
-                G.nodes[neighbours[0]]["coords"],
-                G.nodes[neighbours[1]]["coords"],
-                G.nodes[neighbours[2]]["coords"],
-            )
-            bond_angles[n] = dihed
-
-    print(bond_angles)
-
-    # Assign Bond angles to dataframe
-    G.graph["pdb_df"]["bond_angles"] = G.graph["pdb_df"]["node_id"].map(
-        bond_angles
-    )
-    print(G.graph["pdb_df"].to_string())
-
-    # Assign Hybridisation state from Bond Angles
-    hybridisation_state = {
-        n: "sp"
-        if d > 155
-        else "sp2"
-        if d > 115
-        else "sp3"
-        if d <= 115
-        else "UNK"
-        for n, d in bond_angles.items()
-    }
-    G.graph["pdb_df"]["bond_angles"] = G.graph["pdb_df"]["node_id"].map(
-        hybridisation_state
-    )
-
-    return G
-"""

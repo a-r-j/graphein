@@ -60,17 +60,11 @@ def compute_distmat(pdb_df: pd.DataFrame) -> pd.DataFrame:
     :return: pd.Dataframe of Euclidean distance matrix.
     :rtype: pd.DataFrame
     """
-    if (
-        not pd.Series(["x_coord", "y_coord", "z_coord"])
-        .isin(pdb_df.columns)
-        .all()
-    ):
+    if not pd.Series(["x_coord", "y_coord", "z_coord"]).isin(pdb_df.columns).all():
         raise ValueError(
             "Dataframe must contain columns ['x_coord', 'y_coord', 'z_coord']"
         )
-    eucl_dists = pdist(
-        pdb_df[["x_coord", "y_coord", "z_coord"]], metric="euclidean"
-    )
+    eucl_dists = pdist(pdb_df[["x_coord", "y_coord", "z_coord"]], metric="euclidean")
     eucl_dists = pd.DataFrame(squareform(eucl_dists))
     eucl_dists.index = pdb_df.index
     eucl_dists.columns = pdb_df.index
@@ -109,13 +103,10 @@ def filter_distmat(
         distmat = distmat.copy(deep=True)
 
     # Prepare
-    chain_to_nodes = (
-        pdb_df.groupby("chain_id")["node_id"].apply(list).to_dict()
-    )
+    chain_to_nodes = pdb_df.groupby("chain_id")["node_id"].apply(list).to_dict()
     node_id_to_int = dict(zip(pdb_df["node_id"], pdb_df.index))
     chain_to_nodes = {
-        ch: [node_id_to_int[n] for n in nodes]
-        for ch, nodes in chain_to_nodes.items()
+        ch: [node_id_to_int[n] for n in nodes] for ch, nodes in chain_to_nodes.items()
     }
 
     # Construct indices of edges to exclude
@@ -193,14 +184,9 @@ def add_sequence_distance_edges(
         # Subset to only N and C atoms in the case of full-atom
         # peptide bond addition
         try:
-            if (
-                G.graph["config"].granularity == "atom"
-                and name == "peptide_bond"
-            ):
+            if G.graph["config"].granularity == "atom" and name == "peptide_bond":
                 chain_residues = [
-                    (n, v)
-                    for n, v in chain_residues
-                    if v["atom_type"] in {"N", "C"}
+                    (n, v) for n, v in chain_residues if v["atom_type"] in {"N", "C"}
                 ]
         # If we don't don't find a config, assume it's a residue graph
         # This is brittle
@@ -214,10 +200,7 @@ def add_sequence_distance_edges(
                 if i == len(chain_residues) - d:
                     continue
                 # Asserts residues are on the same chain
-                cond_1 = (
-                    residue[1]["chain_id"]
-                    == chain_residues[i + d][1]["chain_id"]
-                )
+                cond_1 = residue[1]["chain_id"] == chain_residues[i + d][1]["chain_id"]
                 # Asserts residue numbers are adjacent
                 cond_2 = (
                     abs(
@@ -255,9 +238,7 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
     return add_sequence_distance_edges(G, d=1, name="peptide_bond")
 
 
-def add_hydrophobic_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
-):
+def add_hydrophobic_interactions(G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None):
     """
     Find all hydrophobic interactions.
 
@@ -283,14 +264,10 @@ def add_hydrophobic_interactions(
     if hydrophobics_df.shape[0] > 0:
         distmat = compute_distmat(hydrophobics_df)
         interacting_atoms = get_interacting_atoms(5, distmat)
-        add_interacting_resis(
-            G, interacting_atoms, hydrophobics_df, ["hydrophobic"]
-        )
+        add_interacting_resis(G, interacting_atoms, hydrophobics_df, ["hydrophobic"])
 
 
-def add_disulfide_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
-):
+def add_disulfide_interactions(G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None):
     """
     Find all disulfide interactions between CYS residues
     (:const:`~graphein.protein.resi_atoms.DISULFIDE_RESIS`,
@@ -315,22 +292,14 @@ def add_disulfide_interactions(
 
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
-    disulfide_df = filter_dataframe(
-        rgroup_df, "residue_name", DISULFIDE_RESIS, True
-    )
-    disulfide_df = filter_dataframe(
-        disulfide_df, "atom_name", DISULFIDE_ATOMS, True
-    )
+    disulfide_df = filter_dataframe(rgroup_df, "residue_name", DISULFIDE_RESIS, True)
+    disulfide_df = filter_dataframe(disulfide_df, "atom_name", DISULFIDE_ATOMS, True)
     # Ensure only residues in the graph are kept
-    disulfide_df = filter_dataframe(
-        disulfide_df, "node_id", list(G.nodes), True
-    )
+    disulfide_df = filter_dataframe(disulfide_df, "node_id", list(G.nodes), True)
     if disulfide_df.shape[0] > 0:
         distmat = compute_distmat(disulfide_df)
         interacting_atoms = get_interacting_atoms(2.2, distmat)
-        add_interacting_resis(
-            G, interacting_atoms, disulfide_df, ["disulfide"]
-        )
+        add_interacting_resis(G, interacting_atoms, disulfide_df, ["disulfide"])
 
 
 def add_hydrogen_bond_interactions(
@@ -340,6 +309,7 @@ def add_hydrogen_bond_interactions(
     # For these atoms, find those that are within 3.5A of one another.
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
+
     rgroup_df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
     HBOND_ATOMS = [
         "ND",  # histidine and asparagine
@@ -357,6 +327,7 @@ def add_hydrogen_bond_interactions(
         "O",
     ]
     hbond_df = filter_dataframe(rgroup_df, "atom_name", HBOND_ATOMS, True)
+
     if len(hbond_df.index) > 0:
         distmat = compute_distmat(hbond_df)
         interacting_atoms = get_interacting_atoms(3.5, distmat)
@@ -364,18 +335,14 @@ def add_hydrogen_bond_interactions(
 
     # For these atoms, find those that are within 4.0A of one another.
     HBOND_ATOMS_SULPHUR = ["SD", "SG"]
-    hbond_df = filter_dataframe(
-        rgroup_df, "atom_name", HBOND_ATOMS_SULPHUR, True
-    )
+    hbond_df = filter_dataframe(rgroup_df, "atom_name", HBOND_ATOMS_SULPHUR, True)
     if len(hbond_df.index) > 0:
         distmat = compute_distmat(hbond_df)
         interacting_atoms = get_interacting_atoms(4.0, distmat)
         add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
 
 
-def add_ionic_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
-):
+def add_ionic_interactions(G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None):
     """
     Find all ionic interactions.
 
@@ -416,9 +383,7 @@ def add_ionic_interactions(
                     G.remove_edge(r1, r2)
 
 
-def add_aromatic_interactions(
-    G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None
-):
+def add_aromatic_interactions(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
     """
     Find all aromatic-aromatic interaction.
 
@@ -450,9 +415,7 @@ def add_aromatic_interactions(
         )
         resi_centroid_df = get_ring_centroids(resi_rings_df)
         dfs.append(resi_centroid_df)
-    aromatic_df = (
-        pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
-    )
+    aromatic_df = pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
     if aromatic_df.shape[0] > 0:
         distmat = compute_distmat(aromatic_df)
         distmat.set_index(aromatic_df["node_id"], inplace=True)
@@ -461,12 +424,9 @@ def add_aromatic_interactions(
         indices = np.where(distmat > 0)
 
         interacting_resis = [
-            (distmat.index[r], distmat.index[c])
-            for r, c in zip(indices[0], indices[1])
+            (distmat.index[r], distmat.index[c]) for r, c in zip(indices[0], indices[1])
         ]
-        log.info(
-            f"Found: {len(interacting_resis)} aromatic-aromatic interactions"
-        )
+        log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
         for n1, n2 in interacting_resis:
             assert G.nodes[n1]["residue_name"] in AROMATIC_RESIS
             assert G.nodes[n2]["residue_name"] in AROMATIC_RESIS
@@ -491,9 +451,7 @@ def add_aromatic_sulphur_interactions(
         rgroup_df = G.graph["rgroup_df"]
     RESIDUES = SULPHUR_RESIS + PI_RESIS
 
-    aromatic_sulphur_df = filter_dataframe(
-        rgroup_df, "residue_name", RESIDUES, True
-    )
+    aromatic_sulphur_df = filter_dataframe(rgroup_df, "residue_name", RESIDUES, True)
     aromatic_sulphur_df = filter_dataframe(
         aromatic_sulphur_df, "node_id", list(G.nodes()), True
     )
@@ -501,9 +459,7 @@ def add_aromatic_sulphur_interactions(
     if aromatic_sulphur_df.shape[0] > 0:
         distmat = compute_distmat(aromatic_sulphur_df)
         interacting_atoms = get_interacting_atoms(5.3, distmat)
-        interacting_atoms = list(
-            zip(interacting_atoms[0], interacting_atoms[1])
-        )
+        interacting_atoms = list(zip(interacting_atoms[0], interacting_atoms[1]))
 
         for a1, a2 in interacting_atoms:
             resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
@@ -516,9 +472,7 @@ def add_aromatic_sulphur_interactions(
                 add_edge(G, resi1, resi2, "aromatic_sulphur")
 
 
-def add_cation_pi_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
-):
+def add_cation_pi_interactions(G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None):
     """Add cation-pi interactions.
 
     Criteria:
@@ -532,19 +486,13 @@ def add_cation_pi_interactions(
     """
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
-    cation_pi_df = filter_dataframe(
-        rgroup_df, "residue_name", CATION_PI_RESIS, True
-    )
-    cation_pi_df = filter_dataframe(
-        cation_pi_df, "node_id", list(G.nodes()), True
-    )
+    cation_pi_df = filter_dataframe(rgroup_df, "residue_name", CATION_PI_RESIS, True)
+    cation_pi_df = filter_dataframe(cation_pi_df, "node_id", list(G.nodes()), True)
 
     if cation_pi_df.shape[0] > 0:
         distmat = compute_distmat(cation_pi_df)
         interacting_atoms = get_interacting_atoms(6, distmat)
-        interacting_atoms = list(
-            zip(interacting_atoms[0], interacting_atoms[1])
-        )
+        interacting_atoms = list(zip(interacting_atoms[0], interacting_atoms[1]))
 
         for a1, a2 in interacting_atoms:
             resi1 = cation_pi_df.loc[a1, "node_id"]
@@ -651,13 +599,9 @@ def add_pi_stacking_interactions(
         )
         resi_centroid_df = get_ring_centroids(resi_rings_df)
         resi_normals = get_ring_normals(resi_rings_df)
-        resi_centroid_df = pd.merge(
-            resi_centroid_df, resi_normals, on="node_id"
-        )
+        resi_centroid_df = pd.merge(resi_centroid_df, resi_normals, on="node_id")
         dfs.append(resi_centroid_df)
-    aromatic_df = (
-        pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
-    )
+    aromatic_df = pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
 
     if aromatic_df.shape[0] > 0:
         distmat = compute_distmat(aromatic_df)
@@ -666,8 +610,7 @@ def add_pi_stacking_interactions(
         distmat = distmat[distmat <= centroid_distance].fillna(0)
         indices = np.where(distmat > 0)
         interacting_resis = [
-            (distmat.index[r], distmat.index[c])
-            for r, c in zip(indices[0], indices[1])
+            (distmat.index[r], distmat.index[c]) for r, c in zip(indices[0], indices[1])
         ]
         # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
         for n1, n2 in interacting_resis:
@@ -680,12 +623,8 @@ def add_pi_stacking_interactions(
                 ["x_coord", "y_coord", "z_coord"]
             ].values[0]
 
-            n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][
-                0
-            ].values[0]
-            n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][
-                0
-            ].values[0]
+            n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][0].values[0]
+            n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][0].values[0]
 
             centroid_vector = n2_centroid - n1_centroid
 
@@ -693,11 +632,7 @@ def add_pi_stacking_interactions(
             n1_centroid_angle = compute_angle(n1_normal, centroid_vector)
             n2_centroid_angle = compute_angle(n2_normal, centroid_vector)
 
-            if (
-                norm_angle >= 30
-                or n1_centroid_angle >= 45
-                or n2_centroid_angle >= 45
-            ):
+            if norm_angle >= 30 or n1_centroid_angle >= 45 or n2_centroid_angle >= 45:
                 continue
             add_edge(G, n1, n2, "pi_stacking")
 
@@ -714,13 +649,9 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
         )
         resi_centroid_df = get_ring_centroids(resi_rings_df)
         resi_normals = get_ring_normals(resi_rings_df)
-        resi_centroid_df = pd.merge(
-            resi_centroid_df, resi_normals, on="node_id"
-        )
+        resi_centroid_df = pd.merge(resi_centroid_df, resi_normals, on="node_id")
         dfs.append(resi_centroid_df)
-    aromatic_df = (
-        pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
-    )
+    aromatic_df = pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
 
     if aromatic_df.shape[0] > 0:
         distmat = compute_distmat(aromatic_df)
@@ -729,8 +660,7 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
         distmat = distmat[distmat <= 7].fillna(0)
         indices = np.where(distmat > 0)
         interacting_resis = [
-            (distmat.index[r], distmat.index[c])
-            for r, c in zip(indices[0], indices[1])
+            (distmat.index[r], distmat.index[c]) for r, c in zip(indices[0], indices[1])
         ]
         # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
         for n1, n2 in interacting_resis:
@@ -743,12 +673,8 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
                 ["x_coord", "y_coord", "z_coord"]
             ].values[0]
 
-            n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][
-                0
-            ].values[0]
-            n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][
-                0
-            ].values[0]
+            n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][0].values[0]
+            n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][0].values[0]
 
             centroid_vector = n2_centroid - n1_centroid
 
@@ -766,9 +692,7 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
             add_edge(G, n1, n2, "t_stacking")
 
 
-def add_backbone_carbonyl_carbonyl_interactions(
-    G: nx.Graph, threshold: float = 3.2
-):
+def add_backbone_carbonyl_carbonyl_interactions(G: nx.Graph, threshold: float = 3.2):
     """Adds backbone-carbonyl-carbonyl interactions.
 
     Default is to consider C═O···C═O interactions below 3.2 Angstroms
@@ -843,9 +767,7 @@ def add_salt_bridges(
     if salt_bridge_df.shape[0] > 0:
         distmat = compute_distmat(salt_bridge_df)
         interacting_atoms = get_interacting_atoms(threshold, distmat)
-        add_interacting_resis(
-            G, interacting_atoms, salt_bridge_df, ["salt_bridge"]
-        )
+        add_interacting_resis(G, interacting_atoms, salt_bridge_df, ["salt_bridge"])
 
         for r1, r2 in get_edges_by_bond_type(G, "salt_bridge"):
             condition1 = (
@@ -863,9 +785,7 @@ def add_salt_bridges(
                     G.remove_edge(r1, r2)
 
 
-def get_interacting_atoms(
-    angstroms: float, distmat: pd.DataFrame
-) -> np.ndarray:
+def get_interacting_atoms(angstroms: float, distmat: pd.DataFrame) -> np.ndarray:
     """Find the atoms that are within a particular radius of one another.
 
     :param angstroms: The radius in angstroms.
@@ -926,9 +846,7 @@ def add_delaunay_triangulation(
         node_map: Dict[int, str] = dict(enumerate(node_map.values()))
 
     tri = Delaunay(coords)  # this is the triangulation
-    log.debug(
-        f"Detected {len(tri.simplices)} simplices in the Delaunay Triangulation."
-    )
+    log.debug(f"Detected {len(tri.simplices)} simplices in the Delaunay Triangulation.")
     for simplex in tri.simplices:
         nodes = [node_map[s] for s in simplex]
         for n1, n2 in combinations(nodes, 2):
@@ -954,9 +872,7 @@ def add_distance_threshold(
     :type threshold: float
     :return: Graph with distance-based edges added
     """
-    pdb_df = filter_dataframe(
-        G.graph["pdb_df"], "node_id", list(G.nodes()), True
-    )
+    pdb_df = filter_dataframe(G.graph["pdb_df"], "node_id", list(G.nodes()), True)
     dist_mat = compute_distmat(pdb_df)
     interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
     interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
@@ -972,9 +888,7 @@ def add_distance_threshold(
         n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
 
         condition_1 = n1_chain == n2_chain
-        condition_2 = (
-            abs(n1_position - n2_position) < long_interaction_threshold
-        )
+        condition_2 = abs(n1_position - n2_position) < long_interaction_threshold
 
         if not (condition_1 and condition_2):
             count += 1
@@ -1005,9 +919,7 @@ def add_distance_window(
     :type long_interaction_threshold: int
     :return: Graph with distance-based edges added
     """
-    pdb_df = filter_dataframe(
-        G.graph["pdb_df"], "node_id", list(G.nodes()), True
-    )
+    pdb_df = filter_dataframe(G.graph["pdb_df"], "node_id", list(G.nodes()), True)
     dist_mat = compute_distmat(pdb_df)
     # Nodes less than the minimum distance
     less_than_min = get_interacting_atoms(min, distmat=dist_mat)
@@ -1015,9 +927,7 @@ def add_distance_window(
 
     interacting_nodes = get_interacting_atoms(max, distmat=dist_mat)
     interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
-    interacting_nodes = [
-        i for i in interacting_nodes if i not in less_than_min
-    ]
+    interacting_nodes = [i for i in interacting_nodes if i not in less_than_min]
 
     log.info(f"Found: {len(interacting_nodes)} distance edges")
     count = 0
@@ -1030,9 +940,7 @@ def add_distance_window(
         n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
 
         condition_1 = n1_chain == n2_chain
-        condition_2 = (
-            abs(n1_position - n2_position) < long_interaction_threshold
-        )
+        condition_2 = abs(n1_position - n2_position) < long_interaction_threshold
 
         if not (condition_1 and condition_2):
             count += 1
@@ -1089,9 +997,7 @@ def add_k_nn_edges(
     :rtype: nx.Graph
     """
     # Prepare dataframe
-    pdb_df = filter_dataframe(
-        G.graph["pdb_df"], "node_id", list(G.nodes()), True
-    )
+    pdb_df = filter_dataframe(G.graph["pdb_df"], "node_id", list(G.nodes()), True)
     if (
         pdb_df["x_coord"].isna().sum()
         or pdb_df["y_coord"].isna().sum()
@@ -1149,9 +1055,7 @@ def add_k_nn_edges(
         # Check residues are not on same chain
         condition_1 = n1_chain != n2_chain
         # Check residues are separated by long_interaction_threshold
-        condition_2 = (
-            abs(n1_position - n2_position) > long_interaction_threshold
-        )
+        condition_2 = abs(n1_position - n2_position) > long_interaction_threshold
 
         # If not on same chain add edge or
         # If on same chain and separation is sufficient add edge
@@ -1181,9 +1085,7 @@ def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
     """
     ring_atom_df = filter_dataframe(dataframe, "residue_name", [aa], True)
 
-    ring_atom_df = filter_dataframe(
-        ring_atom_df, "atom_name", AA_RING_ATOMS[aa], True
-    )
+    ring_atom_df = filter_dataframe(ring_atom_df, "atom_name", AA_RING_ATOMS[aa], True)
     return ring_atom_df
 
 
@@ -1243,9 +1145,7 @@ def get_ring_normals(ring_df: pd.DataFrame) -> pd.DataFrame:
     return ring_df.groupby("node_id").apply(compute_ring_normal).reset_index()
 
 
-def compute_angle(
-    v1: np.ndarray, v2: np.ndarray, return_degrees: bool = True
-) -> float:
+def compute_angle(v1: np.ndarray, v2: np.ndarray, return_degrees: bool = True) -> float:
     """Computes angle between two vectors.
 
     :param v1: First vector
@@ -1255,15 +1155,11 @@ def compute_angle(
     :param return_degrees: Whether to return angle in degrees or radians
     :type return_degrees: bool
     """
-    angle = np.arccos(
-        np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
-    )
+    angle = np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
     return 180 * angle / np.pi if return_degrees else angle
 
 
-def get_edges_by_bond_type(
-    G: nx.Graph, bond_type: str
-) -> List[Tuple[str, str]]:
+def get_edges_by_bond_type(G: nx.Graph, bond_type: str) -> List[Tuple[str, str]]:
     """
     Return edges of a particular bond type.
 
@@ -1275,9 +1171,7 @@ def get_edges_by_bond_type(
     ========
     - resis: (list) a list of tuples, where each tuple is an edge.
     """
-    return [
-        (n1, n2) for n1, n2, d in G.edges(data=True) if bond_type in d["kind"]
-    ]
+    return [(n1, n2) for n1, n2, d in G.edges(data=True) if bond_type in d["kind"]]
 
 
 def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:

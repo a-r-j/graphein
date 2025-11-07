@@ -306,6 +306,31 @@ def _create_interaction_function(interaction_code: str, description: str):
 
 # Create all interaction functions
 hydrogen_bond = _create_interaction_function("hb", "hydrogen bonds")
+hydrogen_bond_backbone_backbone = _create_interaction_function(
+    "hbbb", "backbone to backbone hydrogen bond interactions"
+)
+hydrogen_bond_sidechain_backbone = _create_interaction_function(
+    "hbsb", "side-chain to backbone hydrogen bond interactions"
+)
+hydrogen_bond_sidechain_sidechain = _create_interaction_function(
+    "hbss", "side-chain to side-chain hydrogen bond interactions"
+)
+
+
+def hydrogen_bond(G: nx.Graph) -> nx.Graph:
+    """
+    Adds all types of hydrogen bonds to protein structure graph.
+    Combines backbone-backbone, sidechain-backbone, and sidechain-sidechain hydrogen bonds.
+
+    :param G: nx.Graph to add hydrogen bonds to.
+    :return: nx.Graph with all hydrogen bond types added.
+    """
+    G = hydrogen_bond_backbone_backbone(G)
+    G = hydrogen_bond_sidechain_backbone(G)
+    G = hydrogen_bond_sidechain_sidechain(G)
+    return G
+
+
 salt_bridge = _create_interaction_function("sb", "salt bridges")
 pi_cation = _create_interaction_function("pc", "pi-cation interactions")
 pi_stacking = _create_interaction_function("ps", "pi-stacking interactions")
