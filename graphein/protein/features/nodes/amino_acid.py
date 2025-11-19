@@ -18,6 +18,8 @@ from graphein.protein.resi_atoms import (
     BASE_AMINO_ACIDS,
     HYDROGEN_BOND_ACCEPTORS,
     HYDROGEN_BOND_DONORS,
+    HYDROPHOBICITY_SCALES,
+    HYDROPHOBICITY_TYPE,
     RESI_THREE_TO_1,
 )
 from graphein.utils.utils import onek_encoding_unk
@@ -277,3 +279,43 @@ def hydrogen_bond_acceptor(
     if not sum_features:
         features = np.array(features > 0).astype(int)
     d["hbond_acceptors"] = features
+
+
+def hydrophobicity(
+    n: str,
+    d: Dict[str, Any],
+    mapping: HYDROPHOBICITY_TYPE = "kd",
+    return_array: bool = True,
+) -> Union[np.ndarray, pd.Series]:
+    """
+    Adds hydrophobicity values for each residue to graph nodes.
+    See :const:`~graphein.protein.resi_atoms.HYDROPHOBICITY_SCALES` for
+    values and available scales.
+
+    :param n: Node ID. Unused - kept to maintain consistent function signature.
+    :type n: str
+    :param d: Dictionary of node attributes.
+    :type d: Dict[str, Any]
+    :param mapping: Which hydrophobicity scale to use. See
+        :const:`~graphein.protein.resi_atoms.HYDROPHOBICITY_TYPE` for supported types.
+    :type mapping: graphien.protein.resi_atoms.HYDROPHOBICITY_TYPE
+    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise returns
+        a ``pd.Series``. Default is ``True``.
+    :type return_array: bool
+    """
+    assert (
+        mapping in HYDROPHOBICITY_SCALES.keys()
+    ), f"Unsupported mapping: {mapping}. Supported mappings: {HYDROPHOBICITY_SCALES.keys()}"
+    hydr = HYDROPHOBICITY_SCALES[mapping]
+
+    amino_acid = d["residue_name"]
+    try:
+        features = hydr[amino_acid]
+    except:
+        features = pd.Series(np.zeros(1))
+
+    if return_array:
+        features = np.array(features)
+
+    d[f"hydrophobicity_{mapping}"] = features
+    return features
