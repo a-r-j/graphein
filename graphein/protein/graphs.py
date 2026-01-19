@@ -914,10 +914,8 @@ def _mp_graph_constructor(
     :return: Protein structure graph or ``None`` if an error is encountered.
     :rtype: Union[nx.Graph, None]
     """
-    log.info(
-        f"Constructing graph for: {args[0]}. Chain selection: {args[1]}. \
-            Model index: {args[2]}"
-    )
+    log.info(f"Constructing graph for: {args[0]}. Chain selection: {args[1]}. \
+            Model index: {args[2]}")
     func = partial(construct_graph, config=config)
     try:
         if source == "pdb_code":
@@ -936,10 +934,8 @@ def _mp_graph_constructor(
             )
 
     except Exception as ex:
-        log.info(
-            f"Graph construction error (PDB={args[0]})! \
-                {traceback.format_exc()}"
-        )
+        log.info(f"Graph construction error (PDB={args[0]})! \
+                {traceback.format_exc()}")
         log.info(ex)
         return None
 
@@ -1232,10 +1228,8 @@ def compute_secondary_structure_graph(
                 ss_list[u], ss_list[v], kind=d["kind"], source=f"{u}_{v}"
             )
         except KeyError as e:
-            log.debug(
-                f"Edge {u}-{v} not added to secondary structure graph. \
-                Reason: {e} not in graph"
-            )
+            log.debug(f"Edge {u}-{v} not added to secondary structure graph. \
+                Reason: {e} not in graph")
 
     # Remove self-loops if necessary.
     # Checks for equality between nodes in a given edge.
