@@ -46,8 +46,10 @@ def _download_RegNetwork(
     # Ping server to check if file is available
     ping_result = ping("regnetworkweb.org")
     if not ping_result:
-        log.warning("RegNetwork is not available. Please check your internet \
-            connection or verify at: http://www.regnetworkweb.org")
+        log.warning(
+            "RegNetwork is not available. Please check your internet \
+            connection or verify at: http://www.regnetworkweb.org"
+        )
 
     mouse_url = "https://regnetworkweb.org/download/mouse.zip"
 
