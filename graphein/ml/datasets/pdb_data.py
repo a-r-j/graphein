@@ -91,7 +91,7 @@ class PDBManager:
 
         self.pdb_chain_cath_uniprot_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz"
 
-        self.cath_id_cath_code_url = "http://download.cathdb.info/cath/releases/daily-release/newest/cath-b-newest-all.gz"
+        self.cath_id_cath_code_url = "ftp://orengoftp.biochem.ucl.ac.uk/cath/releases/latest-release/cath-classification-data/cath-domain-list.txt"
 
         self.pdb_chain_ec_number_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz"
 
@@ -633,30 +633,35 @@ class PDBManager:
         return cath_mapping
 
     def _parse_cath_code(self) -> Dict[str, str]:
-        """Parse the CATH code for all CATH IDs.
+        """Parse the CATH code for all CATH IDs from the modern text format.
 
-        :return: Dictionary of CATH ID with their
-            corresponding CATH code.
+        Input file format example:
+        4ensA01      2    40   180    10      1      1 ...
+        [ID]     [Class] [Arch] [Top] [Homol] ...
+
+        :return: Dictionary of CATH ID with their corresponding CATH code (e.g. "2.40.180.10").
         :rtype: Dict[str, str]
         """
         cath_mapping = {}
-        with gzip.open(
-            self.root_dir / self.cath_id_cath_code_filename, "rt"
-        ) as f:
-            print(f)
+        with open(self.root_dir / self.cath_id_cath_code_filename, "r") as f:
             for line in f:
-                print(line)
+                if line.startswith("#") or not line.strip():
+                    continue
+
                 try:
-                    (
-                        cath_id,
-                        cath_version,
-                        cath_code,
-                        cath_segment,
-                    ) = line.strip().split()
+                    parts = line.strip().split()
+                    if len(parts) < 5:
+                        continue
+                    cath_id = parts[0]
+                    cath_code_parts = parts[1:5]
+                    cath_code = ".".join(cath_code_parts)
+
                     cath_mapping[cath_id] = cath_code
-                    print(cath_id, cath_code)
+
+
                 except ValueError:
                     continue
+                    
         return cath_mapping
 
     def _parse_ec_number(self) -> Dict[str, str]:
@@ -2266,3 +2271,4 @@ class PDBManager:
             models=models,
         )
         log.info("Done writing selection of PDB chains")
+
