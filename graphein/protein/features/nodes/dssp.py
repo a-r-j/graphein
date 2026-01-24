@@ -244,10 +244,8 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
 
             G.nodes[n][feature] = dssp_df.loc[residue, feature]
         """
-        raise NameError(
-            f"DSSP residue features ({feature}) \
-            cannot be added to atom granularity graph"
-        )
+        raise NameError(f"DSSP residue features ({feature}) \
+            cannot be added to atom granularity graph")
 
     else:
         nx.set_node_attributes(G, dict(dssp_df[feature]), feature)

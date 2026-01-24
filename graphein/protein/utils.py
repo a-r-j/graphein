@@ -238,10 +238,8 @@ def download_pdb(
                 new_pdb, out_dir, format=format, overwrite=overwrite
             )
         except KeyError:
-            log.warning(
-                f"PDB {pdb_code} not found. Possibly too large; large \
-                    structures are only provided as mmCIF files."
-            )
+            log.warning(f"PDB {pdb_code} not found. Possibly too large; large \
+                    structures are only provided as mmCIF files.")
             return
 
     # Check if PDB already exists

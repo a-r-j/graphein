@@ -658,10 +658,9 @@ class PDBManager:
 
                     cath_mapping[cath_id] = cath_code
 
-
                 except ValueError:
                     continue
-                    
+
         return cath_mapping
 
     def _parse_ec_number(self) -> Dict[str, str]:
@@ -2271,4 +2270,3 @@ class PDBManager:
             models=models,
         )
         log.info("Done writing selection of PDB chains")
-
