@@ -2,6 +2,7 @@
 
 #### Bugfixes
 
+* Fix `NameError` in `graphein.molecule.atoms` when rdkit is not installed by guarding rdkit-dependent constants with `_HAS_RDKIT` flag
 * Fix computation of `GetContacts` edges for local renamed structures [#436](https://github.com/a-r-j/graphein/pull/436). Fixes [#435](https://github.com/a-r-j/graphein/issues/435)
 * Hotfix for incorrect dataframe indexing resulting in correct edge addition in `add_distance_threshold` [#419](https://github.com/a-r-j/graphein/pull/419)
 * Fixes unnecessary download for pre-existing structure files retrieved from AlphaFold database in `graphein.ml.ProteinGraphDataset`[#426](https://github.com/a-r-j/graphein/pull/426)
