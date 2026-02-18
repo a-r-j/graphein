@@ -133,7 +133,9 @@ def compute_esm_embedding(
 
     # Extract per-residue representations (on CPU)
     with torch.no_grad():
-        results = model(batch_tokens, repr_layers=[output_layer], return_contacts=True)
+        results = model(
+            batch_tokens, repr_layers=[output_layer], return_contacts=True
+        )
     token_representations = results["representations"][output_layer]
 
     if representation == "residue":
