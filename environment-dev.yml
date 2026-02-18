@@ -73,7 +73,6 @@ dependencies:
 - click
 - pip:
   - bioservices
-  - biovec
   - propy3
   - pyaaisc
   - hypothesis
