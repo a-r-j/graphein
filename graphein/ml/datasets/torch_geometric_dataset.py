@@ -58,7 +58,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         pre_transform: Optional[Callable] = None,
         pre_filter: Optional[Callable] = None,
         num_cores: int = 16,
-        af_version: int = 2,
+        af_version: int = 6,
     ):
         """In Memory dataset for protein graphs.
 
@@ -125,7 +125,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             construction, defaults to ``16``.
         :type num_cores: int, optional
         :param af_version: Version of AlphaFoldDB structures to use,
-            defaults to ``2``.
+            defaults to ``6``.
         :type af_version: int, optional
         """
         self.name = name
@@ -353,7 +353,7 @@ class ProteinGraphDataset(Dataset):
         pre_transform: Optional[Callable] = None,
         pre_filter: Optional[Callable] = None,
         num_cores: int = 16,
-        af_version: int = 2,
+        af_version: int = 6,
     ):
         """Dataset class for protein graphs.
 
@@ -414,7 +414,7 @@ class ProteinGraphDataset(Dataset):
             construction, defaults to ``16``.
         :type num_cores: int, optional
         :param af_version: Version of AlphaFoldDB structures to use,
-            defaults to ``2``.
+            defaults to ``6``.
         :type af_version: int, optional
         """
         self.pdb_codes = (

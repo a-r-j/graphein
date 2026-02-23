@@ -327,7 +327,7 @@ def compute_rgroup_dataframe(pdb_df: pd.DataFrame) -> pd.DataFrame:
 
 def download_alphafold_structure(
     uniprot_id: str,
-    version: int = 2,
+    version: int = 6,
     out_dir: str = ".",
     rename: bool = True,
     pdb: bool = True,
@@ -340,7 +340,7 @@ def download_alphafold_structure(
 
     :param uniprot_id: UniProt ID of desired protein.
     :type uniprot_id: str
-    :param version: Version of the structure to download
+    :param version: Version of the structure to download. Defaults to ``6``.
     :type version: int
     :param out_dir: string specifying desired output location. Default is pwd.
     :type out_dir: str
