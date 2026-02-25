@@ -354,7 +354,7 @@ class PDBManager:
             log.debug("Unzipped sequences")
 
     def _generate_ligand_map(self):
-        """Download ligand map from
+        """Generate ligand map to match historical ligand map located at:
         http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd.
         """
         if not os.path.exists(self.root_dir / self.ligand_map_filename):
@@ -672,8 +672,7 @@ class PDBManager:
             seq = v
             params = k.split()
             pdb_id = params[0]
-            pdb = params[0].split("_")[0]
-            chain = params[0].split("_")[1]
+            pdb, chain = pdb_id.split("_", 1)
             length = int(params[2].split(":")[1])
             molecule_type = params[1].split(":")[1]
             name = " ".join(params[3:])
