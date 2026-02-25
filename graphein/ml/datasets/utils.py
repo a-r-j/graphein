@@ -99,7 +99,10 @@ def fetch_all_chem_comp_ids(chem_comp_types_to_include: list):
     entry_chem_comp_results = result.get("data", {}).get("entries", [])
 
     n_entries = len(entry_chem_comp_results)
-    logger.info("Fetched chemical component data for {n_entries} entries", n_entries=n_entries)
+    logger.info(
+        "Fetched chemical component data for {n_entries} entries",
+        n_entries=n_entries,
+    )
 
     return entry_chem_comp_results
 
@@ -137,8 +140,12 @@ def process_chem_comp_results_and_write_to_file(
                 if nonpolymer_comp:
                     chem_id = nonpolymer_comp.get("nonpolymer_comp_id")
                     if chem_id:
-                        pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(chem_id)
-                        chem_comp_to_pdb_map.setdefault(chem_id, set()).add(pdb_id)
+                        pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(
+                            chem_id
+                        )
+                        chem_comp_to_pdb_map.setdefault(chem_id, set()).add(
+                            pdb_id
+                        )
 
         # --- 2. Branched Entities ---
         # Includes things like monomers in saccharides
@@ -154,8 +161,12 @@ def process_chem_comp_results_and_write_to_file(
                     )
                     if chem_comp_monomers:
                         for chem_id in chem_comp_monomers:
-                            pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(chem_id)
-                            chem_comp_to_pdb_map.setdefault(chem_id, set()).add(pdb_id)
+                            pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(
+                                chem_id
+                            )
+                            chem_comp_to_pdb_map.setdefault(
+                                chem_id, set()
+                            ).add(pdb_id)
 
         # --- 3. Polymer Entities ---
         polymer_entities = entry.get("polymer_entities")
@@ -166,21 +177,33 @@ def process_chem_comp_results_and_write_to_file(
                 )
                 if polymer_entity_container_identifiers:
                     # Includes non-standard residues within polymer chains
-                    chem_comp_nstd_monomers = polymer_entity_container_identifiers.get(
-                        "chem_comp_nstd_monomers"
+                    chem_comp_nstd_monomers = (
+                        polymer_entity_container_identifiers.get(
+                            "chem_comp_nstd_monomers"
+                        )
                     )
                     if chem_comp_nstd_monomers:
                         for chem_id in chem_comp_nstd_monomers:
-                            pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(chem_id)
-                            chem_comp_to_pdb_map.setdefault(chem_id, set()).add(pdb_id)
+                            pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(
+                                chem_id
+                            )
+                            chem_comp_to_pdb_map.setdefault(
+                                chem_id, set()
+                            ).add(pdb_id)
                     # Includes standard residues within polymer chains
-                    chem_comp_poly_monomers = polymer_entity_container_identifiers.get(
-                        "chem_comp_monomers"
+                    chem_comp_poly_monomers = (
+                        polymer_entity_container_identifiers.get(
+                            "chem_comp_monomers"
+                        )
                     )
                     if chem_comp_poly_monomers:
                         for chem_id in chem_comp_poly_monomers:
-                            pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(chem_id)
-                            chem_comp_to_pdb_map.setdefault(chem_id, set()).add(pdb_id)
+                            pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(
+                                chem_id
+                            )
+                            chem_comp_to_pdb_map.setdefault(
+                                chem_id, set()
+                            ).add(pdb_id)
 
     # Write the final PDB -> CC mapping to a TSV file
     with open(pdb_to_cc_output_file, "w", encoding="utf-8") as f:
@@ -211,8 +234,15 @@ def process_chem_comp_results_and_write_to_file(
         cc_extra_tuple_list = generate_cc_extra_data(chem_comp_to_pdb_map)
         with open(cc_extras_output_file, "w", encoding="utf-8") as f:
             f.write("id\tcount\tname\tformula\n")
-            for cc_id, cc_occurrence_count, cc_name, cc_formula in cc_extra_tuple_list:
-                f.write(f"{cc_id}\t{cc_occurrence_count}\t{cc_name}\t{cc_formula}\n")
+            for (
+                cc_id,
+                cc_occurrence_count,
+                cc_name,
+                cc_formula,
+            ) in cc_extra_tuple_list:
+                f.write(
+                    f"{cc_id}\t{cc_occurrence_count}\t{cc_name}\t{cc_formula}\n"
+                )
         logger.info(
             "CC extras written to '{path}' for {n_cc} components",
             path=cc_extras_output_file,
@@ -250,7 +280,9 @@ def generate_cc_extra_data(chem_comp_to_pdb_map):
         cc_extra_tup = (cc_id, cc_occurrence_count, cc_name, cc_formula)
         cc_extra_tuples.append(cc_extra_tup)
 
-    cc_extra_tuples_sorted = sorted(cc_extra_tuples, key=lambda x: x[1], reverse=True)
+    cc_extra_tuples_sorted = sorted(
+        cc_extra_tuples, key=lambda x: x[1], reverse=True
+    )
     return cc_extra_tuples_sorted
 
 
@@ -289,7 +321,8 @@ def generate_pdb_ligand_mappings(
     # Map high-level chem component type labels to the underlying RCSB Data API
     # return fields.
     chem_comp_types_to_include = [
-        CHEMICAL_COMPONENT_TYPES_ARG_MAPPINGS[cc_type] for cc_type in chem_comp_types
+        CHEMICAL_COMPONENT_TYPES_ARG_MAPPINGS[cc_type]
+        for cc_type in chem_comp_types
     ]
 
     # Configure the Data API client
