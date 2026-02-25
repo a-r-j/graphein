@@ -336,27 +336,58 @@ def add_disulfide_interactions(
 def add_hydrogen_bond_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
+    rgroup_df = G.graph["raw_pdb_df"]
+    HBOND_ATOMS = [
+        "ND1",  # histidine
+        "ND2",  # asparagine
+        "NE",  # arginine
+        "NE1",  # tryptophan
+        "NE2",  # glutamate, histidine
+        "NH1",  # arginine
+        "NH2",  # arginine
+        "NZ",  # lysine
+        "OD1",  # asparagine, aspartic
+        "OD2",  # aspartic
+        "OE1",  # glutamate
+        "OE2",  # glutamate
+        "OG",  # serine
+        "OG1",  # threonine
+        "OH",  # tyrosine, threonine, serine
+        "SD",  # methionine
+        "SG",  # cysteine
+        "N",  # backbone
+        "O",  # backbone
+    ]
+    DONORS_ATOM: List[str] = [
+        "ND2",  # asparagine
+        "NE",  # arginine
+        "NE1",  # tryptophan
+        "NE2",  # glutamate, histidine
+        "NH1",  # arginine
+        "NH2",  # arginine
+        "NZ",  # lysine
+        "OH",  # tyrosine, threonine, serine
+        "SD",  # methionine,
+        "SG",  # methionine
+        "OG",  # serine
+        "OG1",  # threonine
+        "N",  # backbone
+    ]
+    ACCEPTORS_ATOM: List[str] = [
+        "OD1",  # asparagine, aspartic
+        "OD2",  # aspartic
+        "OE1",  # glutamate
+        "OE2",  # glutamate
+        "O",  # backbone
+        "ND1",  # histidine
+    ]
     """Add all hydrogen-bond interactions."""
     # For these atoms, find those that are within 3.5A of one another.
-    if rgroup_df is None:
-        rgroup_df = G.graph["rgroup_df"]
+    # if rgroup_df is None:
+    #     rgroup_df = G.graph["rgroup_df"]
     rgroup_df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
-    HBOND_ATOMS = [
-        "ND",  # histidine and asparagine
-        "NE",  # glutamate, tryptophan, arginine, histidine
-        "NH",  # arginine
-        "NZ",  # lysine
-        "OD1",
-        "OD2",
-        "OE",
-        "OG",
-        "OH",
-        "SD",  # cysteine
-        "SG",  # methionine
-        "N",
-        "O",
-    ]
     hbond_df = filter_dataframe(rgroup_df, "atom_name", HBOND_ATOMS, True)
+
     if len(hbond_df.index) > 0:
         distmat = compute_distmat(hbond_df)
         interacting_atoms = get_interacting_atoms(3.5, distmat)
@@ -371,6 +402,21 @@ def add_hydrogen_bond_interactions(
         distmat = compute_distmat(hbond_df)
         interacting_atoms = get_interacting_atoms(4.0, distmat)
         add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
+    for r1, r2 in get_edges_by_bond_type(G, "hbond"):
+        # print(G.nodes.data())
+        condition1 = (
+            G.nodes[r1]["atom_type"] in ACCEPTORS_ATOM
+            and G.nodes[r2]["atom_type"] in DONORS_ATOM
+        )
+        condition2 = (
+            G.nodes[r2]["atom_type"] in ACCEPTORS_ATOM
+            and G.nodes[r1]["atom_type"] in DONORS_ATOM
+        )
+        is_ionic = condition1 or condition2
+        if not is_ionic:
+            G.edges[r1, r2]["kind"].remove("hbond")
+            if len(G.edges[r1, r2]["kind"]) == 0:
+                G.remove_edge(r1, r2)
 
 
 def add_ionic_interactions(
