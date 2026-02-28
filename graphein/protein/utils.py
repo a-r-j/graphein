@@ -50,6 +50,12 @@ pdb_df_columns = [
     "line_idx",
 ]
 
+PDB_OBSOLETE_URL = "https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat"
+
+ALPHAFOLD_DB_BASE_URL = "https://alphafold.ebi.ac.uk/files/"
+
+ESM_ATLAS_BASE_URL = "https://api.esmatlas.com/foldSequence/v"
+
 
 class ProteinGraphConfigurationError(Exception):
     """
@@ -73,9 +79,7 @@ def get_obsolete_mapping() -> Dict[str, str]:
     """
     obs_dict: Dict[str, str] = {}
 
-    response = urlopen(
-        "https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat"
-    )
+    response = urlopen(PDB_OBSOLETE_URL)
     for line in response:
         entry = line.split()
         if len(entry) == 4:
@@ -87,7 +91,7 @@ def get_obsolete_mapping() -> Dict[str, str]:
     return obs_dict
 
 
-def read_fasta(file_path: str) -> Dict[str, str]:
+def read_fasta(file_path: str | Path) -> Dict[str, str]:
     """
     Reads a FASTA file and returns a dictionary mapping sequence names to
     their identifiers.
@@ -220,12 +224,12 @@ def download_pdb(
         )
 
     # Make output directory if it doesn't exist or set it to tempdir if None
-    if out_dir is not None:
-        out_dir = Path(out_dir)
-    else:
-        out_dir = Path(tempfile.TemporaryDirectory().name)
-
-    os.makedirs(Path(out_dir), exist_ok=True)
+    out_dir: Path = (
+        Path(out_dir)
+        if out_dir is not None
+        else Path(tempfile.TemporaryDirectory().name)
+    )
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     if check_obsolete:
         obs_map = get_obsolete_mapping()
@@ -359,15 +363,19 @@ def download_alphafold_structure(
     :return: path to output. Tuple if several outputs specified.
     :rtype: Union[str, Tuple[str, str]]
     """
-    BASE_URL = "https://alphafold.ebi.ac.uk/files/"
+
     uniprot_id = uniprot_id.upper()
 
     if not mmcif and not pdb:
         raise ValueError("Must specify either mmcif or pdb.")
     if mmcif:
-        query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.cif"
+        query_url = (
+            f"{ALPHAFOLD_DB_BASE_URL}AF-{uniprot_id}-F1-model_v{version}.cif"
+        )
     if pdb:
-        query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.pdb"
+        query_url = (
+            f"{ALPHAFOLD_DB_BASE_URL}AF-{uniprot_id}-F1-model_v{version}.pdb"
+        )
 
     try:
         structure_filename = wget.download(query_url, out=out_dir)
@@ -389,7 +397,7 @@ def download_alphafold_structure(
     log.debug(f"Downloaded AlphaFold PDB file for: {uniprot_id}")
     if aligned_score:
         score_query = (
-            BASE_URL
+            ALPHAFOLD_DB_BASE_URL
             + "AF-"
             + uniprot_id
             + f"-F1-predicted_aligned_error_v{version}.json"
@@ -578,7 +586,7 @@ def esmfold(
     --------
     self
     """
-    URL = f"https://api.esmatlas.com/foldSequence/v{version}/{format}/"
+    URL = f"{ESM_ATLAS_BASE_URL}{version}/{format}/"
 
     headers: Dict[str, str] = {
         "Content-Type": "application/x-www-form-urlencoded",

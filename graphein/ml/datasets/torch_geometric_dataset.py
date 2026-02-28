@@ -590,7 +590,6 @@ class ProteinGraphDataset(Dataset):
         if self.pdb_transform:
             self.transform_pdbs()
 
-        idx = 0
         # Chunk dataset for parallel processing
         chunk_size = 128
 
