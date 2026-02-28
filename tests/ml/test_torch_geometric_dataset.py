@@ -45,7 +45,9 @@ def test_list_dataset():
     graphs = [convertor(g) for g in graphs]
 
     # Create dataset
-    ds = ProteinGraphListDataset(root=ROOT_DIR, data_list=graphs, name="list_test")
+    ds = ProteinGraphListDataset(
+        root=ROOT_DIR, data_list=graphs, name="list_test"
+    )
 
     assert len(ds) == len(graphs)
     assert os.path.exists(ROOT_DIR / "processed" / "data_list_test.pt")
