@@ -130,10 +130,14 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         """
         self.name = name
         self.pdb_codes = (
-            [pdb.lower() for pdb in pdb_codes] if pdb_codes is not None else None
+            [pdb.lower() for pdb in pdb_codes]
+            if pdb_codes is not None
+            else None
         )
         self.uniprot_ids = (
-            [up.upper() for up in uniprot_ids] if uniprot_ids is not None else None
+            [up.upper() for up in uniprot_ids]
+            if uniprot_ids is not None
+            else None
         )
 
         self.paths = paths
@@ -149,7 +153,8 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         else:
             if isinstance(self.paths, list):
                 self.structures = [
-                    os.path.splitext(os.path.split(path)[-1])[0] for path in self.paths
+                    os.path.splitext(os.path.split(path)[-1])[0]
+                    for path in self.paths
                 ]
                 self.path, _ = os.path.split(self.paths[0])
 
@@ -160,7 +165,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         elif self.uniprot_ids:
             self.structures = uniprot_ids
         self.af_version = af_version
-        self.bad_pdbs: List[str] = []  # list of pdb codes that failed to download
+        self.bad_pdbs: List[str] = (
+            []
+        )  # list of pdb codes that failed to download
 
         # Labels & Chains
         self.graph_label_map = graph_label_map
@@ -181,7 +188,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             pre_filter=pre_filter,
         )
         self.config.pdb_dir = Path(self.raw_dir)
-        self.data, self.slices = torch.load(self.processed_paths[0], weights_only=False)
+        self.data, self.slices = torch.load(
+            self.processed_paths[0], weights_only=False
+        )
 
     @property
     def raw_file_names(self) -> List[str]:
@@ -239,14 +248,18 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         """
         Performs pre-processing of PDB structures before constructing graphs.
         """
-        structure_files = [f"{self.raw_dir}/{pdb}.pdb" for pdb in self.structures]
+        structure_files = [
+            f"{self.raw_dir}/{pdb}.pdb" for pdb in self.structures
+        ]
         for func in self.pdb_transform:
             func(structure_files)
 
     def process(self):
         """Process structures into PyG format and save to disk."""
         # Read data into huge `Data` list.
-        structure_files = [f"{self.raw_dir}/{pdb}.pdb" for pdb in self.structures]
+        structure_files = [
+            f"{self.raw_dir}/{pdb}.pdb" for pdb in self.structures
+        ]
 
         # Apply transformations to raw PDB files.
         if self.pdb_transform is not None:
@@ -405,10 +418,14 @@ class ProteinGraphDataset(Dataset):
         :type af_version: int, optional
         """
         self.pdb_codes = (
-            [pdb.lower() for pdb in pdb_codes] if pdb_codes is not None else None
+            [pdb.lower() for pdb in pdb_codes]
+            if pdb_codes is not None
+            else None
         )
         self.uniprot_ids = (
-            [up.upper() for up in uniprot_ids] if uniprot_ids is not None else None
+            [up.upper() for up in uniprot_ids]
+            if uniprot_ids is not None
+            else None
         )
         self.paths = paths
         if self.paths is None:
@@ -423,7 +440,8 @@ class ProteinGraphDataset(Dataset):
         else:
             if isinstance(self.paths, list):
                 self.structures = [
-                    os.path.splitext(os.path.split(path)[-1])[0] for path in self.paths
+                    os.path.splitext(os.path.split(path)[-1])[0]
+                    for path in self.paths
                 ]
                 self.path, _ = os.path.split(self.paths[0])
 
@@ -504,7 +522,9 @@ class ProteinGraphDataset(Dataset):
             assert len(
                 {
                     f"{pdb}_{chain}"
-                    for pdb, chain in zip(self.structures, self.chain_selection_map)
+                    for pdb, chain in zip(
+                        self.structures, self.chain_selection_map
+                    )
                 }
             ) == len(self.structures), "Duplicate protein/chain combinations"
 
@@ -553,7 +573,9 @@ class ProteinGraphDataset(Dataset):
         """
         Performs pre-processing of PDB structures before constructing graphs.
         """
-        structure_files = [f"{self.raw_dir}/{pdb}.pdb" for pdb in self.structures]
+        structure_files = [
+            f"{self.raw_dir}/{pdb}.pdb" for pdb in self.structures
+        ]
         for func in self.pdb_transform:
             func(structure_files)
 
@@ -576,13 +598,17 @@ class ProteinGraphDataset(Dataset):
                 yield l[i : i + n]
 
         # chunks = list(divide_chunks(self.structures, chunk_size))
-        chunks: List[int] = list(divide_chunks(list(self.examples.keys()), chunk_size))
+        chunks: List[int] = list(
+            divide_chunks(list(self.examples.keys()), chunk_size)
+        )
 
         for chunk in tqdm(chunks):
             pdbs = [self.examples[idx] for idx in chunk]
             # Get chain selections
             if self.chain_selection_map is not None:
-                chain_selections = [self.chain_selection_map[idx] for idx in chunk]
+                chain_selections = [
+                    self.chain_selection_map[idx] for idx in chunk
+                ]
             else:
                 chain_selections = ["all"] * len(chunk)
 
@@ -658,7 +684,9 @@ class ProteinGraphDataset(Dataset):
 
 
 class ProteinGraphListDataset(InMemoryDataset):
-    def __init__(self, root: str, data_list: List[Data], name: str, transform=None):
+    def __init__(
+        self, root: str, data_list: List[Data], name: str, transform=None
+    ):
         """Creates a dataset from a list of PyTorch Geometric Data objects.
 
         :param root: Root directory where the dataset is stored.
@@ -677,7 +705,9 @@ class ProteinGraphListDataset(InMemoryDataset):
         self.data_list = data_list
         self.name = name
         super().__init__(root, transform)
-        self.data, self.slices = torch.load(self.processed_paths[0], weights_only=False)
+        self.data, self.slices = torch.load(
+            self.processed_paths[0], weights_only=False
+        )
 
     @property
     def processed_file_names(self):
