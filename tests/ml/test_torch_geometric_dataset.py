@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+from loguru import logger
 from numpy.testing import assert_array_equal
 
 import graphein.protein as gp
@@ -23,8 +24,8 @@ try:
         ProteinGraphDataset,
         ProteinGraphListDataset,
     )
-except (NameError, ImportError):
-    pass
+except (NameError, ImportError) as e:
+    logger.error("e")
 
 ROOT_DIR = Path(__file__).parent
 
@@ -44,9 +45,7 @@ def test_list_dataset():
     graphs = [convertor(g) for g in graphs]
 
     # Create dataset
-    ds = ProteinGraphListDataset(
-        root=ROOT_DIR, data_list=graphs, name="list_test"
-    )
+    ds = ProteinGraphListDataset(root=ROOT_DIR, data_list=graphs, name="list_test")
 
     assert len(ds) == len(graphs)
     assert os.path.exists(ROOT_DIR / "processed" / "data_list_test.pt")
