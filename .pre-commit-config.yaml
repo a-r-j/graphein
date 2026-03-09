@@ -9,7 +9,7 @@ repos:
     -   id: check-yaml
     -   id: check-added-large-files
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.1.0
+    rev: 26.3.0
     hooks:
     - id: black
 -   repo: https://github.com/pre-commit/pre-commit-hooks
@@ -17,6 +17,6 @@ repos:
     hooks:
     - id: flake8
 -   repo: https://github.com/pycqa/isort
-    rev: 8.0.0
+    rev: 8.0.1
     hooks:
     - id: isort
