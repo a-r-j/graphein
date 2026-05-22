@@ -14,7 +14,7 @@ numpy<2
 pandas
 plotly
 pydantic
-rcsb-api
+rcsb-api>=1.4.0
 rich
 rich-click
 seaborn
