@@ -338,7 +338,7 @@ def generate_pdb_ligand_mappings(
         generate_cc_extra_file,
     )
     end = time.time()
-    print(f"Processing completed in {end - start:.2f} seconds.")
+    logger.info(f"Processing completed in {end - start:.2f} seconds.")
 
 
 if __name__ == "__main__":
