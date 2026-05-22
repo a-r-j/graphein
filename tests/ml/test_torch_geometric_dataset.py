@@ -24,8 +24,19 @@ try:
         ProteinGraphDataset,
         ProteinGraphListDataset,
     )
+
+    PYG_DATASETS_AVAIL = all(
+        x is not None
+        for x in (
+            InMemoryProteinGraphDataset,
+            ProteinGraphDataset,
+            ProteinGraphListDataset,
+        )
+    )
 except (NameError, ImportError) as e:
-    logger.error("e")
+    logger.error(e)
+    PYG_DATASETS_AVAIL = False
+
 
 ROOT_DIR = Path(__file__).parent
 
