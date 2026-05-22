@@ -13,10 +13,10 @@ def test_wait_for_obj_file_returns_when_file_is_found(monkeypatch):
 
 
 def test_wait_for_obj_file_raises_timeout(monkeypatch):
-    times = iter([0.0, 0.6, 1.2])
+    mock_timestamps = iter([0.0, 0.6, 1.2])
 
     monkeypatch.setattr(meshes.os.path, "isfile", lambda _: False)
-    monkeypatch.setattr(meshes.time, "time", lambda: next(times))
+    monkeypatch.setattr(meshes.time, "time", lambda: next(mock_timestamps))
     monkeypatch.setattr(meshes.time, "sleep", lambda _: None)
 
     with pytest.raises(
