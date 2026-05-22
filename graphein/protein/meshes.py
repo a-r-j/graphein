@@ -160,6 +160,7 @@ def create_mesh(
     pdb_code: Optional[str] = None,
     out_dir: Optional[str] = None,
     config: Optional[ProteinMeshConfig] = None,
+    max_wait_seconds: Optional[float] = None,
 ) -> Tuple[torch.FloatTensor, NamedTuple, NamedTuple]:
     """
     Creates a ``PyTorch3D`` mesh from a ``pdb_file`` or ``pdb_code``.
@@ -172,6 +173,9 @@ def create_mesh(
     :type out_dir: str, optional
     :param config:  :class:`~graphein.protein.config.ProteinMeshConfig` config to use. Defaults to default config in ``graphein.protein.config``.
     :type config: graphein.protein.config.ProteinMeshConfig
+    :param max_wait_seconds: Maximum time to wait for ``.obj`` mesh generation.
+        If ``None``, uses ``config.max_wait_seconds``.
+    :type max_wait_seconds: Optional[float]
     :return: ``verts``, ``faces``, ``aux``.
     :rtype: Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
     """
@@ -179,16 +183,34 @@ def create_mesh(
 
     if config is None:
         config = ProteinMeshConfig()
+    if max_wait_seconds is None:
+        max_wait_seconds = config.max_wait_seconds
 
     obj_file = get_obj_file(
         pdb_code=pdb_code, pdb_file=pdb_file, out_dir=out_dir, config=config
     )
-    # Wait for PyMol to finish
-    while os.path.isfile(obj_file) is False:
-        time.sleep(0.1)
+    wait_for_obj_file(obj_file, max_wait_seconds=max_wait_seconds)
 
     verts, faces, aux = load_obj(obj_file)
     return verts, faces, aux
+
+
+def wait_for_obj_file(
+    obj_file: str,
+    max_wait_seconds: Optional[float],
+    poll_interval: float = 0.1,
+) -> None:
+    """Waits for an ``.obj`` mesh file to be generated."""
+    start_time = time.time()
+    while os.path.isfile(obj_file) is False:
+        if (
+            max_wait_seconds is not None
+            and time.time() - start_time > max_wait_seconds
+        ):
+            raise TimeoutError(
+                f"{obj_file} not found after {max_wait_seconds} seconds"
+            )
+        time.sleep(poll_interval)
 
 
 @requires_python_libs("torch")
