@@ -1,5 +1,8 @@
 """Tests for graphein.protein.meshes."""
 
+import tempfile
+from pathlib import Path
+
 import pytest
 
 from graphein.protein import meshes
@@ -9,7 +12,9 @@ def test_wait_for_obj_file_returns_when_file_is_found(monkeypatch):
     monkeypatch.setattr(meshes.os.path, "isfile", lambda _: True)
     monkeypatch.setattr(meshes.time, "sleep", lambda _: None)
 
-    meshes.wait_for_obj_file("/tmp/test.obj", max_wait_seconds=1.0)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        obj_path = Path(tmp_dir) / "test.obj"
+        meshes.wait_for_obj_file(str(obj_path), max_wait_seconds=1.0)
 
 
 def test_wait_for_obj_file_raises_timeout(monkeypatch):
@@ -19,7 +24,9 @@ def test_wait_for_obj_file_raises_timeout(monkeypatch):
     monkeypatch.setattr(meshes.time, "time", lambda: next(mock_timestamps))
     monkeypatch.setattr(meshes.time, "sleep", lambda _: None)
 
-    with pytest.raises(
-        TimeoutError, match="missing.obj not found after 1.0 seconds"
-    ):
-        meshes.wait_for_obj_file("/tmp/missing.obj", max_wait_seconds=1.0)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        missing_path = Path(tmp_dir) / "missing.obj"
+        with pytest.raises(
+            TimeoutError, match="missing.obj not found after 1.0 seconds"
+        ):
+            meshes.wait_for_obj_file(str(missing_path), max_wait_seconds=1.0)
