@@ -225,9 +225,7 @@ def download_pdb(
 
     # Make output directory if it doesn't exist or set it to tempdir if None
     out_dir: Path = (
-        Path(out_dir)
-        if out_dir is not None
-        else Path(tempfile.TemporaryDirectory().name)
+        Path(out_dir) if out_dir is not None else Path(tempfile.mkdtemp())
     )
     out_dir.mkdir(parents=True, exist_ok=True)
 
