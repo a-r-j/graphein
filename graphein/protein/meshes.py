@@ -197,7 +197,7 @@ def create_mesh(
 
 def wait_for_obj_file(
     obj_file: str,
-    max_wait_seconds: Optional[float],
+    max_wait_seconds: Optional[float] = None,
     poll_interval: float = 0.1,
 ) -> None:
     """Waits for an ``.obj`` mesh file to be generated."""
