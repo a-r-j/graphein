@@ -24,14 +24,12 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
         torch: [2.6.0, 2.7.0, 2.8.0]
-    # https://github.com/marketplace/actions/setup-miniconda#use-a-default-shell
     defaults:
       run:
         shell: bash -l {0}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-        # See: https://github.com/mamba-org/setup-micromamba/tree/main
+        uses: actions/checkout@v4
       - name: Setup micromamba
         uses: mamba-org/setup-micromamba@v2
         with:
@@ -39,43 +37,29 @@ jobs:
           environment-name: test_env
           init-shell: bash
           create-args: python=${{matrix.python-version}}
-          #cache-environment: true
-          #cache-environment-key: environment-${{ steps.date.outputs.date }}
-          #cache-downloads-key: downloads-${{ steps.date.outputs.date }}
           post-cleanup: "all"
-      - name: Install setuptools
-        run: pip install setuptools==69.5.1
-      - name: Update build tools
-        run: pip install --upgrade pip setuptools wheel
       - name: Install DSSP
         run: micromamba install dssp -c salilab
       - name: Install mmseqs
         run: micromamba install -c conda-forge -c bioconda mmseqs2
       - name: Install Boost 1.7.3 (for DSSP)
         run: micromamba install -c anaconda libboost=1.73.0
-      - name: Install PyTorch (1.13.0)
-        if: matrix.torch == '1.13.0'
-        run: pip install torch==${{matrix.torch}}+cpu --extra-index-url https://download.pytorch.org/whl/cpu
-      - name: Install PyTorch (2.0+)
-        if: matrix.torch != '1.13.0'
-        run: pip install torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Install Graphein and dependencies
+        run: uv sync --extra dev --extra extras --extra docs
+      - name: Install PyTorch
+        run: uv pip install torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
       - name: Install PyG
-        #run: micromamba install -c pyg pyg
-        run: pip install torch_geometric
+        run: uv pip install torch_geometric
       - name: Install torch-cluster
-        #run: micromamba install pytorch-cluster -c pyg
-        run: pip install torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
+        run: uv pip install torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
-      - name: Install Graphein
-        run: pip install -e .
-      - name: Install Extras
-        run: pip install -r .requirements/extras.in
-      - name: Install Dev Dependencies
-        run: pip install -r .requirements/dev.in
-      - name: Install doc dependencies
-        run: pip install -r .requirements/docs.in
       - name: Run unit tests and generate coverage report
-        run: pytest .
+        run: uv run pytest .
       - name: Test notebook execution
-        run: pytest --nbval-lax notebooks/ --nbval-current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/grn_tutorial.ipynb"
+        run: uv run pytest --nbval-lax notebooks/ --nbval-current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/grn_tutorial.ipynb"

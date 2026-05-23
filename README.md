@@ -197,6 +197,21 @@ pip install graphein[dev] # For dev dependencies
 pip install graphein[all] # To get the lot
 ```
 
+### uv (recommended for development)
+
+Install [uv](https://docs.astral.sh/uv/), then from a clone of this repository:
+
+```bash
+git clone https://www.github.com/a-r-j/graphein
+cd graphein
+uv sync                          # base install (editable)
+uv sync --extra extras           # optional featurisation dependencies
+uv sync --extra dev --extra extras  # development environment
+uv sync --all-extras             # dev + extras + docs
+```
+
+Run commands inside the project environment with `uv run`, e.g. `uv run pytest`.
+
 However, there are a number of (optional) utilities ([DSSP](https://anaconda.org/salilab/dssp), [PyMol](https://pymol.org/2/), [GetContacts](https://getcontacts.github.io/)) that are not available via PyPI:
 
 ```
@@ -227,7 +242,7 @@ The dev environment includes GPU Builds (CUDA 11.1) for each of the deep learnin
 git clone https://www.github.com/a-r-j/graphein
 cd graphein
 conda env create -f environment-dev.yml
-pip install -e .
+uv sync --all-extras
 ```
 
 A lighter install can be performed with:
@@ -236,12 +251,12 @@ A lighter install can be performed with:
 git clone https://www.github.com/a-r-j/graphein
 cd graphein
 conda env create -f environment.yml
-pip install -e .
+uv sync
 ```
 
 ### Dockerfile
 
-We provide two `docker-compose` files for CPU (`docker-compose.cpu.yml`) and GPU usage (`docker-compose.yml`) locally. For GPU usage please ensure that you have [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) installed. Ensure that you install the locally mounted volume after entering the container (`pip install -e .`). This will also setup the dev environment locally.
+We provide two `docker-compose` files for CPU (`docker-compose.cpu.yml`) and GPU usage (`docker-compose.yml`) locally. For GPU usage please ensure that you have [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) installed. Ensure that you install the locally mounted volume after entering the container (`uv sync --all-extras` or `pip install -e ".[dev,extras]"`). This will also setup the dev environment locally.
 
 To build (GPU) run:
 
