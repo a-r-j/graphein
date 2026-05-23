@@ -5,6 +5,8 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
+import pytest
+
 MODULE_PATH = (
     Path(__file__).resolve().parents[2] / "graphein/ml/datasets/utils.py"
 )
@@ -161,3 +163,22 @@ def test_generate_pdb_ligand_mappings_uses_requested_types(
     assert config.DATA_API_MAX_CONCURRENT_REQUESTS == 7
     assert pdb_to_cc_output_file.read_text() == "1ABC\tATP\n"
     assert cc_to_pdb_output_file.read_text() == "ATP\t1ABC\n"
+
+
+def test_generate_pdb_ligand_mappings_rejects_invalid_types(
+    monkeypatch, tmp_path
+):
+    module, config = _load_dataset_utils_module(monkeypatch)
+
+    with pytest.raises(ValueError) as excinfo:
+        module.generate_pdb_ligand_mappings(
+            chem_comp_types=("nonpolymer", "invalid_type"),
+            pdb_to_cc_output_file=tmp_path / "pdb-to-cc.tsv",
+            cc_to_pdb_output_file=tmp_path / "cc-to-pdb.tsv",
+        )
+
+    assert str(excinfo.value) == (
+        "Invalid chem_comp_types: ['invalid_type']. Allowed values are: "
+        f"{module.ALLOWED_CHEM_COMP_TYPES}."
+    )
+    assert config.DATA_API_MAX_CONCURRENT_REQUESTS is None

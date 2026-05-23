@@ -318,6 +318,16 @@ def generate_pdb_ligand_mappings(
     if chem_comp_types is None:
         chem_comp_types = DEFAULT_CHEM_COMP_TYPES
 
+    invalid_chem_comp_types = sorted(
+        set(chem_comp_types) - set(ALLOWED_CHEM_COMP_TYPES)
+    )
+    if invalid_chem_comp_types:
+        raise ValueError(
+            "Invalid chem_comp_types: "
+            f"{invalid_chem_comp_types}. Allowed values are: "
+            f"{ALLOWED_CHEM_COMP_TYPES}."
+        )
+
     # Map high-level chem component type labels to the underlying RCSB Data API
     # return fields.
     chem_comp_types_to_include = [
