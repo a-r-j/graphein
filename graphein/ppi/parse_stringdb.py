@@ -169,7 +169,9 @@ def STRING_df(
     :return: Standardised DataFrame with STRING interactions
     :rtype: pd.DataFrame
     """
-    df = parse_STRING(protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs)
+    df = parse_STRING(
+        protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs
+    )
     df = filter_STRING(df, **kwargs)
     df = standardise_STRING(df)
 

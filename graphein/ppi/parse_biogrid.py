@@ -168,7 +168,9 @@ def parse_BIOGRID(
 
         return df
 
-    return make_call(request_url=request_url, params=params, start=0, max=params["max"])
+    return make_call(
+        request_url=request_url, params=params, start=0, max=params["max"]
+    )
 
 
 def filter_BIOGRID(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
@@ -207,7 +209,9 @@ def standardise_BIOGRID(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame({"p1": [], "p2": [], "source": []})
 
     # Rename & delete columns
-    df = df.rename(columns={"OFFICIAL_SYMBOL_A": "p1", "OFFICIAL_SYMBOL_B": "p2"})
+    df = df.rename(
+        columns={"OFFICIAL_SYMBOL_A": "p1", "OFFICIAL_SYMBOL_B": "p2"}
+    )
     df = df[["p1", "p2"]]
 
     # Add source column
@@ -236,7 +240,9 @@ def BIOGRID_df(
     :return: Standardised DataFrame with BIOGRID interactions.
     :rtype: pd.DataFrame
     """
-    df = parse_BIOGRID(protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs)
+    df = parse_BIOGRID(
+        protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs
+    )
     df = filter_BIOGRID(df, **kwargs)
     df = standardise_BIOGRID(df)
     return df
