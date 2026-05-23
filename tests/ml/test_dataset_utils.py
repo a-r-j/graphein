@@ -5,7 +5,6 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
-
 MODULE_PATH = (
     Path(__file__).resolve().parents[2] / "graphein/ml/datasets/utils.py"
 )
@@ -46,7 +45,9 @@ def _load_dataset_utils_module(monkeypatch):
     monkeypatch.setitem(sys.modules, "rcsbapi.config", config_module)
     monkeypatch.setitem(sys.modules, "rcsbapi.data", data_module)
 
-    spec = spec_from_file_location("test_graphein_ml_datasets_utils", MODULE_PATH)
+    spec = spec_from_file_location(
+        "test_graphein_ml_datasets_utils", MODULE_PATH
+    )
     module = module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)
