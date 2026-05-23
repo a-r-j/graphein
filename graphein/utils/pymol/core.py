@@ -76,7 +76,8 @@ class MolViewer(object):
 
         progress_max = int((timeout * 20) ** 0.5)
         progress = None
-        filename = tempfile.mktemp(".png")
+        fd, filename = tempfile.mkstemp(suffix=".png")
+        os.close(fd)
 
         try:
             self._server.png(filename, width, height, -1, int(ray))
