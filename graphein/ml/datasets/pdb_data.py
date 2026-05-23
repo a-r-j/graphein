@@ -3,6 +3,7 @@ import math
 import os
 import shutil
 import subprocess
+import tempfile
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
@@ -381,11 +382,13 @@ class PDBManager:
         """
         if not os.path.exists(self.root_dir / self.ligand_map_filename):
             log.info("Generating chemical component to PDB map...")
-            generate_pdb_ligand_mappings(
-                pdb_to_cc_output_file=self.root_dir / self.ligand_map_filename,
-                cc_to_pdb_output_file=self.root_dir / self.ligand_map_filename,
-                generate_cc_extra_file=False,
-            )
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                generate_pdb_ligand_mappings(
+                    pdb_to_cc_output_file=Path(tmp_dir) / "pdb-to-cc.tsv",
+                    cc_to_pdb_output_file=self.root_dir
+                    / self.ligand_map_filename,
+                    generate_cc_extra_file=False,
+                )
 
     def _download_source_map(self):
         """Download source map from
