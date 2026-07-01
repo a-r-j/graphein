@@ -258,7 +258,11 @@ class ProteinMeshConfig(BaseModel):
     :param pymol_commands: List of Commands passed to PyMol in surface
         construction.
     :type pymol_commands: List[str], optional
+    :param max_wait_seconds: Maximum time to wait for ``.obj`` mesh generation.
+        ``None`` waits indefinitely.
+    :type max_wait_seconds: Optional[float]
     """
 
     pymol_command_line_options: Optional[str] = "-cKq"
     pymol_commands: Optional[List[str]] = ["show surface"]
+    max_wait_seconds: Optional[float] = 600.0
