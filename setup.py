@@ -155,7 +155,7 @@ setup(
     # install_requires=install_reqs,
     install_requires=INSTALL_REQUIRES,
     extras_require=EXTRA_REQUIRES,
-    python_requires=">=3.7",
+    python_requires=">=3.10",
     license="MIT",
     platforms="any",
     classifiers=[
@@ -165,11 +165,9 @@ setup(
         "Operating System :: POSIX",
         "Operating System :: Unix",
         "Operating System :: MacOS",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Scientific/Engineering",
     ],
     # $ setup.py publish support.
