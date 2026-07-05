@@ -14,8 +14,9 @@ import wget
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from pandas.core.groupby.generic import DataFrameGroupBy
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
+from graphein.ml.datasets.utils import generate_pdb_ligand_mappings
 from graphein.protein.utils import (
     cast_pdb_column_to_type,
     download_pdb_multiprocessing,
@@ -72,9 +73,6 @@ class PDBManager:
         self.pdb_sequences_url = (
             "https://files.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz"
         )
-        self.ligand_map_url = (
-            "http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd"
-        )
         self.source_map_url = (
             "https://files.wwpdb.org/pub/pdb/derived_data/index/source.idx"
         )
@@ -103,7 +101,7 @@ class PDBManager:
 
         self.pdb_seqres_archive_filename = Path(self.pdb_sequences_url).name
         self.pdb_seqres_filename = Path(self.pdb_seqres_archive_filename).stem
-        self.ligand_map_filename = Path(self.ligand_map_url).name
+        self.ligand_map_filename = "cc-to-pdb.tdd"
         self.source_map_filename = Path(self.source_map_url).name
         self.resolution_filename = Path(self.resolution_url).name
         self.pdb_entry_type_filename = Path(self.pdb_entry_type_url).name
@@ -159,7 +157,7 @@ class PDBManager:
     def download_metadata(self):
         """Download all PDB metadata."""
         self._download_pdb_sequences()
-        self._download_ligand_map()
+        self._generate_ligand_map()
         self._download_source_map()
         self._download_resolution()
         self._download_entry_metadata()
@@ -377,14 +375,17 @@ class PDBManager:
                     shutil.copyfileobj(f_in, f_out)
             log.debug("Unzipped sequences")
 
-    def _download_ligand_map(self):
-        """Download ligand map from
+    def _generate_ligand_map(self):
+        """Generate ligand map to match historical ligand map located at:
         http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd.
         """
         if not os.path.exists(self.root_dir / self.ligand_map_filename):
-            log.info("Downloading ligand map...")
-            wget.download(self.ligand_map_url, out=str(self.root_dir))
-            log.debug("Downloaded ligand map")
+            log.info("Generating chemical component to PDB map...")
+            generate_pdb_ligand_mappings(
+                pdb_to_cc_output_file=self.root_dir / self.ligand_map_filename,
+                cc_to_pdb_output_file=self.root_dir / self.ligand_map_filename,
+                generate_cc_extra_file=False,
+            )
 
     def _download_source_map(self):
         """Download source map from
@@ -711,8 +712,7 @@ class PDBManager:
             seq = v
             params = k.split()
             pdb_id = params[0]
-            pdb = params[0].split("_")[0]
-            chain = params[0].split("_")[1]
+            pdb, chain = pdb_id.split("_", 1)
             length = int(params[2].split(":")[1])
             molecule_type = params[1].split(":")[1]
             name = " ".join(params[3:])
@@ -731,7 +731,7 @@ class PDBManager:
 
         df = pd.DataFrame.from_records(records)
         df["n_chains"] = df.groupby("pdb")["pdb"].transform("count")
-        df["ligands"] = df.pdb.map(self._parse_ligand_map())
+        df["ligands"] = df.pdb.str.upper().map(self._parse_ligand_map())
         df["ligands"] = df["ligands"].fillna("").apply(list)
         df["source"] = df.pdb.map(self._parse_source_map())
         df["resolution"] = df.pdb.map(self._parse_resolution())
@@ -1832,7 +1832,7 @@ class PDBManager:
     def download_pdbs(
         self,
         out_dir: str = ".",
-        format: str = "pdb",
+        format: Literal["pdb", "mmtf", "mmcif", "cif", "bcif"] = "pdb",
         splits: Optional[List[str]] = None,
         overwrite: bool = False,
         max_workers: int = 8,

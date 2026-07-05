@@ -13,7 +13,7 @@ from typing import Callable, Dict, Generator, List, Optional
 
 import networkx as nx
 from loguru import logger as log
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
@@ -590,7 +590,6 @@ class ProteinGraphDataset(Dataset):
         if self.pdb_transform:
             self.transform_pdbs()
 
-        idx = 0
         # Chunk dataset for parallel processing
         chunk_size = 128
 

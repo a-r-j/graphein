@@ -21,36 +21,20 @@ on:
 jobs:
   build_cpu:
     runs-on: ubuntu-latest
-    # https://github.com/marketplace/actions/setup-miniconda#use-a-default-shell
-    defaults:
-      run:
-        shell: bash -l {0}
-
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.11]
+        python-version: ["3.10", "3.11", "3.12"]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-        # See: https://github.com/mamba-org/setup-micromamba/tree/main
-      - name: Setup micromamba
-        uses: mamba-org/setup-micromamba@v2
+        uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          micromamba-version: 'latest'
-          environment-name: test_env
-          init-shell: bash
-          #cache-environment: true
-          #cache-environment-key: environment-${{ steps.date.outputs.date }}
-          #cache-downloads-key: downloads-${{ steps.date.outputs.date }}
-          create-args: python=${{matrix.python-version}}
-          post-cleanup: 'all'
-      - name: Install Graphein
-        run: pip install -e .
-      - name: Install Extras
-        run: pip install -r .requirements/extras.in
-      - name: Install Dev Dependencies
-        run: pip install -r .requirements/dev.in
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Install Graphein and dependencies
+        run: uv sync --extra dev --extra extras
       - name: Run unit tests and generate coverage report
-        run: pytest . --ignore-glob="tests/protein/tensor" --ignore="tests/ml/test_conversion.py" --ignore="tests/ml/test_torch_geometric_dataset.py"
+        run: uv run pytest . --ignore-glob="tests/protein/tensor" --ignore="tests/ml/test_conversion.py" --ignore="tests/ml/test_torch_geometric_dataset.py"
       - name: Test notebook execution
-        run: pytest --nbval-lax notebooks/ --nbval-current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/higher_order_graphs.ipynb" --ignore-glob="notebooks/protein_graph_analytics.ipynb" --ignore-glob="notebooks/subgraphing_tutorial.ipynb" --ignore-glob="notebooks/splitting_a_dataset.ipynb" --ignore-glob="notebooks/protein_tensors.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/creating_datasets_from_the_pdb.ipynb" --ignore-glob="notebooks/grn_tutorial.ipynb"
+        run: uv run pytest --nbval-lax notebooks/ --nbval-current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/higher_order_graphs.ipynb" --ignore-glob="notebooks/protein_graph_analytics.ipynb" --ignore-glob="notebooks/subgraphing_tutorial.ipynb" --ignore-glob="notebooks/splitting_a_dataset.ipynb" --ignore-glob="notebooks/protein_tensors.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/creating_datasets_from_the_pdb.ipynb" --ignore-glob="notebooks/grn_tutorial.ipynb"
