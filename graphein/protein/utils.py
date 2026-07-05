@@ -7,12 +7,14 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 import os
+import time
 import tempfile
 from functools import lru_cache, partial
+from http.client import RemoteDisconnected
 from multiprocessing import Pool
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple, Type, Union
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
 import networkx as nx
@@ -252,22 +254,39 @@ def download_pdb(
         return out_dir / f"{pdb_code}{extension}"
 
     # Download
-    try:
-        wget.download(
-            f"{BASE_URL}{pdb_code}{extension}",
-            out=str(out_dir / f"{pdb_code}{extension}"),
-            bar=None,
-        )
-    except HTTPError:
-        log.warning(f"PDB {pdb_code} not found.")
+    output_path = out_dir / f"{pdb_code}{extension}"
+    download_url = f"{BASE_URL}{pdb_code}{extension}"
+    transient_download_errors = (
+        ConnectionResetError,
+        RemoteDisconnected,
+        TimeoutError,
+        URLError,
+    )
+    for attempt in range(3):
+        try:
+            wget.download(download_url, out=str(output_path), bar=None)
+            break
+        except HTTPError:
+            log.warning(f"PDB {pdb_code} not found.")
+            break
+        except transient_download_errors as error:
+            if output_path.exists():
+                output_path.unlink()
+            if attempt == 2:
+                raise error
+            log.warning(
+                f"Download failed for {pdb_code} ({error}). Retrying "
+                f"({attempt + 2}/3)..."
+            )
+            time.sleep(attempt + 1)
 
     # Check file exists
     if strict:
         assert os.path.exists(
-            out_dir / f"{pdb_code}{extension}"
+            output_path
         ), f"{pdb_code} download failed. Not found in {out_dir}"
     log.debug(f"{pdb_code} downloaded to {out_dir}")
-    return out_dir / f"{pdb_code}{extension}"
+    return output_path
 
 
 def get_protein_name_from_filename(path: str) -> str:
