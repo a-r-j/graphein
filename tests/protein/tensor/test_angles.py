@@ -82,7 +82,8 @@ def test_torsion_to_rad():
 
     delta = torch.abs(angles_rads - angles)
 
-    delta[delta.nonzero()] = torch.abs(delta[torch.nonzero(delta)] - 2 * np.pi)
+    mask = delta != 0
+    delta[mask] = torch.abs(delta[mask] - 2 * np.pi)
 
     delta = ((delta + 2 * np.pi) / np.pi) % 2
     np.testing.assert_allclose(
@@ -123,7 +124,8 @@ def test_dihedrals_to_rad():
 
     delta = torch.abs(angles_rads - angles)
 
-    delta[delta.nonzero()] = torch.abs(delta[torch.nonzero(delta)] - 2 * np.pi)
+    mask = delta != 0
+    delta[mask] = torch.abs(delta[mask] - 2 * np.pi)
 
     delta = ((delta + 2 * np.pi) / np.pi) % 2
     np.testing.assert_allclose(
