@@ -29,7 +29,7 @@ from sklearn.model_selection import train_test_split
 from torch_geometric import transforms as T
 from torch_geometric.data import Data, Dataset
 from torch_geometric.loader import DataLoader
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 from graphein.protein.resi_atoms import (
     ATOM_NUMBERING,
