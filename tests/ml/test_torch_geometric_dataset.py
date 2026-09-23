@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+from loguru import logger
 from numpy.testing import assert_array_equal
 
 import graphein.protein as gp
@@ -23,8 +24,19 @@ try:
         ProteinGraphDataset,
         ProteinGraphListDataset,
     )
-except (NameError, ImportError):
-    pass
+
+    PYG_DATASETS_AVAIL = all(
+        x is not None
+        for x in (
+            InMemoryProteinGraphDataset,
+            ProteinGraphDataset,
+            ProteinGraphListDataset,
+        )
+    )
+except (NameError, ImportError) as e:
+    logger.error(e)
+    PYG_DATASETS_AVAIL = False
+
 
 ROOT_DIR = Path(__file__).parent
 
