@@ -19,17 +19,15 @@ RUN apt-get update && apt-get install -y dssp && apt-get clean \
 ENV CONDA_ALWAYS_YES=true
 
 
-RUN mkdir -p graphein/requirements
 WORKDIR /graphein
 
+COPY pyproject.toml uv.lock README.md LICENSE MANIFEST.in ./
+COPY graphein ./graphein
 
-COPY .requirements /graphein/requirements
-RUN echo "$(cat requirements/base.in)" >> requirements.txt \
-    && echo "$(cat requirements/dev.in)" >> requirements.txt \
-    && echo "$(cat requirements/extras.in)" >> requirements.txt
+RUN pip install uv \
+    && uv sync --frozen --extra dev --extra extras
 
 RUN pip install notebook==6.*
-RUN pip install -r requirements.txt --no-cache-dir
 
 RUN conda install conda-forge::pluggy
 RUN conda install -c conda-forge libgcc-ng
