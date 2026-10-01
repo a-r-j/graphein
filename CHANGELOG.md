@@ -1,5 +1,8 @@
 ### 1.7.8 - UNRELEASED
 
+#### New Features
+* Adds RFAM Manager [#324](https://github.com/a-r-j/graphein/pull/324)
+
 #### Bugfixes
 
 * Fix `NameError` in `graphein.molecule.atoms` when rdkit is not installed by guarding rdkit-dependent constants with `_HAS_RDKIT` flag
