@@ -1,3 +1,153 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "graphein"
+dynamic = ["version"]
+description = "Protein & Interactomic Graph Construction for Machine Learning"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Arian Jamasb", email = "arian@jamasb.io" }]
+keywords = ["bioinformatics", "graph", "machine-learning", "protein"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "pandas",
+    "biopandas>=0.5.1",
+    "biopython",
+    "bioservices>=1.10.0",
+    "cpdb-protein>=0.2.1",
+    "cython",
+    "deepdiff",
+    "loguru",
+    "looseversion",
+    "matplotlib>=3.4.3",
+    "multipledispatch",
+    "networkx",
+    "numpy<2",
+    "plotly",
+    "pydantic",
+    "rcsb-api>=1.4.0",
+    "rich",
+    "rich-click",
+    "seaborn",
+    "pyyaml!=6.0.0,!=5.4.0,!=5.4.1",
+    "scikit-learn",
+    "scipy>=1.8",
+    "tqdm",
+    "wget",
+    "xarray",
+    "jaxtyping",
+]
+
+[project.optional-dependencies]
+extras = [
+    "propy3",
+    "pyaaisc",
+    "mpl_chord_diagram==0.3.2",
+    "rdkit",
+    "selfies",
+    "smilite",
+    "einops",
+    "foldcomp",
+    "nest_asyncio",
+]
+dev = [
+    "black",
+    "flake8",
+    "hypothesis",
+    "interrogate",
+    "isort",
+    "nbstripout",
+    "nbval",
+    "pandoc",
+    "pre-commit",
+    "pycodestyle",
+    "pydocstyle",
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+]
+docs = [
+    "furo",
+    "nbsphinx",
+    "nbsphinx-link",
+    "sphinx-copybutton",
+    "m2r2",
+    "nbstripout",
+    "pandoc",
+    "pydocstyle",
+    "sphinx",
+    "sphinx-inline-tabs",
+    "sphinxext-opengraph",
+    "sphinxcontrib-gtagjs",
+    "ipython",
+    "watermark",
+    "sphinx_codeautolink",
+]
+all = [
+    "propy3",
+    "pyaaisc",
+    "mpl_chord_diagram==0.3.2",
+    "rdkit",
+    "selfies",
+    "smilite",
+    "einops",
+    "foldcomp",
+    "nest_asyncio",
+    "black",
+    "flake8",
+    "hypothesis",
+    "interrogate",
+    "isort",
+    "nbstripout",
+    "nbval",
+    "pandoc",
+    "pre-commit",
+    "pycodestyle",
+    "pydocstyle",
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+]
+
+[project.urls]
+Homepage = "https://github.com/a-r-j/graphein"
+Documentation = "https://graphein.ai/"
+Repository = "https://github.com/a-r-j/graphein"
+Issues = "https://github.com/a-r-j/graphein/issues"
+Changelog = "https://github.com/a-r-j/graphein/blob/master/CHANGELOG.md"
+
+[project.scripts]
+graphein = "graphein.cli:main"
+
+[tool.hatch.version]
+path = "graphein/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["graphein"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/README.md",
+    "/LICENSE",
+    "/graphein/protein/features/nodes/amino_acid_properties.csv",
+    "/graphein/protein/features/nodes/meiler_embeddings.csv",
+]
+
+[tool.uv]
+package = true
+
 # Sanely format your code with no heated arguments! :)
 [tool.black]
 exclude = '''
@@ -33,7 +183,7 @@ use_parentheses = true
 # Can reinstate later: Measures docstring coverage,
 # super good for guaranteeing that there's docs!
 [tool.interrogate]
-exclude = ["setup.py", "docs", "build", "nbconvert_config.py"]
+exclude = ["docs", "build", "nbconvert_config.py"]
 fail-under = 77
 ignore-init-method = true
 ignore-init-module = true

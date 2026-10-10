@@ -39,10 +39,12 @@ def test_get_shape_moments():
     assert isinstance(
         moments[1], float
     ), f"Moment is not a float ({type(moments[1])})"
-    assert moments == (
-        0.12940962096031391,
-        0.8705903790396854,
-    ), f"Moments are not correct ({moments})"
+    assert np.isclose(
+        moments[0], 0.12940962096031391
+    ), f"Moment 0 is not correct ({moments[0]})"
+    assert np.isclose(
+        moments[1], 0.8705903790396854
+    ), f"Moment 1 is not correct ({moments[1]})"
 
 
 def test_count_fragment():

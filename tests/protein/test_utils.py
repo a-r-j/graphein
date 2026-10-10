@@ -1,4 +1,6 @@
+import importlib
 import os
+from http.client import RemoteDisconnected
 
 import networkx as nx
 from pandas.testing import assert_frame_equal
@@ -16,6 +18,8 @@ from graphein.protein.utils import (
     save_pdb_df_to_pdb,
     save_rgroup_df_to_pdb,
 )
+
+protein_utils = importlib.import_module("graphein.protein.utils")
 
 
 def test_save_graph_to_pdb():
@@ -108,6 +112,26 @@ def test_download_obsolete_structure():
 
 def test_download_structure():
     fp = download_pdb(pdb_code="4hhb")
+    assert os.path.exists(fp)
+    assert str(fp).endswith("4hhb.pdb")
+
+
+def test_download_structure_retries_transient_errors(monkeypatch, tmp_path):
+    attempts = {"count": 0}
+
+    def fake_download(url, out, bar=None):
+        attempts["count"] += 1
+        if attempts["count"] < 3:
+            raise RemoteDisconnected("connection dropped")
+        with open(out, "w", encoding="utf-8") as handle:
+            handle.write("HEADER\n")
+
+    monkeypatch.setattr(protein_utils.wget, "download", fake_download)
+    monkeypatch.setattr(protein_utils.time, "sleep", lambda _: None)
+
+    fp = download_pdb(pdb_code="4hhb", out_dir=tmp_path)
+
+    assert attempts["count"] == 3
     assert os.path.exists(fp)
     assert str(fp).endswith("4hhb.pdb")
 

@@ -2,7 +2,7 @@ import argparse
 
 import pandas as pd
 import torch as torch
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from graphein.protein.config import (
     DSSPConfig,
