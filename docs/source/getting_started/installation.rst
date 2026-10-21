@@ -22,6 +22,19 @@ At present, the simplest installation is via `PyPI <https://pypi.org/project/gra
         pip install graphein[extras] # For additional featurisation dependencies
 
 
+.. tab:: uv
+
+    From a clone of the repository (recommended for development):
+
+    .. code-block:: bash
+
+        git clone https://www.github.com/a-r-j/graphein
+        cd graphein
+        uv sync                        # base install (editable)
+        uv sync --extra extras         # optional featurisation dependencies
+        uv sync --all-extras           # dev + extras + docs
+
+
 .. tab:: Conda
 
     .. code-block:: bash
@@ -35,7 +48,7 @@ At present, the simplest installation is via `PyPI <https://pypi.org/project/gra
 Docker Install
 ---------------------
 
-We provide two ``docker-compose`` files for `CPU <https://github.com/a-r-j/graphein/blob/master/docker-compose.cpu.yml>`_ (``docker-compose.cpu.yml``) and `GPU <https://github.com/a-r-j/graphein/blob/master/docker-compose.cpu.yml>`_ usage (``docker-compose.yml``) locally. For GPU usage please ensure that you have `NVIDIA Container Toolkit <https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html>`_ installed. Ensure that you install the locally mounted volume after entering the container (``pip install -e .``). **This will also setup the dev environment locally**.
+We provide two ``docker-compose`` files for `CPU <https://github.com/a-r-j/graphein/blob/master/docker-compose.cpu.yml>`_ (``docker-compose.cpu.yml``) and `GPU <https://github.com/a-r-j/graphein/blob/master/docker-compose.cpu.yml>`_ usage (``docker-compose.yml``) locally. For GPU usage please ensure that you have `NVIDIA Container Toolkit <https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html>`_ installed. Ensure that you install the locally mounted volume after entering the container (``uv sync --all-extras`` or ``pip install -e ".[dev,extras]"``). **This will also setup the dev environment locally**.
 
 The Dockerfile is viewable `here <https://github.com/a-r-j/graphein/blob/master/Dockerfile>`_
 
@@ -75,7 +88,7 @@ Alternatively, if you wish to install Graphein in the dev environment (includes 
         git clone https://www.github.com/a-r-j/graphein
         cd graphein
         conda env create -f environment-dev.yml
-        pip install -e .  # Install in editable mode
+        uv sync --all-extras  # Install in editable mode
 
 
 
