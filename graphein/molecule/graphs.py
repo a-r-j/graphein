@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import traceback
 from functools import partial
+from pathlib import Path
 from typing import Callable, Dict, List, Optional, Union
 
 import networkx as nx
@@ -233,7 +234,7 @@ def construct_graph(
             coords = get_coords(rdmol)
 
     if path is not None:
-        name = path.split("/")[-1].split(".")[0]
+        name = Path(path).stem
         if path.lower().endswith(".sdf"):
             rdmol = Chem.SDMolSupplier(path)[0]
             if config.add_hs:
@@ -245,7 +246,6 @@ def construct_graph(
                 rdmol = Chem.AddHs(rdmol, addCoords=True)
             coords = get_coords(rdmol)
         elif path.lower().endswith(".pdb"):
-            name = path.split("/")[-1].split(".")[0]
             rdmol = Chem.MolFromPDBFile(path)
             if config.add_hs:
                 rdmol = Chem.AddHs(rdmol, addCoords=True)
