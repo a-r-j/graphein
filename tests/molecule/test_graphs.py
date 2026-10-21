@@ -43,11 +43,34 @@ def test_generate_graph_sdf(config):
     check_nodes(g)
 
 
+def test_generate_graph_path_preserves_full_file_stem(tmp_path):
+    """Tests file-derived graph names preserve periods before the extension."""
+    path = tmp_path / "long.test.sdf"
+    path.write_bytes(Path(LONG_SDF).read_bytes())
+
+    g = construct_graph(path=str(path))
+
+    assert g.graph["name"] == "long.test"
+
+
 @pytest.mark.parametrize("config", CONFIGS)
 def test_generate_graph_smiles(config):
     """Tests graph construction from a SMILES string."""
     g = construct_graph(config=config, smiles=SMILES)
     assert g.graph["name"] == SMILES
+    check_nodes(g)
+    check_edges(g)
+
+
+def test_readme_molecule_graph_example():
+    """Tests the molecule construction shown in the README."""
+    smiles = "CC(=O)OC1=CC=CC=C1C(=O)O"
+    config = MoleculeGraphConfig()
+    g = construct_graph(smiles=smiles, config=config)
+
+    assert g.graph["name"] == smiles
+    assert g.number_of_nodes() > 0
+    assert g.number_of_edges() > 0
     check_nodes(g)
     check_edges(g)
 
