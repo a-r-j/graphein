@@ -2,6 +2,7 @@
 
 #### Bugfixes
 
+* Fix `add_k_nn_edges` never connecting residues that share a residue number but differ in insertion code (e.g. 52 and 52A). Fixes [#410](https://github.com/a-r-j/graphein/issues/410)
 * Fix file-based molecular graph names for dotted filenames and Windows paths.
 * Fix the README molecular graph example to initialize `MoleculeGraphConfig` and call `construct_graph`.
 * Fix `NameError` in `graphein.molecule.atoms` when rdkit is not installed by guarding rdkit-dependent constants with `_HAS_RDKIT` flag
