@@ -454,3 +454,24 @@ def test_insertion_codes_in_add_k_nn_edges():
     ]
 
     assert set(g.edges()) == set(edges_expected)
+
+
+def test_add_k_nn_edges_between_residues_with_insertion_codes():
+    """Residues that share a residue number but differ in insertion code
+    (e.g. 52 and 52A) are distinct residues and should be connectable by kNN
+    edges."""
+    file_path = (
+        Path(__file__).parent.parent / "test_data" / "input_pdb_cryst1.pdb"
+    )
+    config = ProteinGraphConfig(
+        edge_construction_functions=[partial(add_k_nn_edges, k=5)]
+    )
+    G = construct_graph(path=str(file_path), config=config)
+
+    for u, v in [
+        ("H:TRP:52", "H:TYR:52:A"),
+        ("H:ASP:100", "H:TYR:100:A"),
+        ("H:TYR:100:A", "H:VAL:100:B"),
+    ]:
+        assert u in G and v in G
+        assert G.has_edge(u, v), f"Missing kNN edge between {u} and {v}"

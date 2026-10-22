@@ -1145,13 +1145,19 @@ def add_k_nn_edges(
         # Get sequence position
         n1_position = pdb_df.loc[a1, "residue_number"]
         n2_position = pdb_df.loc[a2, "residue_number"]
+        separation = abs(n1_position - n2_position)
+
+        # Residues sharing a residue number but with different insertion
+        # codes (e.g. 52 and 52A) are distinct residues, so they are at least
+        # one position apart in sequence.
+        if separation == 0 and "insertion" in pdb_df.columns:
+            if pdb_df.loc[a1, "insertion"] != pdb_df.loc[a2, "insertion"]:
+                separation = 1
 
         # Check residues are not on same chain
         condition_1 = n1_chain != n2_chain
         # Check residues are separated by long_interaction_threshold
-        condition_2 = (
-            abs(n1_position - n2_position) > long_interaction_threshold
-        )
+        condition_2 = separation > long_interaction_threshold
 
         # If not on same chain add edge or
         # If on same chain and separation is sufficient add edge
