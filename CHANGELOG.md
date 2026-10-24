@@ -2,6 +2,7 @@
 
 #### Bugfixes
 
+* Fix `import_message` calls that wrongly did (`biovec`) or did not (`rdkit` in `graphein.molecule.graphs`, `nest_asyncio`) suggest `pip install graphein[extras]`, and add a test checking every call against `.requirements/extras.in`. Fixes [#248](https://github.com/a-r-j/graphein/issues/248)
 * Fix file-based molecular graph names for dotted filenames and Windows paths.
 * Fix the README molecular graph example to initialize `MoleculeGraphConfig` and call `construct_graph`.
 * Fix `NameError` in `graphein.molecule.atoms` when rdkit is not installed by guarding rdkit-dependent constants with `_HAS_RDKIT` flag
