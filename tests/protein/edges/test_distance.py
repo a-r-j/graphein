@@ -12,6 +12,7 @@ from functools import partial
 from pathlib import Path
 
 import networkx as nx
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -19,6 +20,7 @@ import graphein.protein as gp
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
     INFINITE_DIST,
+    add_hydrogen_bond_interactions,
     add_k_nn_edges,
     add_salt_bridges,
     add_sequence_distance_edges,
@@ -34,6 +36,8 @@ from graphein.protein.resi_atoms import (
     AROMATIC_RESIS,
     BOND_TYPES,
     CATION_RESIS,
+    HYDROGEN_BOND_ACCEPTORS,
+    HYDROGEN_BOND_DONORS,
     HYDROPHOBIC_RESIS,
     NEG_AA,
     PI_RESIS,
@@ -103,10 +107,95 @@ def test_delaunay_triangulation(net):
     pass
 
 
-@pytest.mark.skip(reason="Implementation needs to be checked.")
-def test_add_hydrogen_bond_interactions(net):
-    """Test that the addition of hydrogen bond interactions works correctly."""
-    pass
+def _hbond_graph(granularity: str, **kwargs) -> nx.Graph:
+    config = ProteinGraphConfig(
+        granularity=granularity,
+        edge_construction_functions=[
+            partial(add_hydrogen_bond_interactions, **kwargs)
+        ],
+    )
+    return construct_graph(config=config, path=str(DATA_PATH))
+
+
+def _is_donor(node: dict) -> bool:
+    res, atom = node["residue_name"], node["atom_type"]
+    return (atom == "N" and res != "PRO") or atom in HYDROGEN_BOND_DONORS.get(
+        res, {}
+    )
+
+
+def _is_acceptor(node: dict) -> bool:
+    res, atom = node["residue_name"], node["atom_type"]
+    return atom in {"O", "OXT"} or atom in HYDROGEN_BOND_ACCEPTORS.get(res, {})
+
+
+def _residue(node_id: str) -> str:
+    return ":".join(node_id.split(":")[:3])
+
+
+def test_add_hydrogen_bond_interactions_atom_graph():
+    """Each atomic hbond edge links a donor and acceptor in different residues.
+
+    Regression test for #437: previously only exact matches on truncated atom
+    names were used and backbone atoms were never considered.
+    """
+    g = _hbond_graph("atom")
+    edges = get_edges_by_bond_type(g, "hbond")
+    assert len(edges) > 0
+
+    for u, v in edges:
+        a, b = g.nodes[u], g.nodes[v]
+        assert (_is_donor(a) and _is_acceptor(b)) or (
+            _is_donor(b) and _is_acceptor(a)
+        )
+        assert _residue(u) != _residue(v)
+        assert np.linalg.norm(a["coords"] - b["coords"]) <= 3.5
+        if {a["atom_type"], b["atom_type"]} <= {"N", "O", "OXT"}:
+            assert (
+                a["chain_id"] != b["chain_id"]
+                or abs(a["residue_number"] - b["residue_number"]) > 1
+            )
+
+    # Backbone-backbone hydrogen bonds should be found (e.g. alpha helices).
+    assert any(
+        g.nodes[u]["atom_type"] in {"N", "O"}
+        and g.nodes[v]["atom_type"] in {"N", "O"}
+        for u, v in edges
+    )
+
+
+def test_add_hydrogen_bond_interactions_residue_graph():
+    """Residue-level hbonds are the atomic hbonds mapped onto residues."""
+    atom_edges = {
+        frozenset((_residue(u), _residue(v)))
+        for u, v in get_edges_by_bond_type(_hbond_graph("atom"), "hbond")
+    }
+    residue_edges = {
+        frozenset(e)
+        for e in get_edges_by_bond_type(_hbond_graph("CA"), "hbond")
+    }
+    assert len(residue_edges) > 0
+    assert residue_edges == atom_edges
+
+
+@pytest.mark.parametrize(
+    "hbond_types", [["bb-bb"], ["bb-sc"], ["sc-sc"], ["bb-sc", "sc-sc"]]
+)
+def test_add_hydrogen_bond_interactions_types(hbond_types):
+    """Only the requested backbone/side chain hydrogen bond types are added."""
+    g = _hbond_graph("atom", hbond_types=hbond_types)
+    edges = get_edges_by_bond_type(g, "hbond")
+    assert len(edges) > 0
+    for u, v in edges:
+        n_backbone = sum(
+            g.nodes[n]["atom_type"] in {"N", "O", "OXT"} for n in (u, v)
+        )
+        assert ["sc-sc", "bb-sc", "bb-bb"][n_backbone] in hbond_types
+
+
+def test_add_hydrogen_bond_interactions_invalid_type():
+    with pytest.raises(ValueError):
+        _hbond_graph("atom", hbond_types=["bb-xx"])
 
 
 def test_add_aromatic_interactions(net):

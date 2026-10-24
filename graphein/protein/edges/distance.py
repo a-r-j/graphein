@@ -28,11 +28,14 @@ from graphein.protein.resi_atoms import (
     CATION_RESIS,
     DISULFIDE_ATOMS,
     DISULFIDE_RESIS,
+    HYDROGEN_BOND_ACCEPTORS,
+    HYDROGEN_BOND_DONORS,
     HYDROPHOBIC_RESIS,
     IONIC_RESIS,
     NEG_AA,
     PI_RESIS,
     POS_AA,
+    RESI_THREE_TO_1,
     RING_NORMAL_ATOMS,
     SALT_BRIDGE_ANIONS,
     SALT_BRIDGE_ATOMS,
@@ -333,44 +336,110 @@ def add_disulfide_interactions(
         )
 
 
-def add_hydrogen_bond_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
-):
-    """Add all hydrogen-bond interactions."""
-    # For these atoms, find those that are within 3.5A of one another.
-    if rgroup_df is None:
-        rgroup_df = G.graph["rgroup_df"]
-    rgroup_df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
-    HBOND_ATOMS = [
-        "ND",  # histidine and asparagine
-        "NE",  # glutamate, tryptophan, arginine, histidine
-        "NH",  # arginine
-        "NZ",  # lysine
-        "OD1",
-        "OD2",
-        "OE",
-        "OG",
-        "OH",
-        "SD",  # cysteine
-        "SG",  # methionine
-        "N",
-        "O",
-    ]
-    hbond_df = filter_dataframe(rgroup_df, "atom_name", HBOND_ATOMS, True)
-    if len(hbond_df.index) > 0:
-        distmat = compute_distmat(hbond_df)
-        interacting_atoms = get_interacting_atoms(3.5, distmat)
-        add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
+HBOND_TYPES: List[str] = ["bb-bb", "bb-sc", "sc-sc"]
+"""Hydrogen bond types by the location (backbone or side chain) of the donor
+and acceptor atoms."""
 
-    # For these atoms, find those that are within 4.0A of one another.
-    HBOND_ATOMS_SULPHUR = ["SD", "SG"]
-    hbond_df = filter_dataframe(
-        rgroup_df, "atom_name", HBOND_ATOMS_SULPHUR, True
+
+def add_hydrogen_bond_interactions(
+    G: nx.Graph,
+    rgroup_df: Optional[pd.DataFrame] = None,
+    distance_threshold: float = 3.5,
+    hbond_types: Iterable[str] = HBOND_TYPES,
+):
+    """
+    Add hydrogen bond interactions between donor and acceptor atoms.
+
+    An edge is added between two nodes if a hydrogen bond donor atom in one is
+    within ``distance_threshold`` Angstroms of a hydrogen bond acceptor atom in
+    the other. Side chain donors and acceptors are defined in
+    :const:`~graphein.protein.resi_atoms.HYDROGEN_BOND_DONORS` and
+    :const:`~graphein.protein.resi_atoms.HYDROGEN_BOND_ACCEPTORS`. Backbone
+    amide nitrogens (``N``, except in proline) are donors and backbone oxygens
+    (``O`` and ``OXT``) are acceptors.
+
+    Atoms in the same residue are never paired. Backbone-backbone pairs between
+    sequence-adjacent residues are also ignored, as the ``N`` and ``O`` atoms
+    either side of a peptide bond are always ~2.3 Angstroms apart.
+
+    Hydrogen positions are not used, so this is a geometric approximation.
+
+    :param G: Protein graph to add hydrogen bond edges to.
+    :type G: nx.Graph
+    :param rgroup_df: Atomic dataframe to find interactions in. If ``None``
+        (default), ``G.graph["raw_pdb_df"]`` is used. Backbone hydrogen bonds
+        are only found if this dataframe contains backbone atoms.
+    :type rgroup_df: Optional[pd.DataFrame]
+    :param distance_threshold: Maximum donor-acceptor distance in Angstroms.
+        Defaults to ``3.5``.
+    :type distance_threshold: float
+    :param hbond_types: Hydrogen bonds to add, by the location of the donor and
+        acceptor atoms: ``"bb-bb"`` (backbone-backbone), ``"bb-sc"``
+        (backbone-side chain) and/or ``"sc-sc"`` (side chain-side chain).
+        Defaults to all three (:const:`HBOND_TYPES`).
+    :type hbond_types: Iterable[str]
+    :raises ValueError: If ``hbond_types`` contains an unknown type.
+    """
+    hbond_types = set(hbond_types)
+    if not hbond_types.issubset(HBOND_TYPES):
+        raise ValueError(
+            f"Unknown hbond_types: {hbond_types - set(HBOND_TYPES)}. "
+            f"Must be in {HBOND_TYPES}."
+        )
+    if rgroup_df is None:
+        rgroup_df = G.graph["raw_pdb_df"]
+    df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
+
+    res_atom = df["residue_name"] + ":" + df["atom_name"]
+    sc_donors = [
+        f"{res}:{atom}"
+        for res, atoms in HYDROGEN_BOND_DONORS.items()
+        for atom in atoms
+    ]
+    sc_acceptors = [
+        f"{res}:{atom}"
+        for res, atoms in HYDROGEN_BOND_ACCEPTORS.items()
+        for atom in atoms
+    ]
+    is_amino_acid = df["residue_name"].isin(list(RESI_THREE_TO_1))
+    bb_donor = (
+        is_amino_acid
+        & (df["atom_name"] == "N")
+        & (df["residue_name"] != "PRO")
     )
-    if len(hbond_df.index) > 0:
-        distmat = compute_distmat(hbond_df)
-        interacting_atoms = get_interacting_atoms(4.0, distmat)
-        add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
+    bb_acceptor = is_amino_acid & df["atom_name"].isin(["O", "OXT"])
+    donor = (bb_donor | res_atom.isin(sc_donors)).to_numpy()
+    acceptor = (bb_acceptor | res_atom.isin(sc_acceptors)).to_numpy()
+    backbone = (bb_donor | bb_acceptor).to_numpy()
+
+    keep = donor | acceptor
+    df = df.loc[keep].reset_index(drop=True)
+    donor, acceptor, backbone = donor[keep], acceptor[keep], backbone[keep]
+    if len(df.index) < 2:
+        return
+
+    distmat = compute_distmat(df)
+    i, j = np.where(np.triu(distmat.to_numpy() <= distance_threshold, k=1))
+
+    chain = df["chain_id"].to_numpy()
+    resnum = df["residue_number"].to_numpy()
+    insertion = df["insertion"].fillna("").to_numpy()
+    same_residue = (
+        (chain[i] == chain[j])
+        & (resnum[i] == resnum[j])
+        & (insertion[i] == insertion[j])
+    )
+    adjacent = (chain[i] == chain[j]) & (np.abs(resnum[i] - resnum[j]) <= 1)
+    n_backbone = backbone[i].astype(int) + backbone[j].astype(int)
+    pair_type = np.array(["sc-sc", "bb-sc", "bb-bb"])[n_backbone]
+
+    is_hbond = (
+        ((donor[i] & acceptor[j]) | (donor[j] & acceptor[i]))
+        & ~same_residue
+        & ~((n_backbone == 2) & adjacent)
+        & np.isin(pair_type, list(hbond_types))
+    )
+    add_interacting_resis(G, (i[is_hbond], j[is_hbond]), df, ["hbond"])
 
 
 def add_ionic_interactions(
