@@ -7,19 +7,22 @@ from typing import List, Tuple
 
 import pytest
 
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python < 3.11
+    import tomli as tomllib
+
 from graphein.utils.dependencies import import_message
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-EXTRAS_FILE = ROOT / ".requirements" / "extras.in"
 
 
 def _extras_packages() -> set:
     """Package names installed by ``pip install graphein[extras]``."""
-    lines = EXTRAS_FILE.read_text().splitlines()
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
     return {
-        re.split(r"[<>=!~\[ ;]", line.strip())[0].lower()
-        for line in lines
-        if line.strip() and not line.startswith("#")
+        re.split(r"[<>=!~\[ ;]", req)[0].lower()
+        for req in pyproject["project"]["optional-dependencies"]["extras"]
     }
 
 
