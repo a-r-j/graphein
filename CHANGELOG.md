@@ -21,6 +21,7 @@
 * Fix `NameError` in `graphein.molecule.utils.copy_edit_mol` (and so `get_clique_mol`), which called an undefined `copy_atom`. [#460](https://github.com/a-r-j/graphein/pull/460)
 * Fix `graphein.ml.clustering.get_seq_records` with an `alphabet`: Biopython >= 1.78 rejects the `alphabet` argument and removed `_verify_alphabet`. `alphabet` is now a string of allowed letters, every sequence is checked (not only `*`-terminated ones), and the warning reports `record.id` instead of crashing on `record.seq.id`. [#460](https://github.com/a-r-j/graphein/pull/460)
 * Fix `NameError` in `setup.py` when `README.md` is missing (`DESCRIPTION` was undefined). [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix the same-chain check in `graphein.rna.edges.atomic.add_atomic_edges`, which only rejected empty chain IDs and so allowed covalent edges between chains. Ports the protein fix from [#201](https://github.com/a-r-j/graphein/pull/201) ([#199](https://github.com/a-r-j/graphein/issues/199)). [#460](https://github.com/a-r-j/graphein/pull/460)
 
 #### Misc
 
@@ -31,6 +32,8 @@
   * Use `itertuples` for GetContacts edges.
   * Use precomputed coordinate dicts in the geometry vector features.
   * Use `.astype(str)` when building node IDs.
+  * Use column arrays in the protein and RNA covalent (`add_atomic_edges`) loops.
+  * Use sets for membership checks in `extract_subgraph_from_node_list(inverse=True)` and `asteroid_plot`.
 * Remove quadratic list-membership checks in `create_pairs_for_clustering`, `generate_random_sets` and `PDBManager` PDB download checks. [#460](https://github.com/a-r-j/graphein/pull/460)
 * Close files opened in `blast` and `generate_random_sets`. [#460](https://github.com/a-r-j/graphein/pull/460)
 * Replace `black`, `isort` and `flake8` with `ruff` (formatting, import sorting and linting) in CI, pre-commit and dev requirements, and consolidate the code style CI jobs into one. [#460](https://github.com/a-r-j/graphein/pull/460)

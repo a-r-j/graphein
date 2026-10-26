@@ -48,7 +48,8 @@ def extract_subgraph_from_node_list(
     if node_list:
         # Get all nodes not in nodelist if inversing the selection
         if inverse:
-            node_list = [n for n in g.nodes() if n not in node_list]
+            excluded = set(node_list)
+            node_list = [n for n in g.nodes() if n not in excluded]
 
         # If we are just returning the node list, return it here before
         # subgraphing.

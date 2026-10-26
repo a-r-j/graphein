@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from itertools import count
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -795,14 +795,14 @@ def asteroid_plot(
     assert node_id in g.nodes(), f"Node {node_id} not in graph"
 
     nodes: Dict[int, List[str]] = {0: [node_id]}
-    node_list: List[str] = [node_id]
+    seen_nodes: Set[str] = {node_id}
     # Iterate over the number of hops and extract nodes in each shell
     for i in range(1, k):
         subgraph = extract_k_hop_subgraph(g, node_id, k=i)
         candidate_nodes = subgraph.nodes()
         # Check we've not already found nodes in the previous shells
-        nodes[i] = [n for n in candidate_nodes if n not in node_list]
-        node_list += candidate_nodes
+        nodes[i] = [n for n in candidate_nodes if n not in seen_nodes]
+        seen_nodes.update(candidate_nodes)
     shells = [nodes[i] for i in range(k)]
     log.debug(f"Plotting shells: {shells}")
 
