@@ -121,25 +121,24 @@ def add_dssp_df(
     ).group(
         1
     )  # e.g. "4.0.4"
-    # Check for existence of pdb file. If not, reconstructs it from the raw df.
-    if pdb_file:
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        tmp_pdb = os.path.join(tmpdirname, f"{pdb_name}.pdb")
+        # Check for existence of pdb file. If not, reconstructs it from the raw df.
+        if not pdb_file:
+            save_pdb_df_to_pdb(G.graph["raw_pdb_df"], tmp_pdb)
+            pdb_file = tmp_pdb
+        # DSSP 4.x rejects PDB files without a CRYST1 record (e.g. AlphaFold
+        # models, or files reconstructed from the raw df)
+        if not str(pdb_file).endswith(".gz"):
+            with open(pdb_file) as f:
+                pdb_text = f.read()
+            if "CRYST1" not in pdb_text:
+                with open(tmp_pdb, "w") as f:
+                    f.write(f"{CRYST1_PLACEHOLDER}\n{pdb_text}")
+                pdb_file = tmp_pdb
         dssp_dict = dssp_dict_from_pdb_file(
             pdb_file, DSSP=executable, dssp_version=dssp_version
         )
-    else:
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            tmp_pdb = tmpdirname + f"/{pdb_name}.pdb"
-            save_pdb_df_to_pdb(G.graph["raw_pdb_df"], tmp_pdb)
-            # DSSP 4.x rejects PDB files that don't start with a CRYST1 record
-            with open(tmp_pdb) as f:
-                pdb_text = f.read()
-            with open(tmp_pdb, "w") as f:
-                f.write(f"{CRYST1_PLACEHOLDER}\n{pdb_text}")
-            dssp_dict = dssp_dict_from_pdb_file(
-                tmp_pdb,
-                DSSP=executable,
-                dssp_version=dssp_version,
-            )
 
     if len(dssp_dict[0]) == 0:
         raise ValueError(
