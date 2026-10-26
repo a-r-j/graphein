@@ -171,19 +171,19 @@ def label_node_id(
     :rtype: pd.DataFrame
     """
     df["node_id"] = (
-        df["chain_id"].apply(str)
+        df["chain_id"].astype(str)
         + ":"
         + df["residue_name"]
         + ":"
-        + df["residue_number"].apply(str)
+        + df["residue_number"].astype(str)
     )
 
     if insertions:
-        df["node_id"] = df["node_id"] + ":" + df["insertion"].apply(str)
+        df["node_id"] = df["node_id"] + ":" + df["insertion"].astype(str)
         # Replace trailing : for non insertions
         df["node_id"] = df["node_id"].str.replace(":$", "", regex=True)
     # Add Alt Loc identifiers
-    df["node_id"] = df["node_id"] + ":" + df["alt_loc"].apply(str)
+    df["node_id"] = df["node_id"] + ":" + df["alt_loc"].astype(str)
     df["node_id"] = df["node_id"].str.replace(":$", "", regex=True)
     df["residue_id"] = df["node_id"]
     if granularity == "atom":
@@ -192,7 +192,7 @@ def label_node_id(
         df["node_id"] = (
             df["node_id"]
             + ":"
-            + df["atom_number"].apply(str)
+            + df["atom_number"].astype(str)
             + ":"
             + df["atom_name"]
         )
@@ -1181,7 +1181,7 @@ def compute_secondary_structure_graph(
 
     # Check nodes have secondary structure assignment & store them in list
     for _, d in g.nodes(data=True):
-        if "ss" not in d.keys():
+        if "ss" not in d:
             raise ProteinGraphConfigurationError(
                 "Secondary structure not defined for all nodes."
             )

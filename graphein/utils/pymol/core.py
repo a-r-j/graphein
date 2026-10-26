@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import contextlib
 import os
 import subprocess
 import tempfile
@@ -100,10 +101,8 @@ class MolViewer(object):
             if progress is not None:
                 progress.close()
 
-            try:
+            with contextlib.suppress(OSError):
                 os.unlink(filename)
-            except:
-                pass
 
 
 # Create a default instance for convenience

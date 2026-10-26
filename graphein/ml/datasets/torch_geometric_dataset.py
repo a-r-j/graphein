@@ -270,7 +270,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             chain_selections = [
                 (
                     self.chain_selection_map[pdb]
-                    if pdb in self.chain_selection_map.keys()
+                    if pdb in self.chain_selection_map
                     else "all"
                 )
                 for pdb in self.structures

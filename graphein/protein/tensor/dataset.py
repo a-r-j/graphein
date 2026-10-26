@@ -276,7 +276,7 @@ class ProteinDataset(Dataset):
                 for pdb in set(self.pdb_codes)
                 if (
                     not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
-                    or self.overwrite == True
+                    or self.overwrite
                 )
             ]
             log.info(f"Downloading {len(to_download)} PDBs")
@@ -291,7 +291,7 @@ class ProteinDataset(Dataset):
                 for pdb in set(self.pdb_codes)
                 if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
             ]
-            if len(self.bad_pdbs) > 0:
+            if self.bad_pdbs:
                 log.warning(
                     f"Failed to download {len(self.bad_pdbs)} PDBs: {self.bad_pdbs}"
                 )
@@ -304,7 +304,7 @@ class ProteinDataset(Dataset):
                 pdb
                 for pdb in set(self.uniprot_ids)
                 if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
-                or self.overwrite == True
+                or self.overwrite
             ]
             [
                 download_alphafold_structure(

@@ -335,24 +335,9 @@ class PDBManager:
         :return: Whether all provided frames are sequentially ordered.
         :rtype: bool
         """
-        frames_are_sequential = True
-        last_frame_index = len(split_time_frames) - 1
-        for frame_index in range(len(split_time_frames)):
-            frame = split_time_frames[frame_index]
-            frames_are_backwards_sequential = frame_index == 0 or (
-                frame_index > 0 and frame > split_time_frames[frame_index - 1]
-            )
-            frames_are_forwards_sequential = (
-                frame_index < last_frame_index
-                and frame < split_time_frames[frame_index + 1]
-            ) or frame_index == last_frame_index
-            frames_are_sequential = all(
-                [
-                    frames_are_backwards_sequential,
-                    frames_are_forwards_sequential,
-                ]
-            )
-        return frames_are_sequential
+        return all(
+            a < b for a, b in zip(split_time_frames, split_time_frames[1:])
+        )
 
     def _download_pdb_sequences(self):
         """Download PDB sequences from
@@ -1704,9 +1689,7 @@ class PDBManager:
         # Split DataFrames
         start_datetime = df.deposition_date.min()
         df_splits = {}
-        for split_index in range(len(splits)):
-            split = splits[split_index]
-            end_datetime = split_time_frames[split_index]
+        for split, end_datetime in zip(splits, split_time_frames):
             df_split = df.loc[
                 (df.deposition_date >= start_datetime)
                 & (df.deposition_date < end_datetime)

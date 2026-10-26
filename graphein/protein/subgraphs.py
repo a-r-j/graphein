@@ -432,7 +432,7 @@ def extract_subgraph_from_secondary_structure(
     node_list: List[str] = []
 
     for n, d in g.nodes(data=True):
-        if "ss" not in d.keys():
+        if "ss" not in d:
             raise ProteinGraphConfigurationError(
                 f"Secondary structure not defined for all nodes ({n}). \
                     Please ensure you have used \
@@ -498,7 +498,7 @@ def extract_surface_subgraph(
     node_list: List[str] = []
 
     for n, d in g.nodes(data=True):
-        if "rsa" not in d.keys():
+        if "rsa" not in d:
             raise ProteinGraphConfigurationError(
                 f"RSA not defined for all nodes ({n}). Please ensure you have \
                     used graphein.protein.nodes.features.dssp.rsa as a graph \

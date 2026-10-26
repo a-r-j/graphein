@@ -49,7 +49,7 @@ def add_atomic_edges(G: nx.Graph, tolerance: float = 0.56) -> nx.Graph:
 
     # Add atomic radii if not present
     for n, d in G.nodes(data=True):
-        if "atomic_radius" not in d.keys():
+        if "atomic_radius" not in d:
             add_atomic_radii(n, d)
 
     radii = np.array(list(nx.get_node_attributes(G, "atomic_radius").values()))

@@ -549,7 +549,7 @@ def add_vector_to_plot(
         z=z_edges,
         mode="lines",
         line={"color": colour, "width": width},
-        text=3 * [f"{vector}" for _ in range(len(g))],
+        text=[vector] * (3 * len(g)),
         hoverinfo="text",
     )
     # Compute cone positions.
@@ -589,7 +589,7 @@ def add_vector_to_plot(
         u=u,
         v=v,
         w=w,
-        text=[f"{vector}" for _ in range(len(g.nodes()))],
+        text=[vector] * len(g),
         hoverinfo="u+v+w+text",
         colorscale=colour,
         showlegend=False,

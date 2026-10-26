@@ -40,12 +40,8 @@ def plot_rna_graph(
     :type label_base_position: bool
     :param label_dotbracket_symbol: Whether to label the dotbracket symbol of each base.
     """
-    edge_colors = nx.get_edge_attributes(g, "color").values()
-    node_colors = nx.get_node_attributes(g, "color").values()
-    if len(node_colors) == 0:
-        node_colors = None
-    if len(edge_colors) == 0:
-        edge_colors = None
+    edge_colors = nx.get_edge_attributes(g, "color").values() or None
+    node_colors = nx.get_node_attributes(g, "color").values() or None
 
     # Construct node labelling scheme
     node_label_dicts: List[Dict[int, str]] = []

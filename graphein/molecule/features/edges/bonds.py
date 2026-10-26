@@ -27,7 +27,7 @@ def add_bond_type(
     :return: Returns the bond type.
     :rtype: rdkit.Chem.rdchem.BondType
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["bond_type"] = None
         return None
@@ -48,7 +48,7 @@ def bond_is_aromatic(u: str, v: str, d: Dict[str, Any]) -> bool:
     :return: Returns indicator of aromaticity of bond.
     :rtype: bool
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["aromatic"] = None
         return None
@@ -69,7 +69,7 @@ def bond_is_conjugated(u: str, v: str, d: Dict[str, Any]) -> bool:
     :return: Returns indicator of conjugated bond.
     :rtype: bool
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["conjugated"] = None
         return None
@@ -90,7 +90,7 @@ def bond_is_in_ring(u: str, v: str, d: Dict[str, Any]) -> bool:
     :return: Returns indicator of ring membership of bond.
     :rtype: bool
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["ring"] = None
         return None
@@ -116,7 +116,7 @@ def bond_is_in_ring_size(
     :return: Returns ring size of bond.
     :rtype: int
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d[f"ring_size_{ring_size}"] = None
         return None
@@ -139,7 +139,7 @@ def bond_stereo(
     :return: Returns the bond stereo.
     :rtype: rdkit.Chem.rdchem.BondStereo
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["bond_stereo"] = None
         return None

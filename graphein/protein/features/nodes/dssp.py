@@ -132,7 +132,7 @@ def add_dssp_df(
                 dssp_version=dssp_version,
             )
 
-    if len(dssp_dict[0]) == 0:
+    if not dssp_dict[0]:
         raise ValueError(
             "DSSP could not be calculated. Check DSSP version "
             f"({dssp_version}) orthat the input PDB file is valid."

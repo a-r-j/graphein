@@ -44,7 +44,7 @@ def add_sidechain_vector(
     :type reverse: bool
     """
     # Get or compute R-Group DF
-    if "rgroup_df" not in g.graph.keys():
+    if "rgroup_df" not in g.graph:
         g.graph["rgroup_df"] = compute_rgroup_dataframe(g.graph["raw_pdb_df"])
 
     sc_centroid = (
@@ -103,7 +103,7 @@ def add_beta_carbon_vector(
     :type reverse: bool
     """
     # Get or compute R-Group DF
-    if "rgroup_df" not in g.graph.keys():
+    if "rgroup_df" not in g.graph:
         g.graph["rgroup_df"] = compute_rgroup_dataframe(g.graph["raw_pdb_df"])
 
     c_beta_coords = filter_dataframe(

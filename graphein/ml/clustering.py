@@ -482,11 +482,8 @@ def generate_random_sets(
     if type(clusters) is str and os.path.isfile(clusters):
         clusters = open(clusters, mode="r").read().splitlines()
         clusters = [cl.split() for cl in clusters]
-    num_ids = 0
-    c_sizes = []
-    for c in clusters:
-        c_sizes += [len(c)]
-        num_ids += len(c)
+    c_sizes = [len(c) for c in clusters]
+    num_ids = sum(c_sizes)
     print(f"{num_ids} ids in {len(clusters)} clusters")
     random.seed(a=42)  # for reproducibility
     n = 0
@@ -514,14 +511,15 @@ def generate_random_sets(
                         in_other_tests = []
                     ids_in_test += [cl_id]
                     for idt in clusters[cl_id]:
-                        print(f"{str(idt)}", file=test)
+                        print(idt, file=test)
                         labs_in_test.append(idt)
                     test_rel_size += 1.0 * c_sizes[cl_id] / float(num_ids)
                     seq_in_test += c_sizes[cl_id]
-                for j in range(len(clusters)):
-                    if j not in ids_in_test:
-                        for idt in clusters[j]:
-                            print(f"{str(idt)}", file=train)
+                ids_in_test_set = set(ids_in_test)
+                for j, cluster in enumerate(clusters):
+                    if j not in ids_in_test_set:
+                        for idt in cluster:
+                            print(idt, file=train)
                 print(
                     f"Generated set {train_set_name} and {test_set_name} - {seq_in_test} sequences"
                     f" for {len(ids_in_test)} clusters in test, among ({num_ids}, {len(clusters)}) in total."
