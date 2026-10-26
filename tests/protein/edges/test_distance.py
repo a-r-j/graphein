@@ -19,6 +19,8 @@ import graphein.protein as gp
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
     INFINITE_DIST,
+    add_aromatic_sulphur_interactions,
+    add_cation_pi_interactions,
     add_k_nn_edges,
     add_salt_bridges,
     add_sequence_distance_edges,
@@ -121,9 +123,14 @@ def test_add_aromatic_interactions(net):
         assert net.nodes[n2]["residue_name"] in AROMATIC_RESIS
 
 
-def test_add_aromatic_sulphur_interactions(net):
+def test_add_aromatic_sulphur_interactions():
     """Tests the function add_aromatic_sulphur_interactions_."""
+    config = ProteinGraphConfig(
+        edge_construction_functions=[add_aromatic_sulphur_interactions]
+    )
+    net = construct_graph(config=config, path=str(DATA_PATH))
     resis = get_edges_by_bond_type(net, "aromatic_sulphur")
+    assert resis
     for n1, n2 in resis:
         condition1 = (
             net.nodes[n1]["residue_name"] in SULPHUR_RESIS
@@ -172,9 +179,14 @@ def test_get_ring_centroids(pdb_df):
     assert len(centroid_PHE) == 18
 
 
-def test_add_cation_pi_interactions(net):
+def test_add_cation_pi_interactions():
     """Tests the function add_cation_pi_interactions."""
+    config = ProteinGraphConfig(
+        edge_construction_functions=[add_cation_pi_interactions]
+    )
+    net = construct_graph(config=config, path=str(DATA_PATH))
     resis = get_edges_by_bond_type(net, "cation_pi")
+    assert resis
     for n1, n2 in resis:
         resi1 = net.nodes[n1]["residue_name"]
         resi2 = net.nodes[n2]["residue_name"]

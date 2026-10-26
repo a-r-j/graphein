@@ -283,6 +283,7 @@ def plotly_protein_structure_graph(
     z_nodes = []
     node_sizes = []
     node_labels = []
+    node_list = list(G.nodes())
 
     # Loop on the pos dictionary to extract the x,y,z coordinates of each node
     for i, (key, value) in enumerate(pos.items()):
@@ -292,7 +293,7 @@ def plotly_protein_structure_graph(
         node_sizes.append(get_node_size(key))
 
         if label_node_ids:
-            node_labels.append(list(G.nodes())[i])
+            node_labels.append(node_list[i])
 
     nodes = go.Scatter3d(
         x=x_nodes,
@@ -455,6 +456,7 @@ def plot_protein_structure_graph(
         ax = Axes3D(fig)
         fig.add_axes(ax)
 
+        node_list = list(G.nodes())
         # Loop on the pos dictionary to extract the x,y,z coordinates of each
         # node
         for i, (key, value) in enumerate(pos.items()):
@@ -473,7 +475,7 @@ def plot_protein_structure_graph(
                 alpha=node_alpha,
             )
             if label_node_ids:
-                label = list(G.nodes())[i]
+                label = node_list[i]
                 ax.text(xi, yi, zi, label)
 
         # Loop on the list of edges to get the x,y,z, coordinates of the

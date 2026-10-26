@@ -505,12 +505,14 @@ def add_aromatic_sulphur_interactions(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
 
+        node_ids = aromatic_sulphur_df["node_id"].to_numpy()
+        residue_names = aromatic_sulphur_df["residue_name"].to_numpy()
         for a1, a2 in interacting_atoms:
-            resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
-            resi2 = aromatic_sulphur_df.loc[a2, "node_id"]
+            resi1, resi2 = node_ids[a1], node_ids[a2]
+            name1, name2 = residue_names[a1], residue_names[a2]
 
-            condition1 = resi1 in SULPHUR_RESIS and resi2 in PI_RESIS
-            condition2 = resi1 in PI_RESIS and resi2 in SULPHUR_RESIS
+            condition1 = name1 in SULPHUR_RESIS and name2 in PI_RESIS
+            condition2 = name1 in PI_RESIS and name2 in SULPHUR_RESIS
 
             if (condition1 or condition2) and resi1 != resi2:
                 add_edge(G, resi1, resi2, "aromatic_sulphur")
@@ -546,12 +548,14 @@ def add_cation_pi_interactions(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
 
+        node_ids = cation_pi_df["node_id"].to_numpy()
+        residue_names = cation_pi_df["residue_name"].to_numpy()
         for a1, a2 in interacting_atoms:
-            resi1 = cation_pi_df.loc[a1, "node_id"]
-            resi2 = cation_pi_df.loc[a2, "node_id"]
+            resi1, resi2 = node_ids[a1], node_ids[a2]
+            name1, name2 = residue_names[a1], residue_names[a2]
 
-            condition1 = resi1 in CATION_RESIS and resi2 in PI_RESIS
-            condition2 = resi1 in PI_RESIS and resi2 in CATION_RESIS
+            condition1 = name1 in CATION_RESIS and name2 in PI_RESIS
+            condition2 = name1 in PI_RESIS and name2 in CATION_RESIS
 
             if (condition1 or condition2) and resi1 != resi2:
                 add_edge(G, resi1, resi2, "cation_pi")
@@ -1119,7 +1123,7 @@ def add_k_nn_edges(
     nn = neigh.kneighbors_graph()
 
     # Create iterable of node indices
-    outgoing = np.repeat(np.array(range(len(pdb_df))), k)
+    outgoing = np.repeat(np.arange(len(pdb_df)), k)
     incoming = nn.indices
     interacting_nodes = list(zip(outgoing, incoming))
     log.info(f"Found: {len(interacting_nodes)} KNN edges")

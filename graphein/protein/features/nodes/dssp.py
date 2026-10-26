@@ -179,7 +179,7 @@ def add_dssp_df(
     )
     if G.graph["config"].insertions:
         dssp_dict["node_id"] = (
-            dssp_dict["node_id"] + ":" + dssp_dict["icode"].apply(str)
+            dssp_dict["node_id"] + ":" + dssp_dict["icode"].astype(str)
         )
         # Replace trailing : for non insertions
         dssp_dict["node_id"] = dssp_dict["node_id"].str.replace(

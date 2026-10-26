@@ -6,10 +6,11 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import List
+from typing import Dict, List
 
 import networkx as nx
 import numpy as np
+import pandas as pd
 from loguru import logger as log
 
 from graphein.protein.utils import compute_rgroup_dataframe, filter_dataframe
@@ -22,6 +23,17 @@ VECTOR_FEATURE_NAMES: List[str] = [
     "virtual_c_beta_vector",
 ]
 """Names of all vector features from the module."""
+
+
+def _coords_by_node(df: pd.DataFrame) -> Dict[str, np.ndarray]:
+    """Map ``node_id`` to coordinates, keeping the first row per node."""
+    df = df.drop_duplicates("node_id")
+    return dict(
+        zip(
+            df["node_id"],
+            df[["x_coord", "y_coord", "z_coord"]].to_numpy(dtype=float),
+        )
+    )
 
 
 def add_sidechain_vector(
@@ -47,8 +59,11 @@ def add_sidechain_vector(
     if "rgroup_df" not in g.graph:
         g.graph["rgroup_df"] = compute_rgroup_dataframe(g.graph["raw_pdb_df"])
 
-    sc_centroid = (
-        g.graph["rgroup_df"].groupby("node_id").mean(numeric_only=True)
+    sc_centroid = _coords_by_node(
+        g.graph["rgroup_df"]
+        .groupby("node_id")
+        .mean(numeric_only=True)
+        .reset_index()
     )
 
     # Iterate over nodes and compute vector
@@ -56,25 +71,16 @@ def add_sidechain_vector(
         if d["residue_name"] == "GLY":
             # If GLY, set vector to 0
             vec = np.array([0.0, 0.0, 0.0])
-        elif n not in sc_centroid.index:
+        elif n not in sc_centroid:
             vec = np.array([0.0, 0.0, 0.0])
             log.warning(
                 f"Non-glycine residue {n} does not have side-chain atoms."
             )
         else:
             if reverse:
-                vec = d["coords"] - np.array(
-                    sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]],
-                    dtype=float,
-                )
+                vec = d["coords"] - sc_centroid[n]
             else:
-                vec = (
-                    np.array(
-                        sc_centroid.loc[n][["x_coord", "y_coord", "z_coord"]],
-                        dtype=float,
-                    )
-                    - d["coords"]
-                )
+                vec = sc_centroid[n] - d["coords"]
 
             if scale:
                 vec = vec / np.linalg.norm(vec)
@@ -106,36 +112,26 @@ def add_beta_carbon_vector(
     if "rgroup_df" not in g.graph:
         g.graph["rgroup_df"] = compute_rgroup_dataframe(g.graph["raw_pdb_df"])
 
-    c_beta_coords = filter_dataframe(
-        g.graph["rgroup_df"], "atom_name", ["CB"], boolean=True
+    c_beta_coords = _coords_by_node(
+        filter_dataframe(
+            g.graph["rgroup_df"], "atom_name", ["CB"], boolean=True
+        )
     )
-    c_beta_coords.index = c_beta_coords["node_id"]
 
     # Iterate over nodes and compute vector
     for n, d in g.nodes(data=True):
         if d["residue_name"] == "GLY":
             vec = np.array([0.0, 0.0, 0.0])
-        elif n not in c_beta_coords.index:
+        elif n not in c_beta_coords:
             vec = np.array([0.0, 0.0, 0.0])
             log.warning(
                 f"Non-glycine residue {n} does not have a beta-carbon."
             )
         else:
             if reverse:
-                vec = d["coords"] - np.array(
-                    c_beta_coords.loc[n][["x_coord", "y_coord", "z_coord"]],
-                    dtype=float,
-                )
+                vec = d["coords"] - c_beta_coords[n]
             else:
-                vec = (
-                    np.array(
-                        c_beta_coords.loc[n][
-                            ["x_coord", "y_coord", "z_coord"]
-                        ],
-                        dtype=float,
-                    )
-                    - d["coords"]
-                )
+                vec = c_beta_coords[n] - d["coords"]
 
             if scale:
                 vec = vec / np.linalg.norm(vec)
@@ -238,32 +234,24 @@ def add_virtual_beta_carbon_vector(
     :type reverse: bool
     """
     # Get coords of backbone atoms
-    coord_dfs = {}
-    for atom_type in ["N", "CA", "C"]:
-        df = filter_dataframe(
-            g.graph["raw_pdb_df"], "atom_name", [atom_type], boolean=True
+    coord_dfs = {
+        atom_type: _coords_by_node(
+            filter_dataframe(
+                g.graph["raw_pdb_df"], "atom_name", [atom_type], boolean=True
+            )
         )
-        df.index = df["node_id"]
-        coord_dfs[atom_type] = df
+        for atom_type in ["N", "CA", "C"]
+    }
 
     # Iterate over nodes and compute vector
     for n, d in g.nodes(data=True):
-        if any([n not in df.index for df in coord_dfs.values()]):
+        if any(n not in coords for coords in coord_dfs.values()):
             vec = np.array([0, 0, 0], dtype=float)
             log.warning(f"Missing backbone atom in residue {n}.")
         else:
-            N = np.array(
-                coord_dfs["N"].loc[n][["x_coord", "y_coord", "z_coord"]],
-                dtype=float,
-            )
-            Ca = np.array(
-                coord_dfs["CA"].loc[n][["x_coord", "y_coord", "z_coord"]],
-                dtype=float,
-            )
-            C = np.array(
-                coord_dfs["C"].loc[n][["x_coord", "y_coord", "z_coord"]],
-                dtype=float,
-            )
+            N = coord_dfs["N"][n]
+            Ca = coord_dfs["CA"][n]
+            C = coord_dfs["C"][n]
             b = Ca - N
             c = C - Ca
             a = np.cross(b, c)

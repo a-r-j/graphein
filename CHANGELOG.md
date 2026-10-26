@@ -10,6 +10,18 @@
 * Hotfix for incorrect dataframe indexing resulting in correct edge addition in `add_distance_threshold` [#419](https://github.com/a-r-j/graphein/pull/419)
 * Fixes unnecessary download for pre-existing structure files retrieved from AlphaFold database in `graphein.ml.ProteinGraphDataset`[#426](https://github.com/a-r-j/graphein/pull/426)
 * Fixes H coords are included when constructing molecule graph from SD file [#427](https://github.com/a-r-j/graphein/issues/427).
+* Fix `add_aromatic_sulphur_interactions` and `add_cation_pi_interactions` never adding edges (they compared node IDs against residue names). Their tests now require at least one edge. [#460](https://github.com/a-r-j/graphein/pull/460)
+* `add_distance_threshold` and `add_distance_window` now look up nodes in the filtered DataFrame the distance matrix was computed from, not `G.graph["pdb_df"]`. [#460](https://github.com/a-r-j/graphein/pull/460)
+
+#### Misc
+
+* Speed up edge construction and features [#460](https://github.com/a-r-j/graphein/pull/460):
+  * Replace per-pair `.loc` lookups with arrays or dicts in the protein distance threshold, distance window, kNN, pi-stacking, T-stacking, aromatic-sulphur and cation-pi edges.
+  * Use a set for the minimum-distance filter in `add_distance_window`.
+  * Stop rebuilding `list(G.nodes())` per element in the molecule distance-threshold and kNN edges and in the protein 3D plots.
+  * Use `itertuples` for GetContacts edges.
+  * Use precomputed coordinate dicts in the geometry vector features.
+  * Use `.astype(str)` when building node IDs.
 
 ### 1.7.7 - 03/08/2024
 
