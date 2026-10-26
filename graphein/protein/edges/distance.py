@@ -405,7 +405,7 @@ def add_hydrogen_bond_interactions(
     bb_donor = (
         is_amino_acid
         & (df["atom_name"] == "N")
-        & (df["residue_name"] != "PRO")
+        & (df["residue_name"].map(RESI_THREE_TO_1) != "P")
     )
     bb_acceptor = is_amino_acid & df["atom_name"].isin(["O", "OXT"])
     donor = (bb_donor | res_atom.isin(sc_donors)).to_numpy()
