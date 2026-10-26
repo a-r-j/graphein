@@ -107,6 +107,29 @@ def fetch_all_chem_comp_ids(chem_comp_types_to_include: list):
     return entry_chem_comp_results
 
 
+def _iter_entry_chem_comp_ids(entry: dict):
+    """Yield all chemical component IDs referenced by a Data API entry."""
+    # Nonpolymer entities: small molecule ligands
+    for nonpolymer in entry.get("nonpolymer_entities") or []:
+        ids = (
+            nonpolymer.get("rcsb_nonpolymer_entity_container_identifiers")
+            or {}
+        )
+        if ids.get("nonpolymer_comp_id"):
+            yield ids["nonpolymer_comp_id"]
+
+    # Branched entities: includes things like monomers in saccharides
+    for branched in entry.get("branched_entities") or []:
+        ids = branched.get("rcsb_branched_entity_container_identifiers") or {}
+        yield from ids.get("chem_comp_monomers") or []
+
+    # Polymer entities: non-standard and standard residues in polymer chains
+    for polymer in entry.get("polymer_entities") or []:
+        ids = polymer.get("rcsb_polymer_entity_container_identifiers") or {}
+        yield from ids.get("chem_comp_nstd_monomers") or []
+        yield from ids.get("chem_comp_monomers") or []
+
+
 def process_chem_comp_results_and_write_to_file(
     entry_chem_comp_results: dict,
     pdb_to_cc_output_file: str,
@@ -125,85 +148,11 @@ def process_chem_comp_results_and_write_to_file(
     pdb_to_chem_comp_map = {}
     chem_comp_to_pdb_map = {}
 
-    # Iterate over all returned entries
     for entry in entry_chem_comp_results:
         pdb_id = entry.get("rcsb_id")
-
-        # --- 1. Nonpolymer Entities ---
-        # Small molecule ligands
-        nonpolymer_entities = entry.get("nonpolymer_entities")
-        if nonpolymer_entities:
-            for nonpolymer in nonpolymer_entities:
-                nonpolymer_comp = nonpolymer.get(
-                    "rcsb_nonpolymer_entity_container_identifiers"
-                )
-                if nonpolymer_comp:
-                    chem_id = nonpolymer_comp.get("nonpolymer_comp_id")
-                    if chem_id:
-                        pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(
-                            chem_id
-                        )
-                        chem_comp_to_pdb_map.setdefault(chem_id, set()).add(
-                            pdb_id
-                        )
-
-        # --- 2. Branched Entities ---
-        # Includes things like monomers in saccharides
-        branched_entities = entry.get("branched_entities")
-        if branched_entities:
-            for branched in branched_entities:
-                branched_container_identifiers = branched.get(
-                    "rcsb_branched_entity_container_identifiers"
-                )
-                if branched_container_identifiers:
-                    chem_comp_monomers = branched_container_identifiers.get(
-                        "chem_comp_monomers"
-                    )
-                    if chem_comp_monomers:
-                        for chem_id in chem_comp_monomers:
-                            pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(
-                                chem_id
-                            )
-                            chem_comp_to_pdb_map.setdefault(
-                                chem_id, set()
-                            ).add(pdb_id)
-
-        # --- 3. Polymer Entities ---
-        polymer_entities = entry.get("polymer_entities")
-        if polymer_entities:
-            for polymer in polymer_entities:
-                polymer_entity_container_identifiers = polymer.get(
-                    "rcsb_polymer_entity_container_identifiers"
-                )
-                if polymer_entity_container_identifiers:
-                    # Includes non-standard residues within polymer chains
-                    chem_comp_nstd_monomers = (
-                        polymer_entity_container_identifiers.get(
-                            "chem_comp_nstd_monomers"
-                        )
-                    )
-                    if chem_comp_nstd_monomers:
-                        for chem_id in chem_comp_nstd_monomers:
-                            pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(
-                                chem_id
-                            )
-                            chem_comp_to_pdb_map.setdefault(
-                                chem_id, set()
-                            ).add(pdb_id)
-                    # Includes standard residues within polymer chains
-                    chem_comp_poly_monomers = (
-                        polymer_entity_container_identifiers.get(
-                            "chem_comp_monomers"
-                        )
-                    )
-                    if chem_comp_poly_monomers:
-                        for chem_id in chem_comp_poly_monomers:
-                            pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(
-                                chem_id
-                            )
-                            chem_comp_to_pdb_map.setdefault(
-                                chem_id, set()
-                            ).add(pdb_id)
+        for chem_id in _iter_entry_chem_comp_ids(entry):
+            pdb_to_chem_comp_map.setdefault(pdb_id, set()).add(chem_id)
+            chem_comp_to_pdb_map.setdefault(chem_id, set()).add(pdb_id)
 
     # Write the final PDB -> CC mapping to a TSV file
     with open(pdb_to_cc_output_file, "w", encoding="utf-8") as f:

@@ -174,6 +174,48 @@ def download_pdb_multiprocessing(
     return results
 
 
+PDB_DOWNLOAD_SOURCES: Dict[str, Tuple[str, str]] = {
+    "pdb": ("https://files.rcsb.org/download/", ".pdb"),
+    "mmtf": ("https://mmtf.rcsb.org/v1.0/full/", ".mmtf.gz"),
+    "cif": ("https://files.rcsb.org/download/", ".cif.gz"),
+    "mmcif": ("https://files.rcsb.org/download/", ".cif.gz"),
+    "bcif": ("https://models.rcsb.org/", ".bcif.gz"),
+}
+"""Maps PDB download format to ``(base_url, file_extension)``."""
+
+
+def _download_with_retries(
+    download_url: str, output_path: Path, pdb_code: str, attempts: int = 3
+):
+    """Download ``download_url`` to ``output_path``, retrying transient errors.
+
+    A missing file (``HTTPError``) is logged and not retried.
+    """
+    transient_download_errors = (
+        ConnectionResetError,
+        RemoteDisconnected,
+        TimeoutError,
+        URLError,
+    )
+    for attempt in range(attempts):
+        try:
+            wget.download(download_url, out=str(output_path), bar=None)
+            return
+        except HTTPError:
+            log.warning(f"PDB {pdb_code} not found.")
+            return
+        except transient_download_errors as error:
+            if output_path.exists():
+                output_path.unlink()
+            if attempt == attempts - 1:
+                raise error
+            log.warning(
+                f"Download failed for {pdb_code} ({error}). Retrying "
+                f"({attempt + 2}/{attempts})..."
+            )
+            time.sleep(attempt + 1)
+
+
 def download_pdb(
     pdb_code: str,
     out_dir: Optional[Union[str, Path]] = None,
@@ -208,22 +250,11 @@ def download_pdb(
     :rtype: Path
     """
     pdb_code = pdb_code.lower()
-    if format == "pdb":
-        BASE_URL = "https://files.rcsb.org/download/"
-        extension = ".pdb"
-    elif format == "mmtf":
-        BASE_URL = "https://mmtf.rcsb.org/v1.0/full/"
-        extension = ".mmtf.gz"
-    elif format == "cif" or format == "mmcif":
-        BASE_URL = "https://files.rcsb.org/download/"
-        extension = ".cif.gz"
-    elif format == "bcif":
-        BASE_URL = "https://models.rcsb.org/"
-        extension = ".bcif.gz"
-    else:
+    if format not in PDB_DOWNLOAD_SOURCES:
         raise ValueError(
             f"Invalid format: {format}. Must be 'pdb', 'mmtf', '(mm)cif' or 'bcif'."
         )
+    BASE_URL, extension = PDB_DOWNLOAD_SOURCES[format]
 
     # Make output directory if it doesn't exist or set it to tempdir if None
     out_dir: Path = (
@@ -256,29 +287,7 @@ def download_pdb(
     # Download
     output_path = out_dir / f"{pdb_code}{extension}"
     download_url = f"{BASE_URL}{pdb_code}{extension}"
-    transient_download_errors = (
-        ConnectionResetError,
-        RemoteDisconnected,
-        TimeoutError,
-        URLError,
-    )
-    for attempt in range(3):
-        try:
-            wget.download(download_url, out=str(output_path), bar=None)
-            break
-        except HTTPError:
-            log.warning(f"PDB {pdb_code} not found.")
-            break
-        except transient_download_errors as error:
-            if output_path.exists():
-                output_path.unlink()
-            if attempt == 2:
-                raise error
-            log.warning(
-                f"Download failed for {pdb_code} ({error}). Retrying "
-                f"({attempt + 2}/3)..."
-            )
-            time.sleep(attempt + 1)
+    _download_with_retries(download_url, output_path, pdb_code)
 
     # Check file exists
     if strict:

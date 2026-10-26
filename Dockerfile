@@ -24,7 +24,7 @@ WORKDIR /graphein
 COPY pyproject.toml uv.lock README.md LICENSE MANIFEST.in ./
 COPY graphein ./graphein
 
-RUN pip install uv \
+RUN pip install --only-binary :all: uv==0.11.23 \
     && uv sync --frozen --extra dev --extra extras
 
 RUN pip install notebook==6.*

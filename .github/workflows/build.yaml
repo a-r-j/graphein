@@ -45,21 +45,21 @@ jobs:
       - name: Install Boost 1.7.3 (for DSSP)
         run: micromamba install -c anaconda libboost=1.73.0
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
       - name: Install Graphein and dependencies
-        run: uv sync --extra dev --extra extras --extra docs
+        run: uv sync --locked --extra dev --extra extras --extra docs
       - name: Install PyTorch
         run: uv pip install torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
       - name: Install PyG
-        run: uv pip install torch_geometric
+        run: uv pip install --no-build torch_geometric==2.8.1
       - name: Install torch-cluster
         run: uv pip install torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
       - name: Install BLAST
         run: sudo apt install ncbi-blast+
       - name: Run unit tests and generate coverage report
-        run: uv run pytest .
+        run: uv run --no-sync pytest .
       - name: Test notebook execution
-        run: uv run pytest --nbval-lax notebooks/ --nbval-current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/grn_tutorial.ipynb"
+        run: uv run --no-sync pytest --nbval-lax notebooks/ --nbval-current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/grn_tutorial.ipynb"
