@@ -1,5 +1,8 @@
 FROM pytorch/pytorch:2.8.0-cuda12.8-cudnn9-runtime
 
+# Avoid apt prompts (e.g. libcifpp-data, pulled in by dssp) hanging the build
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update \
     && apt-get -y install build-essential ffmpeg libsm6 libxext6 wget git \
     && rm -rf /var/lib/apt/lists/*
