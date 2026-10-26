@@ -96,24 +96,24 @@ def test_generate_graph_pdb(config):
 def check_nodes(g):
     # Check nodes
     for n, d in g.nodes(data=True):
-        assert isinstance(
-            d["atomic_num"], int
-        ), f"{n} atomic_num is not an int"
+        assert isinstance(d["atomic_num"], int), (
+            f"{n} atomic_num is not an int"
+        )
         assert isinstance(d["element"], str), f"{n} element is not a string"
-        assert isinstance(
-            d["rdmol_atom"], rdkit.Chem.rdchem.Atom
-        ), f"{n} rdmol_atom is not an rdmol.Atom"
-        assert isinstance(
-            d["atom_type_one_hot"], np.ndarray
-        ), f"{n} atom_type_one_hot is not a numpy array"
-        assert (
-            sum(d["atom_type_one_hot"]) == 1
-        ), f"{n} atom_type_one_hot is not a one-hot vector"
+        assert isinstance(d["rdmol_atom"], rdkit.Chem.rdchem.Atom), (
+            f"{n} rdmol_atom is not an rdmol.Atom"
+        )
+        assert isinstance(d["atom_type_one_hot"], np.ndarray), (
+            f"{n} atom_type_one_hot is not a numpy array"
+        )
+        assert sum(d["atom_type_one_hot"]) == 1, (
+            f"{n} atom_type_one_hot is not a one-hot vector"
+        )
 
 
 def check_edges(g):
     for u, v, d in g.edges(data=True):
         assert d["kind"] == {"bond"}, f"{u}-{v} kind is not bond"
-        assert isinstance(
-            d["bond"], rdkit.Chem.rdchem.Bond
-        ), f"edge {u}-{v} does not have an RDKit bond associated with it."
+        assert isinstance(d["bond"], rdkit.Chem.rdchem.Bond), (
+            f"edge {u}-{v} does not have an RDKit bond associated with it."
+        )

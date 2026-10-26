@@ -1,34 +1,19 @@
-# Sanely format your code with no heated arguments! :)
-[tool.black]
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | env
-  | venv
-)/
-'''
-include = '\.pyi?$'
+# Formatting, import sorting and linting
+[tool.ruff]
 line-length = 79
-target-version = ['py38']
+target-version = "py310"
+extend-exclude = ["*.ipynb", "*.md", "env"]
 
-# A tool for automatically formatting imports correctly!
-[tool.isort]
-ensure_newline_before_comments = true
-force_grid_wrap = 0
-include_trailing_comma = true
-line_length = 79 # match our custom config above
-multi_line_output = 3
-src_paths = ["graphein", "test"]
-float_to_top = true
-use_parentheses = true
+[tool.ruff.lint]
+# Syntax errors, invalid comparisons/statements, import sorting and
+# NumPy 2.0 deprecations. ponytail: full pyflakes ("F") reports ~230
+# existing issues; enable it once those are cleaned up.
+select = ["E9", "F63", "F7", "I", "NPY201"]
+# jaxtyping shape strings (e.g. "residues 37 3") aren't forward annotations
+ignore = ["F722"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["graphein"]
 
 # Can reinstate later: Measures docstring coverage,
 # super good for guaranteeing that there's docs!
@@ -42,9 +27,6 @@ ignore-private = false
 ignore-semiprivate = false
 quiet = false
 verbose = 2
-
-[tool.ruff.lint]
-select = ["NPY201"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

@@ -137,9 +137,9 @@ def is_complete_structure(
         :func:`graphein.protein.tensor.sequence.infer_residue_types`
     """
     length = x.shape[0]
-    assert (
-        len(residues) == length
-    ), "Length of sequence must match coordinate tensor in dimension 0."
+    assert len(residues) == length, (
+        "Length of sequence must match coordinate tensor in dimension 0."
+    )
 
     if isinstance(residues, str):
         residues = list(residues)

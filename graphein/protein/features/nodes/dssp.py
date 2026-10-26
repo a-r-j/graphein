@@ -89,9 +89,9 @@ def add_dssp_df(
     executable = dssp_config.executable
 
     # Ensure that DSSP is on PATH and is marked as an executable.
-    assert is_tool(
-        executable
-    ), "DSSP must be on PATH and marked as an executable"
+    assert is_tool(executable), (
+        "DSSP must be on PATH and marked as an executable"
+    )
 
     pdb_file = None
     if path:
@@ -105,9 +105,7 @@ def add_dssp_df(
     # get dssp version string
     dssp_version = re.search(
         r"version ([\d\.]+)", os.popen(f"{executable} --version").read()
-    ).group(
-        1
-    )  # e.g. "4.0.4"
+    ).group(1)  # e.g. "4.0.4"
     # Check for existence of pdb file. If not, reconstructs it from the raw df.
     if pdb_file:
         dssp_dict = dssp_dict_from_pdb_file(
@@ -155,11 +153,7 @@ def add_dssp_df(
             & (
                 _raw_pdb_df["insertion"] == icode.strip()
             )  # why strip?: dssp icode is a space, raw_pdb_df is empty string
-        ][
-            "residue_name"
-        ].values[
-            0
-        ]
+        ]["residue_name"].values[0]
 
     # Construct node IDs
     dssp_dict["node_id"] = (
@@ -236,8 +230,10 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
 
             G.nodes[n][feature] = dssp_df.loc[residue, feature]
         """
-        raise NameError(f"DSSP residue features ({feature}) \
-            cannot be added to atom granularity graph")
+        raise NameError(
+            f"DSSP residue features ({feature}) \
+            cannot be added to atom granularity graph"
+        )
 
     else:
         nx.set_node_attributes(G, dict(dssp_df[feature]), feature)

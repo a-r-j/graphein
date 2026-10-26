@@ -539,13 +539,13 @@ def test_secondary_structure_graphs():
     h = compute_secondary_structure_graph(g, remove_non_ss=False)
     # Check number of residues preserved
     res_counts = sum(d["residue_counts"] for _, d in h.nodes(data=True))
-    assert res_counts == len(
-        g
-    ), "Residue counts in SS graph should match number of residues in original \
+    assert res_counts == len(g), (
+        "Residue counts in SS graph should match number of residues in original \
         graph"
-    assert nx.is_connected(
-        h
-    ), "SS graph should be connected in this configuration"
+    )
+    assert nx.is_connected(h), (
+        "SS graph should be connected in this configuration"
+    )
 
     h = compute_secondary_structure_graph(
         g,
@@ -553,9 +553,9 @@ def test_secondary_structure_graphs():
         remove_self_loops=False,
         return_weighted_graph=False,
     )
-    assert len(g.edges) == len(
-        h.edges
-    ), "Multigraph should have same number of edges."
+    assert len(g.edges) == len(h.edges), (
+        "Multigraph should have same number of edges."
+    )
 
 
 @pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
@@ -603,9 +603,9 @@ def test_df_processing():
     g3 = construct_graph(config=config2, pdb_code="4cvi")
 
     for n, d in g1.nodes(data=True):
-        assert (
-            int(d["residue_number"]) % 2 == 0
-        ), "Only even residues should be present"
+        assert int(d["residue_number"]) % 2 == 0, (
+            "Only even residues should be present"
+        )
 
     assert len(g1) != len(g2), "Graphs should not be equal"
     for n, d in g3.nodes(data=True):

@@ -72,9 +72,9 @@ def get_center(
     """
     if isinstance(mol, nx.Graph):
         mol = mol.graph["rdmol"]
-    assert (
-        mol.GetNumConformers() > 0
-    ), "Molecule must have at least one conformer."
+    assert mol.GetNumConformers() > 0, (
+        "Molecule must have at least one conformer."
+    )
     return np.array(ComputeCentroid(mol.GetConformer(0), weights=weights))
 
 
@@ -89,9 +89,9 @@ def get_shape_moments(mol: Union[nx.Graph, Chem.Mol]) -> Tuple[float, float]:
     """
     if isinstance(mol, nx.Graph):
         mol = mol.graph["rdmol"]
-    assert (
-        mol.GetNumConformers() > 0
-    ), "Molecule must have at least one conformer."
+    assert mol.GetNumConformers() > 0, (
+        "Molecule must have at least one conformer."
+    )
     npr1 = NPR1(mol)
     npr2 = NPR2(mol)
     return npr1, npr2
@@ -463,8 +463,8 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
         cnei = nei_list[atom]
         bonds = [c for c in cnei if len(cliques[c]) == 2]
         rings = [c for c in cnei if len(cliques[c]) > 4]
-        if len(bonds) > 2 or (
-            len(bonds) == 2 and len(cnei) > 2
+        if (
+            len(bonds) > 2 or (len(bonds) == 2 and len(cnei) > 2)
         ):  # In general, if len(cnei) >= 3, a singleton should be added, but 1 bond + 2 ring is currently not dealt with.
             cliques.append([atom])
             c2 = len(cliques) - 1

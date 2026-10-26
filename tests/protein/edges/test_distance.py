@@ -239,9 +239,9 @@ def test_salt_bridge_interactions():
 
         assert (
             res1 in SALT_BRIDGE_CATIONS and res2 in SALT_BRIDGE_ANIONS
-        ) or (
-            res1 in SALT_BRIDGE_ANIONS and res2 in SALT_BRIDGE_CATIONS
-        ), "Salt bridge not between cations and anions"
+        ) or (res1 in SALT_BRIDGE_ANIONS and res2 in SALT_BRIDGE_CATIONS), (
+            "Salt bridge not between cations and anions"
+        )
 
     # Test distances on atom graphs
     g = construct_graph(
@@ -257,9 +257,9 @@ def test_salt_bridge_interactions():
 
         assert (
             res1 in SALT_BRIDGE_CATIONS and res2 in SALT_BRIDGE_ANIONS
-        ) or (
-            res1 in SALT_BRIDGE_ANIONS and res2 in SALT_BRIDGE_CATIONS
-        ), "Salt bridge not between cations and anions"
+        ) or (res1 in SALT_BRIDGE_ANIONS and res2 in SALT_BRIDGE_CATIONS), (
+            "Salt bridge not between cations and anions"
+        )
         assert d["distance"] < 4.0, "Salt bridge distance is too long"
 
 
@@ -293,9 +293,9 @@ def test_vdw_interactions():
         rad2 = VDW_RADII[res2]
 
         assert res1 != "H" and res2 != "H", "Hydrogen in vdw interaction"
-        assert (
-            d["distance"] < 0.5 + rad1 + rad2
-        ), f"Vdw distance is too long: {d['distance']}"
+        assert d["distance"] < 0.5 + rad1 + rad2, (
+            f"Vdw distance is too long: {d['distance']}"
+        )
 
 
 def test_vdw_clashes():
@@ -328,9 +328,9 @@ def test_vdw_clashes():
         rad2 = VDW_RADII[res2]
 
         assert res1 != "H" and res2 != "H", "Hydrogen in vdw clash interaction"
-        assert (
-            d["distance"] < rad1 + rad2
-        ), f"Vdw clash distance is too long: {d['distance']}"
+        assert d["distance"] < rad1 + rad2, (
+            f"Vdw clash distance is too long: {d['distance']}"
+        )
 
 
 def test_filter_distmat():

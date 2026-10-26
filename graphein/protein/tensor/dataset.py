@@ -247,17 +247,17 @@ class ProteinDataset(Dataset):
 
     def validate_input(self):
         if self.graph_labels is not None:
-            assert len(self.structures) == len(
-                self.graph_labels
-            ), "Number of proteins and graph labels must match"
+            assert len(self.structures) == len(self.graph_labels), (
+                "Number of proteins and graph labels must match"
+            )
         if self.node_labels is not None:
-            assert len(self.structures) == len(
-                self.node_labels
-            ), "Number of proteins and node labels must match"
+            assert len(self.structures) == len(self.node_labels), (
+                "Number of proteins and node labels must match"
+            )
         if self.chain_selections is not None:
-            assert len(self.structures) == len(
-                self.chain_selections
-            ), "Number of proteins and chain selections must match"
+            assert len(self.structures) == len(self.chain_selections), (
+                "Number of proteins and chain selections must match"
+            )
             assert len(
                 {
                     f"{pdb}_{chain}"
@@ -321,9 +321,9 @@ class ProteinDataset(Dataset):
         if isinstance(self.sequences, list):
             self.sequences = dict(enumerate(self.sequences))
         elif isinstance(self.sequences, str):
-            assert os.path.exists(
-                self.sequences
-            ), f"Sequence file {self.sequences} does not exist"
+            assert os.path.exists(self.sequences), (
+                f"Sequence file {self.sequences} does not exist"
+            )
             self.sequences = read_fasta(self.sequences)
         else:
             raise ValueError(

@@ -29,6 +29,7 @@
   * Use `.astype(str)` when building node IDs.
 * Remove quadratic list-membership checks in `create_pairs_for_clustering`, `generate_random_sets` and `PDBManager` PDB download checks. [#460](https://github.com/a-r-j/graphein/pull/460)
 * Close files opened in `blast` and `generate_random_sets`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Replace `black`, `isort` and `flake8` with `ruff` (formatting, import sorting and linting) in CI, pre-commit and dev requirements, and consolidate the code style CI jobs into one.
 * Remove dead code (an overwritten unbatch result in `ProteinBatch`, unused locals in `GDT_TS`/`TMScore`) and tidy idioms across the codebase. [#460](https://github.com/a-r-j/graphein/pull/460)
 
 ### 1.7.7 - 03/08/2024

@@ -263,9 +263,7 @@ def _get_build_params(
     ] + [
         torch.tensor(b, dtype=torch.float32)
         for b in build_params["bonds-vals"]
-    ][
-        :-1
-    ]
+    ][:-1]
     angle_vals = [
         torch.tensor(a, dtype=torch.float32)
         for a in build_params["angles-vals"]

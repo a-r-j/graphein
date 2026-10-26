@@ -289,7 +289,9 @@ class FoldCompDataset(Dataset):
                 self.root / self.database, ids=self.ids, decompress=False
             )  # type: ignore
         else:
-            self.db = foldcomp.open(self.root / self.database, decompress=False)  # type: ignore
+            self.db = foldcomp.open(
+                self.root / self.database, decompress=False
+            )  # type: ignore
 
     @staticmethod
     def fc_to_pyg(data: Dict[str, Any], name: Optional[str] = None) -> Protein:

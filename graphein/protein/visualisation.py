@@ -180,9 +180,9 @@ def colour_edges(
             for _, _, d in G.edges(data=True)
         ]
 
-    assert (
-        0.0 <= set_alpha <= 1.0
-    ), f"Alpha value {set_alpha} must be between 0.0 and 1.0"
+    assert 0.0 <= set_alpha <= 1.0, (
+        f"Alpha value {set_alpha} must be between 0.0 and 1.0"
+    )
     colors = [c[:3] + (set_alpha,) for c in colors]
     if return_as_rgba:
         return [
@@ -260,8 +260,8 @@ def plotly_protein_structure_graph(
         if feature == "degree":
             return lambda k: node_size_min + node_size_multiplier * G.degree[k]
         elif feature == "rsa":
-            return (
-                lambda k: node_size_min
+            return lambda k: (
+                node_size_min
                 + node_size_multiplier * G.nodes(data=True)[k]["rsa"]
             )
 
@@ -269,8 +269,10 @@ def plotly_protein_structure_graph(
         p = re.compile("meiler-([1-7])")
         dim = p.search(feature)[1]
         if dim:
-            return lambda k: node_size_min + node_size_multiplier * max(
-                0, G.nodes(data=True)[k]["meiler"][f"dim_{dim}"]
+            return lambda k: (
+                node_size_min
+                + node_size_multiplier
+                * max(0, G.nodes(data=True)[k]["meiler"][f"dim_{dim}"])
             )  # Meiler values may be negative
         else:
             raise ValueError(f"Cannot size nodes by feature '{feature}'")
@@ -331,9 +333,7 @@ def plotly_protein_structure_graph(
     )
 
     repeated_edge_colours = []
-    for (
-        edge_col
-    ) in (
+    for edge_col in (
         edge_colors
     ):  # Repeat as each line segment is ({x,y,z}_start, {x,y,z}_end, None)
         repeated_edge_colours.extend((edge_col, edge_col, edge_col))
@@ -889,7 +889,7 @@ def asteroid_plot(
         return go.Figure(
             data=data,
             layout=go.Layout(
-                title=title or f'Asteroid Plot - {g.graph["name"]}',
+                title=title or f"Asteroid Plot - {g.graph['name']}",
                 width=width,
                 height=height,
                 legend=dict(yanchor="top", y=1, xanchor="left", x=1.10),
