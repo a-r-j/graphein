@@ -1923,6 +1923,11 @@ class PDBManager:
             in_file = os.path.join(
                 self.pdb_dir, f"{k}.{self.structure_format}"
             )
+            if not os.path.exists(in_file):
+                log.warning(
+                    f"Failed to load {in_file}. Perhaps it is no longer available to download from the PDB?"
+                )
+                continue
             paths.append(
                 extract_chains_to_file(
                     in_file, v, out_dir=self.pdb_dir, models=models
@@ -2050,7 +2055,8 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         return pd.DataFrame(
-            {"pdb": [group["pdb"].iloc[0]], "chain": [group["chain"].tolist()]}
+            # pandas>=3 drops the grouping column from groups; use the key
+            {"pdb": [group.name], "chain": [group["chain"].tolist()]}
         )
 
     def select_pdb_by_criterion(
