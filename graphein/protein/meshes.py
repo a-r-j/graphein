@@ -113,7 +113,7 @@ def get_obj_file(
         config = ProteinMeshConfig()
 
     commands = parse_pymol_commands(config)
-    print(commands)
+    log.debug(commands)
     run_pymol_commands(commands)
 
     # Save surface object as .obj
@@ -135,8 +135,7 @@ def parse_pymol_commands(config: ProteinMeshConfig) -> List[str]:
         config = ProteinMeshConfig()
 
     # Todo parsing of individual pymol mesh calculation parameters. There's a lot of them so this is not a priority now.
-    if config.pymol_commands is not None:
-        return config.pymol_commands
+    return config.pymol_commands or []
 
 
 @requires_external_dependencies("pymol")

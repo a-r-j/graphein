@@ -133,3 +133,8 @@ def test_atomic_edges_skip_cross_chain_bonds():
     chains = dict(zip(df["node_id"], df["chain_id"]))
     assert g.number_of_edges() > 0
     assert all(chains[u] == chains[v] for u, v in g.edges())
+
+
+def test_construct_graph_requires_input():
+    with pytest.raises(ValueError):
+        construct_graph()

@@ -163,6 +163,6 @@ if __name__ == "__main__":
 
     print(g.nodes())
 
-    print(nx.info(g))
+    print(g)
     nx.draw(g, with_labels=True, edge_color=edge_colors)
     plt.show()

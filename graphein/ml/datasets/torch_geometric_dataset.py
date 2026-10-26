@@ -7,6 +7,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import copy
 import os
 from pathlib import Path
 from typing import Callable, Dict, Generator, List, Optional
@@ -48,10 +49,8 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         graph_label_map: Optional[Dict[str, torch.Tensor]] = None,
         node_label_map: Optional[Dict[str, torch.Tensor]] = None,
         chain_selection_map: Optional[Dict[str, List[str]]] = None,
-        graphein_config: ProteinGraphConfig = ProteinGraphConfig(),
-        graph_format_convertor: GraphFormatConvertor = GraphFormatConvertor(
-            src_format="nx", dst_format="pyg"
-        ),
+        graphein_config: Optional[ProteinGraphConfig] = None,
+        graph_format_convertor: Optional[GraphFormatConvertor] = None,
         graph_transformation_funcs: Optional[List[Callable]] = None,
         transform: Optional[Callable] = None,
         pdb_transform: Optional[List[Callable]] = None,
@@ -175,8 +174,17 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self.chain_selection_map = chain_selection_map
 
         # Configs
-        self.config = graphein_config
-        self.graph_format_convertor = graph_format_convertor
+        # Copy so setting pdb_dir below doesn't mutate the caller's config
+        self.config = (
+            ProteinGraphConfig()
+            if graphein_config is None
+            else copy.deepcopy(graphein_config)
+        )
+        self.graph_format_convertor = (
+            GraphFormatConvertor(src_format="nx", dst_format="pyg")
+            if graph_format_convertor is None
+            else graph_format_convertor
+        )
         self.graph_transformation_funcs = graph_transformation_funcs
         self.pdb_transform = pdb_transform
         self.num_cores = num_cores
@@ -343,10 +351,8 @@ class ProteinGraphDataset(Dataset):
         chain_selections: Optional[List[str]] = None,
         # node_label_map: Optional[Dict[str, int]] = None,
         # chain_selection_map: Optional[Dict[str, List[str]]] = None,
-        graphein_config: ProteinGraphConfig = ProteinGraphConfig(),
-        graph_format_convertor: GraphFormatConvertor = GraphFormatConvertor(
-            src_format="nx", dst_format="pyg"
-        ),
+        graphein_config: Optional[ProteinGraphConfig] = None,
+        graph_format_convertor: Optional[GraphFormatConvertor] = None,
         graph_transformation_funcs: Optional[List[Callable]] = None,
         pdb_transform: Optional[List[Callable]] = None,
         transform: Optional[Callable] = None,
@@ -467,8 +473,17 @@ class ProteinGraphDataset(Dataset):
         self.bad_pdbs: List[str] = []
 
         # Configs
-        self.config = graphein_config
-        self.graph_format_convertor = graph_format_convertor
+        # Copy so setting pdb_dir below doesn't mutate the caller's config
+        self.config = (
+            ProteinGraphConfig()
+            if graphein_config is None
+            else copy.deepcopy(graphein_config)
+        )
+        self.graph_format_convertor = (
+            GraphFormatConvertor(src_format="nx", dst_format="pyg")
+            if graph_format_convertor is None
+            else graph_format_convertor
+        )
         self.num_cores = num_cores
         self.pdb_transform = pdb_transform
         self.graph_transformation_funcs = graph_transformation_funcs

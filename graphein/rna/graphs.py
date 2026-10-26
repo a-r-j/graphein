@@ -379,3 +379,7 @@ def construct_graph(
             node_annotation_funcs=node_annotation_funcs,
             graph_annotation_funcs=graph_annotation_funcs,
         )
+    raise ValueError(
+        "One of path, pdb_code, dotbracket, sequence or bprna_id must be "
+        "specified to construct a graph"
+    )

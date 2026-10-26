@@ -163,7 +163,7 @@ if __name__ == "__main__":
         for u, v in g.edges()
     ]
 
-    print(nx.info(g))
+    print(g)
 
     pos = nx.spring_layout(g)
     nx.draw(g, pos=pos, with_labels=True, edge_color=edge_colors)

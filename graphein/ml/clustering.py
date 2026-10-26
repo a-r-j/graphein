@@ -263,7 +263,7 @@ def blast(
     tmp_folder="/tmp/",
     blast_path="",
     sequence_name="",
-    blast_filename="blast" + str(os.getpid()) + ".txt",
+    blast_filename=None,
     max_target_seqs=100,
     n_cpu=1,
     delete_blast_file=True,
@@ -281,7 +281,8 @@ def blast(
     :param tmp_folder: temporary folder
     :param blast_path: path to blast installation folder
     :param sequence_name: name of the sequence
-    :param blast_filename: filename for the blast file
+    :param blast_filename: filename for the blast file, defaults to
+        ``blast<pid>.txt``
     :param max_target_seqs: maximum number of target sequences
     :param n_cpu: number of cpus
     :param delete_blast_file: if True deletes the blast file at the end
@@ -299,6 +300,10 @@ def blast(
     Check that NCBI blast is correctly installed in the folder blast_path
     """
 
+    # Per-process names so parallel workers don't overwrite each other's files.
+    # ponytail: threads in one process still share them; use tempfile if needed
+    if blast_filename is None:
+        blast_filename = f"blast{os.getpid()}.txt"
     if tmp_folder is None:
         tmp_folder = ""
     elif tmp_folder != "":
@@ -316,9 +321,9 @@ def blast(
             f"***ERROR*** in run_blast path {blast_path} doesnt lead to blast directory "
             "where makeblastdb should be located"
         )
-    seq_file = open(tmp_folder + "sequence_temp.txt", "w")
-    seq_file.write(">" + sequence_name + "\n" + sequence + "\n")
-    seq_file.close()
+    seq_filename = f"{tmp_folder}sequence_temp{os.getpid()}.txt"
+    with open(seq_filename, "w") as seq_file:
+        seq_file.write(">" + sequence_name + "\n" + sequence + "\n")
 
     # check if the blast database has already been built, if not build it
     if not (
@@ -346,8 +351,8 @@ def blast(
         os.system(
             blast_path
             + "blastp -query "
-            + tmp_folder
-            + "sequence_temp.txt -db "
+            + seq_filename
+            + " -db "
             + database
             + " -matrix PAM30 -task 'blastp-short' -word_size 2 -seg 'no' -evalue 20000 -out "
             + blast_filename
@@ -362,8 +367,8 @@ def blast(
         os.system(
             blast_path
             + "blastp -query "
-            + tmp_folder
-            + "sequence_temp.txt -db "
+            + seq_filename
+            + " -db "
             + database
             + " -out "
             + blast_filename
@@ -376,6 +381,9 @@ def blast(
         )
     with open(blast_filename) as f:
         resultf = f.read().splitlines()
+    if delete_blast_file:
+        os.remove(blast_filename)
+    os.remove(seq_filename)
 
     if not resultf:
         return None
@@ -383,10 +391,6 @@ def blast(
     for line in resultf:
         tmp = line.split("\t")
         results.append([tmp[0]] + [float(x) for x in tmp[1:]])
-    if delete_blast_file:
-        os.system("rm -f " + blast_filename)
-    os.system("rm -f " + tmp_folder + "sequence_temp.txt")
-    del resultf
     return results
 
 

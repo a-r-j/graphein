@@ -8,7 +8,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from graphein.protein.config import DSSPConfig, ProteinGraphConfig
+from graphein.protein.config import (
+    DSSPConfig,
+    ProteinGraphConfig,
+    ProteinMeshConfig,
+)
 from graphein.protein.edges.distance import (
     add_aromatic_interactions,
     add_aromatic_sulphur_interactions,
@@ -36,11 +40,13 @@ from graphein.protein.features.nodes.dssp import (
 )
 from graphein.protein.features.sequence.embeddings import (
     biovec_sequence_embedding,
+    compute_esm_embedding,
     esm_residue_embedding,
     esm_sequence_embedding,
 )
 from graphein.protein.features.sequence.sequence import molecular_weight
 from graphein.protein.graphs import (
+    add_nodes_to_graph,
     compute_chain_graph,
     compute_secondary_structure_graph,
     construct_graph,
@@ -48,6 +54,7 @@ from graphein.protein.graphs import (
     deprotonate_structure,
     read_pdb_to_dataframe,
 )
+from graphein.protein.meshes import parse_pymol_commands
 from graphein.utils.dependencies import is_tool
 
 PDB_DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
@@ -622,3 +629,19 @@ def test_df_processing():
         if d["element_symbol"] in {"H", "D", "T"}:
             has_H.append(n)
     assert len(has_H) > 0, "No hydrogen isotopes are present"
+
+
+def test_add_nodes_to_graph_verbose():
+    g = construct_graph(path=str(PDB_DATA_PATH))
+    h = nx.Graph(**g.graph)
+    add_nodes_to_graph(h, verbose=True)
+    assert set(h) == set(g)
+
+
+def test_parse_pymol_commands_none():
+    assert parse_pymol_commands(ProteinMeshConfig(pymol_commands=None)) == []
+
+
+def test_compute_esm_embedding_invalid_representation():
+    with pytest.raises(ValueError):
+        compute_esm_embedding("MKV", representation="token")

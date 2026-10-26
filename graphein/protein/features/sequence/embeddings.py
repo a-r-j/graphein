@@ -122,13 +122,15 @@ def compute_esm_embedding(
     :return: embedding (``np.ndarray``)
     :rtype: np.ndarray
     """
+    if representation not in {"residue", "sequence"}:
+        raise ValueError(
+            f"representation must be 'residue' or 'sequence', got "
+            f"{representation!r}"
+        )
     model, alphabet = _load_esm_model(model_name)
     batch_converter = alphabet.get_batch_converter()
 
-    data = [
-        ("protein1", sequence),
-    ]
-    batch_labels, batch_strs, batch_tokens = batch_converter(data)
+    _, _, batch_tokens = batch_converter([("protein1", sequence)])
 
     # Extract per-residue representations (on CPU)
     with torch.no_grad():
@@ -143,13 +145,7 @@ def compute_esm_embedding(
     # Generate per-sequence representations via averaging
     # NOTE: token 0 is always a beginning-of-sequence token, so the first
     # residue is token 1.
-    elif representation == "sequence":
-        sequence_representations = []
-        for i, (_, seq) in enumerate(data):
-            sequence_representations.append(
-                token_representations[i, 1 : len(seq) + 1].mean(0)
-            )
-        return sequence_representations[0].numpy()
+    return token_representations[0, 1 : len(sequence) + 1].mean(0).numpy()
 
 
 def esm_residue_embedding(

@@ -82,6 +82,6 @@ if __name__ == "__main__":
         for u, v in g.edges()
     ]
 
-    print(nx.info(g))
+    print(g)
     nx.draw(g, with_labels=True, edge_color=edge_colors)
     plt.show()
