@@ -2,7 +2,7 @@
 
 #### Breaking Changes
 
-* Require Python >= 3.10 and pin `cpdb-protein==0.3.0` (which requires Python >= 3.10). Drop Python 3.8 and 3.9 from the CI matrices.
+* Require Python >= 3.10 and pin `cpdb-protein==0.3.0` (which requires Python >= 3.10). Drop Python 3.8 and 3.9 from the CI matrices. [#460](https://github.com/a-r-j/graphein/pull/460)
 
 #### Bugfixes
 
@@ -17,10 +17,10 @@
 * Fix `add_aromatic_sulphur_interactions` and `add_cation_pi_interactions` never adding edges (they compared node IDs against residue names). Their tests now require at least one edge. [#460](https://github.com/a-r-j/graphein/pull/460)
 * `add_distance_threshold` and `add_distance_window` now look up nodes in the filtered DataFrame the distance matrix was computed from, not `G.graph["pdb_df"]`. [#460](https://github.com/a-r-j/graphein/pull/460)
 * Fix `PDBManager._frames_are_sequential` only checking the last pair of split time frames; it now checks that all frames are strictly increasing. [#460](https://github.com/a-r-j/graphein/pull/460)
-* Fix `NameError` on importing `graphein.ml.metrics` (missing `Union` and `unbatch` imports in `gdt.py`).
-* Fix `NameError` in `graphein.molecule.utils.copy_edit_mol` (and so `get_clique_mol`), which called an undefined `copy_atom`.
-* Fix `graphein.ml.clustering.get_seq_records` with an `alphabet`: Biopython >= 1.78 rejects the `alphabet` argument and removed `_verify_alphabet`. `alphabet` is now a string of allowed letters, every sequence is checked (not only `*`-terminated ones), and the warning reports `record.id` instead of crashing on `record.seq.id`.
-* Fix `NameError` in `setup.py` when `README.md` is missing (`DESCRIPTION` was undefined).
+* Fix `NameError` on importing `graphein.ml.metrics` (missing `Union` and `unbatch` imports in `gdt.py`). [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `NameError` in `graphein.molecule.utils.copy_edit_mol` (and so `get_clique_mol`), which called an undefined `copy_atom`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `graphein.ml.clustering.get_seq_records` with an `alphabet`: Biopython >= 1.78 rejects the `alphabet` argument and removed `_verify_alphabet`. `alphabet` is now a string of allowed letters, every sequence is checked (not only `*`-terminated ones), and the warning reports `record.id` instead of crashing on `record.seq.id`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `NameError` in `setup.py` when `README.md` is missing (`DESCRIPTION` was undefined). [#460](https://github.com/a-r-j/graphein/pull/460)
 
 #### Misc
 
@@ -33,7 +33,7 @@
   * Use `.astype(str)` when building node IDs.
 * Remove quadratic list-membership checks in `create_pairs_for_clustering`, `generate_random_sets` and `PDBManager` PDB download checks. [#460](https://github.com/a-r-j/graphein/pull/460)
 * Close files opened in `blast` and `generate_random_sets`. [#460](https://github.com/a-r-j/graphein/pull/460)
-* Replace `black`, `isort` and `flake8` with `ruff` (formatting, import sorting and linting) in CI, pre-commit and dev requirements, and consolidate the code style CI jobs into one.
+* Replace `black`, `isort` and `flake8` with `ruff` (formatting, import sorting and linting) in CI, pre-commit and dev requirements, and consolidate the code style CI jobs into one. [#460](https://github.com/a-r-j/graphein/pull/460)
 * Remove dead code (an overwritten unbatch result in `ProteinBatch`, unused locals in `GDT_TS`/`TMScore`) and tidy idioms across the codebase. [#460](https://github.com/a-r-j/graphein/pull/460)
 
 ### 1.7.7 - 03/08/2024
