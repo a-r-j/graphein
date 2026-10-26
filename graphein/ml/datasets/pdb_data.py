@@ -791,16 +791,18 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         df = self.source if source else self.df
-        if splits is not None and len(splits) > 0:
+        if splits:
             df_splits = df_splits if df_splits is not None else self.df_splits
             all_splits_df = pd.concat([df_splits[split] for split in splits])
-            assert len(all_splits_df) > 0, "Combined splits must be non-empty."
+            assert (
+                not all_splits_df.empty
+            ), "Combined splits must be non-empty."
         splits_df = (
             all_splits_df.loc[all_splits_df.split.isin(splits)]
             if splits is not None
             else df
         )
-        assert len(splits_df) > 0, "Requested splits must be non-empty."
+        assert not splits_df.empty, "Requested splits must be non-empty."
         return splits_df
 
     def remove_unavailable_pdbs(
@@ -1547,7 +1549,7 @@ class PDBManager:
         assert split_ratios_provided, "Split ratios must be provided."
 
         # Split clusters
-        ratio_str = " ".join([str(r) for r in self.split_ratios])
+        ratio_str = " ".join(map(str, self.split_ratios))
         log.info(f"Randomly splitting clusters into ratios: {ratio_str}...")
         df_splits = self.split_df_proportionally(
             df,
@@ -1750,7 +1752,7 @@ class PDBManager:
         ), "Split time frames must be provided."
 
         # Split sequences
-        time_frames = " ".join([str(f) for f in self.split_time_frames])
+        time_frames = " ".join(map(str, self.split_time_frames))
         log.info(f"Splitting sequences into time frames: {time_frames}")
         df_splits = self.split_df_into_time_frames(
             df, self.splits, self.split_time_frames
@@ -1882,17 +1884,18 @@ class PDBManager:
         df = splits_df.groupby("pdb")["chain"].agg(list).to_dict()
 
         # Check we have all source PDB files
-        downloaded = os.listdir(self.pdb_dir)
-        downloaded = [
-            f for f in downloaded if f.endswith(f".{self.structure_format}")
-        ]
+        downloaded = {
+            f
+            for f in os.listdir(self.pdb_dir)
+            if f.endswith(f".{self.structure_format}")
+        }
 
         to_download = [
             k
             for k in df.keys()
             if f"{k}.{self.structure_format}" not in downloaded
         ]
-        if len(to_download) > 0:
+        if to_download:
             log.info(f"Downloading {len(to_download)} PDB files...")
             download_pdb_multiprocessing(
                 to_download, self.pdb_dir, overwrite=True
@@ -2132,7 +2135,7 @@ class PDBManager:
                         )
                     except FileNotFoundError:
                         log.info(
-                            f"Failed to load {str(input_pdb_filepath)}. Perhaps it is not longer available to download from the PDB?"
+                            f"Failed to load {input_pdb_filepath}. Perhaps it is not longer available to download from the PDB?"
                         )
                         continue
                     # work around int-typing bug for `model_id` within version `0.5.0.dev0` of BioPandas -> appears when calling `to_pdb()`

@@ -325,7 +325,7 @@ class FoldCompDataset(Dataset):
         return Protein(
             coords=torch.from_numpy(coords).float(),
             residues=res,
-            residue_id=[f"A:{m}:{str(n)}" for m, n in zip(res, res_num)],
+            residue_id=[f"A:{m}:{n}" for m, n in zip(res, res_num)],
             chains=torch.zeros(n_res),
             residue_type=residue_type.long(),
             b_factor=torch.from_numpy(b_factor).float(),

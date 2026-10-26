@@ -77,7 +77,7 @@ def params_BIOGRID(
         kwarg_name = "BIOGRID_" + p
         if kwarg_name in kwargs:
             value = kwargs[kwarg_name]
-            if type(value) is list:
+            if isinstance(value, list):
                 value = "|".join(value)
             params[p] = value
     return params
@@ -114,7 +114,7 @@ def parse_BIOGRID(
     biogrid_api_url = "https://webservice.thebiogrid.org"
     method = "interactions"
     request_url = "/".join([biogrid_api_url, method])
-    if type(ncbi_taxon_id) is list:
+    if isinstance(ncbi_taxon_id, list):
         ncbi_taxon_id = "|".join(str(t) for t in ncbi_taxon_id)
     params = {  # Default parameters
         "geneList": "|".join(protein_list),

@@ -457,7 +457,7 @@ def save_graph_to_pdb(
     for col in blank_cols:
         if col not in df.columns:
             df[col] = ""
-    df["line_idx"] = list(range(1, len(df) + 1))
+    df["line_idx"] = range(1, len(df) + 1)
     df = df[pdb_df_columns]
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
     hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
@@ -494,7 +494,7 @@ def save_pdb_df_to_pdb(
     for col in blank_cols:
         if col not in df.columns:
             df[col] = ""
-    df["line_idx"] = list(range(1, len(df) + 1))
+    df["line_idx"] = range(1, len(df) + 1)
     df = df[pdb_df_columns]
 
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
@@ -541,7 +541,7 @@ def save_rgroup_df_to_pdb(
     for col in blank_cols:
         if col not in df.columns:
             df[col] = [""] * len(df)
-    df["line_idx"] = list(range(1, len(df) + 1))
+    df["line_idx"] = range(1, len(df) + 1)
     df = df[pdb_df_columns]
 
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
