@@ -83,7 +83,7 @@ class MolViewer(object):
             self._server.png(filename, width, height, -1, int(ray))
 
             for i in range(1, progress_max):
-                if os.path.exists(filename):
+                if os.path.getsize(filename) > 0:
                     break
 
                 if progress is None:
@@ -93,7 +93,7 @@ class MolViewer(object):
                 progress.value += 1
                 time.sleep(i / 10.0)
 
-            if not os.path.exists(filename):
+            if os.path.getsize(filename) == 0:
                 raise RuntimeError("timeout exceeded")
 
             return Image(filename)
