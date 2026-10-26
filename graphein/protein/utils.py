@@ -7,8 +7,8 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 import os
-import time
 import tempfile
+import time
 from functools import lru_cache, partial
 from http.client import RemoteDisconnected
 from multiprocessing import Pool
