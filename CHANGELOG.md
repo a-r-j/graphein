@@ -12,6 +12,7 @@
 * Fixes H coords are included when constructing molecule graph from SD file [#427](https://github.com/a-r-j/graphein/issues/427).
 * Fix `add_aromatic_sulphur_interactions` and `add_cation_pi_interactions` never adding edges (they compared node IDs against residue names). Their tests now require at least one edge. [#460](https://github.com/a-r-j/graphein/pull/460)
 * `add_distance_threshold` and `add_distance_window` now look up nodes in the filtered DataFrame the distance matrix was computed from, not `G.graph["pdb_df"]`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `PDBManager._frames_are_sequential` only checking the last pair of split time frames; it now checks that all frames are strictly increasing. [#460](https://github.com/a-r-j/graphein/pull/460)
 
 #### Misc
 
@@ -22,6 +23,9 @@
   * Use `itertuples` for GetContacts edges.
   * Use precomputed coordinate dicts in the geometry vector features.
   * Use `.astype(str)` when building node IDs.
+* Remove quadratic list-membership checks in `create_pairs_for_clustering`, `generate_random_sets` and `PDBManager` PDB download checks. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Close files opened in `blast` and `generate_random_sets`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Remove dead code (an overwritten unbatch result in `ProteinBatch`, unused locals in `GDT_TS`/`TMScore`) and tidy idioms across the codebase. [#460](https://github.com/a-r-j/graphein/pull/460)
 
 ### 1.7.7 - 03/08/2024
 
