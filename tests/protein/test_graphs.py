@@ -622,3 +622,16 @@ def test_df_processing():
         if d["element_symbol"] in {"H", "D", "T"}:
             has_H.append(n)
     assert len(has_H) > 0, "No hydrogen isotopes are present"
+
+
+def test_weighted_chain_graph_does_not_modify_input():
+    config = ProteinGraphConfig(
+        edge_construction_functions=[
+            partial(add_k_nn_edges, k=5),
+            add_ionic_interactions,
+        ]
+    )
+    g = construct_graph(config=config, path=str(PDB_DATA_PATH))
+    before = {(u, v): set(d["kind"]) for u, v, d in g.edges(data=True)}
+    compute_chain_graph(g, return_weighted_graph=True)
+    assert {(u, v): d["kind"] for u, v, d in g.edges(data=True)} == before

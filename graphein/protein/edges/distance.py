@@ -230,14 +230,7 @@ def add_sequence_distance_edges(
                 # If this checks out, we add a peptide bond
                 if (cond_1) and (cond_2):
                     # Adds "peptide bond" between current residue and the next
-                    if G.has_edge(i, i + d):
-                        G.edges[i, i + d]["kind"].add(name)
-                    else:
-                        G.add_edge(
-                            residue[0],
-                            chain_residues[i + d][0],
-                            kind={name},
-                        )
+                    add_edge(G, residue[0], chain_residues[i + d][0], name)
             except IndexError:
                 continue
     return G

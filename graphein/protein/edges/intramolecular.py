@@ -59,14 +59,11 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             # If this checks out, we add a peptide bond
             if cond_1 and cond_2:
                 # Adds "peptide_bond" between current residue and the next
-                if G.has_edge(i, i + 1):
-                    G.edges[i, i + 1]["kind"].add("peptide_bond")
+                u, v = residue[0], chain_residues[i + 1][0]
+                if G.has_edge(u, v):
+                    G.edges[u, v]["kind"].add("peptide_bond")
                 else:
-                    G.add_edge(
-                        residue[0],
-                        chain_residues[i + 1][0],
-                        kind={"peptide_bond"},
-                    )
+                    G.add_edge(u, v, kind={"peptide_bond"})
             else:
                 continue
     return G
