@@ -355,12 +355,14 @@ def add_hydrogen_bond_interactions(
     the other. Side chain donors and acceptors are defined in
     :const:`~graphein.protein.resi_atoms.HYDROGEN_BOND_DONORS` and
     :const:`~graphein.protein.resi_atoms.HYDROGEN_BOND_ACCEPTORS`. Backbone
-    amide nitrogens (``N``, except in proline) are donors and backbone oxygens
-    (``O`` and ``OXT``) are acceptors.
+    amide nitrogens (``N``, except in proline and its variants) are donors and
+    backbone oxygens (``O`` and ``OXT``) are acceptors.
 
     Atoms in the same residue are never paired. Backbone-backbone pairs between
-    sequence-adjacent residues are also ignored, as the ``N`` and ``O`` atoms
-    either side of a peptide bond are always ~2.3 Angstroms apart.
+    residues joined by a peptide bond are also ignored, as the ``N`` and ``O``
+    atoms either side of a peptide bond are always ~2.3 Angstroms apart.
+    Peptide bonds are identified from the backbone ``C`` and ``N`` coordinates,
+    so insertion codes and gaps in residue numbering are handled.
 
     Hydrogen positions are not used, so this is a geometric approximation.
 
@@ -402,18 +404,36 @@ def add_hydrogen_bond_interactions(
         for atom in atoms
     ]
     is_amino_acid = df["residue_name"].isin(list(RESI_THREE_TO_1))
-    bb_donor = (
-        is_amino_acid
-        & (df["atom_name"] == "N")
-        & (df["residue_name"].map(RESI_THREE_TO_1) != "P")
-    )
+    # Proline variants (e.g. HYP, DPR) also lack a backbone amide hydrogen
+    is_proline = df["residue_name"].map(RESI_THREE_TO_1) == "P"
+    bb_donor = is_amino_acid & (df["atom_name"] == "N") & ~is_proline
     bb_acceptor = is_amino_acid & df["atom_name"].isin(["O", "OXT"])
     donor = (bb_donor | res_atom.isin(sc_donors)).to_numpy()
     acceptor = (bb_acceptor | res_atom.isin(sc_acceptors)).to_numpy()
     backbone = (bb_donor | bb_acceptor).to_numpy()
 
+    residue = (
+        df["chain_id"].astype(str)
+        + ":"
+        + df["residue_number"].astype(str)
+        + ":"
+        + df["insertion"].fillna("").astype(str)
+    )
+    coord_cols = ["x_coord", "y_coord", "z_coord"]
+    c_coords = (
+        df.loc[is_amino_acid & (df["atom_name"] == "C"), coord_cols]
+        .groupby(residue)
+        .first()
+    )
+    n_coords = (
+        df.loc[is_amino_acid & (df["atom_name"] == "N"), coord_cols]
+        .groupby(residue)
+        .first()
+    )
+
     keep = donor | acceptor
     df = df.loc[keep].reset_index(drop=True)
+    residue = residue[keep].to_numpy()
     donor, acceptor, backbone = donor[keep], acceptor[keep], backbone[keep]
     if len(df.index) < 2:
         return
@@ -421,24 +441,27 @@ def add_hydrogen_bond_interactions(
     distmat = compute_distmat(df)
     i, j = np.where(np.triu(distmat.to_numpy() <= distance_threshold, k=1))
 
-    chain = df["chain_id"].to_numpy()
-    resnum = df["residue_number"].to_numpy()
-    insertion = df["insertion"].fillna("").to_numpy()
-    same_residue = (
-        (chain[i] == chain[j])
-        & (resnum[i] == resnum[j])
-        & (insertion[i] == insertion[j])
-    )
-    adjacent = (chain[i] == chain[j]) & (np.abs(resnum[i] - resnum[j]) <= 1)
     n_backbone = backbone[i].astype(int) + backbone[j].astype(int)
     pair_type = np.array(["sc-sc", "bb-sc", "bb-bb"])[n_backbone]
-
     is_hbond = (
         ((donor[i] & acceptor[j]) | (donor[j] & acceptor[i]))
-        & ~same_residue
-        & ~((n_backbone == 2) & adjacent)
+        & (residue[i] != residue[j])
         & np.isin(pair_type, list(hbond_types))
     )
+
+    # Drop backbone-backbone pairs between residues joined by a peptide bond
+    # (C-N ~1.33A). Missing C or N coordinates give NaN, i.e. not bonded.
+    bb = np.flatnonzero(is_hbond & (n_backbone == 2))
+    if len(bb) > 0:
+        res_i, res_j = residue[i[bb]], residue[j[bb]]
+
+        def _peptide_bonded(c_res, n_res):
+            c = c_coords.reindex(c_res).to_numpy()
+            n = n_coords.reindex(n_res).to_numpy()
+            return np.linalg.norm(c - n, axis=1) <= 2.0
+
+        bonded = _peptide_bonded(res_i, res_j) | _peptide_bonded(res_j, res_i)
+        is_hbond[bb[bonded]] = False
     add_interacting_resis(G, (i[is_hbond], j[is_hbond]), df, ["hbond"])
 
 
