@@ -8,6 +8,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import copy
 import os
 import traceback
 from contextlib import nullcontext
@@ -786,9 +787,9 @@ def construct_graph(
     if path is not None and isinstance(path, Path):
         path = os.fsdecode(path)
 
-    # If no config is provided, use default
-    if config is None:
-        config = ProteinGraphConfig()
+    # Use the default config, or a copy so filling in the function lists
+    # below doesn't mutate the caller's config
+    config = ProteinGraphConfig() if config is None else copy.copy(config)
 
     # Use progress tracking context if in verbose mode
     context = Progress(transient=True) if verbose else nullcontext()
@@ -949,7 +950,7 @@ def construct_graphs_mp(
     uniprot_id_it: Optional[List[str]] = None,
     chain_selections: Optional[Union[List[List[str]], List[str]]] = None,
     model_indices: Optional[List[str]] = None,
-    config: ProteinGraphConfig = ProteinGraphConfig(),
+    config: Optional[ProteinGraphConfig] = None,
     num_cores: int = 16,
     return_dict: bool = True,
     out_path: Optional[str] = None,

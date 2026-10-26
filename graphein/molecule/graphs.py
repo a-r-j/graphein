@@ -8,6 +8,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import copy
 import traceback
 from functools import partial
 from pathlib import Path
@@ -194,9 +195,9 @@ def construct_graph(
     :type: nx.Graph
     """
 
-    # If no config is provided, use default
-    if config is None:
-        config = MoleculeGraphConfig()
+    # Use the default config, or a copy so filling in the function lists
+    # below doesn't mutate the caller's config
+    config = MoleculeGraphConfig() if config is None else copy.copy(config)
 
     config.node_metadata_functions = (
         node_annotation_funcs
@@ -385,7 +386,7 @@ def construct_graphs_mp(
     path_it: Optional[List[str]] = None,
     smiles_it: Optional[List[str]] = None,
     mol_it: Optional[List[Chem.Mol]] = None,
-    config: MoleculeGraphConfig = MoleculeGraphConfig(),
+    config: Optional[MoleculeGraphConfig] = None,
     num_cores: int = 16,
     return_dict: bool = True,
 ) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:

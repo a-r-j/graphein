@@ -645,3 +645,16 @@ def test_parse_pymol_commands_none():
 def test_compute_esm_embedding_invalid_representation():
     with pytest.raises(ValueError):
         compute_esm_embedding("MKV", representation="token")
+
+
+def test_construct_graph_does_not_mutate_config():
+    def mark(G):
+        G.graph["marked"] = True
+        return G
+
+    config = ProteinGraphConfig()
+    g = construct_graph(
+        config=config, path=str(PDB_DATA_PATH), graph_annotation_funcs=[mark]
+    )
+    assert g.graph["marked"]
+    assert config.graph_metadata_functions is None
