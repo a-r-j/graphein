@@ -21,6 +21,11 @@ from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
 from graphein.protein.utils import save_pdb_df_to_pdb
 from graphein.utils.dependencies import is_tool, requires_external_dependencies
 
+CRYST1_PLACEHOLDER = (
+    "CRYST1    1.000    1.000    1.000  90.00  90.00  90.00 P 1           1"
+)
+"""Unit cell record prepended to reconstructed PDB files for DSSP."""
+
 DSSP_COLS = [
     "chain",
     "resnum",
@@ -123,11 +128,15 @@ def add_dssp_df(
         )
     else:
         with tempfile.TemporaryDirectory() as tmpdirname:
-            save_pdb_df_to_pdb(
-                G.graph["raw_pdb_df"], tmpdirname + f"/{pdb_name}.pdb"
-            )
+            tmp_pdb = tmpdirname + f"/{pdb_name}.pdb"
+            save_pdb_df_to_pdb(G.graph["raw_pdb_df"], tmp_pdb)
+            # DSSP 4.x rejects PDB files that don't start with a CRYST1 record
+            with open(tmp_pdb) as f:
+                pdb_text = f.read()
+            with open(tmp_pdb, "w") as f:
+                f.write(f"{CRYST1_PLACEHOLDER}\n{pdb_text}")
             dssp_dict = dssp_dict_from_pdb_file(
-                tmpdirname + f"/{pdb_name}.pdb",
+                tmp_pdb,
                 DSSP=executable,
                 dssp_version=dssp_version,
             )
