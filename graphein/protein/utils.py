@@ -174,11 +174,12 @@ def download_pdb_multiprocessing(
     return results
 
 
+RCSB_DOWNLOAD_URL = "https://files.rcsb.org/download/"
 PDB_DOWNLOAD_SOURCES: Dict[str, Tuple[str, str]] = {
-    "pdb": ("https://files.rcsb.org/download/", ".pdb"),
+    "pdb": (RCSB_DOWNLOAD_URL, ".pdb"),
     "mmtf": ("https://mmtf.rcsb.org/v1.0/full/", ".mmtf.gz"),
-    "cif": ("https://files.rcsb.org/download/", ".cif.gz"),
-    "mmcif": ("https://files.rcsb.org/download/", ".cif.gz"),
+    "cif": (RCSB_DOWNLOAD_URL, ".cif.gz"),
+    "mmcif": (RCSB_DOWNLOAD_URL, ".cif.gz"),
     "bcif": ("https://models.rcsb.org/", ".bcif.gz"),
 }
 """Maps PDB download format to ``(base_url, file_extension)``."""
