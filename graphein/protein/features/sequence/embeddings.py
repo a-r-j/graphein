@@ -40,7 +40,6 @@ except ImportError:
         submodule="graphein.protein.features.sequence.embeddings",
         package="biovec",
         pip_install=True,
-        extras=True,
     )
     log.debug(message)
 
