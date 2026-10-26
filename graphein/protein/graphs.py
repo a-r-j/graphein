@@ -45,7 +45,6 @@ from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
-    compute_edges,
 )
 
 try:

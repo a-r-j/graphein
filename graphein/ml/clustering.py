@@ -8,7 +8,6 @@ sudo apt install ncbi-blast+
 Otherwise, please see: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
 """
 
-import contextlib
 import os
 import random
 import sys
@@ -52,7 +51,7 @@ def build_fasta_file_from_graphs(
 
 def get_seq_records(
     filename,
-    alphabet=None,  # alphabet=generic_protein,
+    alphabet=None,
     check_sequences=False,
     file_format="fasta",
     return_as_dictionary=False,
@@ -62,7 +61,9 @@ def get_seq_records(
 
     :param filename: File with sequences [fasta in our case].
     :type filename: str
-    :param alphabet: alphabet to be used.
+    :param alphabet: String of allowed sequence letters, e.g.
+        ``"ACDEFGHIKLMNPQRSTVWY"``. Used when ``check_sequences=True``.
+    :type alphabet: Optional[str]
     :param check_sequences: Sanity check on the sequences.
     :type check_sequences: bool
     :param file_format: We use fasta format (don't change this).
@@ -86,21 +87,17 @@ def get_seq_records(
         )
         check_sequences = False
     with open(filename, "r") as handle:
-        records = list(SeqIO.parse(handle, file_format, alphabet=alphabet))
+        records = list(SeqIO.parse(handle, file_format))
     del handle
     if check_sequences:
         for record in records:
             if record.seq[-1] == "*":
                 record.seq = record.seq[:-1]
-                if alphabet is not None:
-                    good = False
-                    with contextlib.suppress(ValueError):
-                        good = _verify_alphabet(record.seq)
-                    if not good:
-                        sys.stderr.write(
-                            f"WARNING in {get_seq_records.__name__} sequence {record.seq.id} from file "
-                            f"{filename} is not compatible with declared alphabet {alphabet}\n"
-                        )
+            if not set(record.seq) <= set(alphabet):
+                sys.stderr.write(
+                    f"WARNING in {get_seq_records.__name__} sequence {record.id} from file "
+                    f"{filename} is not compatible with declared alphabet {alphabet}\n"
+                )
     return SeqIO.to_dict(records) if return_as_dictionary else records
 
 

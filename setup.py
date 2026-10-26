@@ -18,6 +18,7 @@ from setuptools import Command, find_packages, setup
 VERSION = None
 HERE = os.path.abspath(os.path.dirname(__file__))
 NAME = "graphein"
+DESCRIPTION = "Protein & Interactomic Graph Construction for Machine Learning"
 
 # Import the PYPI README and use it as the long-description.
 # Note: this will only work if "README.md" is present in your MANIFEST.in file!
@@ -135,7 +136,7 @@ class UploadCommand(Command):
 setup(
     name="graphein",
     version="1.7.8",
-    description="Protein & Interactomic Graph Construction for Machine Learning",
+    description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Arian Jamasb",

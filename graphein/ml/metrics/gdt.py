@@ -1,4 +1,7 @@
+from typing import Union
+
 import torch
+from torch_geometric.utils import unbatch
 from torchmetrics import Metric
 
 from ...protein.tensor.types import AtomTensor, CoordTensor
