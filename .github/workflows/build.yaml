@@ -40,8 +40,6 @@ jobs:
           post-cleanup: "all"
       - name: Install DSSP
         run: micromamba install dssp -c salilab
-      - name: Install mmseqs
-        run: micromamba install -c conda-forge -c bioconda mmseqs2
       - name: Install Boost 1.7.3 (for DSSP)
         run: micromamba install -c anaconda libboost=1.73.0
       - name: Install uv
@@ -54,11 +52,12 @@ jobs:
       - name: Install PyTorch
         run: uv pip install torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
       - name: Install PyG
-        run: uv pip install --no-build torch_geometric==2.8.1
+        run: uv pip install --no-build torch_geometric==2.7.0
       - name: Install torch-cluster
         run: uv pip install torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
-      - name: Install BLAST
-        run: sudo apt install ncbi-blast+
+      # mmseqs2 via apt: the conda libboost pin above would uninstall it
+      - name: Install BLAST and MMseqs2
+        run: sudo apt install ncbi-blast+ mmseqs2
       - name: Run unit tests and generate coverage report
         run: uv run --no-sync pytest .
       - name: Test notebook execution

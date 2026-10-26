@@ -51,7 +51,7 @@ RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace
     && export TORCH=$(python -c "import torch; print(torch.__version__.split('+')[0])") \
     && pip install torch-scatter torch-sparse torch-cluster torch-spline-conv \
         -f "https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html" --no-cache-dir \
-    && pip install torch-geometric --no-cache-dir
+    && pip install torch-geometric==2.7.0 --no-cache-dir
 
 RUN pip install jupyter_contrib_nbextensions
 RUN jupyter nbextension enable --py widgetsnbextension
