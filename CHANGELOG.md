@@ -2,6 +2,8 @@
 
 #### Bugfixes
 
+* Fix `add_peptide_bonds` / `add_sequence_distance_edges` and `peptide_bonds` overwriting the kinds of existing edges (they checked `G.has_edge` with loop positions instead of node IDs). [#461](https://github.com/a-r-j/graphein/pull/461)
+* Fix `compute_chain_graph` and `compute_secondary_structure_graph` with `return_weighted_graph=True` adding edge kinds to the input graph (edge kind sets were shared rather than copied). [#461](https://github.com/a-r-j/graphein/pull/461)
 * Fix `import_message` calls that wrongly did (`biovec`) or did not (`rdkit` in `graphein.molecule.graphs`, `nest_asyncio`) suggest `pip install graphein[extras]`, and add a test checking every call against `.requirements/extras.in`. Fixes [#248](https://github.com/a-r-j/graphein/issues/248)
 * Fix file-based molecular graph names for dotted filenames and Windows paths.
 * Fix the README molecular graph example to initialize `MoleculeGraphConfig` and call `construct_graph`.
