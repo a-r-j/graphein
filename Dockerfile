@@ -1,4 +1,7 @@
-FROM pytorch/pytorch:1.13.0-cuda11.6-cudnn8-runtime
+FROM pytorch/pytorch:2.8.0-cuda12.8-cudnn9-runtime
+
+# Avoid apt prompts (e.g. libcifpp-data, pulled in by dssp) hanging the build
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get -y install build-essential ffmpeg libsm6 libxext6 wget git \
@@ -19,17 +22,17 @@ RUN apt-get update && apt-get install -y dssp && apt-get clean \
 ENV CONDA_ALWAYS_YES=true
 
 
-RUN mkdir -p graphein/requirements
 WORKDIR /graphein
 
+COPY pyproject.toml uv.lock ./
 
-COPY .requirements /graphein/requirements
-RUN echo "$(cat requirements/base.in)" >> requirements.txt \
-    && echo "$(cat requirements/dev.in)" >> requirements.txt \
-    && echo "$(cat requirements/extras.in)" >> requirements.txt
+# Install locked dependencies into the image's Python (graphein itself is
+# installed editable from the mounted repo by the docker test workflow)
+RUN pip install --only-binary :all: uv==0.11.23 \
+    && uv export --frozen --extra dev --extra extras --no-emit-project -o /tmp/requirements.txt \
+    && uv pip install --system -r /tmp/requirements.txt
 
 RUN pip install notebook==6.*
-RUN pip install -r requirements.txt --no-cache-dir
 
 RUN conda install conda-forge::pluggy
 RUN conda install -c conda-forge libgcc-ng
@@ -45,17 +48,13 @@ RUN git clone https://github.com/getcontacts/getcontacts.git
 ENV PATH /getcontacts:$PATH
 
 RUN conda install -c fvcore -c iopath -c conda-forge fvcore iopath
-RUN conda install -c pytorch3d pytorch3d
-RUN conda install -c dglteam dgl
 RUN conda install -c conda-forge ipywidgets
 
 RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace('.',''))") \
-    && export TORCH=$(python -c "import torch; print(torch.__version__)") \
-    && pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir \
-    && pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir \
-    && pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir \
-    && pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html --no-cache-dir \
-    && pip install torch-geometric --no-cache-dir
+    && export TORCH=$(python -c "import torch; print(torch.__version__.split('+')[0])") \
+    && pip install torch-scatter torch-sparse torch-cluster torch-spline-conv \
+        -f "https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html" --no-cache-dir \
+    && pip install torch-geometric==2.7.0 --no-cache-dir
 
 RUN pip install jupyter_contrib_nbextensions
 RUN jupyter nbextension enable --py widgetsnbextension
