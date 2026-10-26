@@ -121,8 +121,8 @@ Graphein can create molecular graphs from smiles strings as well as `.sdf`, `.mo
 from graphein.molecule.config import MoleculeGraphConfig
 from graphein.molecule.graphs import construct_graph
 
-g = create_graph(smiles="CC(=O)OC1=CC=CC=C1C(=O)O", config=config)
-
+config = MoleculeGraphConfig()
+g = construct_graph(smiles="CC(=O)OC1=CC=CC=C1C(=O)O", config=config)
 ```
 
 ### Creating an RNA Graph

@@ -2,6 +2,10 @@
 
 #### Bugfixes
 
+* Fix `import_message` calls that wrongly did (`biovec`) or did not (`rdkit` in `graphein.molecule.graphs`, `nest_asyncio`) suggest `pip install graphein[extras]`, and add a test checking every call against `.requirements/extras.in`. Fixes [#248](https://github.com/a-r-j/graphein/issues/248)
+* Fix file-based molecular graph names for dotted filenames and Windows paths.
+* Fix the README molecular graph example to initialize `MoleculeGraphConfig` and call `construct_graph`.
+* Fix `NameError` in `graphein.molecule.atoms` when rdkit is not installed by guarding rdkit-dependent constants with `_HAS_RDKIT` flag
 * Fix computation of `GetContacts` edges for local renamed structures [#436](https://github.com/a-r-j/graphein/pull/436). Fixes [#435](https://github.com/a-r-j/graphein/issues/435)
 * Hotfix for incorrect dataframe indexing resulting in correct edge addition in `add_distance_threshold` [#419](https://github.com/a-r-j/graphein/pull/419)
 * Fixes unnecessary download for pre-existing structure files retrieved from AlphaFold database in `graphein.ml.ProteinGraphDataset`[#426](https://github.com/a-r-j/graphein/pull/426)
