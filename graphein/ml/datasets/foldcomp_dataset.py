@@ -61,9 +61,13 @@ try:
     nest_asyncio.apply()
 except ImportError:
     message = import_message(
-        "graphein.ml.datasets.foldcomp", "nest_asyncio", None, True
+        "graphein.ml.datasets.foldcomp",
+        "nest_asyncio",
+        None,
+        True,
+        extras=True,
     )
-    message += "You can safely ignore this message if you are not working in a Jupyter Notebook."
+    message += "\nYou can safely ignore this message if you are not working in a Jupyter Notebook."
     log.warning(message)
 
 FOLDCOMP_DATABASE_TYPES: List[str] = [
