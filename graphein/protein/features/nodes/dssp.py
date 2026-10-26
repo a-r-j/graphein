@@ -55,20 +55,12 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
     :return: pd.DataFrame containing parsed ``DSSP`` output
     :rtype: pd.DataFrame
     """
-    appender = []
-    for k in dssp[1]:
-        to_append = []
-        y = dssp[0][k]
-        chain = k[0]
-        residue = k[1]
-        # het = residue[0]
-        resnum = residue[1]
-        icode = residue[2]
-        to_append.extend([chain, resnum, icode])
-        to_append.extend(y)
-        appender.append(to_append)
-
-    return pd.DataFrame.from_records(appender, columns=DSSP_COLS)
+    # Keys are (chain, (het, resnum, icode))
+    records = [
+        [chain, res[1], res[2], *dssp[0][(chain, res)]]
+        for chain, res in dssp[1]
+    ]
+    return pd.DataFrame.from_records(records, columns=DSSP_COLS)
 
 
 @requires_external_dependencies("mkdssp")

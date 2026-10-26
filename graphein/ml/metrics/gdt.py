@@ -69,8 +69,6 @@ class GDT_TS(Metric):
         self.add_state(
             "correct", default=torch.tensor(0.0), dist_reduce_fx="sum"
         )
-        higher_is_better = True
-        full_state_update = True
 
     @property
     def higher_is_better(self):
