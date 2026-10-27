@@ -229,19 +229,3 @@ def convert_verts_and_face_to_mesh(
     """
     faces_idx = faces.verts_idx
     return Meshes(verts=[verts], faces=[faces_idx])
-
-
-if __name__ == "__main__":
-    from graphein.protein.visualisation import plot_pointcloud
-
-    config = ProteinMeshConfig(
-        pymol_commands=[
-            "show surface",
-            "set surface_solvent, on",
-            "set solvent_radius, 10000",
-        ]
-    )
-    verts, faces, aux = create_mesh(pdb_code="3eiy", config=config)
-
-    trg_mesh = convert_verts_and_face_to_mesh(verts, faces)
-    plot_pointcloud(trg_mesh)
