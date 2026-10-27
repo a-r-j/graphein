@@ -13,6 +13,7 @@ from graphein.utils.dependencies import import_message
 
 try:
     import rdkit
+    from rdkit import Chem
 except ImportError:
     import_message(
         "graphein.molecule.graphs", "rdkit", "rdkit", True, extras=True
@@ -118,6 +119,19 @@ def test_generate_graph_pdb(config):
     assert g.graph["name"] == "long_test"
     check_nodes(g)
     check_edges(g)
+
+
+@pytest.mark.parametrize("add_hs", [False, True])
+def test_num_heavy_atoms(add_hs):
+    """Tests heavy atom counts with implicit and explicit hydrogens."""
+    mol = Chem.MolFromSmiles("C.CCC")
+    if add_hs:
+        mol = Chem.AddHs(mol)
+
+    for atom_idx, expected in [(0, 0), (2, 2)]:
+        node_data = {"rdmol_atom": mol.GetAtomWithIdx(atom_idx)}
+        assert num_heavy_atoms(str(atom_idx), node_data) == expected
+        assert node_data["num_heavy_atoms"] == expected
 
 
 def check_nodes(g):
