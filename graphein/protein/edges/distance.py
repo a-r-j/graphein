@@ -432,7 +432,7 @@ def add_hydrogen_bond_interactions(
         return
 
     distmat = compute_distmat(df)
-    i, j = np.where(np.triu(distmat.to_numpy() <= distance_threshold, k=1))
+    i, j = np.nonzero(np.triu(distmat.to_numpy() <= distance_threshold, k=1))
 
     n_backbone = backbone[i].astype(int) + backbone[j].astype(int)
     pair_type = np.array(["sc-sc", "bb-sc", "bb-bb"])[n_backbone]

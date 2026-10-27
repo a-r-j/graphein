@@ -256,7 +256,8 @@ def test_add_hydrogen_bond_interactions_insertion_codes():
     # Residue i keeps its number and has no insertion code, so ``o`` is
     # unchanged.
     n_new = n.replace(f":{start + 4}:", f":{start}:D:")
-    assert o in g and n_new in g
+    assert o in g
+    assert n_new in g
     assert g.has_edge(o, n_new)
     assert "hbond" in g.edges[o, n_new]["kind"]
 
