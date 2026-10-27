@@ -4,6 +4,10 @@
 
 * Require Python >= 3.10 and pin `cpdb-protein==0.3.0` (which requires Python >= 3.10). Drop Python 3.8 and 3.9 from the CI matrices. [#460](https://github.com/a-r-j/graphein/pull/460)
 
+#### New Features
+
+* Add `num_heavy_atoms` molecule node feature to count non-hydrogen neighbours of each atom.
+
 #### Bugfixes
 
 * Fix `import_message` calls that wrongly did (`biovec`) or did not (`rdkit` in `graphein.molecule.graphs`, `nest_asyncio`) suggest `pip install graphein[extras]`, and add a test checking every call against `.requirements/extras.in`. Fixes [#248](https://github.com/a-r-j/graphein/issues/248)
