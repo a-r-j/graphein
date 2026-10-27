@@ -8,10 +8,9 @@ from loguru import logger as log
 from graphein.utils.dependencies import import_message
 
 from ..resi_atoms import (
-    ATOM_NUMBERING_MODIFIED,
     STANDARD_AMINO_ACID_MAPPING_1_TO_3,
 )
-from .sequence import get_atom_indices
+from .sequence import _present_atom_indices, get_atom_indices
 from .types import AtomTensor, BackboneTensor, CoordTensor, ResidueTensor
 
 try:
@@ -73,7 +72,7 @@ def has_complete_backbone(
 
     """
     indices = torch.tensor(backbone_indices)
-    return torch.sum(x[:, indices] == fill_value) == 0
+    return not (x[:, indices] == fill_value).any()
 
 
 def has_complete_residue(
@@ -99,21 +98,10 @@ def has_complete_residue(
     """
     if len(residue_type) == 1:
         residue_type = STANDARD_AMINO_ACID_MAPPING_1_TO_3[residue_type]
-    true_residue_indices = get_atom_indices()[residue_type]
-
-    def _get_index(y: torch.Tensor) -> tuple[int, ...]:
-        indices = (
-            torch.nonzero(torch.sum(y != fill_value, dim=1))
-            .squeeze(1)
-            .tolist()
-        )
-        # remove oxt if present
-        oxt_index = ATOM_NUMBERING_MODIFIED["OXT"]
-        indices = tuple(i for i in indices if i != oxt_index)
-        return indices
-
-    present_indices = _get_index(x)
-    return present_indices == true_residue_indices
+    return (
+        _present_atom_indices(x, fill_value)
+        == get_atom_indices()[residue_type]
+    )
 
 
 def is_complete_structure(

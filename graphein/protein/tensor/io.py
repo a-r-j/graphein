@@ -9,6 +9,7 @@
 import collections
 import os
 from collections.abc import Sequence
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -37,6 +38,7 @@ from .sequence import (
     get_residue_id,
     get_sequence,
     infer_residue_types,
+    residue_ids,
     residue_type_tensor,
 )
 from .types import AtomTensor
@@ -80,20 +82,7 @@ def get_protein_length(df: pd.DataFrame, insertions: bool = True) -> int:
     :return: Number of unique residues.
     :rtype: int
     """
-    # Get unique residues:
-    if "residue_id" not in df.columns:
-        df["residue_id"] = (
-            df["chain_id"]
-            + ":"
-            + df["residue_name"]
-            + ":"
-            + df["residue_number"].astype(str)
-        )
-        if insertions:
-            df["residue_id"] = df.residue_id + ":" + df.insertion
-    ids = df["residue_id"].values
-
-    return len(set(ids))
+    return residue_ids(df, insertions).nunique()
 
 
 def protein_to_pyg(
@@ -174,28 +163,9 @@ def protein_to_pyg(
     """
 
     # Get ID
-    if path is not None:
-        id = (
-            os.path.splitext(path)[0].split("/")[-1]
-            + "_"
-            + "".join(chain_selection)
-            if chain_selection != "all"
-            else os.path.splitext(path)[0].split("/")[-1]
-        )
-    elif pdb_code is not None:
-        id = (
-            pdb_code + "_" + "".join(chain_selection)
-            if chain_selection != "all"
-            else pdb_code
-        )
-    elif uniprot_id is not None:
-        id = (
-            uniprot_id + "_" + "".join(chain_selection)
-            if chain_selection != "all"
-            else uniprot_id
-        )
-    else:
-        id = None
+    id = Path(path).stem if path is not None else pdb_code or uniprot_id
+    if id is not None and chain_selection != "all":
+        id = f"{id}_{''.join(chain_selection)}"
 
     if df is None:
         df = read_pdb_to_dataframe(
@@ -218,25 +188,18 @@ def protein_to_pyg(
 
     if store_het:
         hetatms = df.loc[df.record_name == "HETATM"]
-        all_hets = list(set(hetatms.residue_name))
         het_data = collections.defaultdict(dict)
-        for het in all_hets:
-            het_data[het]["coords"] = torch.tensor(
-                hetatms.loc[hetatms.residue_name == het][
-                    ["x_coord", "y_coord", "z_coord"]
-                ].values
-            )
-            het_data[het]["atoms"] = hetatms.loc[hetatms.residue_name == het][
-                "atom_name"
-            ].values
-            het_data[het]["residue_number"] = torch.tensor(
-                hetatms.loc[hetatms.residue_name == het][
-                    "residue_number"
-                ].values
-            )
-            het_data[het]["element_symbol"] = hetatms.loc[
-                hetatms.residue_name == het
-            ]["element_symbol"].values
+        for het, het_df in hetatms.groupby("residue_name"):
+            het_data[het] = {
+                "coords": torch.tensor(
+                    het_df[["x_coord", "y_coord", "z_coord"]].values
+                ),
+                "atoms": het_df["atom_name"].values,
+                "residue_number": torch.tensor(
+                    het_df["residue_number"].values
+                ),
+                "element_symbol": het_df["element_symbol"].values,
+            }
 
     df = df.loc[df.record_name == "ATOM"]
     if remove_nonstandard:
@@ -246,15 +209,8 @@ def protein_to_pyg(
     df = pd.concat([df] + hets)
     df = sort_dataframe(df)
 
-    df["residue_id"] = (
-        df["chain_id"]
-        + ":"
-        + df["residue_name"]
-        + ":"
-        + df["residue_number"].astype(str)
-    )
-    if keep_insertions:
-        df["residue_id"] = df.residue_id + ":" + df.insertion
+    df = df.drop(columns="residue_id", errors="ignore")
+    residue_ids(df, keep_insertions)
 
     out = Data(
         coords=protein_df_to_tensor(
@@ -314,8 +270,7 @@ def protein_df_to_chain_tensor(
         each residue.
     :rtype: torch.Tensor
     """
-    if "residue_id" not in df.columns:
-        get_residue_id(df, insertions=insertions)
+    residue_ids(df, insertions)
 
     # Select chains to keep from user input
     if chains_to_keep is not None:
@@ -364,18 +319,19 @@ def protein_df_to_tensor(
     :returns: ``Length x Num_Atoms (default 37) x 3`` tensor.
     :rtype: graphein.protein.tensor.types.AtomTensor
     """
-    num_residues = get_protein_length(df, insertions=insertions)
-    df = df.loc[df["atom_name"].isin(atoms_to_keep)]
-    residue_indices = pd.factorize(
-        pd.Series(get_residue_id(df, unique=False))
-    )[0]
-    atom_indices = df["atom_name"].map(lambda x: atoms_to_keep.index(x)).values
+    # Number residues before dropping atoms so residues without any of
+    # ``atoms_to_keep`` keep their (empty) slot
+    residue_indices, unique_ids = pd.factorize(residue_ids(df, insertions))
+    keep = df["atom_name"].isin(atoms_to_keep).to_numpy()
+    atom_index = {atom: i for i, atom in enumerate(atoms_to_keep)}
 
-    positions: AtomTensor = (
-        torch.zeros((num_residues, len(atoms_to_keep), 3)) + fill_value
+    positions: AtomTensor = torch.full(
+        (len(unique_ids), len(atoms_to_keep), 3), fill_value
     )
-    positions[residue_indices, atom_indices] = torch.tensor(
-        df[["x_coord", "y_coord", "z_coord"]].values
+    positions[
+        residue_indices[keep], df["atom_name"][keep].map(atom_index).to_numpy()
+    ] = torch.tensor(
+        df.loc[keep, ["x_coord", "y_coord", "z_coord"]].to_numpy()
     ).float()
 
     return positions

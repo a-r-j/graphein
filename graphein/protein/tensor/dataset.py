@@ -302,15 +302,13 @@ class ProteinDataset(Dataset):
                 if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
                 or self.overwrite
             ]
-            [
+            for uniprot in tqdm(to_download):
                 download_alphafold_structure(
                     uniprot,
                     out_dir=self.raw_dir,
                     version=self.af_version,
                     aligned_score=False,
                 )
-                for uniprot in tqdm(to_download)
-            ]
             log.info("AlphaFold download complete")
 
     def fold_sequences(self):
@@ -404,7 +402,6 @@ class ProteinDataset(Dataset):
             file_names: list[str] = [
                 f if f.endswith(".pdb") else f"{f}.pdb" for f in file_names
             ]
-            print(file_names)
             graphs = to_protein_mp(
                 paths=file_names,
                 # config=self.config,
@@ -473,14 +470,14 @@ class ProteinDataset(Dataset):
                     os.path.join(self.processed_dir, f"{idx}.pt"),
                     weights_only=False,
                 )
-            except FileNotFoundError:
+            except FileNotFoundError as e:
                 files = os.listdir(self.processed_dir)
                 similar_files = get_close_matches(
                     f"{idx}.pt", files, n=5, cutoff=0.7
                 )
-                log.error(
+                raise FileNotFoundError(
                     f"File {idx}.pt not found. Did you mean: {similar_files}"
-                )
+                ) from e
 
     def __getitem__(
         self,

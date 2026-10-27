@@ -33,6 +33,47 @@ except ImportError:
     log.debug(message)
 
 
+def residue_ids(df: pd.DataFrame, insertions: bool = True) -> pd.Series:
+    """
+    Returns the per-atom residue IDs (``chain_id:residue_name:residue_number``
+    with ``:insertion`` appended if ``insertions=True``) of a protein structure
+    DataFrame.
+
+    If ``df`` has no ``residue_id`` column, it is added to ``df``; an existing
+    column is returned as is.
+
+    :param df: Protein structure DataFrame.
+    :type df: pd.DataFrame
+    :param insertions: Whether to include insertion codes in the IDs.
+    :type insertions: bool
+    :return: Series of residue IDs (one per atom).
+    :rtype: pd.Series
+    """
+    if "residue_id" not in df.columns:
+        ids = (
+            df.chain_id
+            + ":"
+            + df.residue_name
+            + ":"
+            + df.residue_number.astype(str)
+        )
+        if insertions:
+            ids = ids + ":" + df.insertion.astype(str)
+        df["residue_id"] = ids
+    return df["residue_id"]
+
+
+def _present_atom_indices(
+    x: torch.Tensor, fill_value: float
+) -> tuple[int, ...]:
+    """Returns the indices of the filled (non-``fill_value``) atoms in a
+    residue (``Num Atoms x 3``), excluding ``OXT``.
+    """
+    oxt_index = ATOM_NUMBERING_MODIFIED["OXT"]
+    present = (x != fill_value).any(dim=-1).nonzero().flatten().tolist()
+    return tuple(i for i in present if i != oxt_index)
+
+
 def get_sequence(
     df: pd.DataFrame,
     chains: str | list[str] = "all",
@@ -65,23 +106,10 @@ def get_sequence(
             chains = [chains]
         df = df.loc[df.chain_id.isin(chains)]
 
-    # Assign residues IDs
-    if "residue_id" not in df.columns:
-        df["residue_id"] = (
-            df.chain_id
-            + ":"
-            + df.residue_name
-            + ":"
-            + df.residue_number.astype(str)
-        )
-        if insertions:
-            df["residue_id"] = df.residue_id + ":" + df.insertion
-
-    # Get residue from unique IDs
-    if per_atom:
-        sequence = [res.split(":")[1] for res in df.residue_id]
-    else:
-        sequence = [res.split(":")[1] for res in df.residue_id.unique()]
+    # Get residue names from (unique) residue IDs
+    ids = residue_ids(df, insertions)
+    ids = ids if per_atom else ids.unique()
+    sequence = [res.split(":")[1] for res in ids]
 
     # Convert to one letter code
     if list_of_three:
@@ -89,7 +117,7 @@ def get_sequence(
         # map = RESI_THREE_TO_1
         # sequence = [three_to_one_map[res] for res in sequence]
         return sequence
-    return "".join([RESI_THREE_TO_1[res] for res in sequence])
+    return "".join(RESI_THREE_TO_1[res] for res in sequence)
 
 
 def get_residue_id(
@@ -117,17 +145,8 @@ def get_residue_id(
     :return: List of residue IDs.
     :rtype: List[str]
     """
-    if "residue_id" not in df.columns:
-        df["residue_id"] = (
-            df.chain_id
-            + ":"
-            + df.residue_name
-            + ":"
-            + df.residue_number.astype(str)
-        )
-        if insertions:
-            df["residue_id"] = df.residue_id + ":" + df.insertion.astype(str)
-    return list(df.residue_id.unique()) if unique else list(df.residue_id)
+    ids = residue_ids(df, insertions)
+    return list(ids.unique()) if unique else list(ids)
 
 
 def residue_type_tensor(
@@ -169,17 +188,11 @@ def residue_type_tensor(
         df, insertions=insertions, list_of_three=True, per_atom=per_atom
     )
 
-    # Convert to one letter code
-    residues_one = []
-    for res in residues:
-        res = three_to_one_mapping[res]
-        if res in vocabulary:
-            residues_one.append(res)
-        else:
-            residues_one.append("X")
-
+    # Index one letter codes in the vocabulary (unknown residues map to "X")
+    index = {res: i for i, res in enumerate(vocabulary)}
+    residues = (three_to_one_mapping[res] for res in residues)
     residues = torch.tensor(
-        [vocabulary.index(res) for res in residues_one],
+        [index[res] if res in index else index["X"] for res in residues],
         dtype=dtype,
         device=device,
     )
@@ -189,7 +202,7 @@ def residue_type_tensor(
     return residues
 
 
-@lru_cache(maxsize=1)
+@lru_cache(maxsize=None)
 def get_atom_indices(
     invert: bool = False,
 ) -> dict[str, tuple[int, ...]] | dict[tuple[int, ...], str]:
@@ -203,7 +216,7 @@ def get_atom_indices(
     :rtype: Union[Dict[str, Tuple[int, ...]], Dict[Tuple[int, ...], str]]
     """
     index_map = {
-        k: tuple(sorted([ATOM_NUMBERING_MODIFIED[i] for i in v]))
+        k: tuple(sorted(ATOM_NUMBERING_MODIFIED[i] for i in v))
         for k, v in STANDARD_RESIDUE_ATOMS.items()
     }
     if invert:
@@ -235,24 +248,11 @@ def infer_residue_types(
     """
     rmap: dict[tuple[int, ...], str] = get_atom_indices(invert=True)
 
-    def _get_index(y: torch.Tensor) -> str:
-        indices = (
-            torch.nonzero(torch.sum(y != fill_value, dim=1))
-            .squeeze(1)
-            .tolist()
-        )
-        # remove oxt if present
-        oxt_index = ATOM_NUMBERING_MODIFIED["OXT"]
-        indices = tuple(i for i in indices if i != oxt_index)
-        try:
-            identity = rmap[indices]
-        except KeyError:
-            identity = "UNK"
-        return identity
-
-    seq = [_get_index(x[i, :, :]) for i in range(x.shape[0])]
+    seq = [
+        rmap.get(_present_atom_indices(res, fill_value), "UNK") for res in x
+    ]
 
     if return_sequence:
-        seq = "".join([RESI_THREE_TO_1[res] for res in seq])
+        seq = "".join(RESI_THREE_TO_1[res] for res in seq)
 
     return seq
