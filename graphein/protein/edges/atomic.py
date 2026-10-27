@@ -346,14 +346,10 @@ def assign_bond_orders(G: nx.Graph) -> nx.Graph:
             )
             bond_angles[n] = dihed
 
-    print(bond_angles)
-
     # Assign Bond angles to dataframe
     G.graph["pdb_df"]["bond_angles"] = G.graph["pdb_df"]["node_id"].map(
         bond_angles
     )
-    print(G.graph["pdb_df"].to_string())
-
     # Assign Hybridisation state from Bond Angles
     hybridisation_state = {
         n: "sp"

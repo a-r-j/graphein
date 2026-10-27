@@ -76,8 +76,6 @@ def _extract_torsion_coords(
 
     # Iterate over residues and grab indices of the atoms for each Chi angle
     for i, res in enumerate(res_types):
-        res_coords = []
-
         try:
             angle_groups = CHI_ANGLES_ATOMS[res]
         except KeyError:
@@ -89,12 +87,11 @@ def _extract_torsion_coords(
             angle_groups = []
 
         for angle_coord_set in angle_groups:
-            res_coords.append([ATOM_NUMBERING[i] for i in angle_coord_set])
+            res_atoms.append([ATOM_NUMBERING[a] for a in angle_coord_set])
             idxs.append(i)
-        res_atoms.append(torch.tensor(res_coords, device=coords.device))
 
     idxs = torch.tensor(idxs, device=coords.device).long()
-    res_atoms = torch.cat(res_atoms).long()  # TODO torch.stack instead of cat
+    res_atoms = torch.tensor(res_atoms, device=coords.device).long()
 
     # Select the coordinates for each chi angle
     coords = torch.take_along_dim(
