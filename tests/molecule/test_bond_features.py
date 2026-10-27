@@ -1,13 +1,14 @@
 import numpy as np
 import pytest
-
-pytest.importorskip("rdkit")
-
 from rdkit.Chem.rdchem import BondType
 
 from graphein.molecule.config import MoleculeGraphConfig
 from graphein.molecule.features.edges.bonds import add_bond_type_one_hot
 from graphein.molecule.graphs import construct_graph
+
+pytest.importorskip("rdkit")
+
+
 
 
 def _graph():
