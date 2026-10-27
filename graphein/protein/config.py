@@ -26,6 +26,11 @@ except ImportError:
 
 
 class DSSPConfig(BaseModel):
+    """Deprecated and ignored: DSSP is computed natively (see
+    :func:`graphein.protein.features.nodes.dssp.compute_dssp_df`), so the
+    ``mkdssp`` executable is no longer needed. Kept so existing configs
+    still load."""
+
     executable: str = "mkdssp"
 
 
@@ -183,10 +188,8 @@ class ProteinGraphConfig(BaseModel):
         ``GetContacts`` for computing intramolecular contact-based edges.
         Defaults to ``None``.
     :type get_contacts_config: GetContactsConfig, optional
-    :param dssp_config: Config Object containing reference to ``DSSP``
-        executable. Defaults to ``None``. **NB** DSSP must be installed. See
-        installation instructions:
-        https://graphein.ai/getting_started/installation.html#optional-dependencies
+    :param dssp_config: Deprecated and ignored; DSSP features are computed
+        natively. Defaults to ``None``.
     :type dssp_config: DSSPConfig, optional
     """
 

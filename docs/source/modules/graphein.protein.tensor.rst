@@ -28,7 +28,9 @@ Geometry Utils
 
 DSSP
 ^^^^
-.. automodule:: graphein.protein.tensor.dssp
+Re-exported from :mod:`graphein.protein.dssp_core` as ``graphein.protein.tensor.dssp``.
+
+.. automodule:: graphein.protein.dssp_core
     :members:
 
 Angles

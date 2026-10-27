@@ -22,7 +22,6 @@ dependencies:
 - click
 - cudatoolkit=11.1
 - dgl
-- dssp
 - flake8
 - furo
 - fvcore

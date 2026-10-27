@@ -5,11 +5,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from graphein.protein.dssp_core import _hbond_energy, _hbonds
 from graphein.protein.resi_atoms import STANDARD_AMINO_ACIDS
 from graphein.protein.tensor.dssp import (
     DSSP8_STATES,
-    _hbond_energy,
-    _hbonds,
     accessibility,
     accessibility_np,
     assign_dssp,
