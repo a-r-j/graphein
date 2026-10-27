@@ -9,8 +9,6 @@ from graphein.molecule.graphs import construct_graph
 pytest.importorskip("rdkit")
 
 
-
-
 def _graph():
     return construct_graph(config=MoleculeGraphConfig(), smiles="c1ccccc1C=O")
 
