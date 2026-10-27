@@ -1,19 +1,17 @@
-from __future__ import print_function
-
 import contextlib
 import os
 import subprocess
 import tempfile
 import time
+from xmlrpc.client import ServerProxy as Server
 
 from ..dependencies import requires_external_dependencies
-from .compat import Server
 
 HOST = os.environ.get("PYMOL_RPCHOST", "localhost")
 PORT = 9123
 
 
-class MolViewer(object):
+class MolViewer:
     def __init__(self, host=HOST, port=PORT):
         self.host = host
         self.port = int(port)

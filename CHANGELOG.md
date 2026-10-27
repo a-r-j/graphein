@@ -22,9 +22,16 @@
 * Fix `graphein.ml.clustering.get_seq_records` with an `alphabet`: Biopython >= 1.78 rejects the `alphabet` argument and removed `_verify_alphabet`. `alphabet` is now a string of allowed letters, every sequence is checked (not only `*`-terminated ones), and the warning reports `record.id` instead of crashing on `record.seq.id`. [#460](https://github.com/a-r-j/graphein/pull/460)
 * Fix `NameError` in `setup.py` when `README.md` is missing (`DESCRIPTION` was undefined). [#460](https://github.com/a-r-j/graphein/pull/460)
 * Fix the same-chain check in `graphein.rna.edges.atomic.add_atomic_edges`, which only rejected empty chain IDs and so allowed covalent edges between chains. Ports the protein fix from [#201](https://github.com/a-r-j/graphein/pull/201) ([#199](https://github.com/a-r-j/graphein/issues/199)). [#460](https://github.com/a-r-j/graphein/pull/460)
+* `construct_graph` (protein and molecule) and `ProteinGraphDataset` no longer mutate the config passed in, or share one default config between calls. [#470](https://github.com/a-r-j/graphein/pull/470)
+* Fix `AttributeError` with `verbose=True` in protein, molecule, GRN and PPI graph construction (`nx.info` was removed in NetworkX 3). [#470](https://github.com/a-r-j/graphein/pull/470)
+* `parse_pymol_commands` returns an empty list instead of `None` when the config has no commands. [#470](https://github.com/a-r-j/graphein/pull/470)
+* `graphein.rna.graphs.construct_graph` raises a `ValueError` when given no input instead of returning `None`. [#470](https://github.com/a-r-j/graphein/pull/470)
+* `compute_esm_embedding` rejects an invalid `representation` instead of silently returning `None`. [#470](https://github.com/a-r-j/graphein/pull/470)
+* `blast` removes its temporary files when there are no hits, and uses per-process file names. [#470](https://github.com/a-r-j/graphein/pull/470)
 
 #### Misc
 
+* Lint with all pyflakes rules, remove unused imports and variables, replace mutable default arguments, drop the Python 2 pymol shim, replace `eval` dispatch in `GraphFormatConvertor` with `getattr`, and modernise type annotations (PEP 585/604). [#470](https://github.com/a-r-j/graphein/pull/470)
 * Speed up edge construction and features [#460](https://github.com/a-r-j/graphein/pull/460):
   * Replace per-pair `.loc` lookups with arrays or dicts in the protein distance threshold, distance window, kNN, pi-stacking, T-stacking, aromatic-sulphur and cation-pi edges.
   * Use a set for the minimum-distance filter in `add_distance_window`.

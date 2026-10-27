@@ -6,11 +6,8 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import List, Optional, Tuple, Union
-
 import networkx as nx
 import numpy as np
-from loguru import logger as log
 
 import graphein.protein.subgraphs as protein
 from graphein.rna.constants import (
@@ -22,13 +19,13 @@ from graphein.rna.constants import (
 
 def extract_subgraph_from_node_list(
     g,
-    node_list: Optional[List[str]],
+    node_list: list[str] | None,
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a list of nodes.
 
     :param g: The graph to extract the subgraph from.
@@ -223,14 +220,14 @@ def extract_subgraph_from_ribose(
 
 def extract_subgraph_from_point(
     g: nx.Graph,
-    centre_point: Union[np.ndarray, Tuple[float, float, float]],
+    centre_point: np.ndarray | tuple[float, float, float],
     radius: float,
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a centre point and radius.
 
     :param g: The graph to extract the subgraph from.
@@ -267,13 +264,13 @@ def extract_subgraph_from_point(
 
 def extract_subgraph_from_atom_types(
     g: nx.Graph,
-    atom_types: List[str],
+    atom_types: list[str],
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from an RNA graph based on a list of atom types.
 
     :param g: The graph to extract the subgraph from.
@@ -307,13 +304,13 @@ def extract_subgraph_from_atom_types(
 
 def extract_subgraph_from_residue_types(
     g: nx.Graph,
-    residue_types: List[str],
+    residue_types: list[str],
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a list of allowable
     (nucleotide) residue types.
 
@@ -349,13 +346,13 @@ def extract_subgraph_from_residue_types(
 
 def extract_subgraph_from_chains(
     g: nx.Graph,
-    chains: List[str],
+    chains: list[str],
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a chain.
 
     :param g: The graph to extract the subgraph from.
@@ -389,13 +386,13 @@ def extract_subgraph_from_chains(
 
 def extract_subgraph_by_sequence_position(
     g: nx.Graph,
-    sequence_positions: List[int],
+    sequence_positions: list[int],
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a chain.
 
     :param g: The graph to extract the subgraph from.
@@ -429,13 +426,13 @@ def extract_subgraph_by_sequence_position(
 
 def extract_subgraph_by_bond_type(
     g: nx.Graph,
-    bond_types: List[str],
+    bond_types: list[str],
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a list of allowable bond types.
 
     :param g: The graph to extract the subgraph from.
@@ -480,7 +477,7 @@ def extract_k_hop_subgraph(
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a k-hop subgraph.
 
     :param g: The graph to extract the subgraph from.

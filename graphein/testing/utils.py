@@ -7,7 +7,8 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 
 import networkx as nx
 import numpy as np
@@ -23,7 +24,7 @@ __all__ = [
 ]
 
 
-def compare_exact(first: Dict[str, Any], second: Dict[str, Any]) -> bool:
+def compare_exact(first: dict[str, Any], second: dict[str, Any]) -> bool:
     """Return whether two dicts of arrays are exactly equal.
 
     :param first: The first dictionary.

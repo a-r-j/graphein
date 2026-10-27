@@ -6,7 +6,6 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import copy
-from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from loguru import logger as log
@@ -51,8 +50,8 @@ except ImportError:
 
 
 def _extract_torsion_coords(
-    coords: AtomTensor, res_types: List[str]
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    coords: AtomTensor, res_types: list[str]
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Returns a ``(L*?) x 4 x 3`` tensor of the coordinates of the atoms for
     each sidechain torsion angle. The first dimension will be larger than the
     input as we flatten the array of torsion angles per residue.
@@ -105,11 +104,11 @@ def _extract_torsion_coords(
 
 def sidechain_torsion(
     coords: AtomTensor,
-    res_types: List[str],
+    res_types: list[str],
     rad: bool = True,
     embed: bool = False,
     return_mask: bool = False,
-) -> Union[TorsionTensor, Tuple[TorsionTensor, torch.Tensor]]:
+) -> TorsionTensor | tuple[TorsionTensor, torch.Tensor]:
     """
     Computes sidechain torsion angles for a protein.
 
@@ -208,8 +207,8 @@ def chi4():
 
 
 def kappa(
-    x: Union[AtomTensor, CoordTensor],
-    batch: Optional[torch.Tensor] = None,
+    x: AtomTensor | CoordTensor,
+    batch: torch.Tensor | None = None,
     rad: bool = True,
     sparse: bool = True,
     ca_idx: int = 1,
@@ -269,8 +268,8 @@ def kappa(
 
 
 def alpha(
-    x: Union[AtomTensor, CoordTensor],
-    batch: Optional[torch.Tensor] = None,
+    x: AtomTensor | CoordTensor,
+    batch: torch.Tensor | None = None,
     sparse: bool = True,
     rad: bool = True,
     ca_idx: int = 1,
@@ -486,7 +485,7 @@ def _dihedral_angle(
 
 def dihedrals(
     coords: torch.Tensor,
-    batch: Optional[torch.Tensor] = None,
+    batch: torch.Tensor | None = None,
     rad: bool = True,
     sparse: bool = True,
     embed: bool = True,
@@ -538,7 +537,7 @@ def dihedrals(
 def dihedrals_to_rad(
     x_dihedrals: DihedralTensor,
     concat: bool = False,
-) -> Union[DihedralTensor, Tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+) -> DihedralTensor | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     Converts dihedrals to radians.
 
@@ -561,10 +560,10 @@ def dihedrals_to_rad(
 def torsion_to_rad(
     x_torsion: TorsionTensor,
     concat: bool = True,
-) -> Union[
-    TorsionTensor,
-    Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor],
-]:
+) -> (
+    TorsionTensor
+    | tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
+):
     """
     Converts sidechain torsions in
     ``(sin(chi1), sin(chi1), cos(chi2), sin(chi2), ...)`` format to radians.

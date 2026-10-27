@@ -1,7 +1,5 @@
 """Utilities for computing edges."""
 
-from typing import Optional
-
 from loguru import logger as log
 
 from graphein.utils.dependencies import import_message
@@ -61,16 +59,15 @@ def compute_edges(
 
     if etype == "knn":
         return knn_edges(x=x, k=int(val), batch=batch, **kwargs)
-    elif etype == "eps":
+    if etype == "eps":
         return radius_edges(x=x, radius=float(val), batch=batch, **kwargs)
-    else:
-        raise ValueError(f"Edge type {edge_type} not recognised.")
+    raise ValueError(f"Edge type {edge_type} not recognised.")
 
 
 def radius_edges(
     x: torch.Tensor,
     radius: float = 8.0,
-    batch: Optional[torch.Tensor] = None,
+    batch: torch.Tensor | None = None,
     loop: bool = False,
     max_num_neighbors: int = 32,
     flow: str = "source_to_target",
@@ -120,7 +117,7 @@ def radius_edges(
 def knn_edges(
     x: torch.Tensor,
     k: int = 10,
-    batch: Optional[torch.Tensor] = None,
+    batch: torch.Tensor | None = None,
     loop: bool = False,
     flow: str = "source_to_target",
     num_workers: int = 1,

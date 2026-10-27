@@ -10,7 +10,6 @@ proporties of the sequence."""
 from __future__ import annotations
 
 from functools import partial
-from typing import List, Optional
 
 import networkx as nx
 import numpy as np
@@ -18,7 +17,6 @@ from Bio import SeqUtils
 from multipledispatch import dispatch
 
 from graphein.protein.features.sequence.utils import (
-    aggregate_feature_over_chains,
     compute_feature_over_chains,
 )
 
@@ -31,7 +29,7 @@ def molecular_weight(protein: str, seq_type: str = "protein"):
 
 
 @dispatch(nx.Graph, seq_type=str)
-def molecular_weight(protein, seq_type: str = "protein"):
+def molecular_weight(protein, seq_type: str = "protein"):  # noqa: F811 (overload)
     func = partial(SeqUtils.molecular_weight, seq_type=seq_type)
 
     return compute_feature_over_chains(
@@ -40,7 +38,7 @@ def molecular_weight(protein, seq_type: str = "protein"):
 
 
 def get_sinusoid_encoding_table(
-    n_position: int, d_hid: int, padding_idx: Optional[int] = None
+    n_position: int, d_hid: int, padding_idx: int | None = None
 ) -> np.ndarray:
     """
     Numpy-based implementation of sinusoid position encoding used in Transformer models.
@@ -57,7 +55,7 @@ def get_sinusoid_encoding_table(
     def calc_angle(position: int, hid_idx: int) -> float:
         return position / np.power(10000, 2 * (hid_idx // 2) / d_hid)
 
-    def get_pos_angle_vec(position: int) -> List[float]:
+    def get_pos_angle_vec(position: int) -> list[float]:
         return [calc_angle(position, hid_j) for hid_j in range(d_hid)]
 
     sinusoid_table = np.array(
@@ -77,7 +75,7 @@ def get_sinusoid_encoding_table(
 def add_positional_encoding(
     G: nx.Graph,
     d_hid: int,
-    padding_idx: Optional[int] = None,
+    padding_idx: int | None = None,
     add_to_nodes: bool = True,
 ) -> nx.Graph:
     """Adds transformer positional encoding (based on sequence) to graph.
@@ -108,7 +106,7 @@ def add_positional_encoding(
     if not add_to_nodes:
         G.graph["positional_encoding"] = sinusoid_table
     else:
-        for i, (n, d) in enumerate(G.nodes(data=True)):
-            d["positional_encoding"] = sinusoid_table[i, :]
+        for (_, d), encoding in zip(G.nodes(data=True), sinusoid_table):
+            d["positional_encoding"] = encoding
 
     return G

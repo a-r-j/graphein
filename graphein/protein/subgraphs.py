@@ -6,8 +6,6 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Dict, List, Optional, Tuple, Union
-
 import networkx as nx
 import numpy as np
 from loguru import logger as log
@@ -18,13 +16,13 @@ from graphein.protein.utils import ProteinGraphConfigurationError
 
 def extract_subgraph_from_node_list(
     g,
-    node_list: Optional[List[str]],
+    node_list: list[str] | None,
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a list of nodes.
 
     :param g: The graph to extract the subgraph from.
@@ -80,14 +78,14 @@ def extract_subgraph_from_node_list(
 
 def extract_subgraph_from_point(
     g: nx.Graph,
-    centre_point: Union[np.ndarray, Tuple[float, float, float]],
+    centre_point: np.ndarray | tuple[float, float, float],
     radius: float,
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a centre point and radius.
 
     :param g: The graph to extract the subgraph from.
@@ -110,7 +108,7 @@ def extract_subgraph_from_point(
     :return: The subgraph or node list if ``return_node_list=True``.
     :rtype: Union[nx.Graph, List[str]]
     """
-    node_list: List = []
+    node_list: list = []
 
     for n, d in g.nodes(data=True):
         coords = d["coords"]
@@ -136,13 +134,13 @@ def extract_subgraph_from_point(
 
 def extract_subgraph_from_atom_types(
     g: nx.Graph,
-    atom_types: List[str],
+    atom_types: list[str],
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a list of atom types.
 
     :param g: The graph to extract the subgraph from.
@@ -163,7 +161,7 @@ def extract_subgraph_from_atom_types(
     :return: The subgraph or node list if ``return_node_list=True``.
     :rtype: Union[nx.Graph, List[str]]
     """
-    node_list: List = [
+    node_list: list = [
         n for n, d in g.nodes(data=True) if d["atom_type"] in atom_types
     ]
 
@@ -183,13 +181,13 @@ def extract_subgraph_from_atom_types(
 
 def extract_subgraph_from_residue_types(
     g: nx.Graph,
-    residue_types: List[str],
+    residue_types: list[str],
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a list of allowable residue
     types.
 
@@ -212,7 +210,7 @@ def extract_subgraph_from_residue_types(
     :return: The subgraph or node list if ``return_node_list=True``.
     :rtype: Union[nx.Graph, List[str]]
     """
-    node_list: List = [
+    node_list: list = [
         n for n, d in g.nodes(data=True) if d["residue_name"] in residue_types
     ]
 
@@ -232,13 +230,13 @@ def extract_subgraph_from_residue_types(
 
 def extract_subgraph_from_chains(
     g: nx.Graph,
-    chains: List[str],
+    chains: list[str],
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a chain.
 
     :param g: The graph to extract the subgraph from.
@@ -260,7 +258,7 @@ def extract_subgraph_from_chains(
     :return: The subgraph or node list if ``return_node_list=True``.
     :rtype: Union[nx.Graph, List[str]]
     """
-    node_list: List = [
+    node_list: list = [
         n for n, d in g.nodes(data=True) if d["chain_id"] in chains
     ]
 
@@ -279,13 +277,13 @@ def extract_subgraph_from_chains(
 
 def extract_subgraph_by_sequence_position(
     g: nx.Graph,
-    sequence_positions: List[int],
+    sequence_positions: list[int],
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on position in the sequence
 
     :param g: The graph to extract the subgraph from.
@@ -307,7 +305,7 @@ def extract_subgraph_by_sequence_position(
     :return: The subgraph or node list if ``return_node_list=True``.
     :rtype: Union[nx.Graph, List[str]]
     """
-    node_list: List = [
+    node_list: list = [
         n
         for n, d in g.nodes(data=True)
         if d["residue_number"] in sequence_positions
@@ -330,13 +328,13 @@ def extract_subgraph_by_sequence_position(
 
 def extract_subgraph_by_bond_type(
     g: nx.Graph,
-    bond_types: List[str],
+    bond_types: list[str],
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a list of allowable bond types.
 
     :param g: The graph to extract the subgraph from.
@@ -362,7 +360,7 @@ def extract_subgraph_by_bond_type(
     :rtype: Union[nx.Graph, List[str]]
     """
 
-    node_list: List = []
+    node_list: list = []
 
     for u, v, d in g.edges(data=True):
         for bond_type in list(d["kind"]):
@@ -373,7 +371,7 @@ def extract_subgraph_by_bond_type(
     log.debug(f"Found {len(node_list)} nodes in the bond type subgraph.")
 
     # Remove bond annotations
-    for u, v, d in g.edges(data=True):
+    for _, _, d in g.edges(data=True):
         for bond in list(d["kind"]):
             if not inverse:
                 if bond not in bond_types:
@@ -395,13 +393,13 @@ def extract_subgraph_by_bond_type(
 
 def extract_subgraph_from_secondary_structure(
     g: nx.Graph,
-    ss_elements: List[str],
+    ss_elements: list[str],
     inverse: bool = False,
     filter_dataframe: bool = True,
     recompute_distmat: bool = False,
     update_coords: bool = True,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts subgraphs for nodes that have a secondary structure element in
     the list.
 
@@ -430,7 +428,7 @@ def extract_subgraph_from_secondary_structure(
     :rtype: Union[nx.Graph, List[str]]
     """
 
-    node_list: List[str] = []
+    node_list: list[str] = []
 
     for n, d in g.nodes(data=True):
         if "ss" not in d:
@@ -467,7 +465,7 @@ def extract_surface_subgraph(
     recompute_distmat: bool = False,
     update_coords: bool = True,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph based on thresholding the Relative Solvent
     Accessibility (RSA). This can be used for extracting a surface graph.
 
@@ -496,7 +494,7 @@ def extract_surface_subgraph(
     :return: The subgraph or node list if ``return_node_list=True``.
     :rtype: Union[nx.Graph, List[str]]
     """
-    node_list: List[str] = []
+    node_list: list[str] = []
 
     for n, d in g.nodes(data=True):
         if "rsa" not in d:
@@ -532,7 +530,7 @@ def extract_k_hop_subgraph(
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a k-hop subgraph.
 
     :param g: The graph to extract the subgraph from.
@@ -562,7 +560,7 @@ def extract_k_hop_subgraph(
     :return: The subgraph or node list if ``return_node_list=True``.
     :rtype: Union[nx.Graph, List[str]]
     """
-    neighbours: Dict[int, Union[List[str], set]] = {0: [central_node]}
+    neighbours: dict[int, list[str] | set] = {0: [central_node]}
 
     for i in range(1, k + 1):
         neighbours[i] = set()
@@ -592,14 +590,14 @@ def extract_k_hop_subgraph(
 
 def extract_interface_subgraph(
     g: nx.Graph,
-    interface_list: Optional[List[str]] = None,
-    chain_list: Optional[List[str]] = None,
+    interface_list: list[str] | None = None,
+    chain_list: list[str] | None = None,
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph of a complexed structure (multiple
     chains).
 
@@ -631,7 +629,7 @@ def extract_interface_subgraph(
     :return: The subgraph or node list if ``return_node_list=True``.
     :rtype: Union[nx.Graph, List[str]]
     """
-    node_list: List[str] = []
+    node_list: list[str] = []
     # Iterate over edges
     for u, v in g.edges():
         u_chain = g.nodes[u]["chain_id"]
@@ -681,27 +679,25 @@ def extract_interface_subgraph(
 
 def extract_subgraph(
     g: nx.Graph,
-    node_list: Optional[List[str]] = None,
-    sequence_positions: Optional[List[int]] = None,
-    chains: Optional[List[str]] = None,
-    residue_types: Optional[List[str]] = None,
-    atom_types: Optional[List[str]] = None,
-    bond_types: Optional[List[str]] = None,
-    centre_point: Optional[
-        Union[np.ndarray, Tuple[float, float, float]]
-    ] = None,
-    radius: Optional[float] = None,
-    ss_elements: Optional[List[str]] = None,
-    rsa_threshold: Optional[float] = None,
-    k_hop_central_node: Optional[str] = None,
-    k_hops: Optional[int] = None,
-    k_only: Optional[bool] = None,
+    node_list: list[str] | None = None,
+    sequence_positions: list[int] | None = None,
+    chains: list[str] | None = None,
+    residue_types: list[str] | None = None,
+    atom_types: list[str] | None = None,
+    bond_types: list[str] | None = None,
+    centre_point: np.ndarray | tuple[float, float, float] | None = None,
+    radius: float | None = None,
+    ss_elements: list[str] | None = None,
+    rsa_threshold: float | None = None,
+    k_hop_central_node: str | None = None,
+    k_hops: int | None = None,
+    k_only: bool | None = None,
     filter_dataframe: bool = True,
     update_coords: bool = True,
     recompute_distmat: bool = False,
     inverse: bool = False,
     return_node_list: bool = False,
-) -> Union[nx.Graph, List[str]]:
+) -> nx.Graph | list[str]:
     """Extracts a subgraph from a graph based on a list of nodes, sequence
     positions, chains, residue types, atom types, centre point and radius.
 

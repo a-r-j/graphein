@@ -11,8 +11,8 @@ import functools
 import os
 import ssl
 import zipfile
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, List, Optional
 
 import pandas as pd
 import wget
@@ -25,7 +25,7 @@ from graphein.utils.utils import deprecated, filter_dataframe, ping
     "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
 )
 def _download_RegNetwork(
-    root_dir: Optional[Path] = None, network_type: str = "human"
+    root_dir: Path | None = None, network_type: str = "human"
 ) -> str:
     """
     Downloads RegNetwork regulatory interactions to the root directory.
@@ -92,7 +92,7 @@ def _download_RegNetwork(
 @deprecated(
     "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
 )
-def _download_RegNetwork_regtypes(root_dir: Optional[Path] = None) -> str:
+def _download_RegNetwork_regtypes(root_dir: Path | None = None) -> str:
     """
     Downloads RegNetwork regulatory interactions types to the root directory.
 
@@ -133,9 +133,9 @@ def _download_RegNetwork_regtypes(root_dir: Optional[Path] = None) -> str:
 @deprecated(
     "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
 )
-@functools.lru_cache()
+@functools.lru_cache
 def load_RegNetwork_interactions(
-    root_dir: Optional[Path] = None,
+    root_dir: Path | None = None,
 ) -> pd.DataFrame:
     """
     Loads RegNetwork interaction datafile. Downloads the file first if not
@@ -156,9 +156,9 @@ def load_RegNetwork_interactions(
 @deprecated(
     "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
 )
-@functools.lru_cache()
+@functools.lru_cache
 def load_RegNetwork_regulation_types(
-    root_dir: Optional[Path] = None,
+    root_dir: Path | None = None,
 ) -> pd.DataFrame:
     """
     Loads RegNetwork regulation types. Downloads the file first if not already
@@ -184,7 +184,7 @@ def load_RegNetwork_regulation_types(
     "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
 )
 def parse_RegNetwork(
-    gene_list: List[str], root_dir: Optional[Path] = None
+    gene_list: list[str], root_dir: Path | None = None
 ) -> pd.DataFrame:
     """
     Parser for RegNetwork interactions
@@ -218,7 +218,7 @@ def parse_RegNetwork(
 
 
 def filter_RegNetwork(
-    df: pd.DataFrame, funcs: Optional[List[Callable]] = None
+    df: pd.DataFrame, funcs: list[Callable] | None = None
 ) -> pd.DataFrame:
     """
     Filters results of RegNetwork call by providing a list of user-defined
@@ -263,9 +263,9 @@ def standardise_RegNetwork(df: pd.DataFrame) -> pd.DataFrame:
     "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
 )
 def RegNetwork_df(
-    gene_list: List[str],
-    root_dir: Optional[Path] = None,
-    filtering_funcs: Optional[List[Callable]] = None,
+    gene_list: list[str],
+    root_dir: Path | None = None,
+    filtering_funcs: list[Callable] | None = None,
 ) -> pd.DataFrame:
     """
     Generates standardised dataframe with RegNetwork protein-protein

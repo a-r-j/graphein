@@ -3,7 +3,6 @@
 import ast
 import re
 from pathlib import Path
-from typing import List, Tuple
 
 import pytest
 
@@ -23,7 +22,7 @@ def _extras_packages() -> set:
     }
 
 
-def _import_message_calls() -> List[Tuple[str, int, str, bool]]:
+def _import_message_calls() -> list[tuple[str, int, str, bool]]:
     """Return ``(file, line, package, extras)`` for each ``import_message``
     call in the graphein package."""
     calls = []

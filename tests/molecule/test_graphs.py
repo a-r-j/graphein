@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from graphein.molecule.config import MoleculeGraphConfig
+from graphein.molecule.edges.atomic import add_atom_bonds
 from graphein.molecule.graphs import construct_graph
 from graphein.utils.dependencies import import_message
 
@@ -78,7 +79,11 @@ def test_readme_molecule_graph_example():
 @pytest.mark.parametrize("config", CONFIGS)
 def test_generate_graph_mol2(config):
     """Tests graph construction from a Mol2 file."""
-    g = construct_graph(config=config, path=SHORT_MOL2)
+    g = construct_graph(
+        config=config,
+        path=SHORT_MOL2,
+        edge_construction_funcs=[add_atom_bonds],
+    )
     assert g.graph["name"] == "short_test"
     check_nodes(g)
     check_edges(g)
@@ -87,7 +92,9 @@ def test_generate_graph_mol2(config):
 @pytest.mark.parametrize("config", CONFIGS)
 def test_generate_graph_pdb(config):
     """Tests graph construction from a PDB file."""
-    g = construct_graph(config=config, path=LONG_PDB)
+    g = construct_graph(
+        config=config, path=LONG_PDB, edge_construction_funcs=[add_atom_bonds]
+    )
     assert g.graph["name"] == "long_test"
     check_nodes(g)
     check_edges(g)
@@ -117,3 +124,13 @@ def check_edges(g):
         assert isinstance(d["bond"], rdkit.Chem.rdchem.Bond), (
             f"edge {u}-{v} does not have an RDKit bond associated with it."
         )
+
+
+def test_construct_graph_does_not_mutate_config():
+    config = MoleculeGraphConfig()
+    funcs = config.edge_construction_functions
+    g = construct_graph(
+        config=config, smiles="CCO", edge_construction_funcs=[add_atom_bonds]
+    )
+    assert config.edge_construction_functions is funcs
+    assert g.graph["config"].edge_construction_functions == [add_atom_bonds]

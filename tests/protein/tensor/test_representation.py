@@ -8,8 +8,6 @@
 
 import pytest
 
-from graphein.protein.tensor.geometry import kabsch
-from graphein.protein.tensor.reconstruction import dist_mat_to_coords
 from graphein.protein.tensor.representation import (
     get_c_alpha,
     get_full_atom_coords,

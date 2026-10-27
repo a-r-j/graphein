@@ -8,7 +8,7 @@
 
 import collections
 import os
-from typing import List, Optional, Union
+from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
@@ -97,16 +97,16 @@ def get_protein_length(df: pd.DataFrame, insertions: bool = True) -> int:
 
 
 def protein_to_pyg(
-    path: Optional[Union[str, os.PathLike]] = None,
-    pdb_code: Optional[str] = None,
-    uniprot_id: Optional[str] = None,
-    df: Optional[pd.DataFrame] = None,
-    chain_selection: Union[str, List[str]] = "all",
+    path: str | os.PathLike | None = None,
+    pdb_code: str | None = None,
+    uniprot_id: str | None = None,
+    df: pd.DataFrame | None = None,
+    chain_selection: str | list[str] = "all",
     deprotonate: bool = True,
     keep_insertions: bool = True,
-    keep_hets: List[str] = [],
+    keep_hets: Sequence[str] = (),
     model_index: int = 1,
-    atom_types: List[str] = PROTEIN_ATOMS,
+    atom_types: list[str] = PROTEIN_ATOMS,
     remove_nonstandard: bool = True,
     store_het: bool = False,
     store_bfactor: bool = False,
@@ -289,7 +289,7 @@ def protein_to_pyg(
 
 def protein_df_to_chain_tensor(
     df: pd.DataFrame,
-    chains_to_keep: Optional[List[str]] = None,
+    chains_to_keep: list[str] | None = None,
     insertions: bool = True,
     one_hot: bool = False,
     dtype: torch.dtype = torch.int64,
@@ -344,7 +344,7 @@ def protein_df_to_chain_tensor(
 
 def protein_df_to_tensor(
     df: pd.DataFrame,
-    atoms_to_keep: List[str] = PROTEIN_ATOMS,
+    atoms_to_keep: list[str] = PROTEIN_ATOMS,
     insertions: bool = True,
     fill_value: float = 1e-5,
 ) -> AtomTensor:
@@ -384,16 +384,16 @@ def protein_df_to_tensor(
 def to_dataframe(
     x: AtomTensor,
     fill_value: float = 1e-5,
-    residue_types: Optional[List[str]] = None,
-    chains: Optional[Union[List[Union[str, int]], torch.Tensor]] = None,
-    insertions: Optional[List[Union[str, float]]] = None,
-    b_factors: Optional[Union[List[float], torch.Tensor]] = None,
-    occupancy: Optional[Union[List[float], torch.Tensor]] = None,
-    charge: Optional[List[int]] = None,
-    alt_loc: Optional[List[Union[str, int]]] = None,
-    segment_id: Optional[List[Union[str, int]]] = None,
+    residue_types: list[str] | None = None,
+    chains: list[str | int] | torch.Tensor | None = None,
+    insertions: list[str | float] | None = None,
+    b_factors: list[float] | torch.Tensor | None = None,
+    occupancy: list[float] | torch.Tensor | None = None,
+    charge: list[int] | None = None,
+    alt_loc: list[str | int] | None = None,
+    segment_id: list[str | int] | None = None,
     biopandas: bool = False,
-) -> Union[pd.DataFrame, PandasPdb]:
+) -> pd.DataFrame | PandasPdb:
     """Converts an ``AtomTensor`` to a DataFrame.
 
     ``AtomTensors`` are not a full specification of a structure so missing

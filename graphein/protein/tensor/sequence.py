@@ -6,7 +6,6 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from functools import lru_cache
-from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 from loguru import logger as log
@@ -36,12 +35,12 @@ except ImportError:
 
 def get_sequence(
     df: pd.DataFrame,
-    chains: Union[str, List[str]] = "all",
+    chains: str | list[str] = "all",
     insertions: bool = False,
     list_of_three: bool = False,
-    three_to_one_map: Optional[str] = None,
+    three_to_one_map: str | None = None,
     per_atom: bool = False,
-) -> Union[str, List[str]]:
+) -> str | list[str]:
     """
     Retrieves the amino acid sequence from a DataFrame of a protein structure.
 
@@ -90,13 +89,12 @@ def get_sequence(
         # map = RESI_THREE_TO_1
         # sequence = [three_to_one_map[res] for res in sequence]
         return sequence
-    else:
-        return "".join([RESI_THREE_TO_1[res] for res in sequence])
+    return "".join([RESI_THREE_TO_1[res] for res in sequence])
 
 
 def get_residue_id(
     df: pd.DataFrame, insertions: bool = True, unique: bool = True
-) -> List[str]:
+) -> list[str]:
     """
     Returns a list of residue IDs from a DataFrame of a protein structure.
 
@@ -134,8 +132,8 @@ def get_residue_id(
 
 def residue_type_tensor(
     df: pd.DataFrame,
-    vocabulary: List[str] = STANDARD_AMINO_ACIDS,
-    three_to_one_mapping: Dict[str, str] = RESI_THREE_TO_1,
+    vocabulary: list[str] = STANDARD_AMINO_ACIDS,
+    three_to_one_mapping: dict[str, str] = RESI_THREE_TO_1,
     one_hot: bool = False,
     insertions: bool = False,
     dtype: torch.dtype = torch.long,
@@ -194,7 +192,7 @@ def residue_type_tensor(
 @lru_cache(maxsize=1)
 def get_atom_indices(
     invert: bool = False,
-) -> Union[Dict[str, Tuple[int, ...]], Dict[Tuple[int, ...], str]]:
+) -> dict[str, tuple[int, ...]] | dict[tuple[int, ...], str]:
     """
     Generates a dictionary mapping residue types to atom indices.
 
@@ -215,7 +213,7 @@ def get_atom_indices(
 
 def infer_residue_types(
     x: AtomTensor, fill_value: float = 1e-5, return_sequence: bool = True
-) -> Union[str, List[str]]:
+) -> str | list[str]:
     """
     Infers residue types from atom tensor based on non-filled residues.
 
@@ -235,7 +233,7 @@ def infer_residue_types(
     :return: Sequence or list of three-letter residue codes
     :rtype: Union[str, List[str]]
     """
-    rmap: Dict[Tuple[int, ...], str] = get_atom_indices(invert=True)
+    rmap: dict[tuple[int, ...], str] = get_atom_indices(invert=True)
 
     def _get_index(y: torch.Tensor) -> str:
         indices = (

@@ -8,8 +8,6 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import List, Optional
-
 import networkx as nx
 import numpy as np
 import torch
@@ -108,7 +106,7 @@ class GraphFormatConvertor:
         src_format: str,
         dst_format: str,
         verbose: SUPPORTED_VERBOSITY = "gnn",
-        columns: Optional[List[str]] = None,
+        columns: list[str] | None = None,
     ):
         if (src_format not in SUPPORTED_FORMATS) or (
             dst_format not in SUPPORTED_FORMATS
@@ -249,13 +247,6 @@ class GraphFormatConvertor:
             elif self.type2form[i] in ["float", "int"]:
                 edge_transform_dict[i] = torch.Tensor(np.array(j))
         g.add_edges(edge_index[0], edge_index[1], edge_transform_dict)
-
-        # add graph level features
-        graph_dict = {
-            str(feat_name): [G.graph[feat_name]]
-            for feat_name in G.graph
-            if str(feat_name) in self.columns
-        }
 
         return g
 
@@ -464,9 +455,8 @@ class GraphFormatConvertor:
         )
 
     def __call__(self, G: nx.Graph):
-        nx_g = eval("self.convert_" + self.src_format + "_to_nx(G)")
-        dst_g = eval("self.convert_nx_to_" + self.dst_format + "(nx_g)")
-        return dst_g
+        nx_g = getattr(self, f"convert_{self.src_format}_to_nx")(G)
+        return getattr(self, f"convert_nx_to_{self.dst_format}")(nx_g)
 
 
 def convert_nx_to_pyg_data(G: nx.Graph) -> Data:

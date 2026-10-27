@@ -19,5 +19,3 @@ PyMol
 -----
 .. automodule:: graphein.utils.pymol.core
     :members:
-.. automodule:: graphein.utils.pymol.compat
-    :members:

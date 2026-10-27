@@ -18,13 +18,12 @@ from graphein.protein.tensor.io import (
     protein_df_to_chain_tensor,
     protein_df_to_tensor,
     protein_to_pyg,
-    to_dataframe,
     to_pdb,
 )
 from graphein.protein.tensor.sequence import get_residue_id
 
 try:
-    import torch
+    import torch  # noqa: F401
 
     TORCH_AVAIL = True
 except ImportError:
@@ -111,11 +110,11 @@ def test_to_pdb():
 
 
 def test_pdb_to_pyg():
-    pyg_object = protein_to_pyg(PDB_DATA_PATH)
+    protein_to_pyg(PDB_DATA_PATH)
 
 
 def test_cif_to_pyg():
-    pyg_object = protein_to_pyg(CIF_DATA_PATH)
+    protein_to_pyg(CIF_DATA_PATH)
 
 
 def test_pdb_and_cif_parsing():

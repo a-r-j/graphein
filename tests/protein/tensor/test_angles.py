@@ -9,7 +9,6 @@ from graphein.protein.tensor.angles import (
     _dihedral_angle,
     angle_to_unit_circle,
     dihedrals_to_rad,
-    get_backbone_bond_angles,
     sidechain_torsion,
     to_ang,
     torsion_to_rad,

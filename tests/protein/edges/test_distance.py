@@ -34,13 +34,11 @@ from graphein.protein.edges.distance import (
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 from graphein.protein.resi_atoms import (
     AROMATIC_RESIS,
-    BOND_TYPES,
     CATION_RESIS,
     HYDROPHOBIC_RESIS,
     NEG_AA,
     PI_RESIS,
     POS_AA,
-    RESI_NAMES,
     SALT_BRIDGE_ANIONS,
     SALT_BRIDGE_CATIONS,
     SULPHUR_RESIS,
@@ -381,7 +379,7 @@ def test_add_k_nn_edges():
     g_empty.graph["pdb_df"] = pdb_df
     args_edges_pairs = [
         (
-            dict(k=1),
+            {"k": 1},
             [
                 ("A:HIS:1", "A:TYR:2"),
                 ("A:TYR:2", "B:ALA:3"),
@@ -389,7 +387,7 @@ def test_add_k_nn_edges():
             ],
         ),
         (
-            dict(k=2),
+            {"k": 2},
             [
                 ("A:HIS:1", "A:TYR:2"),
                 ("A:HIS:1", "B:ALA:3"),
@@ -399,7 +397,7 @@ def test_add_k_nn_edges():
             ],
         ),
         (
-            dict(k=1, exclude_edges=["intra"]),
+            {"k": 1, "exclude_edges": ["intra"]},
             [
                 ("A:HIS:1", "B:ALA:3"),
                 ("A:TYR:2", "B:ALA:3"),
@@ -407,14 +405,14 @@ def test_add_k_nn_edges():
             ],
         ),
         (
-            dict(k=1, exclude_edges=["inter"]),
+            {"k": 1, "exclude_edges": ["inter"]},
             [
                 ("A:HIS:1", "A:TYR:2"),
                 ("B:ALA:3", "B:ALA:4"),
             ],
         ),
         (
-            dict(k=2, exclude_edges=["intra"], exclude_self_loops=False),
+            {"k": 2, "exclude_edges": ["intra"], "exclude_self_loops": False},
             [
                 ("A:HIS:1", "B:ALA:3"),
                 ("A:TYR:2", "B:ALA:3"),
@@ -426,7 +424,7 @@ def test_add_k_nn_edges():
             ],
         ),
         (
-            dict(k=1, exclude_edges=["intra"], exclude_self_loops=False),
+            {"k": 1, "exclude_edges": ["intra"], "exclude_self_loops": False},
             [
                 ("A:HIS:1", "A:HIS:1"),
                 ("A:TYR:2", "A:TYR:2"),

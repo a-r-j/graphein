@@ -9,15 +9,9 @@
 
 from collections import defaultdict
 from itertools import chain
-from typing import Dict, List
 
 import networkx as nx
 from loguru import logger as log
-
-from graphein.protein.visualisation import (
-    plotly_protein_structure_graph as plotly_rna_structure_graph,
-)
-from graphein.rna.graphs import RNA_BASE_COLORS
 
 
 def plot_rna_graph(
@@ -44,7 +38,7 @@ def plot_rna_graph(
     node_colors = nx.get_node_attributes(g, "color").values() or None
 
     # Construct node labelling scheme
-    node_label_dicts: List[Dict[int, str]] = []
+    node_label_dicts: list[dict[int, str]] = []
     if label_base_type:
         try:
             node_label_dicts.append(

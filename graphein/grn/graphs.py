@@ -6,7 +6,7 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Callable, List, Optional
+from collections.abc import Callable
 
 import networkx as nx
 from loguru import logger as log
@@ -48,12 +48,12 @@ def parse_kwargs_from_config(config: GRNGraphConfig) -> GRNGraphConfig:
 
 
 def compute_grn_graph(
-    gene_list: List[str],
-    edge_construction_funcs: List[Callable],
-    graph_annotation_funcs: Optional[List[Callable]] = None,
-    node_annotation_funcs: Optional[List[Callable]] = None,
-    edge_annotation_funcs: Optional[List[Callable]] = None,
-    config: Optional[GRNGraphConfig] = None,
+    gene_list: list[str],
+    edge_construction_funcs: list[Callable],
+    graph_annotation_funcs: list[Callable] | None = None,
+    node_annotation_funcs: list[Callable] | None = None,
+    edge_annotation_funcs: list[Callable] | None = None,
+    config: GRNGraphConfig | None = None,
 ) -> nx.Graph:
     """
     Computes a Gene Regulatory Network Graph from a list of gene IDs
@@ -163,7 +163,7 @@ if __name__ == "__main__":
         for u, v in g.edges()
     ]
 
-    print(nx.info(g))
+    print(g)
 
     pos = nx.spring_layout(g)
     nx.draw(g, pos=pos, with_labels=True, edge_color=edge_colors)

@@ -1,12 +1,11 @@
 """Node featurisation utilities for Gene Regulatory Networks."""
 
-from typing import Any, Dict
+from typing import Any
 
 from bioservices import HGNC, UniProt
-from loguru import logger as log
 
 
-def add_sequence_to_nodes(n: str, d: Dict[str, Any]):
+def add_sequence_to_nodes(n: str, d: dict[str, Any]):
     """
     Maps UniProt ACC to UniProt ID. Retrieves sequence from UniProt and adds
     it to the node

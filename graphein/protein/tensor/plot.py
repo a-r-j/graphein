@@ -9,7 +9,8 @@ All plots are produced with Plotly and so are loggable to Weights and Biases.
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Any, Dict, List, Optional, Union
+from collections.abc import Sequence
+from typing import Any
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -52,7 +53,7 @@ def plot_dihedrals(
 
 
 def plot_distance_matrix(
-    x: Union[CoordTensor, AtomTensor], **kwargs: Dict[str, Any]
+    x: CoordTensor | AtomTensor, **kwargs: dict[str, Any]
 ) -> go.Figure:
     """
     Computes and plots a distance matrix of a ``CoordTensor`` or ``AtomTensor``.
@@ -70,10 +71,10 @@ def plot_distance_matrix(
 
 
 def plot_structure(
-    x: Union[CoordTensor, AtomTensor],
-    atoms: List[str] = ["N", "CA", "C", "O", "CB"],
+    x: CoordTensor | AtomTensor,
+    atoms: Sequence[str] = ("N", "CA", "C", "O", "CB"),
     lines: bool = True,
-    residue_ids: Optional[List[str]] = None,
+    residue_ids: list[str] | None = None,
 ) -> go.Figure:
     """Plots a protein structure in 3D.
 

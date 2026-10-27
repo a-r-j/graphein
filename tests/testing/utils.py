@@ -10,7 +10,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from graphein.protein import construct_graph
 from graphein.testing.utils import (

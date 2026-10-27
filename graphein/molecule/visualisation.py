@@ -11,7 +11,7 @@ Plotting functions for molecules wrap the methods defined on protein graphs and 
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -21,12 +21,16 @@ from graphein.protein.visualisation import (
     plotly_protein_structure_graph,
 )
 
+if TYPE_CHECKING:
+    import plotly.graph_objects as go
+    from mpl_toolkits.mplot3d import Axes3D
+
 
 def plot_molecular_graph(
     G: nx.Graph,
     angle: int = 30,
-    plot_title: Optional[str] = None,
-    figsize: Tuple[int, int] = (10, 7),
+    plot_title: str | None = None,
+    figsize: tuple[int, int] = (10, 7),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
     node_size_multiplier: float = 1,
@@ -37,7 +41,7 @@ def plot_molecular_graph(
     colour_edges_by: str = "kind",
     edge_alpha: float = 0.5,
     plot_style: str = "ggplot",
-    out_path: Optional[str] = None,
+    out_path: str | None = None,
     out_format: str = ".png",
 ) -> Axes3D:
     """
@@ -101,8 +105,8 @@ def plot_molecular_graph(
 
 def plotly_molecular_graph(
     g: nx.Graph,
-    plot_title: Optional[str] = None,
-    figsize: Tuple[int, int] = (620, 650),
+    plot_title: str | None = None,
+    figsize: tuple[int, int] = (620, 650),
     node_alpha: float = 0.7,
     node_size_min: float = 20,
     node_size_multiplier: float = 1.0,

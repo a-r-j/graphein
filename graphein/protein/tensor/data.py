@@ -3,6 +3,7 @@
 import itertools
 import random
 import traceback
+from collections.abc import Callable, Sequence
 from functools import partial
 
 # Graphein
@@ -10,7 +11,7 @@ from functools import partial
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Union
 
 import looseversion
 import pandas as pd
@@ -29,8 +30,6 @@ from ..resi_atoms import PROTEIN_ATOMS
 from .angles import (
     alpha,
     dihedrals,
-    get_backbone_bond_angles,
-    get_backbone_bond_lengths,
     kappa,
     sidechain_torsion,
 )
@@ -63,7 +62,6 @@ from .types import (
     CoordTensor,
     DihedralTensor,
     EdgeTensor,
-    PositionTensor,
     TorsionTensor,
 )
 
@@ -138,7 +136,7 @@ class Protein(Data):
 
     def __init__(
         self,
-        atom_list: List[str] = PROTEIN_ATOMS,
+        atom_list: list[str] = PROTEIN_ATOMS,
         fill_value: float = 1e-5,
         **kwargs,
     ) -> None:
@@ -165,10 +163,10 @@ class Protein(Data):
     def from_dataframe(
         self,
         df: pd.DataFrame,
-        id: Optional[str] = None,
-        atoms_to_keep: List[str] = PROTEIN_ATOMS,
-        node_labels: Optional[torch.Tensor] = None,
-        graph_labels: Optional[torch.Tensor] = None,
+        id: str | None = None,
+        atoms_to_keep: list[str] = PROTEIN_ATOMS,
+        node_labels: torch.Tensor | None = None,
+        graph_labels: torch.Tensor | None = None,
     ) -> "Protein":
         """Instantiate a ``Protein`` object from a Pandas DataFrame.
 
@@ -292,10 +290,10 @@ class Protein(Data):
 
     def to_dataframe(
         self,
-        x: Optional[Union[AtomTensor, BackboneTensor]] = None,
-        cache: Optional[str] = None,
+        x: AtomTensor | BackboneTensor | None = None,
+        cache: str | None = None,
         **kwargs,
-    ) -> Union[pd.DataFrame, PandasPdb]:
+    ) -> pd.DataFrame | PandasPdb:
         """Compute a Pandas DataFrame from a ``Protein`` object.
 
         .. see:: :func:`graphein.protein.tensor.io.to_dataframe`
@@ -326,8 +324,8 @@ class Protein(Data):
 
     def to_pdb(
         self,
-        out_path: Optional[str] = None,
-        x: Optional[Union[AtomTensor, BackboneTensor]] = None,
+        out_path: str | None = None,
+        x: AtomTensor | BackboneTensor | None = None,
         gz: bool = False,
         **kwargs,
     ):
@@ -368,14 +366,14 @@ class Protein(Data):
     def from_pdb_code(
         self,
         pdb_code: str,
-        chain_selection: Union[str, List[str]] = "all",
+        chain_selection: str | list[str] = "all",
         deprotonate: bool = True,
         keep_insertions=False,
-        keep_hets: List[str] = [],
+        keep_hets: Sequence[str] = (),
         model_index: int = 1,
-        atom_types: List[str] = PROTEIN_ATOMS,
-        node_labels: Optional[torch.Tensor] = None,
-        graph_labels: Optional[torch.Tensor] = None,
+        atom_types: list[str] = PROTEIN_ATOMS,
+        node_labels: torch.Tensor | None = None,
+        graph_labels: torch.Tensor | None = None,
     ) -> "Protein":  # sourcery skip: class-extract-method
         data = protein_to_pyg(
             pdb_code=pdb_code,
@@ -401,11 +399,11 @@ class Protein(Data):
         chain_selection: str = "all",
         deprotonate: bool = True,
         keep_insertions=False,
-        keep_hets: List[str] = [],
+        keep_hets: Sequence[str] = (),
         model_index: int = 1,
-        atom_types: List[str] = PROTEIN_ATOMS,
-        node_labels: Optional[torch.Tensor] = None,
-        graph_labels: Optional[torch.Tensor] = None,
+        atom_types: list[str] = PROTEIN_ATOMS,
+        node_labels: torch.Tensor | None = None,
+        graph_labels: torch.Tensor | None = None,
     ) -> "Protein":
         data = protein_to_pyg(
             path=path,
@@ -434,8 +432,8 @@ class Protein(Data):
     def edges(
         self,
         edge_type: str = "knn_10",
-        x: Optional[torch.Tensor] = None,
-        cache: Optional[str] = None,
+        x: torch.Tensor | None = None,
+        cache: str | None = None,
         **kwargs,
     ) -> EdgeTensor:
         """
@@ -483,7 +481,7 @@ class Protein(Data):
         x: CoordTensor,
         edge_index: EdgeTensor,
         p: float = 2,
-        cache: Optional[str] = None,
+        cache: str | None = None,
     ) -> torch.Tensor:
         """Computes the edges distances between nodes.
 
@@ -499,7 +497,7 @@ class Protein(Data):
         return out
 
     # Representation
-    def alpha_carbon(self, cache: Optional[str] = None) -> CoordTensor:
+    def alpha_carbon(self, cache: str | None = None) -> CoordTensor:
         """Returns the alpha carbon coordinates of the protein as a tensor
         of shape ``Length x 3``.
 
@@ -527,7 +525,7 @@ class Protein(Data):
             setattr(self, cache, out)
         return out
 
-    def backbone(self, cache: Optional[str] = None) -> BackboneTensor:
+    def backbone(self, cache: str | None = None) -> BackboneTensor:
         """
         Returns the backbone coordinates of the protein as a tensor
         of shape ``Length x 4 x 3`` (``[N, Ca, C, O]``).
@@ -556,8 +554,8 @@ class Protein(Data):
         return out
 
     def backbone_frames(
-        self, cache: Optional[str] = None
-    ) -> Tuple[BackboneFrameTensor, CoordTensor]:
+        self, cache: str | None = None
+    ) -> tuple[BackboneFrameTensor, CoordTensor]:
         """Computes backbone rotation frames from an idealised residue.
 
         .. see:: :func:`graphein.protein.tensor.representation.get_backbone_frames`
@@ -577,11 +575,11 @@ class Protein(Data):
 
     def idealize_backbone(
         self,
-        x: Optional[Union[AtomTensor, BackboneTensor]] = None,
+        x: AtomTensor | BackboneTensor | None = None,
         lr: float = 1e-3,
         n_iter: int = 100,
         inplace: bool = False,
-        cache: Optional[str] = None,
+        cache: str | None = None,
     ) -> AtomTensor:
         """Computes idealised backbone coordinates.
 
@@ -602,7 +600,7 @@ class Protein(Data):
             x = self.coords
         return idealize_backbone(x, lr=lr, n_iter=n_iter, inplace=inplace)
 
-    def full_atom_coords(self, cache: Optional[str] = None) -> CoordTensor:
+    def full_atom_coords(self, cache: str | None = None) -> CoordTensor:
         """Gets the full atom coordinates of the protein. Returns tensor of
         shape ``[Length x 3]``.
 
@@ -621,7 +619,7 @@ class Protein(Data):
 
     # Angles
     def dihedrals(
-        self, rad: bool = True, embed: bool = True, cache: Optional[str] = None
+        self, rad: bool = True, embed: bool = True, cache: str | None = None
     ) -> DihedralTensor:
         """
         .. see:: :func:`graphein.protein.tensor.angles.dihedrals`
@@ -632,7 +630,7 @@ class Protein(Data):
             setattr(self, cache, out)
         return out
 
-    def sidechain_torsion(self, cache: Optional[str] = None) -> TorsionTensor:
+    def sidechain_torsion(self, cache: str | None = None) -> TorsionTensor:
         """
         Computes sidechain torsion angles.
 
@@ -647,7 +645,7 @@ class Protein(Data):
 
     def kappa(
         self,
-        cache: Optional[str] = None,
+        cache: str | None = None,
         rad: bool = True,
         embed: bool = True,
     ) -> torch.Tensor:
@@ -667,7 +665,7 @@ class Protein(Data):
         return out
 
     def alpha(
-        self, cache: Optional[str] = None, rad: bool = True, embed: bool = True
+        self, cache: str | None = None, rad: bool = True, embed: bool = True
     ) -> torch.Tensor:
         """
         Computes ``alpha`` virtual angle.
@@ -689,8 +687,8 @@ class Protein(Data):
         other: "Protein",
         ca_only: bool = True,
         return_transformed: bool = True,
-        cache: Optional[str] = None,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        cache: str | None = None,
+    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         """Aligns the ``Protein`` to another (``other``) tensor using the Kabsch
         algorithm.
 
@@ -713,7 +711,7 @@ class Protein(Data):
 
     # Features
     def amino_acid_one_hot(
-        self, num_types: int = 23, cache: Optional[str] = None
+        self, num_types: int = 23, cache: str | None = None
     ) -> torch.Tensor:
         out = F.one_hot(self.residue_type, num_classes=num_types)
         if cache is not None:
@@ -766,9 +764,7 @@ class Protein(Data):
         return True
 
     # Plotting
-    def plot_distance_matrix(
-        self, x: Optional[CoordTensor] = None
-    ) -> go.Figure:
+    def plot_distance_matrix(self, x: CoordTensor | None = None) -> go.Figure:
         """
         Plots a distance matrix. If ``x`` is not provided, it plots the
         alpha carbon contact map.
@@ -795,7 +791,7 @@ class Protein(Data):
         return plot_dihedrals(dh)
 
     def plot_structure(
-        self, atoms: List[str] = ["N", "CA", "C", "O"], lines: bool = True
+        self, atoms: Sequence[str] = ("N", "CA", "C", "O"), lines: bool = True
     ) -> go.Figure:
         """
         Plots a 3D structure of the protein in Plotly. This can be logged to
@@ -819,12 +815,12 @@ class Protein(Data):
 
     def apply_structural_noise(
         self,
-        x: Optional[Union[AtomTensor, CoordTensor]] = None,
+        x: AtomTensor | CoordTensor | None = None,
         magnitude: float = 0.1,
         gaussian: bool = True,
         return_transformed: bool = True,
-        cache: Optional[str] = None,
-    ) -> Union[AtomTensor, CoordTensor]:
+        cache: str | None = None,
+    ) -> AtomTensor | CoordTensor:
         """
         Applies noise to the structure of the protein.
 
@@ -851,7 +847,7 @@ class Protein(Data):
 
 class ProteinBatch(Batch):
     def __init__(
-        self, fill_value: float = 1e-5, atom_list: List[str] = PROTEIN_ATOMS
+        self, fill_value: float = 1e-5, atom_list: list[str] = PROTEIN_ATOMS
     ) -> None:
         super().__init__()
         self.fill_value = fill_value
@@ -881,7 +877,7 @@ class ProteinBatch(Batch):
         return self
 
     @classmethod
-    def from_protein_list(cls, proteins: List[Protein]):
+    def from_protein_list(cls, proteins: list[Protein]):
         # sourcery skip: class-extract-method
         proteins = [Protein().from_data(p) for p in proteins]
         batch = Batch.from_data_list(proteins)
@@ -889,15 +885,15 @@ class ProteinBatch(Batch):
 
     def from_pdb_codes(
         self,
-        pdb_codes: List[str],
-        chain_selection: Optional[List[str]] = None,
-        node_labels: Optional[List[torch.Tensor]] = None,
-        graph_labels: Optional[List[torch.Tensor]] = None,
-        model_index: Optional[List[int]] = None,
-        atom_types: List[str] = PROTEIN_ATOMS,
+        pdb_codes: list[str],
+        chain_selection: list[str] | None = None,
+        node_labels: list[torch.Tensor] | None = None,
+        graph_labels: list[torch.Tensor] | None = None,
+        model_index: list[int] | None = None,
+        atom_types: list[str] = PROTEIN_ATOMS,
         deprotonate: bool = True,
         keep_insertions: bool = False,
-        keep_hets: List[str] = [],
+        keep_hets: Sequence[str] = (),
     ):
         proteins = [
             Protein().from_pdb_code(
@@ -927,15 +923,15 @@ class ProteinBatch(Batch):
 
     def from_pdb_files(
         self,
-        paths: List[str],
-        chain_selection: Optional[List[str]] = None,
-        node_labels: Optional[List[torch.Tensor]] = None,
-        graph_labels: Optional[List[torch.Tensor]] = None,
-        model_index: Optional[List[int]] = None,
-        atom_types: List[str] = PROTEIN_ATOMS,
+        paths: list[str],
+        chain_selection: list[str] | None = None,
+        node_labels: list[torch.Tensor] | None = None,
+        graph_labels: list[torch.Tensor] | None = None,
+        model_index: list[int] | None = None,
+        atom_types: list[str] = PROTEIN_ATOMS,
         deprotonate: bool = True,
         keep_insertions: bool = False,
-        keep_hets: List[str] = [],
+        keep_hets: Sequence[str] = (),
     ):
         proteins = [
             Protein().from_pdb_file(
@@ -984,7 +980,7 @@ class ProteinBatch(Batch):
         torch.save(self, out_path)
 
     # Representation
-    def alpha_carbon(self, cache: Optional[str] = None) -> CoordTensor:
+    def alpha_carbon(self, cache: str | None = None) -> CoordTensor:
         """Returns the alpha carbon coordinates of the protein as a tensor
         of shape Length x 3.
 
@@ -1012,7 +1008,7 @@ class ProteinBatch(Batch):
             setattr(self, cache, out)
         return out
 
-    def backbone(self, cache: Optional[str] = None) -> BackboneTensor:
+    def backbone(self, cache: str | None = None) -> BackboneTensor:
         """
 
         .. code-block:: python
@@ -1039,8 +1035,8 @@ class ProteinBatch(Batch):
         return out
 
     def backbone_frames(
-        self, cache: Optional[str] = None
-    ) -> Tuple[BackboneFrameTensor, CoordTensor]:
+        self, cache: str | None = None
+    ) -> tuple[BackboneFrameTensor, CoordTensor]:
         """Computes backbone rotation frames from an idealised residue.
 
         .. see:: :func:`graphein.protein.tensor.representation.get_backbone_frames`
@@ -1061,8 +1057,8 @@ class ProteinBatch(Batch):
     def edges(
         self,
         edge_type: str = "knn_10",
-        x: Optional[torch.Tensor] = None,
-        cache: Optional[str] = None,
+        x: torch.Tensor | None = None,
+        cache: str | None = None,
         **kwargs,
     ) -> EdgeTensor:
         """
@@ -1127,7 +1123,7 @@ class ProteinBatch(Batch):
 
     def protein_apply(
         self, func: Callable[["Protein"], Any], rebatch: bool = False
-    ) -> Union["ProteinBatch", List[Any]]:
+    ) -> Union["ProteinBatch", list[Any]]:
         """Applies a function ``func`` to each ``Protein`` in the batch and
         returns the result as a list of ``Proteins`` or a new ``ProteinBatch``.
 
@@ -1210,7 +1206,7 @@ class ProteinBatch(Batch):
             decrement=True,
         )
 
-    def to_protein_list(self) -> List["Protein"]:
+    def to_protein_list(self) -> list["Protein"]:
         """
         Unbatch to a list of Proteins.
 
@@ -1279,7 +1275,7 @@ class ProteinBatch(Batch):
 
     def plot_structure(
         self,
-        index: Optional[int] = None,
+        index: int | None = None,
     ) -> go.Figure():
         plots = self.protein_apply(lambda x: x.plot_structure())
         if index is not None:
@@ -1290,7 +1286,7 @@ class ProteinBatch(Batch):
 
     # Features
     def amino_acid_one_hot(
-        self, num_types: int = 23, cache: Optional[str] = None
+        self, num_types: int = 23, cache: str | None = None
     ) -> torch.Tensor:
         out = F.one_hot(self.residue_type, num_classes=num_types)
         if cache is not None:
@@ -1302,7 +1298,7 @@ class ProteinBatch(Batch):
         x: CoordTensor,
         edge_index: EdgeTensor,
         p: float = 2,
-        cache: Optional[str] = None,
+        cache: str | None = None,
     ) -> torch.Tensor:
         """Computes the edges distances between nodes.
 
@@ -1319,12 +1315,12 @@ class ProteinBatch(Batch):
 
     def apply_structural_noise(
         self,
-        x: Optional[Union[AtomTensor, CoordTensor]] = None,
+        x: AtomTensor | CoordTensor | None = None,
         magnitude: float = 0.1,
         gaussian: bool = True,
         return_transformed: bool = True,
-        cache: Optional[str] = None,
-    ) -> Union[AtomTensor, CoordTensor]:
+        cache: str | None = None,
+    ) -> AtomTensor | CoordTensor:
         """
         Applies noise to the structure of the proteins in the batch.
 
@@ -1350,15 +1346,15 @@ class ProteinBatch(Batch):
 
 
 def to_protein(
-    path: Optional[str] = None,
-    pdb_code: Optional[str] = None,
-    uniprot_id: Optional[str] = None,
+    path: str | None = None,
+    pdb_code: str | None = None,
+    uniprot_id: str | None = None,
     chain_selection: str = "all",
     deprotonate: bool = True,
     keep_insertions: bool = False,
-    keep_hets: List[str] = [],
+    keep_hets: Sequence[str] = (),
     model_index: int = 1,
-    atom_types: List[str] = PROTEIN_ATOMS,
+    atom_types: list[str] = PROTEIN_ATOMS,
 ) -> "Protein":
     """
     Parses a protein (from either: a PDB code, PDB file or a UniProt ID
@@ -1416,7 +1412,7 @@ def to_protein(
 
 
 def _mp_constructor(
-    args: Tuple[str, str],
+    args: tuple[str, str],
     deprotonate,
     keep_insertions,
     keep_hets,
@@ -1438,12 +1434,12 @@ def _mp_constructor(
                 pdb_code=args[0],
                 chain_selection=args[1],  # , model_index=args[2]
             )
-        elif source == "path":
+        if source == "path":
             return func(
                 path=args[0],
                 chain_selection=args[1],  # , model_index=args[2]
             )
-        elif source == "uniprot_id":
+        if source == "uniprot_id":
             return func(
                 uniprot_id=args[0],
                 chain_selection=args[1],
@@ -1458,17 +1454,17 @@ def _mp_constructor(
 
 
 def to_protein_mp(
-    paths: Optional[str] = None,
-    pdb_codes: Optional[str] = None,
-    uniprot_ids: Optional[str] = None,
-    chain_selections: Optional[List[str]] = None,
+    paths: str | None = None,
+    pdb_codes: str | None = None,
+    uniprot_ids: str | None = None,
+    chain_selections: list[str] | None = None,
     deprotonate: bool = True,
     keep_insertions: bool = False,
-    keep_hets: List[str] = [],
+    keep_hets: Sequence[str] = (),
     model_index: int = 1,
-    atom_types: List[str] = PROTEIN_ATOMS,
+    atom_types: list[str] = PROTEIN_ATOMS,
     num_cores: int = 16,
-) -> List["Protein"]:
+) -> list["Protein"]:
     """
     Parallelised parsing of a list of proteins (from either: PDB codes, PDB
     files or UniProt IDs (via AF2 database) to a Graphein ``Protein`` object

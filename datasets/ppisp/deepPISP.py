@@ -2,7 +2,7 @@ import pickle
 
 import pandas as pd
 import torch
-from Bio.PDB import *
+from Bio.PDB import *  # noqa: F403
 from torch_geometric.data import Data
 from tqdm import tqdm
 

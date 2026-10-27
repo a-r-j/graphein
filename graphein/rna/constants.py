@@ -7,12 +7,10 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Dict, List
-
-RNA_BASES: List[str] = ["A", "U", "G", "C", "I"]
+RNA_BASES: list[str] = ["A", "U", "G", "C", "I"]
 """List of allowable RNA Bases."""
 
-RNA_BASE_COLORS: Dict[str, str] = {
+RNA_BASE_COLORS: dict[str, str] = {
     "A": "r",
     "U": "b",
     "G": "g",
@@ -21,7 +19,7 @@ RNA_BASE_COLORS: Dict[str, str] = {
 }
 """Maps RNA bases (:const:`~graphein.rna.constants.RNA_BASES`) to a colour for visualisations."""
 
-CANONICAL_BASE_PAIRINGS: Dict[str, List[str]] = {
+CANONICAL_BASE_PAIRINGS: dict[str, list[str]] = {
     "A": ["U"],
     "U": ["A"],
     "G": ["C"],
@@ -29,7 +27,7 @@ CANONICAL_BASE_PAIRINGS: Dict[str, List[str]] = {
 }
 """Maps standard RNA bases to their canonical base pairings."""
 
-WOBBLE_BASE_PAIRINGS: Dict[str, List[str]] = {
+WOBBLE_BASE_PAIRINGS: dict[str, list[str]] = {
     "A": ["I"],
     "U": ["G", "I"],
     "G": ["U"],
@@ -50,16 +48,16 @@ Mapping of RNA bases (:const:`~graphein.rna.constants.RNA_BASES`) to their allow
 Amalgam of :const:`~graphein.rna.constants.CANONICAL_BASE_PAIRINGS` and :const:`~graphein.rna.constants.WOBBLE_BASE_PAIRINGS`.
 """
 
-SIMPLE_DOTBRACKET_NOTATION: List[str] = ["(", ".", ")"]
+SIMPLE_DOTBRACKET_NOTATION: list[str] = ["(", ".", ")"]
 """List of characters in simplest dotbracket notation."""
 
-PSEUDOKNOT_OPENING_SYMBOLS: List[str] = ["[", "{", "<"]
+PSEUDOKNOT_OPENING_SYMBOLS: list[str] = ["[", "{", "<"]
 """List of symbols denoting a pseudoknot opening."""
 
-PSEUDOKNOT_CLOSING_SYMBOLS: List[str] = ["]", "}", ">"]
+PSEUDOKNOT_CLOSING_SYMBOLS: list[str] = ["]", "}", ">"]
 """List of symbols denoting a pseudoknot closing."""
 
-SUPPORTED_PSEUDOKNOT_NOTATION: List[str] = (
+SUPPORTED_PSEUDOKNOT_NOTATION: list[str] = (
     PSEUDOKNOT_OPENING_SYMBOLS + PSEUDOKNOT_CLOSING_SYMBOLS
 )
 """
@@ -76,14 +74,14 @@ Amalgamation of :const:`~graphein.rna.constants.SIMPLE_DOTBRACKET_NOTATION` and 
 """
 
 
-SS_BOND_TYPES: List[str] = [
+SS_BOND_TYPES: list[str] = [
     "phosphodiester_bond",
     "base_pairing",
     "pseudoknot",
 ]
 """List of valid secondary structure bond types."""
 
-RNA_ATOMS: List[str] = [
+RNA_ATOMS: list[str] = [
     "C1'",
     "C2",
     "C2'",
@@ -114,9 +112,9 @@ RNA_ATOMS: List[str] = [
 ]
 """List of valid RNA atoms found in PDB structures."""
 
-PHOSPHORIC_ACID_ATOMS: List[str] = ["P", "OP1", "OP2"]
+PHOSPHORIC_ACID_ATOMS: list[str] = ["P", "OP1", "OP2"]
 
-RIBOSE_ATOMS: List[str] = [
+RIBOSE_ATOMS: list[str] = [
     "C1'",
     "O1'",
     "C2'",
@@ -131,7 +129,7 @@ RIBOSE_ATOMS: List[str] = [
 
 RNA_BACKBONE_ATOMS = RIBOSE_ATOMS + PHOSPHORIC_ACID_ATOMS
 
-RNA_ATOMIC_RADII: Dict[str, float] = {
+RNA_ATOMIC_RADII: dict[str, float] = {
     "Csb": 0.77,
     "Cres": 0.72,
     "Cdb": 0.67,
@@ -144,13 +142,13 @@ RNA_ATOMIC_RADII: Dict[str, float] = {
 }
 """List of atomic radii (in angstroms) from Heyrovska 2008."""
 
-PHOSPHORIC_ACID_BOND_STATE: Dict[str, str] = {
+PHOSPHORIC_ACID_BOND_STATE: dict[str, str] = {
     "P": "P",
     "OP1": "Osb",  # TODO check this? Maybe incorrect
     "OP2": "Odb",  # TODO check this? Maybe incorrect
 }
 
-RIBOSE_BOND_STATE: Dict[str, str] = {
+RIBOSE_BOND_STATE: dict[str, str] = {
     "C1'": "Cres",
     "O1'": "Osb",
     "C2'": "Cres",
@@ -164,12 +162,12 @@ RIBOSE_BOND_STATE: Dict[str, str] = {
     "H": "H",
 }
 
-RNA_BACKBONE_BOND_STATE: Dict[str, str] = {
+RNA_BACKBONE_BOND_STATE: dict[str, str] = {
     **RIBOSE_BOND_STATE,
     **PHOSPHORIC_ACID_BOND_STATE,
 }
 
-DEOXYRIBOSE_BOND_STATE: Dict[str, str] = {
+DEOXYRIBOSE_BOND_STATE: dict[str, str] = {
     "C1'": "Cres",
     "O1'": "Osb",
     "C2'": "Cres",
@@ -183,7 +181,7 @@ DEOXYRIBOSE_BOND_STATE: Dict[str, str] = {
     "H": "H",
 }
 
-A_ATOMS: List[str] = [
+A_ATOMS: list[str] = [
     "N1",
     "C2",
     "N3",
@@ -196,7 +194,7 @@ A_ATOMS: List[str] = [
     "N9",
 ]
 
-C_ATOMS: List[str] = [
+C_ATOMS: list[str] = [
     "N1",
     "C2",
     "O2",
@@ -207,7 +205,7 @@ C_ATOMS: List[str] = [
     "C6",
 ]
 
-G_ATOMS: List[str] = [
+G_ATOMS: list[str] = [
     "N1",
     "C2",
     "N2",
@@ -221,9 +219,9 @@ G_ATOMS: List[str] = [
     "N9",
 ]
 
-T_ATOMS: List[str] = []
+T_ATOMS: list[str] = []
 
-RNA_ATOM_BOND_STATE: Dict[str, Dict[str, str]] = {
+RNA_ATOM_BOND_STATE: dict[str, dict[str, str]] = {
     "A": {
         "N1": "Ndb",
         "C2": "Cres",

@@ -8,15 +8,18 @@
 
 import os
 import tempfile
+from collections.abc import Sequence
 from functools import lru_cache, partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple, Type, Union
+from typing import (
+    Any,
+    Literal,
+)
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import networkx as nx
-import numpy as np
 import pandas as pd
 import requests
 import wget
@@ -64,14 +67,14 @@ class ProteinGraphConfigurationError(Exception):
         return self.message
 
 
-@lru_cache()
-def get_obsolete_mapping() -> Dict[str, str]:
+@lru_cache
+def get_obsolete_mapping() -> dict[str, str]:
     """Returns a dictionary mapping obsolete PDB codes to their replacement.
 
     :return: Dictionary mapping obsolete PDB codes to their replacement.
     :rtype: Dictionary[str, str]
     """
-    obs_dict: Dict[str, str] = {}
+    obs_dict: dict[str, str] = {}
 
     response = urlopen(
         "https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat"
@@ -87,7 +90,7 @@ def get_obsolete_mapping() -> Dict[str, str]:
     return obs_dict
 
 
-def read_fasta(file_path: str) -> Dict[str, str]:
+def read_fasta(file_path: str) -> dict[str, str]:
     """
     Reads a FASTA file and returns a dictionary mapping sequence names to
     their identifiers.
@@ -101,7 +104,7 @@ def read_fasta(file_path: str) -> Dict[str, str]:
     current_sequence_name = None
     current_sequence = ""
 
-    with open(file_path, "r") as file:
+    with open(file_path) as file:
         for line in file:
             if line.startswith(">"):
                 if current_sequence_name:
@@ -119,14 +122,14 @@ def read_fasta(file_path: str) -> Dict[str, str]:
 
 
 def download_pdb_multiprocessing(
-    pdb_codes: List[str],
-    out_dir: Union[str, Path],  # type: ignore
+    pdb_codes: list[str],
+    out_dir: str | Path,  # type: ignore
     format: Literal["pdb", "mmtf", "mmcif", "cif", "bcif"] = "pdb",
     overwrite: bool = False,
     strict: bool = False,
     max_workers: int = 16,
     chunksize: int = 32,
-) -> List[Path]:
+) -> list[Path]:
     """Downloads PDB structures in parallel.
 
     :param pdb_codes: List of PDB codes to download.
@@ -170,7 +173,7 @@ def download_pdb_multiprocessing(
 
 def download_pdb(
     pdb_code: str,
-    out_dir: Optional[Union[str, Path]] = None,
+    out_dir: str | Path | None = None,
     format: Literal["pdb", "mmtf", "mmcif", "cif", "bcif"] = "pdb",
     check_obsolete: bool = False,
     overwrite: bool = False,
@@ -287,7 +290,7 @@ def get_protein_name_from_filename(path: str) -> str:
 def filter_dataframe(
     dataframe: pd.DataFrame,
     by_column: str,
-    list_of_values: List[Any],
+    list_of_values: list[Any],
     boolean: bool,
 ) -> pd.DataFrame:
     """
@@ -335,7 +338,7 @@ def download_alphafold_structure(
     pdb: bool = True,
     mmcif: bool = False,
     aligned_score: bool = True,
-) -> Union[str, Tuple[str, str], None]:
+) -> str | tuple[str, str] | None:
     """
     Downloads a structure from the Alphafold EBI database
     (https://alphafold.ebi.ac.uk/files/").
@@ -559,7 +562,7 @@ def save_rgroup_df_to_pdb(
 
 def esmfold(
     sequence: str,
-    out_path: Optional[str] = None,
+    out_path: str | None = None,
     version: int = 1,
     format: str = "pdb",
 ):
@@ -582,7 +585,7 @@ def esmfold(
     """
     URL = f"https://api.esmatlas.com/foldSequence/v{version}/{format}/"
 
-    headers: Dict[str, str] = {
+    headers: dict[str, str] = {
         "Content-Type": "application/x-www-form-urlencoded",
     }
 
@@ -598,7 +601,7 @@ def esmfold(
 
 
 def cast_pdb_column_to_type(
-    pdb: PandasPdb, column_name: str, type: Type
+    pdb: PandasPdb, column_name: str, type: type
 ) -> PandasPdb:
     """Casts a specified column within a PandasPdb object to a given type
     and returns the typecasted PandasPdb object.
@@ -619,8 +622,11 @@ def cast_pdb_column_to_type(
 
 
 def extract_chains_to_file(
-    pdb_file: str, chains: List[str], out_dir: str, models: List[int] = [1]
-) -> List[str]:
+    pdb_file: str,
+    chains: list[str],
+    out_dir: str,
+    models: Sequence[int] = (1,),
+) -> list[str]:
     """Extracts chains from a PDB file to separate files.
 
     .. code-block::python

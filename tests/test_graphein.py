@@ -2,10 +2,8 @@
 
 import sys
 
-import pytest
-
 # Import package, test suite, and other packages as needed
-import graphein
+import graphein  # noqa: F401
 
 
 def test_sidechainnet_imported():

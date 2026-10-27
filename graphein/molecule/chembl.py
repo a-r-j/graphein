@@ -1,6 +1,6 @@
 """Functions for retrieving molecular data from ChEMBL."""
 
-from typing import Any, Dict
+from typing import Any
 
 import networkx as nx
 
@@ -45,7 +45,7 @@ def get_chembl_id_from_smiles(smiles: str) -> str:
     return data["molecule_chembl_id"]
 
 
-def get_chembl_metadata(query: str) -> Dict[str, Any]:
+def get_chembl_metadata(query: str) -> dict[str, Any]:
     """Retrieves metadata from ChEMBL for a SMILE string or ChEMBL ID.
 
     :param query: A valid SMILE string or ChEMBL ID, e.g.
