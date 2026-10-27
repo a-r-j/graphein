@@ -90,6 +90,27 @@ def total_degree(n: str, d: Dict[str, Any]) -> int:
     return total_degree
 
 
+def num_heavy_atoms(n: str, d: Dict[str, Any]) -> int:
+    """Adds the number of heavy (non-hydrogen) neighbouring atoms to the node data.
+
+    :param n: Node name, this is unused and only included for compatibility with the other functions.
+    :type n: str
+    :param d: Node data.
+    :type d: Dict[str, Any]
+    :return: Number of heavy atom neighbours of the atom.
+    :rtype: int
+    """
+    num_heavy_atoms = len(
+        [
+            x
+            for x in d["rdmol_atom"].GetNeighbors()
+            if x.GetSymbol() != "H"
+        ]
+    )
+    d["num_heavy_atoms"] = num_heavy_atoms
+    return num_heavy_atoms
+
+
 def total_valence(n: str, d: Dict[str, Any]) -> int:
     """Adds the total valence of the atom to the node data.
 
