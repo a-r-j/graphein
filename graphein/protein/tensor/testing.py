@@ -7,9 +7,7 @@ from loguru import logger as log
 
 from graphein.utils.dependencies import import_message
 
-from ..resi_atoms import (
-    STANDARD_AMINO_ACID_MAPPING_1_TO_3,
-)
+from ..resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
 from .sequence import _present_atom_indices, get_atom_indices
 from .types import AtomTensor, BackboneTensor, CoordTensor, ResidueTensor
 
