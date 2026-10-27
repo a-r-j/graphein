@@ -1,3 +1,9 @@
+### Unreleased
+
+#### Misc
+
+* Drop support for Python 3.10, which has reached end of life. Minimum supported version is now Python 3.11.
+
 ### 1.7.8 - 24/01/2026
 
 #### New Features
