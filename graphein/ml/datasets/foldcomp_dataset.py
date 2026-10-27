@@ -289,7 +289,9 @@ class FoldCompDataset(Dataset):
                 self.root / self.database, ids=self.ids, decompress=False
             )  # type: ignore
         else:
-            self.db = foldcomp.open(self.root / self.database, decompress=False)  # type: ignore
+            self.db = foldcomp.open(
+                self.root / self.database, decompress=False
+            )  # type: ignore
 
     @staticmethod
     def fc_to_pyg(data: Dict[str, Any], name: Optional[str] = None) -> Protein:
@@ -325,7 +327,7 @@ class FoldCompDataset(Dataset):
         return Protein(
             coords=torch.from_numpy(coords).float(),
             residues=res,
-            residue_id=[f"A:{m}:{str(n)}" for m, n in zip(res, res_num)],
+            residue_id=[f"A:{m}:{n}" for m, n in zip(res, res_num)],
             chains=torch.zeros(n_res),
             residue_type=residue_type.long(),
             b_factor=torch.from_numpy(b_factor).float(),

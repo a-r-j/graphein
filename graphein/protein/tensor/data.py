@@ -1243,13 +1243,11 @@ class ProteinBatch(Batch):
                 continue
             # Unbatch tensors
             if isinstance(attr, torch.Tensor) and k != "fill_value":
-                if attr.shape[0] == len(proteins):
-                    temp = [attr[i] for i in range(len(proteins))]
                 try:
-                    temp = unbatch(getattr(self, k), self.batch)
+                    temp = unbatch(attr, self.batch)
                 # Try unbatch edge index if unbatch fails
-                except:
-                    temp = unbatch_edge_index(getattr(self, k), self.batch)
+                except Exception:
+                    temp = unbatch_edge_index(attr, self.batch)
                 # Set tensor attribute on proteins in list
                 for i, p in enumerate(proteins):
                     setattr(p, k, temp[i])

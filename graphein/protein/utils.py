@@ -274,8 +274,10 @@ def download_pdb(
                 new_pdb, out_dir, format=format, overwrite=overwrite
             )
         except KeyError:
-            log.warning(f"PDB {pdb_code} not found. Possibly too large; large \
-                    structures are only provided as mmCIF files.")
+            log.warning(
+                f"PDB {pdb_code} not found. Possibly too large; large \
+                    structures are only provided as mmCIF files."
+            )
             return
 
     # Check if PDB already exists
@@ -292,9 +294,9 @@ def download_pdb(
 
     # Check file exists
     if strict:
-        assert os.path.exists(
-            output_path
-        ), f"{pdb_code} download failed. Not found in {out_dir}"
+        assert os.path.exists(output_path), (
+            f"{pdb_code} download failed. Not found in {out_dir}"
+        )
     log.debug(f"{pdb_code} downloaded to {out_dir}")
     return output_path
 
@@ -492,7 +494,7 @@ def save_graph_to_pdb(
     for col in blank_cols:
         if col not in df.columns:
             df[col] = ""
-    df["line_idx"] = list(range(1, len(df) + 1))
+    df["line_idx"] = range(1, len(df) + 1)
     df = df[pdb_df_columns]
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
     hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
@@ -529,7 +531,7 @@ def save_pdb_df_to_pdb(
     for col in blank_cols:
         if col not in df.columns:
             df[col] = ""
-    df["line_idx"] = list(range(1, len(df) + 1))
+    df["line_idx"] = range(1, len(df) + 1)
     df = df[pdb_df_columns]
 
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
@@ -576,7 +578,7 @@ def save_rgroup_df_to_pdb(
     for col in blank_cols:
         if col not in df.columns:
             df[col] = [""] * len(df)
-    df["line_idx"] = list(range(1, len(df) + 1))
+    df["line_idx"] = range(1, len(df) + 1)
     df = df[pdb_df_columns]
 
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)

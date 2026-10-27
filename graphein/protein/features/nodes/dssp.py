@@ -60,20 +60,12 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
     :return: pd.DataFrame containing parsed ``DSSP`` output
     :rtype: pd.DataFrame
     """
-    appender = []
-    for k in dssp[1]:
-        to_append = []
-        y = dssp[0][k]
-        chain = k[0]
-        residue = k[1]
-        # het = residue[0]
-        resnum = residue[1]
-        icode = residue[2]
-        to_append.extend([chain, resnum, icode])
-        to_append.extend(y)
-        appender.append(to_append)
-
-    return pd.DataFrame.from_records(appender, columns=DSSP_COLS)
+    # Keys are (chain, (het, resnum, icode))
+    records = [
+        [chain, res[1], res[2], *dssp[0][(chain, res)]]
+        for chain, res in dssp[1]
+    ]
+    return pd.DataFrame.from_records(records, columns=DSSP_COLS)
 
 
 @requires_external_dependencies("mkdssp")
@@ -102,9 +94,9 @@ def add_dssp_df(
     executable = dssp_config.executable
 
     # Ensure that DSSP is on PATH and is marked as an executable.
-    assert is_tool(
-        executable
-    ), "DSSP must be on PATH and marked as an executable"
+    assert is_tool(executable), (
+        "DSSP must be on PATH and marked as an executable"
+    )
 
     pdb_file = None
     if path:
@@ -118,9 +110,7 @@ def add_dssp_df(
     # get dssp version string
     dssp_version = re.search(
         r"version ([\d\.]+)", os.popen(f"{executable} --version").read()
-    ).group(
-        1
-    )  # e.g. "4.0.4"
+    ).group(1)  # e.g. "4.0.4"
     with tempfile.TemporaryDirectory() as tmpdirname:
         tmp_pdb = os.path.join(tmpdirname, f"{pdb_name}.pdb")
         # Check for existence of pdb file. If not, reconstructs it from the raw df.
@@ -140,7 +130,7 @@ def add_dssp_df(
             pdb_file, DSSP=executable, dssp_version=dssp_version
         )
 
-    if len(dssp_dict[0]) == 0:
+    if not dssp_dict[0]:
         raise ValueError(
             "DSSP could not be calculated. Check DSSP version "
             f"({dssp_version}) orthat the input PDB file is valid."
@@ -171,11 +161,7 @@ def add_dssp_df(
             & (
                 _raw_pdb_df["insertion"] == icode.strip()
             )  # why strip?: dssp icode is a space, raw_pdb_df is empty string
-        ][
-            "residue_name"
-        ].values[
-            0
-        ]
+        ]["residue_name"].values[0]
 
     # Construct node IDs
     dssp_dict["node_id"] = (
@@ -187,7 +173,7 @@ def add_dssp_df(
     )
     if G.graph["config"].insertions:
         dssp_dict["node_id"] = (
-            dssp_dict["node_id"] + ":" + dssp_dict["icode"].apply(str)
+            dssp_dict["node_id"] + ":" + dssp_dict["icode"].astype(str)
         )
         # Replace trailing : for non insertions
         dssp_dict["node_id"] = dssp_dict["node_id"].str.replace(
@@ -252,8 +238,10 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
 
             G.nodes[n][feature] = dssp_df.loc[residue, feature]
         """
-        raise NameError(f"DSSP residue features ({feature}) \
-            cannot be added to atom granularity graph")
+        raise NameError(
+            f"DSSP residue features ({feature}) \
+            cannot be added to atom granularity graph"
+        )
 
     else:
         nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
