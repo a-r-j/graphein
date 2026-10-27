@@ -7,7 +7,6 @@ pytest.importorskip("pymol")
 pytest.importorskip("pytorch3d")
 
 
-
 def test_create_mesh():
     config = ProteinMeshConfig(
         pymol_commands=[
