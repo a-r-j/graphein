@@ -92,7 +92,7 @@ def add_nodes_to_graph(
         )
 
     if verbose:
-        print(nx.info(G))
+        print(G)
         print(G.nodes())
 
     return G

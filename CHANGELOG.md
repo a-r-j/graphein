@@ -6,6 +6,9 @@
 
 #### Bugfixes
 
+* Fix the sdist (and the wheel `uv build` builds from it) containing no Python code: the hatch sdist `include` list only listed the README, LICENSE and two CSVs. It now includes `graphein/`. Removes the unused `MANIFEST.in`, which hatchling ignores.
+* Replace deprecated class-based `Config` with `model_config = ConfigDict(...)` in `GRNGraphConfig` and `PPIGraphConfig` to silence `PydanticDeprecatedSince20` warnings.
+* Pin `setuptools<81` so `bioservices` can still import `pkg_resources`, which setuptools 81 removed. Newer `bioservices` releases drop `pkg_resources` but require `lxml<6`, which is affected by CVE-2026-41066.
 * Fix `add_hydrogen_bond_interactions` finding few or no hydrogen bonds. Edges now require a donor-acceptor pair (using `HYDROGEN_BOND_DONORS`/`HYDROGEN_BOND_ACCEPTORS`) in different residues, backbone `N`/`O` atoms are included, and hydrogen bonds can be filtered by type (`hbond_types`: backbone-backbone, backbone-side chain, side chain-side chain). Sulphur atoms are no longer treated as hydrogen bond donors/acceptors. Fixes [#437](https://github.com/a-r-j/graphein/issues/437)
 
 #### Misc
