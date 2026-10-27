@@ -73,7 +73,7 @@ class ProteinGraphConfigurationError(Exception):
         return self.message
 
 
-@lru_cache()
+@lru_cache
 def get_obsolete_mapping() -> Dict[str, str]:
     """Returns a dictionary mapping obsolete PDB codes to their replacement.
 
@@ -110,7 +110,7 @@ def read_fasta(file_path: str) -> Dict[str, str]:
     current_sequence_name = None
     current_sequence = ""
 
-    with open(file_path, "r") as file:
+    with open(file_path) as file:
         for line in file:
             if line.startswith(">"):
                 if current_sequence_name:

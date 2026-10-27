@@ -218,10 +218,9 @@ class ProteinGraphConfig(BaseModel):
     def convert_alt_locs_aliases(cls, v):
         if v is True:
             return "include"
-        elif v is False:
+        if v is False:
             return "exclude"
-        else:
-            return v
+        return v
 
     def __eq__(self, other: Any) -> bool:
         """

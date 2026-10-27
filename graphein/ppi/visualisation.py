@@ -121,9 +121,17 @@ def plotly_ppi_graph(
             width=width,
             height=height,
             hovermode="closest",
-            margin=dict(b=20, l=5, r=5, t=40),
-            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            margin={"b": 20, "l": 5, "r": 5, "t": 40},
+            xaxis={
+                "showgrid": False,
+                "zeroline": False,
+                "showticklabels": False,
+            },
+            yaxis={
+                "showgrid": False,
+                "zeroline": False,
+                "showticklabels": False,
+            },
         ),
     )
 
@@ -156,19 +164,19 @@ def get_node_trace(
         y=node_y,
         mode="markers",
         hoverinfo="text",
-        marker=dict(
-            showscale=False,
-            colorscale=node_colourscale,
-            reversescale=True,
-            color=[],
-            size=node_size,
-            colorbar=dict(
-                thickness=15,
-                title="Node Connections",
-                xanchor="left",
-            ),
-            line_width=2,
-        ),
+        marker={
+            "showscale": False,
+            "colorscale": node_colourscale,
+            "reversescale": True,
+            "color": [],
+            "size": node_size,
+            "colorbar": {
+                "thickness": 15,
+                "title": "Node Connections",
+                "xanchor": "left",
+            },
+            "line_width": 2,
+        },
     )
     node_text = list(g.nodes())
     node_trace.marker.color = node_size
@@ -204,7 +212,7 @@ def get_edge_trace(
             colour = edge_colours[2]
 
         edge_trace = go.Scatter(
-            line=dict(width=2, color=colour),
+            line={"width": 2, "color": colour},
             hoverinfo="text",
             x=(x0, x1),
             y=(y0, y1),

@@ -252,7 +252,7 @@ class FoldCompDataset(Dataset):
         LOOKUP_FILE = Path(self.root) / f"{self.database}.lookup"
         if not os.path.exists(LOOKUP_FILE):
             self.download()
-        with open(LOOKUP_FILE, "r") as f:
+        with open(LOOKUP_FILE) as f:
             accessions = f.readlines()
         # Extract accessions
         accessions = [x.strip().split("\t")[1] for x in tqdm(accessions)]

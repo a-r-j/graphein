@@ -365,9 +365,7 @@ def construct_graph(
             node_annotation_funcs=node_annotation_funcs,
             graph_annotation_funcs=graph_annotation_funcs,
         )
-    elif (
-        dotbracket is not None or sequence is not None or bprna_id is not None
-    ):
+    if dotbracket is not None or sequence is not None or bprna_id is not None:
         return construct_rna_graph_2d(
             dotbracket=dotbracket,
             sequence=sequence,

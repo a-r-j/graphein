@@ -227,22 +227,19 @@ class ProteinDataset(Dataset):
                 f"{pdb}_{chain}.pt"
                 for pdb, chain in zip(self.structures, self.chain_selections)
             ]
-        else:
-            return [f"{pdb}.pt" for pdb in self.structures]
+        return [f"{pdb}.pt" for pdb in self.structures]
 
     @property
     def raw_dir(self) -> str:
         if hasattr(self, "pdb_dir"):
             return self.pdb_dir
-        else:
-            return os.path.join(self.root, "raw")
+        return os.path.join(self.root, "raw")
 
     @property
     def processed_dir(self) -> str:
         if hasattr(self, "out_dir"):
             return self.out_dir
-        else:
-            return os.path.join(self.root, "processed")
+        return os.path.join(self.root, "processed")
 
     def validate_input(self):
         if self.graph_labels is not None:
@@ -341,8 +338,7 @@ class ProteinDataset(Dataset):
                 and not self.overwrite
             ):
                 continue
-            else:
-                esmfold(seq, out_path=os.path.join(self.raw_dir, f"{id}.pdb"))
+            esmfold(seq, out_path=os.path.join(self.raw_dir, f"{id}.pdb"))
 
     def len(self) -> int:
         """Returns length of data set (number of structures)."""
@@ -471,7 +467,7 @@ class ProteinDataset(Dataset):
                 ),
                 weights_only=False,
             )
-        elif isinstance(idx, str):
+        if isinstance(idx, str):
             try:
                 return torch.load(
                     os.path.join(self.processed_dir, f"{idx}.pt"),
@@ -504,12 +500,11 @@ class ProteinDataset(Dataset):
             data = self.get(self.indices()[idx])
             data = data if self.transform is None else self.transform(data)
             return data
-        elif isinstance(idx, str):
+        if isinstance(idx, str):
             data = self.get(idx)
             data = data if self.transform is None else self.transform(data)
             return data
-        else:
-            return self.index_select(idx)
+        return self.index_select(idx)
 
 
 class ProteinGraphListDataset(InMemoryDataset):

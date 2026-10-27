@@ -218,7 +218,7 @@ def foldcompress_file(fname: str, anchor_residue_threshold: int = 25):
     if not fname.endswith(".pdb"):
         raise ValueError("Can only compress PDB files.")
 
-    with open(fname, "r") as f:
+    with open(fname) as f:
         src = f.read()
 
     fcz = foldcomp.compress(fname, src, anchor_residue_threshold)

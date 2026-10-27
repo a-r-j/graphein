@@ -50,7 +50,7 @@ def read_dbn_file(path: str) -> Tuple[str, str]:
     :return: Tuple of sequence and dotbracket strings.
     :rtype: Tuple[str, str]
     """
-    with open(path, "r") as f:
+    with open(path) as f:
         lines = f.readlines()
     print(lines)
     sequence = lines[-2]

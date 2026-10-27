@@ -23,7 +23,7 @@ from graphein.protein.resi_atoms import (
 from graphein.utils.utils import onek_encoding_unk
 
 
-@lru_cache()
+@lru_cache
 def load_expasy_scales() -> pd.DataFrame:
     """
     Load pre-downloaded EXPASY scales.
@@ -41,7 +41,7 @@ def load_expasy_scales() -> pd.DataFrame:
     return pd.read_csv(fpath, index_col=0)
 
 
-@lru_cache()
+@lru_cache
 def load_meiler_embeddings() -> pd.DataFrame:
     """
     Load pre-downloaded Meiler embeddings.

@@ -95,7 +95,7 @@ def plot_degree_by_residue_type(
     counts = pd.Series(Counter(residues))
     residues = list(set(residues))
 
-    degree_values = {r: 0 for r in residues}
+    degree_values = dict.fromkeys(residues, 0)
     for r, deg in g.degree():
         degree_values[r[2:5]] += deg
 
@@ -284,7 +284,7 @@ def plot_graph_metric_property_correlation(
         width=width,
         title=title,
     )
-    fig.update_layout(font=dict(size=font_size))
+    fig.update_layout(font={"size": font_size})
     fig.update_traces(diagonal_visible=diagonal_visible)
 
     return fig

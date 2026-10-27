@@ -61,10 +61,9 @@ def compute_edges(
 
     if etype == "knn":
         return knn_edges(x=x, k=int(val), batch=batch, **kwargs)
-    elif etype == "eps":
+    if etype == "eps":
         return radius_edges(x=x, radius=float(val), batch=batch, **kwargs)
-    else:
-        raise ValueError(f"Edge type {edge_type} not recognised.")
+    raise ValueError(f"Edge type {edge_type} not recognised.")
 
 
 def radius_edges(

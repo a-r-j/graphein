@@ -46,7 +46,7 @@ def _download_TRRUST(root_dir: Optional[Path] = None) -> str:
     return file
 
 
-@lru_cache()
+@lru_cache
 def load_TRRUST(root_dir: Optional[Path] = None) -> pd.DataFrame:
     """
     Loads the TRRUST datafile. If file not found, it is downloaded.

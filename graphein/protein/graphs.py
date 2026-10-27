@@ -104,24 +104,15 @@ def read_pdb_to_dataframe(
     if path is not None:
         if isinstance(path, Path):
             path = os.fsdecode(path)
-        if (
-            path.endswith(".pdb")
-            or path.endswith(".pdb.gz")
-            or path.endswith(".ent")
-        ):
+        if path.endswith((".pdb", ".pdb.gz", ".ent")):
             atomic_df = cpdb.parse(path)
-        elif path.endswith(".mmtf") or path.endswith(".mmtf.gz"):
+        elif path.endswith((".mmtf", ".mmtf.gz")):
             atomic_df = PandasMmtf().read_mmtf(path)
             atomic_df = atomic_df.get_model(model_index)
             atomic_df = pd.concat(
                 [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
             )
-        elif (
-            path.endswith(".cif")
-            or path.endswith(".cif.gz")
-            or path.endswith(".mmcif")
-            or path.endswith(".mmcif.gz")
-        ):
+        elif path.endswith((".cif", ".cif.gz", ".mmcif", ".mmcif.gz")):
             atomic_df = PandasMmcif().read_mmcif(path)
             atomic_df = atomic_df.get_model(model_index)
             atomic_df = atomic_df.convert_to_pandas_pdb()
@@ -923,11 +914,11 @@ def _mp_graph_constructor(
             return func(
                 pdb_code=args[0], chain_selection=args[1], model_index=args[2]
             )
-        elif source == "path":
+        if source == "path":
             return func(
                 path=args[0], chain_selection=args[1], model_index=args[2]
             )
-        elif source == "uniprot_id":
+        if source == "uniprot_id":
             return func(
                 uniprot_id=args[0],
                 chain_selection=args[1],
@@ -1074,8 +1065,8 @@ def compute_chain_graph(
     h.graph["node_type"] = "chain"
 
     # Set nodes
-    nodes_per_chain = {chain: 0 for chain in g.graph["chain_ids"]}
-    sequences = {chain: "" for chain in g.graph["chain_ids"]}
+    nodes_per_chain = dict.fromkeys(g.graph["chain_ids"], 0)
+    sequences = dict.fromkeys(g.graph["chain_ids"], "")
     for _, d in g.nodes(data=True):
         nodes_per_chain[d["chain_id"]] += 1
         sequences[d["chain_id"]] += RESI_THREE_TO_1[d["residue_name"]]

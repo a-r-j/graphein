@@ -239,8 +239,7 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
             cannot be added to atom granularity graph"
         )
 
-    else:
-        nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
+    nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
 
     if config.verbose:
         logger.debug("Added " + feature + " features to graph nodes")

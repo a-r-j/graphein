@@ -21,19 +21,19 @@ class Collater:
             return ProteinBatch.from_data_list(
                 batch, self.follow_batch, self.exclude_keys
             )
-        elif isinstance(elem, torch.Tensor):
+        if isinstance(elem, torch.Tensor):
             return default_collate(batch)
-        elif isinstance(elem, float):
+        if isinstance(elem, float):
             return torch.tensor(batch, dtype=torch.float)
-        elif isinstance(elem, int):
+        if isinstance(elem, int):
             return torch.tensor(batch)
-        elif isinstance(elem, str):
+        if isinstance(elem, str):
             return batch
-        elif isinstance(elem, Mapping):
+        if isinstance(elem, Mapping):
             return {key: self([data[key] for data in batch]) for key in elem}
-        elif isinstance(elem, tuple) and hasattr(elem, "_fields"):
+        if isinstance(elem, tuple) and hasattr(elem, "_fields"):
             return type(elem)(*(self(s) for s in zip(*batch)))
-        elif isinstance(elem, Sequence):
+        if isinstance(elem, Sequence):
             return [self(s) for s in zip(*batch)]
 
         raise TypeError(f"DataLoader found invalid type: {type(elem)}")
@@ -73,8 +73,7 @@ class ProteinDataLoader(torch.utils.data.DataLoader):
         exclude_keys: Optional[List[str]] = None,
         **kwargs,
     ):
-        if "collate_fn" in kwargs:
-            del kwargs["collate_fn"]
+        kwargs.pop("collate_fn", None)
 
         # Save for PyTorch Lightning < 1.6:
         self.follow_batch = follow_batch

@@ -212,8 +212,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
     def raw_dir(self) -> str:
         if self.paths is not None:
             return self.path  # replace raw dir with user local path
-        else:
-            return os.path.join(self.root, "raw")
+        return os.path.join(self.root, "raw")
 
     def download(self):
         """Download the PDB files from RCSB or Alphafold."""
@@ -509,15 +508,13 @@ class ProteinGraphDataset(Dataset):
                     self.structures, self.chain_selection_map.values()
                 )
             ]
-        else:
-            return [f"{pdb}.pt" for pdb in self.structures]
+        return [f"{pdb}.pt" for pdb in self.structures]
 
     @property
     def raw_dir(self) -> str:
         if self.paths is not None:
             return self.path  # replace raw dir with user local path
-        else:
-            return os.path.join(self.root, "raw")
+        return os.path.join(self.root, "raw")
 
     def validate_input(self):
         if self.graph_label_map is not None:
@@ -689,11 +686,10 @@ class ProteinGraphDataset(Dataset):
                 ),
                 weights_only=False,
             )
-        else:
-            return torch.load(
-                os.path.join(self.processed_dir, f"{self.structures[idx]}.pt"),
-                weights_only=False,
-            )
+        return torch.load(
+            os.path.join(self.processed_dir, f"{self.structures[idx]}.pt"),
+            weights_only=False,
+        )
 
 
 class ProteinGraphListDataset(InMemoryDataset):

@@ -208,7 +208,7 @@ def read_contacts_file(
     contacts = []
 
     # Extract every contact and residue types
-    with open(contacts_file, "r") as f:
+    with open(contacts_file) as f:
         # Skip header lines
         for _ in range(2):
             next(f)

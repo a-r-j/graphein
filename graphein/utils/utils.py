@@ -419,7 +419,7 @@ def deprecated(reason):
 
         return decorator
 
-    elif inspect.isclass(reason) or inspect.isfunction(reason):
+    if inspect.isclass(reason) or inspect.isfunction(reason):
         func2 = reason
 
         if inspect.isclass(func2):
@@ -440,5 +440,4 @@ def deprecated(reason):
 
         return new_func2
 
-    else:
-        raise TypeError(repr(type(reason)))
+    raise TypeError(repr(type(reason)))

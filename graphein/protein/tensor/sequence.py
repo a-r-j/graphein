@@ -90,8 +90,7 @@ def get_sequence(
         # map = RESI_THREE_TO_1
         # sequence = [three_to_one_map[res] for res in sequence]
         return sequence
-    else:
-        return "".join([RESI_THREE_TO_1[res] for res in sequence])
+    return "".join([RESI_THREE_TO_1[res] for res in sequence])
 
 
 def get_residue_id(

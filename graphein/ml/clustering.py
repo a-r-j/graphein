@@ -86,7 +86,7 @@ def get_seq_records(
             "Alphabet given. Only checking for terminating *!\n"
         )
         check_sequences = False
-    with open(filename, "r") as handle:
+    with open(filename) as handle:
         records = list(SeqIO.parse(handle, file_format))
     del handle
     if check_sequences:
@@ -226,8 +226,7 @@ def clustering_from_pairs(pairs, out_file=None):
                 c = len(clusters[del_id]) - 1
                 while c >= 0:
                     el = clusters[del_id][c]
-                    if el in key_to_cluster:
-                        del key_to_cluster[el]
+                    key_to_cluster.pop(el, None)
                     if el not in clusters[key_to_cluster[p[0]]]:
                         clusters[key_to_cluster[p[0]]].append(el)
                         key_to_cluster[el] = key_to_cluster[p[0]]

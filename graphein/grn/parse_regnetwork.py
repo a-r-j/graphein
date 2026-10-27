@@ -133,7 +133,7 @@ def _download_RegNetwork_regtypes(root_dir: Optional[Path] = None) -> str:
 @deprecated(
     "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
 )
-@functools.lru_cache()
+@functools.lru_cache
 def load_RegNetwork_interactions(
     root_dir: Optional[Path] = None,
 ) -> pd.DataFrame:
@@ -156,7 +156,7 @@ def load_RegNetwork_interactions(
 @deprecated(
     "RegNetwork appears to be down. This warning will be removed in a future release if the service is restored."
 )
-@functools.lru_cache()
+@functools.lru_cache
 def load_RegNetwork_regulation_types(
     root_dir: Optional[Path] = None,
 ) -> pd.DataFrame:

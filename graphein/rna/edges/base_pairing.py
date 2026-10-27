@@ -41,7 +41,7 @@ def check_base_pairing_type(base_1: str, base_2: str) -> str:
     try:
         if base_2 in CANONICAL_BASE_PAIRINGS[base_1]:
             return "canonical"
-        elif base_2 in WOBBLE_BASE_PAIRINGS[base_1]:
+        if base_2 in WOBBLE_BASE_PAIRINGS[base_1]:
             return "wobble"
     except KeyError:
         return "invalid"

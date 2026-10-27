@@ -184,8 +184,7 @@ def kabsch(
     t = centroid_B if residue_wise else centroid_B - R @ centroid_A
     if residue_wise:
         return (R @ AA.mT).mT + t if return_transformed else (R, t)
-    else:
-        return R.mm(A.T).T + t.T if return_transformed else (R, t)
+    return R.mm(A.T).T + t.T if return_transformed else (R, t)
 
 
 # @torch.jit.script

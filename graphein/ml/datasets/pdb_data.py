@@ -142,7 +142,7 @@ class PDBManager:
                 f"Split names must be unique: {splits}."
             )
             self.splits = splits
-            self.df_splits = {split: None for split in splits}
+            self.df_splits = dict.fromkeys(splits)
             self.assign_leftover_rows_to_split_n = (
                 assign_leftover_rows_to_split_n
             )
@@ -531,7 +531,7 @@ class PDBManager:
         return res
 
     def _parse_entries(self) -> Dict[str, datetime]:
-        with open(self.root_dir / self.pdb_deposition_date_filename, "r") as f:
+        with open(self.root_dir / self.pdb_deposition_date_filename) as f:
             lines = f.readlines()
         lines = lines[2:]  # Skip header
         # Note: There's a badly formatted line we need to deal with instead of
@@ -579,10 +579,10 @@ class PDBManager:
         :return: List of available PDB files for download from the RCSB PDB.
         :rtype: List[str]
         """
-        with open(self.root_dir / self.pdb_availability_filename, "r") as f:
+        with open(self.root_dir / self.pdb_availability_filename) as f:
             ids = f.read().splitlines()
         log.info(f"Found {len(ids)} PDB files unavailable for download.")
-        ids = {id: False for id in ids}
+        ids = dict.fromkeys(ids, False)
         return ids
 
     def _parse_uniprot_id(self) -> Dict[str, str]:
@@ -637,7 +637,7 @@ class PDBManager:
         :rtype: Dict[str, str]
         """
         cath_mapping = {}
-        with open(self.root_dir / self.cath_id_cath_code_filename, "r") as f:
+        with open(self.root_dir / self.cath_id_cath_code_filename) as f:
             for line in f:
                 if line.startswith("#") or not line.strip():
                     continue
@@ -1948,12 +1948,9 @@ class PDBManager:
         splits_df = self.get_splits(splits, source=True)
         if ids == "chain":
             return splits_df.loc[splits_df.id.isin(seq_ids)]
-        elif ids == "pdb":
+        if ids == "pdb":
             return splits_df.loc[splits_df.pdb.isin(seq_ids)]
-        else:
-            raise ValueError(
-                "Invalid parameter ids. Must be 'chain' or 'pdb'."
-            )
+        raise ValueError("Invalid parameter ids. Must be 'chain' or 'pdb'.")
 
     def to_chain_sequence_mapping_dict(
         self, splits: Optional[List[str]]
@@ -2011,10 +2008,9 @@ class PDBManager:
                 raise ValueError(
                     f"You are exporting a selection that contains {len(unavailable)} PDB(s) unavailable for download in PDB format: {unavailable}"
                 )
-            else:
-                log.warning(
-                    f"You are exporting a selection that contains {len(unavailable)} PDB(s) unavailable for download in PDB format: {unavailable}"
-                )
+            log.warning(
+                f"You are exporting a selection that contains {len(unavailable)} PDB(s) unavailable for download in PDB format: {unavailable}"
+            )
 
     def to_csv(self, fname: str, splits: Optional[List[str]] = None):
         """Write the selection to a CSV file.

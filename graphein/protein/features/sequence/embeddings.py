@@ -44,7 +44,7 @@ except ImportError:
     log.debug(message)
 
 
-@lru_cache()
+@lru_cache
 def _load_esm_model(model_name: str = "esm1b_t33_650M_UR50S"):
     """
     Loads pre-trained FAIR ESM model from torch hub.
@@ -225,7 +225,7 @@ def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
     return G
 
 
-@lru_cache()
+@lru_cache
 @requires_python_libs("biovec")
 def _load_biovec_model():
     """Loads pretrained ProtVec Model.

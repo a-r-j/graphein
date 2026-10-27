@@ -263,7 +263,7 @@ def plotly_protein_structure_graph(
     def node_scale_by(G: nx.Graph, feature: str):
         if feature == "degree":
             return lambda k: node_size_min + node_size_multiplier * G.degree[k]
-        elif feature == "rsa":
+        if feature == "rsa":
             return lambda k: (
                 node_size_min
                 + node_size_multiplier * G.nodes(data=True)[k]["rsa"]
@@ -278,8 +278,7 @@ def plotly_protein_structure_graph(
                 + node_size_multiplier
                 * max(0, G.nodes(data=True)[k]["meiler"][f"dim_{dim}"])
             )  # Meiler values may be negative
-        else:
-            raise ValueError(f"Cannot size nodes by feature '{feature}'")
+        raise ValueError(f"Cannot size nodes by feature '{feature}'")
 
     get_node_size = node_scale_by(G, node_size_feature)
 
@@ -327,14 +326,14 @@ def plotly_protein_structure_graph(
         y_edges.extend([pos[node_a][1], pos[node_b][1], None])
         z_edges.extend([pos[node_a][2], pos[node_b][2], None])
 
-    axis = dict(
-        showbackground=False,
-        showline=False,
-        zeroline=False,
-        showgrid=False,
-        showticklabels=False,
-        title="",
-    )
+    axis = {
+        "showbackground": False,
+        "showline": False,
+        "zeroline": False,
+        "showgrid": False,
+        "showticklabels": False,
+        "title": "",
+    }
 
     repeated_edge_colours = []
     for edge_col in (
@@ -369,12 +368,12 @@ def plotly_protein_structure_graph(
             width=figsize[0],
             height=figsize[1],
             showlegend=False,
-            scene=dict(
-                xaxis=dict(axis),
-                yaxis=dict(axis),
-                zaxis=dict(axis),
-            ),
-            margin=dict(t=100),
+            scene={
+                "xaxis": dict(axis),
+                "yaxis": dict(axis),
+                "zaxis": dict(axis),
+            },
+            margin={"t": 100},
         ),
     )
 
@@ -654,7 +653,7 @@ def plot_distance_matrix(
             dist_mat,
             x=x_range,
             y=y_range,
-            labels=dict(color="Distance"),
+            labels={"color": "Distance"},
             title=title,
         )
     tick_labels = x_range if show_residue_labels else []
@@ -703,12 +702,12 @@ def plot_distance_landscape(
 
     if add_contour:
         fig.update_traces(
-            contours_z=dict(
-                show=True,
-                usecolormap=True,
-                highlightcolor="limegreen",
-                project_z=True,
-            )
+            contours_z={
+                "show": True,
+                "usecolormap": True,
+                "highlightcolor": "limegreen",
+                "project_z": True,
+            }
         )
 
     fig.update_layout(
@@ -716,21 +715,21 @@ def plot_distance_landscape(
         autosize=autosize,
         width=width,
         height=height,
-        scene=dict(
-            zaxis_title="Distance",
-            xaxis=dict(
-                ticktext=tick_labels,
-                tickvals=list(range(len(tick_labels))),
-                nticks=10,
-                showticklabels=False,
-            ),
-            yaxis=dict(
-                ticktext=tick_labels,
-                tickvals=list(range(len(tick_labels))),
-                nticks=10,
-                showticklabels=False,
-            ),
-        ),
+        scene={
+            "zaxis_title": "Distance",
+            "xaxis": {
+                "ticktext": tick_labels,
+                "tickvals": list(range(len(tick_labels))),
+                "nticks": 10,
+                "showticklabels": False,
+            },
+            "yaxis": {
+                "ticktext": tick_labels,
+                "tickvals": list(range(len(tick_labels))),
+                "nticks": 10,
+                "showticklabels": False,
+            },
+        },
     )
 
     return fig
@@ -834,7 +833,7 @@ def asteroid_plot(
                     x=(x0, x1),
                     y=(y0, y1),
                     mode="lines",
-                    line=dict(width=1, color=edge_colors[i]),
+                    line={"width": 1, "color": edge_colors[i]},
                     hoverinfo="text",
                     text=[bond_kind],
                     name=bond_kind,
@@ -873,19 +872,19 @@ def asteroid_plot(
             hoverinfo="text",
             textposition="bottom center",
             showlegend=False,
-            marker=dict(
-                colorscale="YlGnBu",
-                reversescale=True,
-                color=node_colours,
-                size=degrees,
-                colorbar=dict(
-                    thickness=15,
-                    title="Shell",
-                    tickvals=list(range(k)),
-                    xanchor="left",
-                ),
-                line_width=2,
-            ),
+            marker={
+                "colorscale": "YlGnBu",
+                "reversescale": True,
+                "color": node_colours,
+                "size": degrees,
+                "colorbar": {
+                    "thickness": 15,
+                    "title": "Shell",
+                    "tickvals": list(range(k)),
+                    "xanchor": "left",
+                },
+                "line_width": 2,
+            },
         )
 
         data = edge_trace + [node_trace] if show_edges else [node_trace]
@@ -895,20 +894,28 @@ def asteroid_plot(
                 title=title or f"Asteroid Plot - {g.graph['name']}",
                 width=width,
                 height=height,
-                legend=dict(yanchor="top", y=1, xanchor="left", x=1.10),
+                legend={
+                    "yanchor": "top",
+                    "y": 1,
+                    "xanchor": "left",
+                    "x": 1.10,
+                },
                 showlegend=show_legend,
                 hovermode="closest",
-                margin=dict(b=20, l=5, r=5, t=40),
-                xaxis=dict(
-                    showgrid=False, zeroline=False, showticklabels=False
-                ),
-                yaxis=dict(
-                    showgrid=False, zeroline=False, showticklabels=False
-                ),
+                margin={"b": 20, "l": 5, "r": 5, "t": 40},
+                xaxis={
+                    "showgrid": False,
+                    "zeroline": False,
+                    "showticklabels": False,
+                },
+                yaxis={
+                    "showgrid": False,
+                    "zeroline": False,
+                    "showticklabels": False,
+                },
             ),
         )
-    else:
-        nx.draw_shell(subgraph, nlist=shells, with_labels=show_labels)
+    nx.draw_shell(subgraph, nlist=shells, with_labels=show_labels)
 
 
 def plot_chord_diagram(

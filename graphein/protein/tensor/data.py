@@ -1435,12 +1435,12 @@ def _mp_constructor(
                 pdb_code=args[0],
                 chain_selection=args[1],  # , model_index=args[2]
             )
-        elif source == "path":
+        if source == "path":
             return func(
                 path=args[0],
                 chain_selection=args[1],  # , model_index=args[2]
             )
-        elif source == "uniprot_id":
+        if source == "uniprot_id":
             return func(
                 uniprot_id=args[0],
                 chain_selection=args[1],

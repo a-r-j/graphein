@@ -90,7 +90,7 @@ def traceback(
     if j <= i:
         return
     # if j is unpaired, there will be no change in score when we take it out, so we just recurse to the next index
-    elif DP[i][j] == DP[i][j - 1]:
+    if DP[i][j] == DP[i][j - 1]:
         traceback(i, j - 1, structure, DP, sequence)
     # consider cases where j forms a pair.
     else:
