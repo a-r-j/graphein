@@ -1,3 +1,9 @@
+### 1.7.9 - UNRELEASED
+
+#### Misc
+
+* Speed up `graphein.protein.tensor` helpers by replacing per-atom and per-residue tensor loops with single `.tolist()` calls and dict lookups: `to_dataframe` (~6x on 4hhb), `infer_residue_types` and `is_complete_structure` (~7x), `protein_df_to_tensor`, and the sidechain torsion atom indexing used by `sidechain_torsion`. Output is unchanged. Adds tests for `is_complete_structure` and `has_complete_residue`.
+
 ### 1.7.8 - 24/01/2026
 
 #### Bugfixes
