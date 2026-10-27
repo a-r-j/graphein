@@ -28,7 +28,7 @@
 * `graphein.rna.graphs.construct_graph` raises a `ValueError` when given no input instead of returning `None`. [#470](https://github.com/a-r-j/graphein/pull/470)
 * `compute_esm_embedding` rejects an invalid `representation` instead of silently returning `None`. [#470](https://github.com/a-r-j/graphein/pull/470)
 * `blast` removes its temporary files when there are no hits, and uses per-process file names. [#470](https://github.com/a-r-j/graphein/pull/470)
-* `graphein.protein.tensor` fixes [#PRNUM](https://github.com/a-r-j/graphein/pull/PRNUM):
+* `graphein.protein.tensor` fixes [#474](https://github.com/a-r-j/graphein/pull/474):
   * `kabsch` no longer returns a reflection when `allow_reflections=False`. The residue-wise version now returns the optimal rotation, and no longer raises `NameError` with `allow_reflections=True`.
   * Replace `torch.cross` without `dim` with `torch.linalg.cross`. The old calls crossed along the first dimension of size 3, so dihedrals for a batch of 3 proteins (or a length-4 protein) and `place_o_coords` for 3-residue chains were wrong.
   * `idealize_backbone` now anchors to the input coordinates (the MSE term compared the coordinates with themselves), and `Protein.idealize_backbone` respects `cache`.
@@ -44,7 +44,7 @@
 
 #### Misc
 
-* Speed up and simplify `graphein.protein.tensor`: dict lookups in `protein_df_to_tensor` and `residue_type_tensor`, cached sidechain build parameters, no GPU syncs for NaN checks, one `residue_ids` helper for residue IDs, one helper for PyG `keys`, and fixed docstring examples. [#PRNUM](https://github.com/a-r-j/graphein/pull/PRNUM)
+* Speed up and simplify `graphein.protein.tensor`: dict lookups in `protein_df_to_tensor` and `residue_type_tensor`, cached sidechain build parameters, no GPU syncs for NaN checks, one `residue_ids` helper for residue IDs, one helper for PyG `keys`, and fixed docstring examples. [#474](https://github.com/a-r-j/graphein/pull/474)
 * Lint with all pyflakes rules, remove unused imports and variables, replace mutable default arguments, drop the Python 2 pymol shim, replace `eval` dispatch in `GraphFormatConvertor` with `getattr`, and modernise type annotations (PEP 585/604). [#470](https://github.com/a-r-j/graphein/pull/470)
 * Speed up edge construction and features [#460](https://github.com/a-r-j/graphein/pull/460):
   * Replace per-pair `.loc` lookups with arrays or dicts in the protein distance threshold, distance window, kNN, pi-stacking, T-stacking, aromatic-sulphur and cation-pi edges.
