@@ -456,6 +456,26 @@ def three_to_one_with_mods(res: str) -> str:
     return RESI_THREE_TO_1[res]
 
 
+def pdb_charge_to_numeric(charge: pd.Series) -> pd.Series:
+    """Converts PDB formal charges to numbers.
+
+    PDB files write charges as a digit followed by a sign (e.g. ``"2+"``,
+    ``"1-"``), which is how ``cpdb>=0.3.0`` returns them. Signed (``"-1"``)
+    and unsigned (``"2"``) values are also accepted. Blank or invalid charges
+    become ``NaN``.
+
+    :param charge: Charge column of a PDB DataFrame.
+    :type charge: pd.Series
+    :return: Charges as floats.
+    :rtype: pd.Series
+    """
+    if pd.api.types.is_numeric_dtype(charge):
+        return charge.astype(float)
+    charge = charge.astype(str).str.strip()
+    charge = charge.str.replace(r"^(\d+)([+-])$", r"\2\1", regex=True)
+    return pd.to_numeric(charge, errors="coerce").astype(float)
+
+
 def save_graph_to_pdb(
     g: nx.Graph,
     path: str,
@@ -481,7 +501,7 @@ def save_graph_to_pdb(
 
     df = g.graph["pdb_df"].copy()
     # format charge correctly
-    df.charge = pd.to_numeric(df.charge, errors="coerce")
+    df.charge = pdb_charge_to_numeric(df.charge)
 
     # Add blank columns
     blank_cols = [
@@ -525,7 +545,7 @@ def save_pdb_df_to_pdb(
     """
     df = df.copy()
     # format charge correctly
-    df.charge = pd.to_numeric(df.charge, errors="coerce")
+    df.charge = pdb_charge_to_numeric(df.charge)
     df.alt_loc = df.alt_loc.fillna(" ")
     blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
     for col in blank_cols:
@@ -572,7 +592,7 @@ def save_rgroup_df_to_pdb(
     df = g.graph["rgroup_df"].copy()
 
     # format charge correctly
-    df.charge = pd.to_numeric(df.charge, errors="coerce")
+    df.charge = pdb_charge_to_numeric(df.charge)
 
     blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
     for col in blank_cols:
