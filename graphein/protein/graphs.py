@@ -45,7 +45,6 @@ from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
-    compute_edges,
 )
 
 try:
@@ -171,19 +170,19 @@ def label_node_id(
     :rtype: pd.DataFrame
     """
     df["node_id"] = (
-        df["chain_id"].apply(str)
+        df["chain_id"].astype(str)
         + ":"
         + df["residue_name"]
         + ":"
-        + df["residue_number"].apply(str)
+        + df["residue_number"].astype(str)
     )
 
     if insertions:
-        df["node_id"] = df["node_id"] + ":" + df["insertion"].apply(str)
+        df["node_id"] = df["node_id"] + ":" + df["insertion"].astype(str)
         # Replace trailing : for non insertions
         df["node_id"] = df["node_id"].str.replace(":$", "", regex=True)
     # Add Alt Loc identifiers
-    df["node_id"] = df["node_id"] + ":" + df["alt_loc"].apply(str)
+    df["node_id"] = df["node_id"] + ":" + df["alt_loc"].astype(str)
     df["node_id"] = df["node_id"].str.replace(":$", "", regex=True)
     df["residue_id"] = df["node_id"]
     if granularity == "atom":
@@ -192,7 +191,7 @@ def label_node_id(
         df["node_id"] = (
             df["node_id"]
             + ":"
-            + df["atom_number"].apply(str)
+            + df["atom_number"].astype(str)
             + ":"
             + df["atom_name"]
         )
@@ -616,7 +615,7 @@ def add_nodes_to_graph(
     if protein_df is None:
         protein_df: pd.DataFrame = G.graph["pdb_df"]
     # Assign intrinsic node attributes
-    chain_id = protein_df["chain_id"].apply(str)
+    chain_id = protein_df["chain_id"].astype(str)
     residue_name = protein_df["residue_name"]
     residue_number = protein_df["residue_number"]  # .apply(str)
     coords = np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]])
@@ -914,8 +913,10 @@ def _mp_graph_constructor(
     :return: Protein structure graph or ``None`` if an error is encountered.
     :rtype: Union[nx.Graph, None]
     """
-    log.info(f"Constructing graph for: {args[0]}. Chain selection: {args[1]}. \
-            Model index: {args[2]}")
+    log.info(
+        f"Constructing graph for: {args[0]}. Chain selection: {args[1]}. \
+            Model index: {args[2]}"
+    )
     func = partial(construct_graph, config=config)
     try:
         if source == "pdb_code":
@@ -934,8 +935,10 @@ def _mp_graph_constructor(
             )
 
     except Exception as ex:
-        log.info(f"Graph construction error (PDB={args[0]})! \
-                {traceback.format_exc()}")
+        log.info(
+            f"Graph construction error (PDB={args[0]})! \
+                {traceback.format_exc()}"
+        )
         log.info(ex)
         return None
 
@@ -983,9 +986,9 @@ def construct_graphs_mp(
         problem in constructing the graph for this particular pdb.
     :rtype: Union[List[nx.Graph], Dict[str, nx.Graph]]
     """
-    assert (
-        pdb_code_it is not None or path_it is not None
-    ), "Iterable of pdb codes, pdb paths or uniprot IDs required."
+    assert pdb_code_it is not None or path_it is not None, (
+        "Iterable of pdb codes, pdb paths or uniprot IDs required."
+    )
 
     if pdb_code_it is not None:
         pdbs = pdb_code_it
@@ -1181,7 +1184,7 @@ def compute_secondary_structure_graph(
 
     # Check nodes have secondary structure assignment & store them in list
     for _, d in g.nodes(data=True):
-        if "ss" not in d.keys():
+        if "ss" not in d:
             raise ProteinGraphConfigurationError(
                 "Secondary structure not defined for all nodes."
             )
@@ -1228,8 +1231,10 @@ def compute_secondary_structure_graph(
                 ss_list[u], ss_list[v], kind=d["kind"], source=f"{u}_{v}"
             )
         except KeyError as e:
-            log.debug(f"Edge {u}-{v} not added to secondary structure graph. \
-                Reason: {e} not in graph")
+            log.debug(
+                f"Edge {u}-{v} not added to secondary structure graph. \
+                Reason: {e} not in graph"
+            )
 
     # Remove self-loops if necessary.
     # Checks for equality between nodes in a given edge.

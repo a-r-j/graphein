@@ -151,9 +151,9 @@ def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
     :return: Graph with added distances.
     :rtype: nx.Graph
     """
-    if "atomic_dist_mat" in G.graph.keys():
+    if "atomic_dist_mat" in G.graph:
         dist_mat = G.graph["atomic_dist_mat"]
-    elif "dist_mat" in G.graph.keys():
+    elif "dist_mat" in G.graph:
         dist_mat = G.graph["dist_mat"]
     else:
         dist_mat = compute_distmat(G.graph["pdb_df"])
@@ -357,7 +357,7 @@ def add_hydrogen_bond_interactions(
         "O",
     ]
     hbond_df = filter_dataframe(rgroup_df, "atom_name", HBOND_ATOMS, True)
-    if len(hbond_df.index) > 0:
+    if not hbond_df.empty:
         distmat = compute_distmat(hbond_df)
         interacting_atoms = get_interacting_atoms(3.5, distmat)
         add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
@@ -367,7 +367,7 @@ def add_hydrogen_bond_interactions(
     hbond_df = filter_dataframe(
         rgroup_df, "atom_name", HBOND_ATOMS_SULPHUR, True
     )
-    if len(hbond_df.index) > 0:
+    if not hbond_df.empty:
         distmat = compute_distmat(hbond_df)
         interacting_atoms = get_interacting_atoms(4.0, distmat)
         add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
@@ -505,12 +505,14 @@ def add_aromatic_sulphur_interactions(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
 
+        node_ids = aromatic_sulphur_df["node_id"].to_numpy()
+        residue_names = aromatic_sulphur_df["residue_name"].to_numpy()
         for a1, a2 in interacting_atoms:
-            resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
-            resi2 = aromatic_sulphur_df.loc[a2, "node_id"]
+            resi1, resi2 = node_ids[a1], node_ids[a2]
+            name1, name2 = residue_names[a1], residue_names[a2]
 
-            condition1 = resi1 in SULPHUR_RESIS and resi2 in PI_RESIS
-            condition2 = resi1 in PI_RESIS and resi2 in SULPHUR_RESIS
+            condition1 = name1 in SULPHUR_RESIS and name2 in PI_RESIS
+            condition2 = name1 in PI_RESIS and name2 in SULPHUR_RESIS
 
             if (condition1 or condition2) and resi1 != resi2:
                 add_edge(G, resi1, resi2, "aromatic_sulphur")
@@ -546,12 +548,14 @@ def add_cation_pi_interactions(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
 
+        node_ids = cation_pi_df["node_id"].to_numpy()
+        residue_names = cation_pi_df["residue_name"].to_numpy()
         for a1, a2 in interacting_atoms:
-            resi1 = cation_pi_df.loc[a1, "node_id"]
-            resi2 = cation_pi_df.loc[a2, "node_id"]
+            resi1, resi2 = node_ids[a1], node_ids[a2]
+            name1, name2 = residue_names[a1], residue_names[a2]
 
-            condition1 = resi1 in CATION_RESIS and resi2 in PI_RESIS
-            condition2 = resi1 in PI_RESIS and resi2 in CATION_RESIS
+            condition1 = name1 in CATION_RESIS and name2 in PI_RESIS
+            condition2 = name1 in PI_RESIS and name2 in CATION_RESIS
 
             if (condition1 or condition2) and resi1 != resi2:
                 add_edge(G, resi1, resi2, "cation_pi")
@@ -670,22 +674,21 @@ def add_pi_stacking_interactions(
             for r, c in zip(indices[0], indices[1])
         ]
         # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
+        centroids = dict(
+            zip(
+                aromatic_df["node_id"],
+                aromatic_df[["x_coord", "y_coord", "z_coord"]].to_numpy(),
+            )
+        )
+        normals = dict(zip(aromatic_df["node_id"], aromatic_df[0]))
         for n1, n2 in interacting_resis:
             assert G.nodes[n1]["residue_name"] in PI_RESIS
             assert G.nodes[n2]["residue_name"] in PI_RESIS
-            n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
-                ["x_coord", "y_coord", "z_coord"]
-            ].values[0]
-            n2_centroid = aromatic_df.loc[aromatic_df["node_id"] == n2][
-                ["x_coord", "y_coord", "z_coord"]
-            ].values[0]
+            n1_centroid = centroids[n1]
+            n2_centroid = centroids[n2]
 
-            n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][
-                0
-            ].values[0]
-            n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][
-                0
-            ].values[0]
+            n1_normal = normals[n1]
+            n2_normal = normals[n2]
 
             centroid_vector = n2_centroid - n1_centroid
 
@@ -733,22 +736,21 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
             for r, c in zip(indices[0], indices[1])
         ]
         # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
+        centroids = dict(
+            zip(
+                aromatic_df["node_id"],
+                aromatic_df[["x_coord", "y_coord", "z_coord"]].to_numpy(),
+            )
+        )
+        normals = dict(zip(aromatic_df["node_id"], aromatic_df[0]))
         for n1, n2 in interacting_resis:
             assert G.nodes[n1]["residue_name"] in PI_RESIS
             assert G.nodes[n2]["residue_name"] in PI_RESIS
-            n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
-                ["x_coord", "y_coord", "z_coord"]
-            ].values[0]
-            n2_centroid = aromatic_df.loc[aromatic_df["node_id"] == n2][
-                ["x_coord", "y_coord", "z_coord"]
-            ].values[0]
+            n1_centroid = centroids[n1]
+            n2_centroid = centroids[n2]
 
-            n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][
-                0
-            ].values[0]
-            n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][
-                0
-            ].values[0]
+            n1_normal = normals[n1]
+            n2_normal = normals[n2]
 
             centroid_vector = n2_centroid - n1_centroid
 
@@ -962,23 +964,19 @@ def add_distance_threshold(
     interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
 
     log.info(f"Found: {len(interacting_nodes)} distance edges")
+    node_ids = pdb_df["node_id"].to_numpy()
+    chains = pdb_df["chain_id"].to_numpy()
+    positions = pdb_df["residue_number"].to_numpy()
     count = 0
     for a1, a2 in interacting_nodes:
-        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
-        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
-        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
-        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
-        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
-        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
-
-        condition_1 = n1_chain == n2_chain
+        condition_1 = chains[a1] == chains[a2]
         condition_2 = (
-            abs(n1_position - n2_position) < long_interaction_threshold
+            abs(positions[a1] - positions[a2]) < long_interaction_threshold
         )
 
         if not (condition_1 and condition_2):
             count += 1
-            add_edge(G, n1, n2, "distance_threshold")
+            add_edge(G, node_ids[a1], node_ids[a2], "distance_threshold")
 
     log.info(
         f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
@@ -1015,28 +1013,27 @@ def add_distance_window(
 
     interacting_nodes = get_interacting_atoms(max, distmat=dist_mat)
     interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
+    less_than_min = set(less_than_min)
     interacting_nodes = [
         i for i in interacting_nodes if i not in less_than_min
     ]
 
     log.info(f"Found: {len(interacting_nodes)} distance edges")
+    node_ids = pdb_df["node_id"].to_numpy()
+    chains = pdb_df["chain_id"].to_numpy()
+    positions = pdb_df["residue_number"].to_numpy()
     count = 0
     for a1, a2 in interacting_nodes:
-        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
-        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
-        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
-        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
-        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
-        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
-
-        condition_1 = n1_chain == n2_chain
+        condition_1 = chains[a1] == chains[a2]
         condition_2 = (
-            abs(n1_position - n2_position) < long_interaction_threshold
+            abs(positions[a1] - positions[a2]) < long_interaction_threshold
         )
 
         if not (condition_1 and condition_2):
             count += 1
-            add_edge(G, n1, n2, f"distance_window_{min}_{max}")
+            add_edge(
+                G, node_ids[a1], node_ids[a2], f"distance_window_{min}_{max}"
+            )
     log.info(
         f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
             removed by LIN)"
@@ -1126,37 +1123,29 @@ def add_k_nn_edges(
     nn = neigh.kneighbors_graph()
 
     # Create iterable of node indices
-    outgoing = np.repeat(np.array(range(len(pdb_df))), k)
+    outgoing = np.repeat(np.arange(len(pdb_df)), k)
     incoming = nn.indices
     interacting_nodes = list(zip(outgoing, incoming))
     log.info(f"Found: {len(interacting_nodes)} KNN edges")
+    dists = dist_mat.to_numpy()
+    node_ids = pdb_df["node_id"].to_numpy()
+    chains = pdb_df["chain_id"].to_numpy()
+    positions = pdb_df["residue_number"].to_numpy()
     for a1, a2 in interacting_nodes:
-        if dist_mat.loc[a1, a2] == INFINITE_DIST:
+        if dists[a1, a2] == INFINITE_DIST:
             continue
 
-        # Get nodes IDs from indices
-        n1 = pdb_df.loc[a1, "node_id"]
-        n2 = pdb_df.loc[a2, "node_id"]
-
-        # Get chains
-        n1_chain = pdb_df.loc[a1, "chain_id"]
-        n2_chain = pdb_df.loc[a2, "chain_id"]
-
-        # Get sequence position
-        n1_position = pdb_df.loc[a1, "residue_number"]
-        n2_position = pdb_df.loc[a2, "residue_number"]
-
         # Check residues are not on same chain
-        condition_1 = n1_chain != n2_chain
+        condition_1 = chains[a1] != chains[a2]
         # Check residues are separated by long_interaction_threshold
         condition_2 = (
-            abs(n1_position - n2_position) > long_interaction_threshold
+            abs(positions[a1] - positions[a2]) > long_interaction_threshold
         )
 
         # If not on same chain add edge or
         # If on same chain and separation is sufficient add edge
         if condition_1 or condition_2:
-            add_edge(G, n1, n2, kind_name)
+            add_edge(G, node_ids[a1], node_ids[a2], kind_name)
 
 
 def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
@@ -1337,11 +1326,11 @@ def add_interacting_resis(
     for k in kind:
         assert k in BOND_TYPES
 
-    resi1 = dataframe.loc[interacting_atoms[0]]["node_id"].values
-    resi2 = dataframe.loc[interacting_atoms[1]]["node_id"].values
+    resi1 = dataframe.loc[interacting_atoms[0], "node_id"].values
+    resi2 = dataframe.loc[interacting_atoms[1], "node_id"].values
 
-    interacting_resis = set(list(zip(resi1, resi2)))
-    log.info(f"Found {len(interacting_resis)} {k} interactions.")
+    interacting_resis = set(zip(resi1, resi2))
+    log.info(f"Found {len(interacting_resis)} {kind} interactions.")
     for i1, i2 in interacting_resis:
         if i1 != i2:
             if G.has_edge(i1, i2):

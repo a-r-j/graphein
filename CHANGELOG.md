@@ -17,6 +17,10 @@
 
 ### 1.7.8 - 24/01/2026
 
+#### Breaking Changes
+
+* Require Python >= 3.10 and pin `cpdb-protein==0.3.0` (which requires Python >= 3.10). Drop Python 3.8 and 3.9 from the CI matrices. [#460](https://github.com/a-r-j/graphein/pull/460)
+
 #### New Features
 
 * Add `num_heavy_atoms` molecule node feature to count non-hydrogen neighbours of each atom.
@@ -36,10 +40,30 @@
 * Hotfix for incorrect dataframe indexing resulting in correct edge addition in `add_distance_threshold` [#419](https://github.com/a-r-j/graphein/pull/419)
 * Fixes unnecessary download for pre-existing structure files retrieved from AlphaFold database in `graphein.ml.ProteinGraphDataset`[#426](https://github.com/a-r-j/graphein/pull/426)
 * Fixes H coords are included when constructing molecule graph from SD file [#427](https://github.com/a-r-j/graphein/issues/427).
+* Fix `add_aromatic_sulphur_interactions` and `add_cation_pi_interactions` never adding edges (they compared node IDs against residue names). Their tests now require at least one edge. [#460](https://github.com/a-r-j/graphein/pull/460)
+* `add_distance_threshold` and `add_distance_window` now look up nodes in the filtered DataFrame the distance matrix was computed from, not `G.graph["pdb_df"]`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `PDBManager._frames_are_sequential` only checking the last pair of split time frames; it now checks that all frames are strictly increasing. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `NameError` on importing `graphein.ml.metrics` (missing `Union` and `unbatch` imports in `gdt.py`). [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `NameError` in `graphein.molecule.utils.copy_edit_mol` (and so `get_clique_mol`), which called an undefined `copy_atom`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `graphein.ml.clustering.get_seq_records` with an `alphabet`: Biopython >= 1.78 rejects the `alphabet` argument and removed `_verify_alphabet`. `alphabet` is now a string of allowed letters, every sequence is checked (not only `*`-terminated ones), and the warning reports `record.id` instead of crashing on `record.seq.id`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix the same-chain check in `graphein.rna.edges.atomic.add_atomic_edges`, which only rejected empty chain IDs and so allowed covalent edges between chains. Ports the protein fix from [#201](https://github.com/a-r-j/graphein/pull/201) ([#199](https://github.com/a-r-j/graphein/issues/199)). [#460](https://github.com/a-r-j/graphein/pull/460)
 * Replace insecure `tempfile.mktemp` with `tempfile.mkstemp` in `graphein.utils.pymol.core` when exporting PyMOL session images.
 
 #### Misc
 
+* Speed up edge construction and features [#460](https://github.com/a-r-j/graphein/pull/460):
+  * Replace per-pair `.loc` lookups with arrays or dicts in the protein distance threshold, distance window, kNN, pi-stacking, T-stacking, aromatic-sulphur and cation-pi edges.
+  * Use a set for the minimum-distance filter in `add_distance_window`.
+  * Stop rebuilding `list(G.nodes())` per element in the molecule distance-threshold and kNN edges and in the protein 3D plots.
+  * Use `itertuples` for GetContacts edges.
+  * Use precomputed coordinate dicts in the geometry vector features.
+  * Use `.astype(str)` when building node IDs.
+  * Use column arrays in the protein and RNA covalent (`add_atomic_edges`) loops.
+  * Use sets for membership checks in `extract_subgraph_from_node_list(inverse=True)` and `asteroid_plot`.
+* Remove quadratic list-membership checks in `create_pairs_for_clustering`, `generate_random_sets` and `PDBManager` PDB download checks. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Close files opened in `blast` and `generate_random_sets`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Replace `black`, `isort` and `flake8` with `ruff` (formatting, import sorting and linting) in CI, pre-commit and dev requirements, and consolidate the code style CI jobs into one. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Remove dead code (an overwritten unbatch result in `ProteinBatch`, unused locals in `GDT_TS`/`TMScore`) and tidy idioms across the codebase. [#460](https://github.com/a-r-j/graphein/pull/460)
 * Switch to UV package management. ([#451](https://github.com/a-r-j/graphein/pull/451))
 * Replace `tqdm` with `tqdm.auto`. ([#445](https://github.com/a-r-j/graphein/pull/445))
 * Wrap JSON parsing in `StringIO` due to pandas deprecating string parsing. ([#445](https://github.com/a-r-j/graphein/pull/445))

@@ -210,13 +210,13 @@ def build_sidechain(
                 )  # N, CA, C
 
             # Select correct torsion angle
-            if type(torsion) is str and torsion == "p":
+            if isinstance(torsion, str) and torsion == "p":
                 if j == 5 and res == "ARG":
                     torsion = torch.tensor(0.0)
                 else:
                     torsion = torsion_angles[i, j - 1]
             elif (
-                type(torsion) is str
+                isinstance(torsion, str)
                 and torsion == "i"
                 and last_torsion is not None
             ):
@@ -263,9 +263,7 @@ def _get_build_params(
     ] + [
         torch.tensor(b, dtype=torch.float32)
         for b in build_params["bonds-vals"]
-    ][
-        :-1
-    ]
+    ][:-1]
     angle_vals = [
         torch.tensor(a, dtype=torch.float32)
         for a in build_params["angles-vals"]

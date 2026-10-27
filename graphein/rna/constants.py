@@ -43,10 +43,7 @@ Maps RNA bases (:const:`~graphein.rna.constants.RNA_BASES`) to their wobble base
 VALID_BASE_PAIRINGS = {
     key: CANONICAL_BASE_PAIRINGS.get(key, [])
     + WOBBLE_BASE_PAIRINGS.get(key, [])
-    for key in set(
-        list(CANONICAL_BASE_PAIRINGS.keys())
-        + list(WOBBLE_BASE_PAIRINGS.keys())
-    )
+    for key in CANONICAL_BASE_PAIRINGS.keys() | WOBBLE_BASE_PAIRINGS.keys()
 }
 """
 Mapping of RNA bases (:const:`~graphein.rna.constants.RNA_BASES`) to their allowable pairings.

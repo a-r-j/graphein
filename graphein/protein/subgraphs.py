@@ -48,7 +48,8 @@ def extract_subgraph_from_node_list(
     if node_list:
         # Get all nodes not in nodelist if inversing the selection
         if inverse:
-            node_list = [n for n in g.nodes() if n not in node_list]
+            excluded = set(node_list)
+            node_list = [n for n in g.nodes() if n not in excluded]
 
         # If we are just returning the node list, return it here before
         # subgraphing.
@@ -432,7 +433,7 @@ def extract_subgraph_from_secondary_structure(
     node_list: List[str] = []
 
     for n, d in g.nodes(data=True):
-        if "ss" not in d.keys():
+        if "ss" not in d:
             raise ProteinGraphConfigurationError(
                 f"Secondary structure not defined for all nodes ({n}). \
                     Please ensure you have used \
@@ -498,7 +499,7 @@ def extract_surface_subgraph(
     node_list: List[str] = []
 
     for n, d in g.nodes(data=True):
-        if "rsa" not in d.keys():
+        if "rsa" not in d:
             raise ProteinGraphConfigurationError(
                 f"RSA not defined for all nodes ({n}). Please ensure you have \
                     used graphein.protein.nodes.features.dssp.rsa as a graph \

@@ -127,9 +127,9 @@ class PDBManager:
         # Splits
         self.splits_provided = splits is not None
         if self.splits_provided:
-            assert len(set(splits)) == len(
-                splits
-            ), f"Split names must be unique: {splits}."
+            assert len(set(splits)) == len(splits), (
+                f"Split names must be unique: {splits}."
+            )
             self.splits = splits
             self.df_splits = {split: None for split in splits}
             self.assign_leftover_rows_to_split_n = (
@@ -137,21 +137,21 @@ class PDBManager:
             )
             # Sequence-based ratio splits
             if split_ratios is not None:
-                assert len(splits) == len(
-                    split_ratios
-                ), f"Number of splits ({splits}) must match number of split ratios ({split_ratios})."
-                assert math.isclose(
-                    sum(split_ratios), 1.0
-                ), f"Split ratios must sum to 1.0: {split_ratios}."
+                assert len(splits) == len(split_ratios), (
+                    f"Number of splits ({splits}) must match number of split ratios ({split_ratios})."
+                )
+                assert math.isclose(sum(split_ratios), 1.0), (
+                    f"Split ratios must sum to 1.0: {split_ratios}."
+                )
                 self.split_ratios = split_ratios
             # Time-based splits
             if split_time_frames is not None:
-                assert len(splits) == len(
-                    split_time_frames
-                ), f"Number of splits ({splits}) must match number of split time frames ({split_time_frames})."
-                assert self._frames_are_sequential(
-                    split_time_frames
-                ), f"Split time frames must be sequential: {split_time_frames}."
+                assert len(splits) == len(split_time_frames), (
+                    f"Number of splits ({splits}) must match number of split time frames ({split_time_frames})."
+                )
+                assert self._frames_are_sequential(split_time_frames), (
+                    f"Split time frames must be sequential: {split_time_frames}."
+                )
                 self.split_time_frames = split_time_frames
 
     def download_metadata(self):
@@ -333,24 +333,9 @@ class PDBManager:
         :return: Whether all provided frames are sequentially ordered.
         :rtype: bool
         """
-        frames_are_sequential = True
-        last_frame_index = len(split_time_frames) - 1
-        for frame_index in range(len(split_time_frames)):
-            frame = split_time_frames[frame_index]
-            frames_are_backwards_sequential = frame_index == 0 or (
-                frame_index > 0 and frame > split_time_frames[frame_index - 1]
-            )
-            frames_are_forwards_sequential = (
-                frame_index < last_frame_index
-                and frame < split_time_frames[frame_index + 1]
-            ) or frame_index == last_frame_index
-            frames_are_sequential = all(
-                [
-                    frames_are_backwards_sequential,
-                    frames_are_forwards_sequential,
-                ]
-            )
-        return frames_are_sequential
+        return all(
+            a < b for a, b in zip(split_time_frames, split_time_frames[1:])
+        )
 
     def _download_pdb_sequences(self):
         """Download PDB sequences from
@@ -806,16 +791,18 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         df = self.source if source else self.df
-        if splits is not None and len(splits) > 0:
+        if splits:
             df_splits = df_splits if df_splits is not None else self.df_splits
             all_splits_df = pd.concat([df_splits[split] for split in splits])
-            assert len(all_splits_df) > 0, "Combined splits must be non-empty."
+            assert not all_splits_df.empty, (
+                "Combined splits must be non-empty."
+            )
         splits_df = (
             all_splits_df.loc[all_splits_df.split.isin(splits)]
             if splits is not None
             else df
         )
-        assert len(splits_df) > 0, "Requested splits must be non-empty."
+        assert not splits_df.empty, "Requested splits must be non-empty."
         return splits_df
 
     def remove_unavailable_pdbs(
@@ -1447,12 +1434,12 @@ class PDBManager:
         :return: Dictionary of DataFrame splits.
         :rtype: Dict[str, pd.DataFrame]
         """
-        assert len(splits) == len(
-            split_ratios
-        ), f"Number of splits ({len(splits)}) must match number of split ratios ({len(split_ratios)})"
-        assert (
-            sum(split_ratios) == 1
-        ), f"Split ratios must sum to 1, got {sum(split_ratios)} ({split_ratios})"
+        assert len(splits) == len(split_ratios), (
+            f"Number of splits ({len(splits)}) must match number of split ratios ({len(split_ratios)})"
+        )
+        assert sum(split_ratios) == 1, (
+            f"Split ratios must sum to 1, got {sum(split_ratios)} ({split_ratios})"
+        )
 
         # Calculate the size of each split
         split_sizes = [int(len(df) * ratio) for ratio in split_ratios]
@@ -1479,9 +1466,9 @@ class PDBManager:
 
         # Ensure there are no duplicated rows between splits
         all_splits_df = pd.concat([df_splits[split] for split in splits])
-        assert len(all_splits_df) == len(
-            df
-        ), "Number of rows changed during split operations."
+        assert len(all_splits_df) == len(df), (
+            "Number of rows changed during split operations."
+        )
         assert len(
             all_splits_df.drop(self.list_columns, axis=1).drop_duplicates()
         ) == len(df), "Duplicate rows found in splits."
@@ -1562,7 +1549,7 @@ class PDBManager:
         assert split_ratios_provided, "Split ratios must be provided."
 
         # Split clusters
-        ratio_str = " ".join([str(r) for r in self.split_ratios])
+        ratio_str = " ".join(map(str, self.split_ratios))
         log.info(f"Randomly splitting clusters into ratios: {ratio_str}...")
         df_splits = self.split_df_proportionally(
             df,
@@ -1694,19 +1681,17 @@ class PDBManager:
         :return: Dictionary of DataFrame splits.
         :rtype: Dict[str, pd.DataFrame]
         """
-        assert len(splits) == len(
-            split_time_frames
-        ), f"Number of splits ({len(splits)}) must match number of time frames ({len(split_time_frames)})."
-        assert self._frames_are_sequential(
-            split_time_frames
-        ), "Time frames must be sequential."
+        assert len(splits) == len(split_time_frames), (
+            f"Number of splits ({len(splits)}) must match number of time frames ({len(split_time_frames)})."
+        )
+        assert self._frames_are_sequential(split_time_frames), (
+            "Time frames must be sequential."
+        )
 
         # Split DataFrames
         start_datetime = df.deposition_date.min()
         df_splits = {}
-        for split_index in range(len(splits)):
-            split = splits[split_index]
-            end_datetime = split_time_frames[split_index]
+        for split, end_datetime in zip(splits, split_time_frames):
             df_split = df.loc[
                 (df.deposition_date >= start_datetime)
                 & (df.deposition_date < end_datetime)
@@ -1725,9 +1710,9 @@ class PDBManager:
 
         # Ensure there are no duplicated rows between splits
         all_splits_df = pd.concat([df_splits[split] for split in splits])
-        assert (
-            len(all_splits_df) == len(df) - num_remaining_rows
-        ), "Number of rows changed during split operations."
+        assert len(all_splits_df) == len(df) - num_remaining_rows, (
+            "Number of rows changed during split operations."
+        )
         assert (
             len(
                 all_splits_df.drop(self.list_columns, axis=1).drop_duplicates()
@@ -1762,12 +1747,12 @@ class PDBManager:
         :rtype: Dict[str, pd.DataFrame]
         """
         split_time_frames_provided = self.split_time_frames is not None
-        assert (
-            split_time_frames_provided
-        ), "Split time frames must be provided."
+        assert split_time_frames_provided, (
+            "Split time frames must be provided."
+        )
 
         # Split sequences
-        time_frames = " ".join([str(f) for f in self.split_time_frames])
+        time_frames = " ".join(map(str, self.split_time_frames))
         log.info(f"Splitting sequences into time frames: {time_frames}")
         df_splits = self.split_df_into_time_frames(
             df, self.splits, self.split_time_frames
@@ -1899,17 +1884,18 @@ class PDBManager:
         df = splits_df.groupby("pdb")["chain"].agg(list).to_dict()
 
         # Check we have all source PDB files
-        downloaded = os.listdir(self.pdb_dir)
-        downloaded = [
-            f for f in downloaded if f.endswith(f".{self.structure_format}")
-        ]
+        downloaded = {
+            f
+            for f in os.listdir(self.pdb_dir)
+            if f.endswith(f".{self.structure_format}")
+        }
 
         to_download = [
             k
             for k in df.keys()
             if f"{k}.{self.structure_format}" not in downloaded
         ]
-        if len(to_download) > 0:
+        if to_download:
             log.info(f"Downloading {len(to_download)} PDB files...")
             download_pdb_multiprocessing(
                 to_download, self.pdb_dir, overwrite=True
@@ -2155,7 +2141,7 @@ class PDBManager:
                         )
                     except FileNotFoundError:
                         log.info(
-                            f"Failed to load {str(input_pdb_filepath)}. Perhaps it is not longer available to download from the PDB?"
+                            f"Failed to load {input_pdb_filepath}. Perhaps it is not longer available to download from the PDB?"
                         )
                         continue
                     # work around int-typing bug for `model_id` within version `0.5.0.dev0` of BioPandas -> appears when calling `to_pdb()`
