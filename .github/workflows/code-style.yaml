@@ -16,7 +16,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install code style checking tools
-        run: python -m pip install ruff==0.17.2 interrogate
+        run: python -m pip install --only-binary :all: ruff==0.17.3 interrogate==1.7.0
 
       - name: Lint and check import order
         run: ruff check --output-format=github .
