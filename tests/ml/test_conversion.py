@@ -123,10 +123,13 @@ def test_nx_to_dgl_edge_features():
     for i, (_, _, d) in enumerate(g.edges(data=True)):
         d["b_factor"] = float(i)
     data = GraphFormatConvertor(
-        "nx", "dgl", columns=["coords", "b_factor", "kind"]
+        "nx", "dgl", columns=["coords", "b_factor", "distance", "kind"]
     )(g)
 
     assert data.edata["b_factor"].tolist() == [
         float(i) for i in range(g.number_of_edges())
     ]
+    assert data.edata["distance"].tolist() == pytest.approx(
+        [d["distance"] for _, _, d in g.edges(data=True)]
+    )
     assert data.ndata["b_factor"].shape == torch.Size([data.num_nodes()])

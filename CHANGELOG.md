@@ -6,7 +6,7 @@
 
 #### Bugfixes
 
-* Fix `GraphFormatConvertor` conversion to DGL: edge features were built from node features (so edges got node attributes, or the conversion failed), conversion with the default `verbose="gnn"` columns crashed because DGL rejects an empty feature dict, and numeric edge features raised `TypeError`. Feature collection is also now linear in graph size. [#462](https://github.com/a-r-j/graphein/pull/462)
+* Fix `GraphFormatConvertor` conversion to DGL: edge features were built from node features (so edges got node attributes, or the conversion failed), conversion with the default `verbose="gnn"` columns crashed because DGL rejects an empty feature dict, numeric edge features raised `TypeError`, and selecting the `distance` edge feature raised `KeyError`. Feature collection is also now linear in graph size. [#462](https://github.com/a-r-j/graphein/pull/462)
 * Fix `import_message` calls that wrongly did (`biovec`) or did not (`rdkit` in `graphein.molecule.graphs`, `nest_asyncio`) suggest `pip install graphein[extras]`, and add a test checking every call against `.requirements/extras.in`. Fixes [#248](https://github.com/a-r-j/graphein/issues/248)
 * Fix file-based molecular graph names for dotted filenames and Windows paths.
 * Fix the README molecular graph example to initialize `MoleculeGraphConfig` and call `construct_graph`.

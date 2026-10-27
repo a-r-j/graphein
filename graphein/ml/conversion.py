@@ -157,6 +157,7 @@ class GraphFormatConvertor:
             "chain_id": "str",
             "coords": "np.array",
             "dist_mat": "np.array",
+            "distance": "float",
             "element_symbol": "str",
             "node_id": "str",
             "residue_name": "str",
