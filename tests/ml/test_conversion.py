@@ -1,6 +1,7 @@
 """Tests for graph format conversion procedures."""
 
 from functools import partial
+from pathlib import Path
 
 import pytest
 import torch
@@ -18,6 +19,20 @@ try:
     PYG_AVAIL = True
 except ImportError:
     PYG_AVAIL = False
+
+try:
+    import dgl  # noqa: F401
+
+    DGL_AVAIL = True
+except (ImportError, FileNotFoundError):
+    DGL_AVAIL = False
+
+PDB_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "protein"
+    / "test_data"
+    / "4hhb.pdb"
+)
 
 
 @pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
@@ -87,3 +102,34 @@ def test_nx_to_pyg(pdb_code):
 
     # Directed/undirected consistency
     assert g.is_directed() is not is_undirected(data.edge_index)
+
+
+@pytest.mark.skipif(not DGL_AVAIL, reason="DGL not installed")
+@pytest.mark.parametrize("verbose", ["gnn", "default", "all_info"])
+def test_nx_to_dgl(verbose):
+    g = construct_graph(path=str(PDB_PATH))
+    data = GraphFormatConvertor("nx", "dgl", verbose=verbose)(g)
+
+    assert data.num_nodes() == g.number_of_nodes()
+    assert data.num_edges() == g.number_of_edges()
+    assert data.ndata["coords"].shape == torch.Size([data.num_nodes(), 3])
+    # Node features must not be attached to edges
+    assert not data.edata
+
+
+@pytest.mark.skipif(not DGL_AVAIL, reason="DGL not installed")
+def test_nx_to_dgl_edge_features():
+    g = construct_graph(path=str(PDB_PATH))
+    for i, (_, _, d) in enumerate(g.edges(data=True)):
+        d["b_factor"] = float(i)
+    data = GraphFormatConvertor(
+        "nx", "dgl", columns=["coords", "b_factor", "distance", "kind"]
+    )(g)
+
+    assert data.edata["b_factor"].tolist() == [
+        float(i) for i in range(g.number_of_edges())
+    ]
+    assert data.edata["distance"].tolist() == pytest.approx(
+        [d["distance"] for _, _, d in g.edges(data=True)]
+    )
+    assert data.ndata["b_factor"].shape == torch.Size([data.num_nodes()])

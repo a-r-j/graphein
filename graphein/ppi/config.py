@@ -6,7 +6,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from typing import Dict, List, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class STRINGConfig(BaseModel):
@@ -161,5 +161,4 @@ class PPIGraphConfig(BaseModel):
     string_config: Optional[STRINGConfig] = None
     biogrid_config: Optional[BioGridConfig] = None
 
-    class Config:
-        arbitrary_types_allowed: bool = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
