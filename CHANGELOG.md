@@ -1,3 +1,9 @@
+### Unreleased
+
+#### Features
+
+* Add `add_bond_type_one_hot` edge feature for molecules. Fixes [#430](https://github.com/a-r-j/graphein/issues/430)
+
 ### 1.7.8 - 24/01/2026
 
 #### Bugfixes
