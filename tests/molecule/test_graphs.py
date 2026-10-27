@@ -7,11 +7,13 @@ import numpy as np
 import pytest
 
 from graphein.molecule.config import MoleculeGraphConfig
+from graphein.molecule.features.nodes.atom_type import num_heavy_atoms
 from graphein.molecule.graphs import construct_graph
 from graphein.utils.dependencies import import_message
 
 try:
     import rdkit
+    from rdkit import Chem
 except ImportError:
     import_message(
         "graphein.molecule.graphs", "rdkit", "rdkit", True, extras=True
@@ -75,6 +77,32 @@ def test_readme_molecule_graph_example():
     check_edges(g)
 
 
+@pytest.mark.parametrize(
+    "add_hs", [False, True], ids=["implicit_hs", "explicit_hs"]
+)
+def test_num_heavy_atoms(add_hs):
+    """Tests heavy-atom counts with implicit and explicit hydrogens."""
+    Chem = pytest.importorskip("rdkit.Chem")
+    mol = Chem.MolFromSmiles("[He].CCC")
+    if add_hs:
+        mol = Chem.AddHs(mol)
+
+    isolated_atom = mol.GetAtomWithIdx(0)
+    central_atom = mol.GetAtomWithIdx(2)
+    if add_hs:
+        assert any(
+            neighbor.GetSymbol() == "H"
+            for neighbor in central_atom.GetNeighbors()
+        )
+    else:
+        assert central_atom.GetNumImplicitHs() > 0
+
+    for atom, expected_count in ((isolated_atom, 0), (central_atom, 2)):
+        node_data = {"rdmol_atom": atom}
+        assert num_heavy_atoms(atom.GetIdx(), node_data) == expected_count
+        assert node_data["num_heavy_atoms"] == expected_count
+
+
 @pytest.mark.parametrize("config", CONFIGS)
 def test_generate_graph_mol2(config):
     """Tests graph construction from a Mol2 file."""
@@ -91,6 +119,19 @@ def test_generate_graph_pdb(config):
     assert g.graph["name"] == "long_test"
     check_nodes(g)
     check_edges(g)
+
+
+@pytest.mark.parametrize("add_hs", [False, True])
+def test_num_heavy_atoms(add_hs):
+    """Tests heavy atom counts with implicit and explicit hydrogens."""
+    mol = Chem.MolFromSmiles("C.CCC")
+    if add_hs:
+        mol = Chem.AddHs(mol)
+
+    for atom_idx, expected in [(0, 0), (2, 2)]:
+        node_data = {"rdmol_atom": mol.GetAtomWithIdx(atom_idx)}
+        assert num_heavy_atoms(str(atom_idx), node_data) == expected
+        assert node_data["num_heavy_atoms"] == expected
 
 
 def check_nodes(g):

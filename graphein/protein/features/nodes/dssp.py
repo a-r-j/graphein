@@ -21,6 +21,11 @@ from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
 from graphein.protein.utils import save_pdb_df_to_pdb
 from graphein.utils.dependencies import is_tool, requires_external_dependencies
 
+CRYST1_PLACEHOLDER = (
+    "CRYST1    1.000    1.000    1.000  90.00  90.00  90.00 P 1           1"
+)
+"""Unit cell record prepended to reconstructed PDB files for DSSP."""
+
 DSSP_COLS = [
     "chain",
     "resnum",
@@ -116,21 +121,24 @@ def add_dssp_df(
     ).group(
         1
     )  # e.g. "4.0.4"
-    # Check for existence of pdb file. If not, reconstructs it from the raw df.
-    if pdb_file:
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        tmp_pdb = os.path.join(tmpdirname, f"{pdb_name}.pdb")
+        # Check for existence of pdb file. If not, reconstructs it from the raw df.
+        if not pdb_file:
+            save_pdb_df_to_pdb(G.graph["raw_pdb_df"], tmp_pdb)
+            pdb_file = tmp_pdb
+        # DSSP 4.x rejects PDB files without a CRYST1 record (e.g. AlphaFold
+        # models, or files reconstructed from the raw df)
+        if not str(pdb_file).endswith(".gz"):
+            with open(pdb_file) as f:
+                pdb_text = f.read()
+            if "CRYST1" not in pdb_text:
+                with open(tmp_pdb, "w") as f:
+                    f.write(f"{CRYST1_PLACEHOLDER}\n{pdb_text}")
+                pdb_file = tmp_pdb
         dssp_dict = dssp_dict_from_pdb_file(
             pdb_file, DSSP=executable, dssp_version=dssp_version
         )
-    else:
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            save_pdb_df_to_pdb(
-                G.graph["raw_pdb_df"], tmpdirname + f"/{pdb_name}.pdb"
-            )
-            dssp_dict = dssp_dict_from_pdb_file(
-                tmpdirname + f"/{pdb_name}.pdb",
-                DSSP=executable,
-                dssp_version=dssp_version,
-            )
 
     if len(dssp_dict[0]) == 0:
         raise ValueError(

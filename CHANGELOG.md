@@ -1,8 +1,31 @@
-### 1.7.8 - UNRELEASED
+### 1.7.9 - UNRELEASED
+
+#### New Features
+
+* Add `add_bond_type_one_hot` edge feature for molecules. Fixes [#430](https://github.com/a-r-j/graphein/issues/430)
 
 #### Bugfixes
 
 * Fix `add_hydrogen_bond_interactions` finding few or no hydrogen bonds. Edges now require a donor-acceptor pair (using `HYDROGEN_BOND_DONORS`/`HYDROGEN_BOND_ACCEPTORS`) in different residues, backbone `N`/`O` atoms are included, and hydrogen bonds can be filtered by type (`hbond_types`: backbone-backbone, backbone-side chain, side chain-side chain). Sulphur atoms are no longer treated as hydrogen bond donors/acceptors. Fixes [#437](https://github.com/a-r-j/graphein/issues/437)
+
+#### Misc
+
+* Speed up `graphein.protein.tensor` helpers by replacing per-atom and per-residue tensor loops with single `.tolist()` calls and dict lookups: `to_dataframe` (~6x on 4hhb), `infer_residue_types` and `is_complete_structure` (~7x), `protein_df_to_tensor`, and the sidechain torsion atom indexing used by `sidechain_torsion`. Output is unchanged. Adds tests for `is_complete_structure` and `has_complete_residue`. [#472](https://github.com/a-r-j/graphein/pull/472)
+* Drop support for Python 3.10, which has reached end of life. Minimum supported version is now Python 3.11.
+
+### 1.7.8 - 24/01/2026
+
+#### New Features
+
+* Add `num_heavy_atoms` molecule node feature to count non-hydrogen neighbours of each atom.
+
+#### Breaking Changes
+
+* Remove Jraph support from `graphein.ml.GraphFormatConvertor` (`"jraph"` is no longer a supported format). Jraph is no longer maintained, and `convert_nx_to_jraph` crashed on any graph with more than one node. [#462](https://github.com/a-r-j/graphein/pull/462)
+
+#### Bugfixes
+
+* Fix `GraphFormatConvertor` conversion to DGL: edge features were built from node features (so edges got node attributes, or the conversion failed), conversion with the default `verbose="gnn"` columns crashed because DGL rejects an empty feature dict, numeric edge features raised `TypeError`, and selecting the `distance` edge feature raised `KeyError`. Feature collection is also now linear in graph size. [#462](https://github.com/a-r-j/graphein/pull/462)
 * Fix `import_message` calls that wrongly did (`biovec`) or did not (`rdkit` in `graphein.molecule.graphs`, `nest_asyncio`) suggest `pip install graphein[extras]`, and add a test checking every call against `.requirements/extras.in`. Fixes [#248](https://github.com/a-r-j/graphein/issues/248)
 * Fix file-based molecular graph names for dotted filenames and Windows paths.
 * Fix the README molecular graph example to initialize `MoleculeGraphConfig` and call `construct_graph`.
@@ -11,6 +34,15 @@
 * Hotfix for incorrect dataframe indexing resulting in correct edge addition in `add_distance_threshold` [#419](https://github.com/a-r-j/graphein/pull/419)
 * Fixes unnecessary download for pre-existing structure files retrieved from AlphaFold database in `graphein.ml.ProteinGraphDataset`[#426](https://github.com/a-r-j/graphein/pull/426)
 * Fixes H coords are included when constructing molecule graph from SD file [#427](https://github.com/a-r-j/graphein/issues/427).
+* Replace insecure `tempfile.mktemp` with `tempfile.mkstemp` in `graphein.utils.pymol.core` when exporting PyMOL session images.
+
+#### Misc
+
+* Switch to UV package management. ([#451](https://github.com/a-r-j/graphein/pull/451))
+* Replace `tqdm` with `tqdm.auto`. ([#445](https://github.com/a-r-j/graphein/pull/445))
+* Wrap JSON parsing in `StringIO` due to pandas deprecating string parsing. ([#445](https://github.com/a-r-j/graphein/pull/445))
+* Bump `cpdb` version. ([#451](https://github.com/a-r-j/graphein/pull/451))
+* Add `weights_only=False` to notebooks. ([#451](https://github.com/a-r-j/graphein/pull/451))
 
 ### 1.7.7 - 03/08/2024
 
