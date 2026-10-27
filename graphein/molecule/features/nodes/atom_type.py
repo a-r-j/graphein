@@ -101,11 +101,7 @@ def num_heavy_atoms(n: str, d: Dict[str, Any]) -> int:
     :rtype: int
     """
     num_heavy_atoms = len(
-        [
-            x
-            for x in d["rdmol_atom"].GetNeighbors()
-            if x.GetSymbol() != "H"
-        ]
+        [x for x in d["rdmol_atom"].GetNeighbors() if x.GetSymbol() != "H"]
     )
     d["num_heavy_atoms"] = num_heavy_atoms
     return num_heavy_atoms
