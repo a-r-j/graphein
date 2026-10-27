@@ -1089,7 +1089,7 @@ def compute_chain_graph(
     # Add edges
     for u, v, d in g.edges(data=True):
         h.add_edge(
-            g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=d["kind"]
+            g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=set(d["kind"])
         )
     # Remove self-loops if necessary. Checks for equality between nodes in a
     # given edge.
@@ -1129,7 +1129,7 @@ def compute_weighted_graph_from_multigraph(g: nx.MultiGraph) -> nx.Graph:
                 except KeyError:
                     H[u][v][kind] = 1
         else:
-            H.add_edge(u, v, weight=len(d["kind"]), kind=d["kind"])
+            H.add_edge(u, v, weight=len(d["kind"]), kind=set(d["kind"]))
             for kind in list(d["kind"]):
                 H[u][v][kind] = 1
     return H
@@ -1228,7 +1228,7 @@ def compute_secondary_structure_graph(
     for u, v, d in g.edges(data=True):
         try:
             h.add_edge(
-                ss_list[u], ss_list[v], kind=d["kind"], source=f"{u}_{v}"
+                ss_list[u], ss_list[v], kind=set(d["kind"]), source=f"{u}_{v}"
             )
         except KeyError as e:
             log.debug(

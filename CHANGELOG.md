@@ -6,6 +6,8 @@
 
 #### Bugfixes
 
+* Fix `add_peptide_bonds` / `add_sequence_distance_edges` and `peptide_bonds` overwriting the kinds of existing edges (they checked `G.has_edge` with loop positions instead of node IDs). [#461](https://github.com/a-r-j/graphein/pull/461)
+* Fix `compute_chain_graph` and `compute_secondary_structure_graph` with `return_weighted_graph=True` adding edge kinds to the input graph (edge kind sets were shared rather than copied). [#461](https://github.com/a-r-j/graphein/pull/461)
 * Fix the sdist (and the wheel `uv build` builds from it) containing no Python code: the hatch sdist `include` list only listed the README, LICENSE and two CSVs. It now includes `graphein/`. Removes the unused `MANIFEST.in`, which hatchling ignores.
 * Replace deprecated class-based `Config` with `model_config = ConfigDict(...)` in `GRNGraphConfig` and `PPIGraphConfig` to silence `PydanticDeprecatedSince20` warnings.
 * Pin `setuptools<81` so `bioservices` can still import `pkg_resources`, which setuptools 81 removed. Newer `bioservices` releases drop `pkg_resources` but require `lxml<6`, which is affected by CVE-2026-41066.

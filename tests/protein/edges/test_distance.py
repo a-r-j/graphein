@@ -22,6 +22,7 @@ from graphein.protein.edges.distance import (
     add_aromatic_sulphur_interactions,
     add_cation_pi_interactions,
     add_k_nn_edges,
+    add_peptide_bonds,
     add_salt_bridges,
     add_sequence_distance_edges,
     add_vdw_clashes,
@@ -31,6 +32,7 @@ from graphein.protein.edges.distance import (
     get_ring_atoms,
     get_ring_centroids,
 )
+from graphein.protein.edges.intramolecular import peptide_bonds
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 from graphein.protein.resi_atoms import (
     AROMATIC_RESIS,
@@ -466,3 +468,18 @@ def test_insertion_codes_in_add_k_nn_edges():
     ]
 
     assert set(g.edges()) == set(edges_expected)
+
+
+@pytest.mark.parametrize("peptide_fn", [add_peptide_bonds, peptide_bonds])
+def test_peptide_bonds_keep_existing_edge_kinds(peptide_fn):
+    """Adding peptide bonds must not overwrite kinds of existing edges."""
+    knn = partial(add_k_nn_edges, k=3)
+    kinds = []
+    for funcs in ([knn, peptide_fn], [peptide_fn, knn]):
+        config = ProteinGraphConfig(edge_construction_functions=funcs)
+        g = construct_graph(config=config, path=str(DATA_PATH))
+        kinds.append(
+            {frozenset((u, v)): d["kind"] for u, v, d in g.edges(data=True)}
+        )
+    assert kinds[0] == kinds[1]
+    assert any({"knn", "peptide_bond"} <= k for k in kinds[0].values())
