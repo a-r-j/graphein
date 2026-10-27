@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from graphein.molecule.config import MoleculeGraphConfig
+from graphein.molecule.features.nodes.atom_type import num_heavy_atoms
 from graphein.molecule.graphs import construct_graph
 from graphein.utils.dependencies import import_message
 
@@ -73,6 +74,32 @@ def test_readme_molecule_graph_example():
     assert g.number_of_edges() > 0
     check_nodes(g)
     check_edges(g)
+
+
+@pytest.mark.parametrize(
+    "add_hs", [False, True], ids=["implicit_hs", "explicit_hs"]
+)
+def test_num_heavy_atoms(add_hs):
+    """Tests heavy-atom counts with implicit and explicit hydrogens."""
+    Chem = pytest.importorskip("rdkit.Chem")
+    mol = Chem.MolFromSmiles("[He].CCC")
+    if add_hs:
+        mol = Chem.AddHs(mol)
+
+    isolated_atom = mol.GetAtomWithIdx(0)
+    central_atom = mol.GetAtomWithIdx(2)
+    if add_hs:
+        assert any(
+            neighbor.GetSymbol() == "H"
+            for neighbor in central_atom.GetNeighbors()
+        )
+    else:
+        assert central_atom.GetNumImplicitHs() > 0
+
+    for atom, expected_count in ((isolated_atom, 0), (central_atom, 2)):
+        node_data = {"rdmol_atom": atom}
+        assert num_heavy_atoms(atom.GetIdx(), node_data) == expected_count
+        assert node_data["num_heavy_atoms"] == expected_count
 
 
 @pytest.mark.parametrize("config", CONFIGS)
