@@ -2,15 +2,13 @@
 
 import ast
 import re
+import tomllib
 from pathlib import Path
 from typing import List, Tuple
 
 import pytest
 
 from graphein.utils.dependencies import import_message
-
-import tomllib
-
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 
