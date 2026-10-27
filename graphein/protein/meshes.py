@@ -201,11 +201,11 @@ def wait_for_obj_file(
     poll_interval: float = 0.1,
 ) -> None:
     """Waits for an ``.obj`` mesh file to be generated."""
-    start_time = time.time()
+    start_time = time.monotonic()
     while os.path.isfile(obj_file) is False:
         if (
             max_wait_seconds is not None
-            and time.time() - start_time > max_wait_seconds
+            and time.monotonic() - start_time > max_wait_seconds
         ):
             raise TimeoutError(
                 f"{obj_file} not found after {max_wait_seconds} seconds"

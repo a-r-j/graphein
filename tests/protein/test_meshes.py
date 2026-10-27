@@ -21,7 +21,7 @@ def test_wait_for_obj_file_raises_timeout(monkeypatch):
     mock_timestamps = iter([0.0, 0.6, 1.2])
 
     monkeypatch.setattr(meshes.os.path, "isfile", lambda _: False)
-    monkeypatch.setattr(meshes.time, "time", lambda: next(mock_timestamps))
+    monkeypatch.setattr(meshes.time, "monotonic", lambda: next(mock_timestamps))
     monkeypatch.setattr(meshes.time, "sleep", lambda _: None)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
