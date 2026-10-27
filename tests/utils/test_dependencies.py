@@ -2,18 +2,13 @@
 
 import ast
 import re
+import tomllib
 from pathlib import Path
 from typing import List, Tuple
 
 import pytest
 
 from graphein.utils.dependencies import import_message
-
-try:
-    import tomllib
-except ModuleNotFoundError:  # Python < 3.11
-    import tomli as tomllib
-
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 
