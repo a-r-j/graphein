@@ -260,21 +260,19 @@ class GraphFormatConvertor:
                         data[key] = []
                     data[key].append(value)
 
-        # Add edge features
-        edge_list = list(G.edges(data=True))
-        edge_feature_names = edge_list[0][2].keys() if edge_list else []
-        edge_feature_names = list(
-            filter(
-                lambda x: x in self.columns and x != "kind", edge_feature_names
-            )
+        # Add edge features, one entry per edge in G.edges order (None where
+        # an edge lacks the feature) so they stay aligned with edge_index.
+        edge_attrs = [d for _, _, d in G.edges(data=True)]
+        edge_feature_names = sorted(
+            {
+                k
+                for d in edge_attrs
+                for k in d
+                if k in self.columns or k == "kind"
+            }
         )
-        for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
-            for key, value in feat_dict.items():
-                key = str(key)
-                if key in self.columns or key == "kind":
-                    if i == 0:
-                        data[key] = []
-                    data[key].append(value)
+        for key in edge_feature_names:
+            data[key] = [d.get(key) for d in edge_attrs]
 
         # Add graph-level features
         for feat_name in G.graph:
@@ -284,9 +282,10 @@ class GraphFormatConvertor:
         if "edge_index" in self.columns:
             data["edge_index"] = edge_index
 
-        # Split edge index by edge kind
+        # Split edge index by edge kind. Kinds are sets, so sort them for a
+        # name that doesn't depend on set iteration order.
         kind_strs = np.array(
-            list(map(lambda x: "_".join(x), data.get("kind", [])))
+            ["_".join(sorted(k or ())) for k in data.get("kind") or []]
         )
         for kind in set(kind_strs):
             key = f"edge_index_{kind}"
@@ -311,16 +310,25 @@ class GraphFormatConvertor:
 
         # Symmetrize if undirected
         if not G.is_directed():
-            # Edge index and edge features
-            edge_index, edge_features = to_undirected(
+            # Pass each edge's position through to_undirected so every edge
+            # feature (tensor or not, e.g. kind) can be reordered to match
+            # the symmetrized edge_index. "max" keeps self-loops' own id.
+            edge_index, edge_id = to_undirected(
                 edge_index,
-                [getattr(data, attr) for attr in edge_feature_names],
+                torch.arange(edge_index.shape[1]),
                 data.num_nodes,
+                reduce="max",
             )
             if "edge_index" in self.columns:
                 data.edge_index = edge_index
-            for attr, val in zip(edge_feature_names, edge_features):
-                setattr(data, attr, val)
+            for attr in edge_feature_names:
+                if attr not in data:
+                    continue
+                val = getattr(data, attr)
+                if isinstance(val, torch.Tensor):
+                    setattr(data, attr, val[edge_id])
+                else:
+                    setattr(data, attr, [val[i] for i in edge_id.tolist()])
 
             # Edge indices of different kinds
             for kind in set(kind_strs):
@@ -390,12 +398,10 @@ def convert_nx_to_pyg_data(G: nx.Graph) -> Data:
         for key, value in feat_dict.items():
             data[str(key)] = [value] if i == 0 else data[str(key)] + [value]
 
-    # Add edge features
-    for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
-        for key, value in feat_dict.items():
-            data[str(key)] = (
-                list(value) if i == 0 else data[str(key)] + list(value)
-            )
+    # Add edge features: one entry per edge (None where an edge lacks it)
+    edge_attrs = [d for _, _, d in G.edges(data=True)]
+    for key in sorted({k for d in edge_attrs for k in d}):
+        data[str(key)] = [d.get(key) for d in edge_attrs]
 
     # Add graph-level features
     for feat_name in G.graph:
