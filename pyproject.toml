@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Protein & Interactomic Graph Construction for Machine Learning"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [{ name = "Arian Jamasb", email = "arian@jamasb.io" }]
 keywords = ["bioinformatics", "graph", "machine-learning", "protein"]
 classifiers = [
@@ -16,7 +16,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
@@ -143,7 +142,6 @@ package = true
 # Formatting, import sorting and linting
 [tool.ruff]
 line-length = 79
-target-version = "py310"
 extend-exclude = ["*.ipynb", "*.md", "env"]
 
 [tool.ruff.lint]
