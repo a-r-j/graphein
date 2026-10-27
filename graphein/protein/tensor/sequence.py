@@ -213,6 +213,25 @@ def get_atom_indices(
     return index_map
 
 
+def _present_atom_indices(
+    x: AtomTensor, fill_value: float = 1e-5
+) -> List[Tuple[int, ...]]:
+    """Returns the indices of the atoms present in each residue, excluding OXT.
+
+    An atom is present if any of its coordinates differs from ``fill_value``.
+    """
+    present = (x != fill_value).any(dim=2)
+    oxt_index = ATOM_NUMBERING_MODIFIED["OXT"]
+    return [
+        tuple(
+            i
+            for i, is_present in enumerate(row)
+            if is_present and i != oxt_index
+        )
+        for row in present.tolist()
+    ]
+
+
 def infer_residue_types(
     x: AtomTensor, fill_value: float = 1e-5, return_sequence: bool = True
 ) -> Union[str, List[str]]:
@@ -236,23 +255,10 @@ def infer_residue_types(
     :rtype: Union[str, List[str]]
     """
     rmap: Dict[Tuple[int, ...], str] = get_atom_indices(invert=True)
-
-    def _get_index(y: torch.Tensor) -> str:
-        indices = (
-            torch.nonzero(torch.sum(y != fill_value, dim=1))
-            .squeeze(1)
-            .tolist()
-        )
-        # remove oxt if present
-        oxt_index = ATOM_NUMBERING_MODIFIED["OXT"]
-        indices = tuple(i for i in indices if i != oxt_index)
-        try:
-            identity = rmap[indices]
-        except KeyError:
-            identity = "UNK"
-        return identity
-
-    seq = [_get_index(x[i, :, :]) for i in range(x.shape[0])]
+    seq = [
+        rmap.get(indices, "UNK")
+        for indices in _present_atom_indices(x, fill_value)
+    ]
 
     if return_sequence:
         seq = "".join([RESI_THREE_TO_1[res] for res in seq])
