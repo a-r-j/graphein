@@ -52,7 +52,6 @@ def read_dbn_file(path: str) -> Tuple[str, str]:
     """
     with open(path, "r") as f:
         lines = f.readlines()
-    print(lines)
     sequence = lines[-2]
     dotbracket = lines[-1]
     return sequence, dotbracket

@@ -113,7 +113,6 @@ def get_obj_file(
         config = ProteinMeshConfig()
 
     commands = parse_pymol_commands(config)
-    print(commands)
     run_pymol_commands(commands)
 
     # Save surface object as .obj
