@@ -1,13 +1,11 @@
 import pytest
 
+from graphein.protein.config import ProteinMeshConfig
+from graphein.protein.meshes import convert_verts_and_face_to_mesh, create_mesh
+
 pytest.importorskip("pymol")
 pytest.importorskip("pytorch3d")
 
-from graphein.protein.config import ProteinMeshConfig
-from graphein.protein.meshes import (
-    convert_verts_and_face_to_mesh,
-    create_mesh,
-)
 
 
 def test_create_mesh():
