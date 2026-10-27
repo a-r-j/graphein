@@ -26,6 +26,11 @@ Geometry Utils
 .. automodule:: graphein.protein.tensor.geometry
     :members:
 
+DSSP
+^^^^
+.. automodule:: graphein.protein.tensor.dssp
+    :members:
+
 Angles
 ^^^^^^^^^^^^^^^
 .. automodule:: graphein.protein.tensor.angles
