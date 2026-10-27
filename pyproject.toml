@@ -25,7 +25,7 @@ dependencies = [
     "biopandas>=0.5.1",
     "biopython",
     "bioservices>=1.10.0",
-    "cpdb-protein==0.3.0",
+    "cpdb-protein>=0.3.1",
     "cython",
     "deepdiff",
     "loguru",
