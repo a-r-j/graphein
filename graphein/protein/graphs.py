@@ -640,7 +640,7 @@ def add_nodes_to_graph(
 
     # TODO: include charge, line_idx for traceability?
     if verbose:
-        print(nx.info(G))
+        print(G)
         print(G.nodes())
 
     return G

@@ -155,8 +155,3 @@ def TRRUST_df(
     df = standardise_TRRUST(df)
 
     return df
-
-
-if __name__ == "__main__":
-    df = TRRUST_df(["AATF", "MYC", "USF1", "SP1", "TP53", "DUSP1"])
-    print(df.head())
