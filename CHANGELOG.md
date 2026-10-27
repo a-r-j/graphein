@@ -1,5 +1,9 @@
 ### 1.7.8 - 24/01/2026
 
+#### New Features
+
+* Add `num_heavy_atoms` molecule node feature to count non-hydrogen neighbours of each atom.
+
 #### Bugfixes
 
 * Fix `import_message` calls that wrongly did (`biovec`) or did not (`rdkit` in `graphein.molecule.graphs`, `nest_asyncio`) suggest `pip install graphein[extras]`, and add a test checking every call against `.requirements/extras.in`. Fixes [#248](https://github.com/a-r-j/graphein/issues/248)
