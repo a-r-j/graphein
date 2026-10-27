@@ -3,8 +3,13 @@
 #### Misc
 
 * Speed up `graphein.protein.tensor` helpers by replacing per-atom and per-residue tensor loops with single `.tolist()` calls and dict lookups: `to_dataframe` (~6x on 4hhb), `infer_residue_types` and `is_complete_structure` (~7x), `protein_df_to_tensor`, and the sidechain torsion atom indexing used by `sidechain_torsion`. Output is unchanged. Adds tests for `is_complete_structure` and `has_complete_residue`. [#472](https://github.com/a-r-j/graphein/pull/472)
+* Drop support for Python 3.10, which has reached end of life. Minimum supported version is now Python 3.11.
 
 ### 1.7.8 - 24/01/2026
+
+#### New Features
+
+* Add `num_heavy_atoms` molecule node feature to count non-hydrogen neighbours of each atom.
 
 #### Bugfixes
 
