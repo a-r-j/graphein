@@ -43,6 +43,9 @@ dependencies = [
     "pyyaml!=6.0.0,!=5.4.0,!=5.4.1",
     "scikit-learn",
     "scipy>=1.8",
+    # bioservices<1.15 imports pkg_resources, removed in setuptools 81. bioservices>=1.15
+    # drops it but pins lxml<6, which reintroduces CVE-2026-41066.
+    "setuptools>=78.1.1,<81",
     "tqdm",
     "wget",
     "xarray",
