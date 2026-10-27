@@ -185,7 +185,7 @@ def kabsch(
             else:
                 det = torch.det(U) * torch.det(Vt.T)
                 if det < 0.0:
-                    print("Flipping!")
+                    pass  # TODO: reflection is not corrected here
                     # Vt[-1, -1] *= -1
         if residue_wise:
             Vt_ = Vt.clone()
