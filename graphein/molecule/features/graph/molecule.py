@@ -8,8 +8,6 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Union
-
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -40,10 +38,10 @@ except ImportError:
 
 def mol_descriptors(
     g: nx.Graph,
-    descriptor_list: Optional[List[str]] = None,
+    descriptor_list: list[str] | None = None,
     return_array: bool = False,
     return_series: bool = False,
-) -> Union[np.ndarray, pd.Series, Dict[str, Union[float, int]]]:
+) -> np.ndarray | pd.Series | dict[str, float | int]:
     """Adds global molecular descriptors to the graph.
 
     :param g: The graph to add the descriptors to.
@@ -84,7 +82,7 @@ def mol_descriptors(
 
 
 def add_center_of_mol(
-    g: nx.Graph, weights: Optional[np.ndarray] = None
+    g: nx.Graph, weights: np.ndarray | None = None
 ) -> nx.Graph:
     """Compute the centroid of the conformation.
 

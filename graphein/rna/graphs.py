@@ -9,7 +9,7 @@
 # This submodule is heavily inspired by: https://github.com/emalgorithm/rna-design/blob/aec77a18abe4850958d6736ec185a6f8cbfdf20c/src/util.py#L9
 
 import os
-from typing import Callable, List, Optional, Union
+from collections.abc import Callable
 
 import networkx as nx
 from loguru import logger as log
@@ -94,17 +94,17 @@ def validate_dotbracket(db: str):
 
 
 def construct_rna_graph_3d(
-    config: Optional[RNAGraphConfig] = None,
-    name: Optional[str] = None,
-    path: Optional[Union[str, os.PathLike]] = None,
-    pdb_code: Optional[str] = None,
+    config: RNAGraphConfig | None = None,
+    name: str | None = None,
+    path: str | os.PathLike | None = None,
+    pdb_code: str | None = None,
     chain_selection: str = "all",
     model_index: int = 1,
-    rna_df_processing_funcs: Optional[List[Callable]] = None,
-    edge_construction_funcs: Optional[List[Callable]] = None,
-    edge_annotation_funcs: Optional[List[Callable]] = None,
-    node_annotation_funcs: Optional[List[Callable]] = None,
-    graph_annotation_funcs: Optional[List[Callable]] = None,
+    rna_df_processing_funcs: list[Callable] | None = None,
+    edge_construction_funcs: list[Callable] | None = None,
+    edge_annotation_funcs: list[Callable] | None = None,
+    node_annotation_funcs: list[Callable] | None = None,
+    graph_annotation_funcs: list[Callable] | None = None,
 ) -> nx.Graph:
     """
     Constructs RNA structure graph from a ``pdb_code`` or ``path``.
@@ -236,16 +236,16 @@ def construct_rna_graph_3d(
 
 
 def construct_rna_graph_2d(
-    dotbracket: Optional[str],
-    sequence: Optional[str],
-    name: Optional[str] = None,
-    bprna_id: Optional[str] = None,
-    edge_construction_funcs: Optional[List[Callable]] = None,
-    edge_annotation_funcs: Optional[List[Callable]] = None,
-    node_annotation_funcs: Optional[List[Callable]] = None,
-    graph_annotation_funcs: Optional[List[Callable]] = None,
+    dotbracket: str | None,
+    sequence: str | None,
+    name: str | None = None,
+    bprna_id: str | None = None,
+    edge_construction_funcs: list[Callable] | None = None,
+    edge_annotation_funcs: list[Callable] | None = None,
+    node_annotation_funcs: list[Callable] | None = None,
+    graph_annotation_funcs: list[Callable] | None = None,
     use_nussinov: bool = False,
-    config: Optional[RNAGraphConfig] = None,
+    config: RNAGraphConfig | None = None,
 ) -> nx.Graph:
     """
     Constructs an RNA secondary structure graph from dotbracket notation.
@@ -335,20 +335,20 @@ def construct_rna_graph_2d(
 
 
 def construct_graph(
-    dotbracket: Optional[str] = None,
-    sequence: Optional[str] = None,
-    bprna_id: Optional[str] = None,
+    dotbracket: str | None = None,
+    sequence: str | None = None,
+    bprna_id: str | None = None,
     use_nussinov: bool = False,
-    name: Optional[str] = None,
-    config: Optional[RNAGraphConfig] = None,
-    path: Optional[str] = None,
-    pdb_code: Optional[str] = None,
+    name: str | None = None,
+    config: RNAGraphConfig | None = None,
+    path: str | None = None,
+    pdb_code: str | None = None,
     chain_selection: str = "all",
-    rna_df_processing_funcs: Optional[List[Callable]] = None,
-    edge_construction_funcs: Optional[List[Callable]] = None,
-    edge_annotation_funcs: Optional[List[Callable]] = None,
-    node_annotation_funcs: Optional[List[Callable]] = None,
-    graph_annotation_funcs: Optional[List[Callable]] = None,
+    rna_df_processing_funcs: list[Callable] | None = None,
+    edge_construction_funcs: list[Callable] | None = None,
+    edge_annotation_funcs: list[Callable] | None = None,
+    node_annotation_funcs: list[Callable] | None = None,
+    graph_annotation_funcs: list[Callable] | None = None,
 ) -> nx.Graph:
     # TODO Docstring
 

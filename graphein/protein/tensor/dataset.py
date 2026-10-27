@@ -8,10 +8,10 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Sequence
+from collections.abc import Callable, Generator, Sequence
 from difflib import get_close_matches
 from pathlib import Path
-from typing import Callable, Generator, List, Optional, Union
+from typing import Union
 
 import numpy as np
 from loguru import logger as log
@@ -48,18 +48,18 @@ class ProteinDataset(Dataset):
         pdb_dir: str,
         out_dir: str,
         overwrite: bool = False,
-        paths: Optional[List[str]] = None,
-        pdb_codes: Optional[List[str]] = None,
-        uniprot_ids: Optional[List[str]] = None,
-        sequences: Optional[Union[List[str], str]] = None,
-        graph_labels: Optional[List[torch.Tensor]] = None,
-        node_labels: Optional[List[torch.Tensor]] = None,
-        chain_selections: Optional[List[str]] = None,
-        graph_transformation_funcs: Optional[List[Callable]] = None,
-        pdb_transform: Optional[List[Callable]] = None,
-        transform: Optional[Callable] = None,
-        pre_transform: Optional[Callable] = None,
-        pre_filter: Optional[Callable] = None,
+        paths: list[str] | None = None,
+        pdb_codes: list[str] | None = None,
+        uniprot_ids: list[str] | None = None,
+        sequences: list[str] | str | None = None,
+        graph_labels: list[torch.Tensor] | None = None,
+        node_labels: list[torch.Tensor] | None = None,
+        chain_selections: list[str] | None = None,
+        graph_transformation_funcs: list[Callable] | None = None,
+        pdb_transform: list[Callable] | None = None,
+        transform: Callable | None = None,
+        pre_transform: Callable | None = None,
+        pre_filter: Callable | None = None,
         num_cores: int = 16,
         af_version: int = 2,
     ):
@@ -181,7 +181,7 @@ class ProteinDataset(Dataset):
         self.graph_labels = graph_labels
         self.node_labels = node_labels
         self.validate_input()
-        self.bad_pdbs: List[str] = []
+        self.bad_pdbs: list[str] = []
 
         # Configs
         self.num_cores = num_cores
@@ -215,12 +215,12 @@ class ProteinDataset(Dataset):
         )
 
     @property
-    def raw_file_names(self) -> List[str]:
+    def raw_file_names(self) -> list[str]:
         """Names of raw files in the dataset."""
         return [f"{pdb}.pdb" for pdb in self.structures]
 
     @property
-    def processed_file_names(self) -> List[str]:
+    def processed_file_names(self) -> list[str]:
         """Names of processed files to look for"""
         if self.chain_selections is not None:
             return [
@@ -380,11 +380,11 @@ class ProteinDataset(Dataset):
         # Chunk dataset for parallel processing
         chunk_size = 128
 
-        def divide_chunks(l: List[str], n: int = 2) -> Generator:
+        def divide_chunks(l: list[str], n: int = 2) -> Generator:
             for i in range(0, len(l), n):
                 yield l[i : i + n]
 
-        examples: List[List[str]] = list(
+        examples: list[list[str]] = list(
             divide_chunks(self.structures, chunk_size)
         )
         idxs = list(divide_chunks(range(len(self.structures)), chunk_size))
@@ -394,14 +394,14 @@ class ProteinDataset(Dataset):
         else:
             chain_selections = self.chain_selections
 
-        chain_selections: List[List[str]] = list(
+        chain_selections: list[list[str]] = list(
             divide_chunks(chain_selections, chunk_size)
         )
 
         for idx, pdbs, chains in tqdm(zip(idxs, examples, chain_selections)):
             # Create graph objects
-            file_names: List[str] = [f"{self.raw_dir}/{pdb}" for pdb in pdbs]
-            file_names: List[str] = [
+            file_names: list[str] = [f"{self.raw_dir}/{pdb}" for pdb in pdbs]
+            file_names: list[str] = [
                 f if f.endswith(".pdb") else f"{f}.pdb" for f in file_names
             ]
             print(file_names)
@@ -484,8 +484,8 @@ class ProteinDataset(Dataset):
 
     def __getitem__(
         self,
-        idx: Union[int, np.integer, IndexType, str],
-    ) -> Union["Dataset", Data]:
+        idx: int | np.integer | IndexType | str,
+    ) -> Dataset | Data:
         r"""In case :obj:`idx` is of type integer, will return the data object
         at index :obj:`idx` (and transforms it in case :obj:`transform` is
         present).
@@ -509,7 +509,7 @@ class ProteinDataset(Dataset):
 
 class ProteinGraphListDataset(InMemoryDataset):
     def __init__(
-        self, root: str, data_list: List[Data], name: str, transform=None
+        self, root: str, data_list: list[Data], name: str, transform=None
     ):
         """Creates a dataset from a list of PyTorch Geometric Data objects.
 

@@ -11,7 +11,6 @@ Adapted from smilite (https://github.com/rasbt/smilite) by Sebastian Raschka.
 # Code Repository: https://github.com/a-r-j/graphein
 
 import ssl
-from typing import Dict, List
 from urllib.error import URLError
 
 from tqdm.rich import tqdm
@@ -46,7 +45,7 @@ def get_smiles_from_zinc(zinc_id: str, backend="zinc15") -> str:
         return smilite.get_zinc_smile(zinc_id, backend=backend)
 
 
-def get_zinc_id_from_smile(smile: str, backend: str = "zinc15") -> List[str]:
+def get_zinc_id_from_smile(smile: str, backend: str = "zinc15") -> list[str]:
     """
     Gets the corresponding ZINC ID(s) for a SMILE string query from
     the ZINC online database. Requires an internet connection.
@@ -68,8 +67,8 @@ def get_zinc_id_from_smile(smile: str, backend: str = "zinc15") -> List[str]:
 
 
 def batch_get_smiles_from_zinc(
-    zinc_ids: List[str], backend: str = "zinc15"
-) -> Dict[str, str]:
+    zinc_ids: list[str], backend: str = "zinc15"
+) -> dict[str, str]:
     """Gets the corresponding SMILE string(s) for a list of ZINC IDs.
 
     :param zinc_ids: List of ZINC IDs, e.g., ``['ZINC00029323', 'ZINC00029324']``
@@ -84,8 +83,8 @@ def batch_get_smiles_from_zinc(
 
 
 def batch_get_zinc_id_from_smiles(
-    smiles: List[str], backend: str = "zinc15"
-) -> Dict[str, List[str]]:
+    smiles: list[str], backend: str = "zinc15"
+) -> dict[str, list[str]]:
     """
     Gets the corresponding ZINC ID for a list of smile string queries from
     the ZINC online database. Requires an internet connection.

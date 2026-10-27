@@ -11,7 +11,6 @@ Otherwise, please see: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYP
 import os
 import random
 import sys
-from typing import Dict, List, Optional
 
 import networkx as nx
 import numpy as np
@@ -19,7 +18,7 @@ from Bio import SeqIO
 
 
 def build_fasta_file_from_mapping(
-    pdb_sequence_mapping: Dict[str, str],
+    pdb_sequence_mapping: dict[str, str],
     fasta_out: str,
 ):
     """
@@ -37,7 +36,7 @@ def build_fasta_file_from_mapping(
 
 
 def build_fasta_file_from_graphs(
-    graphs: List[nx.Graph], fasta_out: str, chains: Optional[List[str]] = None
+    graphs: list[nx.Graph], fasta_out: str, chains: list[str] | None = None
 ):
     if chains is None:
         chains = ["A"] * len(graphs)
@@ -105,7 +104,7 @@ def create_pairs_for_clustering(
     fasta_file: str,
     seq_id_low_thresh: float = 25.0,
     use_very_loose_condition: bool = False,
-    out_file: Optional[str] = None,
+    out_file: str | None = None,
     n_cpu: int = 1,
     max_target_seqs: int = 200,
     delete_blast_databases_when_done: bool = False,

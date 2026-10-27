@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import itertools
-from typing import Union
 
 import networkx as nx
 import numpy as np
@@ -97,7 +96,7 @@ def add_k_nn_edges(
     mode: str = "connectivity",
     metric: str = "minkowski",
     p: int = 2,
-    include_self: Union[bool, str] = False,
+    include_self: bool | str = False,
 ):
     """
     Adds edges to nodes based on K nearest neighbours.

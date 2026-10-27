@@ -6,7 +6,6 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import List, Optional
 
 import networkx as nx
 import plotly.express as px
@@ -49,11 +48,11 @@ def plot_ppi_graph(
 def plotly_ppi_graph(
     g: nx.Graph,
     layout: nx.layout = nx.layout.circular_layout,
-    title: Optional[str] = None,
+    title: str | None = None,
     show_labels: bool = False,
     node_size_multiplier: float = 5.0,
     node_colourscale: str = "Viridis",
-    edge_colours: Optional[List[str]] = None,
+    edge_colours: list[str] | None = None,
     edge_opacity: float = 0.5,
     height: int = 500,
     width: int = 500,
@@ -186,8 +185,8 @@ def get_node_trace(
 
 def get_edge_trace(
     g: nx.Graph,
-    edge_colours: Optional[List[str]] = None,
-) -> List[go.Scatter]:
+    edge_colours: list[str] | None = None,
+) -> list[go.Scatter]:
     """Gets edge traces from PPI graph. Returns a list of traces enabling edge colours to be set individually.
 
     :param g: _description_

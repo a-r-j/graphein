@@ -5,7 +5,8 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Any, Callable, List
+from collections.abc import Callable
+from typing import Any
 
 import networkx as nx
 
@@ -97,7 +98,7 @@ def aggregate_feature_over_residues(
     return G
 
 
-def sequence_to_ngram(sequence: str, N: int) -> List[str]:
+def sequence_to_ngram(sequence: str, N: int) -> list[str]:
     """
     Chops a sequence into overlapping N-grams (substrings of length ``N``).
 

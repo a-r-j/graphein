@@ -8,15 +8,13 @@ adopted from https://github.com/cgoliver/Nussinov/blob/master/nussinov.py"""
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Tuple
-
 import numpy as np
 
 MIN_LOOP_LENGTH = 10
 
 
 def pair_check(
-    base_pair_tuple: Tuple[str, str],
+    base_pair_tuple: tuple[str, str],
 ) -> bool:
     """Check if there is a base pair interaction between two bases.
 

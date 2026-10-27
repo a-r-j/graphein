@@ -8,8 +8,6 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import List, Optional
-
 import networkx as nx
 import numpy as np
 import torch
@@ -108,7 +106,7 @@ class GraphFormatConvertor:
         src_format: str,
         dst_format: str,
         verbose: SUPPORTED_VERBOSITY = "gnn",
-        columns: Optional[List[str]] = None,
+        columns: list[str] | None = None,
     ):
         if (src_format not in SUPPORTED_FORMATS) or (
             dst_format not in SUPPORTED_FORMATS

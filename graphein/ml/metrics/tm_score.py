@@ -1,5 +1,3 @@
-from typing import Union
-
 import numpy as np
 import torch
 from torch_geometric.utils import unbatch
@@ -9,7 +7,7 @@ from ...protein.tensor.types import AtomTensor, CoordTensor
 
 
 def tm_score(
-    y_hat: Union[CoordTensor, AtomTensor], y: Union[CoordTensor, AtomTensor]
+    y_hat: CoordTensor | AtomTensor, y: CoordTensor | AtomTensor
 ) -> torch.Tensor:
     """Compute TMScore between ``y_hat`` and ``y``. Requires aligned structures.
 
@@ -67,8 +65,8 @@ class TMScore(Metric):
 
     def update(
         self,
-        pred: Union[CoordTensor, AtomTensor],
-        target: Union[CoordTensor, AtomTensor],
+        pred: CoordTensor | AtomTensor,
+        target: CoordTensor | AtomTensor,
         batch: torch.Tensor,
     ):
         y = unbatch(target, batch)

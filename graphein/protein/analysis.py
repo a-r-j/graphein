@@ -10,7 +10,8 @@ from __future__ import annotations
 
 import itertools
 from collections import Counter
-from typing import TYPE_CHECKING, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import networkx as nx
 import pandas as pd
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
 
 
 def plot_degree_distribution(
-    g: nx.Graph, title: Optional[str] = None
+    g: nx.Graph, title: str | None = None
 ) -> plotly.graph_objects.Figure:
     """Plots the distribution of node degrees in the graph.
 
@@ -41,7 +42,7 @@ def plot_degree_distribution(
 
 
 def plot_residue_composition(
-    g: nx.Graph, sort_by: Optional[str] = None, plot_type: str = "bar"
+    g: nx.Graph, sort_by: str | None = None, plot_type: str = "bar"
 ) -> plotly.graph_objects.Figure:
     """Plots the residue composition of the graph.
 
@@ -108,7 +109,7 @@ def plot_degree_by_residue_type(
 
 
 def plot_edge_type_distribution(
-    g: nx.Graph, plot_type: str = "bar", title: Optional[str] = None
+    g: nx.Graph, plot_type: str = "bar", title: str | None = None
 ) -> plotly.graph_objects.Figure:
     """Plots the distribution of edge types in the graph.
 
@@ -147,7 +148,7 @@ def graph_summary(
         "eigenvector_centrality",
         "communicability_betweenness_centrality",
     ),
-    custom_data: Optional[Union[pd.DataFrame, pd.Series]] = None,
+    custom_data: pd.DataFrame | pd.Series | None = None,
     plot: bool = False,
 ) -> pd.DataFrame:
     """Returns a summary of the graph in a dataframe.
@@ -218,10 +219,10 @@ def plot_graph_metric_property_correlation(
         "communicability_betweenness_centrality",
     ),
     properties: Sequence[str] = ("asa",),
-    colour_by: Optional[str] = "residue_type",
+    colour_by: str | None = "residue_type",
     opacity: float = 0.2,
     diagonal_visible: bool = True,
-    title: Optional[str] = None,
+    title: str | None = None,
     height: int = 1000,
     width: int = 1000,
     font_size: int = 10,

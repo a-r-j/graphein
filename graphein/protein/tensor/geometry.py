@@ -7,8 +7,6 @@ import copy
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Tuple, Union
-
 from loguru import logger as log
 
 from graphein.utils.dependencies import import_message
@@ -43,7 +41,7 @@ except ImportError:
 
 
 def get_center(
-    x: Union[AtomTensor, CoordTensor],
+    x: AtomTensor | CoordTensor,
     ca_only: bool = True,
     fill_value: float = 1e-5,
 ) -> CoordTensor:
@@ -82,8 +80,8 @@ def get_center(
 
 
 def center_protein(
-    x: Union[AtomTensor, CoordTensor], ca_only: bool = True, fill_value=1e-5
-) -> Union[AtomTensor, CoordTensor]:
+    x: AtomTensor | CoordTensor, ca_only: bool = True, fill_value=1e-5
+) -> AtomTensor | CoordTensor:
     """
     Centers a protein in the coordinate system at the origin.
 
@@ -113,18 +111,18 @@ def center_protein(
 
 
 def kabsch(
-    A: Union[AtomTensor, CoordTensor],
-    B: Union[AtomTensor, CoordTensor],
+    A: AtomTensor | CoordTensor,
+    B: AtomTensor | CoordTensor,
     ca_only: bool = True,
     residue_wise: bool = False,
     fill_value: float = 1e-5,
     return_transformed: bool = True,
     allow_reflections: bool = False,
-) -> Union[
-    CoordTensor,
-    Tuple[BackboneFrameTensor, torch.Tensor],
-    Tuple[RotationMatrix, torch.Tensor],
-]:
+) -> (
+    CoordTensor
+    | tuple[BackboneFrameTensor, torch.Tensor]
+    | tuple[RotationMatrix, torch.Tensor]
+):
     """
     Computes registration between two (2D or 3D) point clouds with known
     correspondences using Kabsch algorithm.
@@ -302,7 +300,7 @@ def quaternion_to_matrix(
 
 
 def idealize_backbone(
-    x: Union[AtomTensor, BackboneTensor],
+    x: AtomTensor | BackboneTensor,
     lr: float = 1e-3,
     n_iter: int = 100,
     inplace: bool = False,
@@ -361,11 +359,11 @@ def idealize_backbone(
 
 
 def apply_structural_noise(
-    x: Union[AtomTensor, CoordTensor],
+    x: AtomTensor | CoordTensor,
     magnitude: float = 0.1,
     gaussian: bool = True,
     return_transformed: bool = True,
-) -> Union[AtomTensor, CoordTensor]:
+) -> AtomTensor | CoordTensor:
     """
     Generates random noise and adds it to the input tensor.
 

@@ -8,9 +8,10 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Union
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel, validator
@@ -22,7 +23,7 @@ from graphein.utils.config import PartialMatchOperator, PathMatchOperator
 try:
     from typing import Literal
 except ImportError:
-    from typing_extensions import Literal
+    from typing import Literal
 
 
 class DSSPConfig(BaseModel):
@@ -190,29 +191,25 @@ class ProteinGraphConfig(BaseModel):
     :type dssp_config: DSSPConfig, optional
     """
 
-    granularity: Union[GraphAtoms, GranularityOpts] = "CA"
-    keep_hets: List[str] = []
+    granularity: GraphAtoms | GranularityOpts = "CA"
+    keep_hets: list[str] = []
     insertions: bool = True
     alt_locs: AltLocsOpts = "max_occupancy"
-    pdb_dir: Optional[Path] = None
+    pdb_dir: Path | None = None
     verbose: bool = False
     exclude_waters: bool = True
     deprotonate: bool = False
 
     # Graph construction functions
-    protein_df_processing_functions: Optional[List[Callable]] = None
-    edge_construction_functions: List[Union[Callable, str]] = [
-        add_peptide_bonds
-    ]
-    node_metadata_functions: Optional[List[Union[Callable, str]]] = [
-        meiler_embedding
-    ]
-    edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
-    graph_metadata_functions: Optional[List[Callable]] = None
+    protein_df_processing_functions: list[Callable] | None = None
+    edge_construction_functions: list[Callable | str] = [add_peptide_bonds]
+    node_metadata_functions: list[Callable | str] | None = [meiler_embedding]
+    edge_metadata_functions: list[Callable | str] | None = None
+    graph_metadata_functions: list[Callable] | None = None
 
     # External Dependency configs
-    get_contacts_config: Optional[GetContactsConfig] = None
-    dssp_config: Optional[DSSPConfig] = None
+    get_contacts_config: GetContactsConfig | None = None
+    dssp_config: DSSPConfig | None = None
 
     @validator("alt_locs")
     def convert_alt_locs_aliases(cls, v):
@@ -259,5 +256,5 @@ class ProteinMeshConfig(BaseModel):
     :type pymol_commands: List[str], optional
     """
 
-    pymol_command_line_options: Optional[str] = "-cKq"
-    pymol_commands: Optional[List[str]] = ["show surface"]
+    pymol_command_line_options: str | None = "-cKq"
+    pymol_commands: list[str] | None = ["show surface"]

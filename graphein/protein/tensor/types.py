@@ -8,7 +8,7 @@ Graphein provides many types for commonly used tensors of specific shapes.
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import NewType, Optional, Union
+from typing import NewType
 
 from jaxtyping import Float, Int
 from torch import Tensor
@@ -57,7 +57,7 @@ CoordTensor = NewType("CoordTensor", Float[Tensor, "nodes 3"])
 Tensor of coordinates. The first dimension is the length of the protein
 (or batch of proteins), the last dimension contains the x,y,z positions."""
 
-PositionTensor = NewType("PositionTensor", Union[AtomTensor, CoordTensor])
+PositionTensor = NewType("PositionTensor", AtomTensor | CoordTensor)
 """
 Union[:ref:`graphein.protein.tensor.types.AtomTensor,
 :ref:`graphein.protein.tensor.types.CoordTensor]
@@ -126,9 +126,7 @@ Specifies a 3D rotation matrix.
 .. seealso:: :class:`RotationMatrix2D` :class:`RotationMatrix` :class:`RotationTensor`
 """
 
-RotationMatrix = NewType(
-    "RotationMatrix", Union[RotationMatrix2D, RotationMatrix3D]
-)
+RotationMatrix = NewType("RotationMatrix", RotationMatrix2D | RotationMatrix3D)
 """
 ``Union[RotationMatrix3D, RotationMatrix2D]``
 
@@ -143,14 +141,14 @@ RotationMatrixTensor = NewType(
 )
 
 RotationTensor = NewType(
-    "RotationTensor", Union[QuaternionTensor, RotationMatrixTensor]
+    "RotationTensor", QuaternionTensor | RotationMatrixTensor
 )
 
 
 # Angles
 DihedralTensor = NewType(
     "DihedralTensor",
-    Union[Float[Tensor, "residues 3"], Float[Tensor, "residues 6"]],
+    Float[Tensor, "residues 3"] | Float[Tensor, "residues 6"],
 )
 """
 ``Union[torch.float[-1, 3], torch.float[-1, 6]]``
@@ -168,7 +166,7 @@ or embedded on the unit sphere ``[cos(phi), sin(phi), cos(psi), sin(psi), ...]``
 
 TorsionTensor = NewType(
     "TorsionTensor",
-    Union[Float[Tensor, "residues 4"], Float[Tensor, "residues 8"]],
+    Float[Tensor, "residues 4"] | Float[Tensor, "residues 8"],
 )
 """
 ``Union[torch.float[-1, 4], torch.float[-1, 8]]``
@@ -215,4 +213,4 @@ OrientationTensor = NewType("OrientationTensor", Float[Tensor, "nodes 2 3"])
 
 ScalarTensor = NewType("ScalarTensor", Float[Tensor, "nodes"])  # noqa: F821
 
-OptTensor = NewType("OptTensor", Optional[Tensor])
+OptTensor = NewType("OptTensor", Tensor | None)

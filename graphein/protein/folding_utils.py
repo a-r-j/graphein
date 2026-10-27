@@ -12,8 +12,8 @@ N.B. ESMFold functionality require torch & ESMFold to be installed.
 
 import os
 import subprocess
+from collections.abc import Sequence
 from functools import lru_cache
-from typing import Dict, List, Optional, Sequence
 
 import requests
 from loguru import logger as log
@@ -90,8 +90,8 @@ def esmfold_fasta(
     fasta: str,
     out_dir: str,
     num_recycles: int = 4,
-    max_tokens: Optional[int] = None,
-    chunk_size: Optional[int] = None,
+    max_tokens: int | None = None,
+    chunk_size: int | None = None,
     cpu_only: bool = False,
     cpu_offload: bool = False,
 ):
@@ -149,10 +149,10 @@ def esm_embed_fasta(
     fasta: str,
     out_dir: str,
     model: str = "esm2_t33_650M_UR50D",
-    max_tokens: Optional[int] = None,
-    repr_layers: Optional[Sequence[int]] = (0, 32, 33),
-    include: Optional[Sequence[str]] = ("mean", "per_tok"),
-    truncation_seq_length: Optional[int] = None,
+    max_tokens: int | None = None,
+    repr_layers: Sequence[int] | None = (0, 32, 33),
+    include: Sequence[str] | None = ("mean", "per_tok"),
+    truncation_seq_length: int | None = None,
 ):
     """
     Batch embed a fasta file with ESM.
@@ -229,7 +229,7 @@ def foldcompress_file(fname: str, anchor_residue_threshold: int = 25):
 
 
 def foldcompress_database(
-    db_name: str, dir_path: str, fnames: Optional[List[str]]
+    db_name: str, dir_path: str, fnames: list[str] | None
 ):
     """
     Compress all PDB files in the database using the FoldCompress algorithm.
@@ -251,9 +251,7 @@ def foldcompress_database(
         subprocess.run(cmd, shell=True)
 
 
-def esmfold_web(
-    sequence: str, out_path: Optional[str] = None, version: int = 1
-):
+def esmfold_web(sequence: str, out_path: str | None = None, version: int = 1):
     """Fold a protein sequence using the ESMFold model from the ESMFold server
     at https://api.esmatlas.com/foldSequence/v1/pdb/.
 
@@ -269,7 +267,7 @@ def esmfold_web(
     """
     URL = f"https://api.esmatlas.com/foldSequence/v{version}/pdb/"
 
-    headers: Dict[str, str] = {
+    headers: dict[str, str] = {
         "Content-Type": "application/x-www-form-urlencoded",
     }
 

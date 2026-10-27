@@ -1,6 +1,6 @@
 """Utilities for reconstructing protein structures."""
 
-from typing import Iterable, List, Tuple, Union
+from collections.abc import Iterable
 
 import numpy as np
 import torch
@@ -161,7 +161,7 @@ def dist_mat_to_coords(d: torch.Tensor, k: int = 3) -> CoordTensor:
 
 def build_sidechain(
     bb: AtomTensor,
-    residue_types: List[str],
+    residue_types: list[str],
     torsion_angles: TorsionTensor,
 ) -> AtomTensor:  # sourcery skip: assign-if-exp, lift-duplicated-conditional
     if torsion_angles.shape[-1] == 8:
@@ -234,12 +234,12 @@ def build_sidechain(
 def _get_build_params(
     res: str,
 ) -> Iterable[
-    Tuple[
+    tuple[
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
-        Union[torch.Tensor, str],
-        List[str],
+        torch.Tensor | str,
+        list[str],
     ]
 ]:
     """

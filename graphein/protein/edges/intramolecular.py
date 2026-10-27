@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import subprocess
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import networkx as nx
 import pandas as pd
@@ -129,7 +129,7 @@ def _validate_get_contacts_installation(config: GetContactsConfig) -> None:
 
 
 def _get_or_download_pdb(
-    config: GetContactsConfig, pdb_id: Optional[str], file_name: Optional[str]
+    config: GetContactsConfig, pdb_id: str | None, file_name: str | None
 ) -> Path:
     """Get PDB file path, downloading if necessary."""
     if file_name and Path(file_name).exists():
@@ -146,8 +146,8 @@ def _get_or_download_pdb(
 
 def run_get_contacts(
     config: GetContactsConfig,
-    pdb_id: Optional[str] = None,
-    file_name: Optional[str] = None,
+    pdb_id: str | None = None,
+    file_name: str | None = None,
 ):
     """
     Runs GetContacts on a protein structure. If no file_name is provided, a

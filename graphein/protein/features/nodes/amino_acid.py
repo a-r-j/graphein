@@ -8,7 +8,7 @@
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -61,11 +61,11 @@ def load_meiler_embeddings() -> pd.DataFrame:
 
 def expasy_protein_scale(
     n: str,
-    d: Dict[str, Any],
-    selection: Optional[List[str]] = None,
+    d: dict[str, Any],
+    selection: list[str] | None = None,
     add_separate: bool = False,
     return_array: bool = False,
-) -> Union[pd.Series, np.ndarray]:
+) -> pd.Series | np.ndarray:
     """
     Return amino acid features that come from the EXPASY protein scale.
 
@@ -108,8 +108,8 @@ def expasy_protein_scale(
 
 
 def meiler_embedding(
-    n: str, d: Dict[str, Any], return_array: bool = False
-) -> Union[pd.Series, np.ndarray]:
+    n: str, d: dict[str, Any], return_array: bool = False
+) -> pd.Series | np.ndarray:
     """
     Return amino acid features from reduced dimensional embeddings of amino
     acid physicochemical properties.
@@ -143,10 +143,10 @@ def meiler_embedding(
 
 def amino_acid_one_hot(
     n,
-    d: Dict[str, Any],
+    d: dict[str, Any],
     return_array: bool = True,
-    allowable_set: Optional[List[str]] = None,
-) -> Union[pd.Series, np.ndarray]:
+    allowable_set: list[str] | None = None,
+) -> pd.Series | np.ndarray:
     """Adds a one-hot encoding of amino acid types as a node attribute.
 
     :param n: node name, this is unused and only included for compatibility
@@ -183,7 +183,7 @@ def amino_acid_one_hot(
 
 def hydrogen_bond_donor(
     n: str,
-    d: Dict[str, Any],
+    d: dict[str, Any],
     sum_features: bool = True,
     return_array: bool = False,
 ):

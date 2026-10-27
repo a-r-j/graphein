@@ -11,7 +11,6 @@ import re
 import sys
 from pprint import pprint
 from shutil import rmtree
-from typing import List
 
 from setuptools import Command, find_packages, setup
 
@@ -100,7 +99,7 @@ class UploadCommand(Command):
     """Support setup.py upload."""
 
     description = "Build and publish the package."
-    user_options: List = []
+    user_options: list = []
 
     @staticmethod
     def status(s):

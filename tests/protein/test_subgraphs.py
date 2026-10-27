@@ -8,7 +8,6 @@
 
 import pickle
 from pathlib import Path
-from typing import List
 
 import networkx as nx
 import numpy as np
@@ -351,7 +350,7 @@ def test_secondary_structure_subgraph():
     )
     G = construct_graph(path=str(file_path), config=config)
 
-    SS_ELEMENTS: List[str] = ["H"]
+    SS_ELEMENTS: list[str] = ["H"]
     s_g = extract_subgraph_from_secondary_structure(
         G, SS_ELEMENTS, filter_dataframe=True
     )

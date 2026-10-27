@@ -7,7 +7,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Callable, List, Optional
+from collections.abc import Callable
 
 import networkx as nx
 from loguru import logger as log
@@ -50,12 +50,12 @@ def parse_kwargs_from_config(config: PPIGraphConfig) -> PPIGraphConfig:
 
 
 def compute_ppi_graph(
-    protein_list: List[str],
-    edge_construction_funcs: List[Callable],
-    graph_annotation_funcs: Optional[List[Callable]] = None,
-    node_annotation_funcs: Optional[List[Callable]] = None,
-    edge_annotation_funcs: Optional[List[Callable]] = None,
-    config: Optional[PPIGraphConfig] = None,
+    protein_list: list[str],
+    edge_construction_funcs: list[Callable],
+    graph_annotation_funcs: list[Callable] | None = None,
+    node_annotation_funcs: list[Callable] | None = None,
+    edge_annotation_funcs: list[Callable] | None = None,
+    config: PPIGraphConfig | None = None,
 ) -> nx.Graph:
     """
     Computes a PPI Graph from a list of protein IDs. This is the core function

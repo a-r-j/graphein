@@ -7,8 +7,6 @@ and returns a 2D xarray.
 These arrays can then be stacked to generate a diffusion tensor.
 """
 
-from typing import Dict, Optional
-
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -34,7 +32,7 @@ def identity_matrix(G: nx.Graph) -> xr.DataArray:
 
 def adjacency_matrix_power(
     G: nx.Graph,
-    amat_kwargs: Optional[Dict] = None,
+    amat_kwargs: dict | None = None,
     with_identity: bool = True,
     power: float = 1,
 ) -> xr.DataArray:

@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import copy
 import traceback
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Union
 
 import networkx as nx
 import numpy as np
@@ -101,8 +101,8 @@ def add_nodes_to_graph(
 
 @requires_python_libs("rdkit")
 def generate_3d(
-    mol: Union[nx.Graph, Chem.Mol], recompute_graph: bool = False
-) -> Union[nx.Graph, rdkit.Chem.rdchem.Mol]:
+    mol: nx.Graph | Chem.Mol, recompute_graph: bool = False
+) -> nx.Graph | rdkit.Chem.rdchem.Mol:
     """
     Generate a 3D structure for a RDKit molecule.
 
@@ -140,17 +140,17 @@ def generate_3d(
 
 @requires_python_libs("rdkit")
 def construct_graph(
-    config: Optional[MoleculeGraphConfig] = None,
-    mol: Optional[rdkit.Mol] = None,
-    path: Optional[str] = None,
-    smiles: Optional[str] = None,
-    zinc_id: Optional[str] = None,
-    chembl_id: Optional[str] = None,
-    generate_conformer: Optional[bool] = False,
-    edge_construction_funcs: Optional[str] = None,
-    edge_annotation_funcs: Optional[List[Callable]] = None,
-    node_annotation_funcs: Optional[List[Callable]] = None,
-    graph_annotation_funcs: Optional[List[Callable]] = None,
+    config: MoleculeGraphConfig | None = None,
+    mol: rdkit.Mol | None = None,
+    path: str | None = None,
+    smiles: str | None = None,
+    zinc_id: str | None = None,
+    chembl_id: str | None = None,
+    generate_conformer: bool | None = False,
+    edge_construction_funcs: str | None = None,
+    edge_annotation_funcs: list[Callable] | None = None,
+    node_annotation_funcs: list[Callable] | None = None,
+    graph_annotation_funcs: list[Callable] | None = None,
 ) -> nx.Graph:
     """
     Constructs molecular structure graph from a ``sdf_path``, ``mol2_path``,
@@ -321,8 +321,8 @@ def construct_graph(
 
 
 def compute_fragment_graphs(
-    g: Union[nx.Graph, Chem.Mol], config: Optional[MoleculeGraphConfig] = None
-) -> List[nx.Graph]:
+    g: nx.Graph | Chem.Mol, config: MoleculeGraphConfig | None = None
+) -> list[nx.Graph]:
     """Computes graphs for each fragment in a molecule.
 
     :param g: Input graph or molecule to fragment.
@@ -343,7 +343,7 @@ def compute_fragment_graphs(
 
 
 def _mp_graph_constructor(
-    input: Union[str, Chem.Mol],
+    input: str | Chem.Mol,
     config: MoleculeGraphConfig,
     use_mol: bool = False,
     use_file: bool = False,
@@ -383,13 +383,13 @@ def _mp_graph_constructor(
 
 
 def construct_graphs_mp(
-    path_it: Optional[List[str]] = None,
-    smiles_it: Optional[List[str]] = None,
-    mol_it: Optional[List[Chem.Mol]] = None,
-    config: Optional[MoleculeGraphConfig] = None,
+    path_it: list[str] | None = None,
+    smiles_it: list[str] | None = None,
+    mol_it: list[Chem.Mol] | None = None,
+    config: MoleculeGraphConfig | None = None,
     num_cores: int = 16,
     return_dict: bool = True,
-) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:
+) -> list[nx.Graph] | dict[str, nx.Graph]:
     """
     Constructs molecular graphs for a list of smiles or paths using
     multiprocessing.
@@ -448,7 +448,7 @@ def construct_graphs_mp(
 
 
 @requires_python_libs("rdkit")
-def get_coords(mol: rdkit.Chem.rdchem.Mol) -> List[List[float]]:
+def get_coords(mol: rdkit.Chem.rdchem.Mol) -> list[list[float]]:
     """
     Function for getting the coordinates of an RDKit molecule.
 

@@ -13,7 +13,6 @@ PyTorch implementation modifield from the implementation by Felix Opolka:
 
 import collections
 import math
-from typing import Optional
 
 import numpy as np
 import torch
@@ -57,8 +56,8 @@ def reconstruct_dihedrals(
 
 def dihedrals_to_coords(
     dihedral: torch.Tensor,
-    bond_lengths: Optional[torch.Tensor],
-    bond_angles: Optional[torch.Tensor],
+    bond_lengths: torch.Tensor | None,
+    bond_angles: torch.Tensor | None,
 ) -> AtomTensor:
     if dihedral.shape[-1] == 6:
         phi, psi, omg = dihedrals_to_rad(dihedral)

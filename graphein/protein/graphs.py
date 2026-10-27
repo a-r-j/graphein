@@ -11,10 +11,11 @@ from __future__ import annotations
 import copy
 import os
 import traceback
+from collections.abc import Callable, Sequence
 from contextlib import nullcontext
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any
 
 import cpdb
 import networkx as nx
@@ -50,7 +51,7 @@ from graphein.utils.utils import (
 try:
     from typing import Literal
 except ImportError:
-    from typing_extensions import Literal
+    from typing import Literal
 
 
 def subset_structure_to_rna(
@@ -71,9 +72,9 @@ def subset_structure_to_rna(
 
 
 def read_pdb_to_dataframe(
-    path: Optional[Union[str, os.PathLike]] = None,
-    pdb_code: Optional[str] = None,
-    uniprot_id: Optional[str] = None,
+    path: str | os.PathLike | None = None,
+    pdb_code: str | None = None,
+    uniprot_id: str | None = None,
     model_index: int = 1,
 ) -> pd.DataFrame:
     """
@@ -316,8 +317,8 @@ def remove_insertions(
 
 
 def filter_hetatms(
-    df: pd.DataFrame, keep_hets: List[str]
-) -> List[pd.DataFrame]:
+    df: pd.DataFrame, keep_hets: list[str]
+) -> list[pd.DataFrame]:
     """Return hetatms of interest.
 
     :param df: Protein Structure dataframe to filter hetatoms from.
@@ -332,8 +333,8 @@ def filter_hetatms(
 
 def process_dataframe(
     protein_df: pd.DataFrame,
-    atom_df_processing_funcs: Optional[List[Callable]] = None,
-    hetatom_df_processing_funcs: Optional[List[Callable]] = None,
+    atom_df_processing_funcs: list[Callable] | None = None,
+    hetatom_df_processing_funcs: list[Callable] | None = None,
     granularity: str = "centroids",
     chain_selection: str = "all",
     insertions: bool = False,
@@ -470,7 +471,7 @@ def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
 def select_chains(
     protein_df: pd.DataFrame,
-    chain_selection: Union[str, List[str]],
+    chain_selection: str | list[str],
 ) -> pd.DataFrame:
     """
     Extracts relevant chains from ``protein_df``.
@@ -505,9 +506,9 @@ def initialise_graph_with_metadata(
     protein_df: pd.DataFrame,
     raw_pdb_df: pd.DataFrame,
     granularity: str,
-    name: Optional[str] = None,
-    pdb_code: Optional[str] = None,
-    path: Optional[str] = None,
+    name: str | None = None,
+    pdb_code: str | None = None,
+    path: str | None = None,
 ) -> nx.Graph:
     """
     Initializes the nx Graph object with initial metadata.
@@ -585,7 +586,7 @@ def initialise_graph_with_metadata(
 
 def add_nodes_to_graph(
     G: nx.Graph,
-    protein_df: Optional[pd.DataFrame] = None,
+    protein_df: pd.DataFrame | None = None,
     verbose: bool = False,
 ) -> nx.Graph:
     """Add nodes into protein graph.
@@ -665,8 +666,8 @@ def calculate_centroid_positions(
 
 def compute_edges(
     G: nx.Graph,
-    funcs: List[Callable],
-    get_contacts_config: Optional[GetContactsConfig] = None,
+    funcs: list[Callable],
+    get_contacts_config: GetContactsConfig | None = None,
 ) -> nx.Graph:
     """
     Computes edges for the protein structure graph. Will compute a pairwise
@@ -698,19 +699,19 @@ def compute_edges(
 
 
 def construct_graph(
-    config: Optional[ProteinGraphConfig] = None,
-    name: Optional[str] = None,
-    path: Optional[Union[str, os.PathLike]] = None,
-    uniprot_id: Optional[str] = None,
-    pdb_code: Optional[str] = None,
-    df: Optional[pd.DataFrame] = None,
-    chain_selection: Union[str, List[str]] = "all",
+    config: ProteinGraphConfig | None = None,
+    name: str | None = None,
+    path: str | os.PathLike | None = None,
+    uniprot_id: str | None = None,
+    pdb_code: str | None = None,
+    df: pd.DataFrame | None = None,
+    chain_selection: str | list[str] = "all",
     model_index: int = 1,
-    df_processing_funcs: Optional[List[Callable]] = None,
-    edge_construction_funcs: Optional[List[Callable]] = None,
-    edge_annotation_funcs: Optional[List[Callable]] = None,
-    node_annotation_funcs: Optional[List[Callable]] = None,
-    graph_annotation_funcs: Optional[List[Callable]] = None,
+    df_processing_funcs: list[Callable] | None = None,
+    edge_construction_funcs: list[Callable] | None = None,
+    edge_annotation_funcs: list[Callable] | None = None,
+    node_annotation_funcs: list[Callable] | None = None,
+    graph_annotation_funcs: list[Callable] | None = None,
     verbose: bool = True,
 ) -> nx.Graph:
     """
@@ -887,8 +888,8 @@ def construct_graph(
 
 
 def _mp_graph_constructor(
-    args: Tuple[str, str, int], source: str, config: ProteinGraphConfig
-) -> Union[nx.Graph, None]:
+    args: tuple[str, str, int], source: str, config: ProteinGraphConfig
+) -> nx.Graph | None:
     """
     Protein graph constructor for use in multiprocessing several protein
     structure graphs.
@@ -935,16 +936,16 @@ def _mp_graph_constructor(
 
 
 def construct_graphs_mp(
-    pdb_code_it: Optional[List[str]] = None,
-    path_it: Optional[List[str]] = None,
-    uniprot_id_it: Optional[List[str]] = None,
-    chain_selections: Optional[Union[List[List[str]], List[str]]] = None,
-    model_indices: Optional[List[str]] = None,
-    config: Optional[ProteinGraphConfig] = None,
+    pdb_code_it: list[str] | None = None,
+    path_it: list[str] | None = None,
+    uniprot_id_it: list[str] | None = None,
+    chain_selections: list[list[str]] | list[str] | None = None,
+    model_indices: list[str] | None = None,
+    config: ProteinGraphConfig | None = None,
     num_cores: int = 16,
     return_dict: bool = True,
-    out_path: Optional[str] = None,
-) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:
+    out_path: str | None = None,
+) -> list[nx.Graph] | dict[str, nx.Graph]:
     """
     Constructs protein graphs for a list of pdb codes or pdb paths using
     multiprocessing.
@@ -1027,10 +1028,10 @@ def construct_graphs_mp(
 
 def compute_chain_graph(
     g: nx.Graph,
-    chain_list: Optional[List[str]] = None,
+    chain_list: list[str] | None = None,
     remove_self_loops: bool = False,
     return_weighted_graph: bool = False,
-) -> Union[nx.Graph, nx.MultiGraph]:
+) -> nx.Graph | nx.MultiGraph:
     """Computes a chain-level graph from a protein structure graph.
 
     This graph features nodes as individual chains in a complex and edges as
@@ -1085,7 +1086,7 @@ def compute_chain_graph(
     # Remove self-loops if necessary. Checks for equality between nodes in a
     # given edge.
     if remove_self_loops:
-        edges_to_remove: List[Tuple[str]] = [
+        edges_to_remove: list[tuple[str]] = [
             (u, v) for u, v in h.edges() if u == v
         ]
         h.remove_edges_from(edges_to_remove)
@@ -1126,7 +1127,7 @@ def compute_weighted_graph_from_multigraph(g: nx.MultiGraph) -> nx.Graph:
     return H
 
 
-def number_groups_of_runs(list_of_values: List[Any]) -> List[str]:
+def number_groups_of_runs(list_of_values: list[Any]) -> list[str]:
     """Numbers groups of runs in a list of values.
 
     E.g. ``["A", "A", "B", "A", "A", "A", "B", "B"] ->
@@ -1145,11 +1146,11 @@ def number_groups_of_runs(list_of_values: List[Any]) -> List[str]:
 
 def compute_secondary_structure_graph(
     g: nx.Graph,
-    allowable_ss_elements: Optional[List[str]] = None,
+    allowable_ss_elements: list[str] | None = None,
     remove_non_ss: bool = True,
     remove_self_loops: bool = False,
     return_weighted_graph: bool = False,
-) -> Union[nx.Graph, nx.MultiGraph]:
+) -> nx.Graph | nx.MultiGraph:
     """Computes a secondary structure graph from a protein structure graph.
 
     :param g: A protein structure graph to compute the secondary structure
@@ -1171,7 +1172,7 @@ def compute_secondary_structure_graph(
     :rtype: Union[nx.Graph, nx.MultiGraph]
     """
     # Initialise list of secondary structure elements we use to build the graph
-    ss_list: List[str] = []
+    ss_list: list[str] = []
 
     # Check nodes have secondary structure assignment & store them in list
     for _, d in g.nodes(data=True):
@@ -1194,13 +1195,13 @@ def compute_secondary_structure_graph(
             ss_list.str.contains("|".join(allowable_ss_elements))
         ]
 
-    constituent_residues: Dict[str, List[str]] = ss_list.index.groupby(
+    constituent_residues: dict[str, list[str]] = ss_list.index.groupby(
         ss_list.values
     )
     constituent_residues = {
         k: list(v) for k, v in constituent_residues.items()
     }
-    residue_counts: Dict[str, int] = ss_list.groupby(ss_list).count().to_dict()
+    residue_counts: dict[str, int] = ss_list.groupby(ss_list).count().to_dict()
 
     # Add Nodes from secondary structure list
     h = nx.MultiGraph()
@@ -1230,7 +1231,7 @@ def compute_secondary_structure_graph(
     # Remove self-loops if necessary.
     # Checks for equality between nodes in a given edge.
     if remove_self_loops:
-        edges_to_remove: List[Tuple[str]] = [
+        edges_to_remove: list[tuple[str]] = [
             (u, v) for u, v in h.edges() if u == v
         ]
         h.remove_edges_from(edges_to_remove)

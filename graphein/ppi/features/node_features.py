@@ -6,13 +6,13 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Any, Dict
+from typing import Any
 
 import networkx as nx
 from bioservices import HGNC, UniProt
 
 
-def add_sequence_to_nodes(n: str, d: Dict[str, Any]):
+def add_sequence_to_nodes(n: str, d: dict[str, Any]):
     """
     Maps UniProt ACC to UniProt ID. Retrieves sequence from UniProt and adds it to the node as a feature
 

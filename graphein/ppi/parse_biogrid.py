@@ -7,15 +7,13 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Dict, List, Union
-
 import pandas as pd
 import requests
 
 
 def params_BIOGRID(
-    params: Dict[str, Union[str, int, List[str], List[int]]], **kwargs
-) -> Dict[str, Union[str, int]]:
+    params: dict[str, str | int | list[str] | list[int]], **kwargs
+) -> dict[str, str | int]:
     """
     Updates default parameters with user parameters for the method
     "interactions" of the BIOGRID API REST.
@@ -81,8 +79,8 @@ def params_BIOGRID(
 
 
 def parse_BIOGRID(
-    protein_list: List[str],
-    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    protein_list: list[str],
+    ncbi_taxon_id: int | str | list[int] | list[str],
     paginate: bool = True,
     **kwargs,
 ) -> pd.DataFrame:
@@ -130,7 +128,7 @@ def parse_BIOGRID(
     # Call BIOGRID
     def make_call(
         request_url: str,
-        params: Dict[str, Union[str, int]],
+        params: dict[str, str | int],
         start: int = 0,
         max: int = 10000,
         paginate: bool = paginate,
@@ -218,8 +216,8 @@ def standardise_BIOGRID(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def BIOGRID_df(
-    protein_list: List[str],
-    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    protein_list: list[str],
+    ncbi_taxon_id: int | str | list[int] | list[str],
     **kwargs,
 ) -> pd.DataFrame:
     """

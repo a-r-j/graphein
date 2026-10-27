@@ -1,7 +1,7 @@
 """Utilities for sanity checking protein tensors."""
 
+from collections.abc import Sequence
 from functools import partial
-from typing import List, Sequence, Tuple, Union
 
 from loguru import logger as log
 
@@ -42,7 +42,7 @@ is_tensor_equal = partial(torch.allclose, rtol=0, atol=0)
 
 
 def has_complete_backbone(
-    x: Union[AtomTensor, BackboneTensor],
+    x: AtomTensor | BackboneTensor,
     fill_value: float = 1e-5,
     backbone_indices: Sequence[int] = (0, 1, 2, 3),
 ) -> bool:
@@ -101,7 +101,7 @@ def has_complete_residue(
         residue_type = STANDARD_AMINO_ACID_MAPPING_1_TO_3[residue_type]
     true_residue_indices = get_atom_indices()[residue_type]
 
-    def _get_index(y: torch.Tensor) -> Tuple[int, ...]:
+    def _get_index(y: torch.Tensor) -> tuple[int, ...]:
         indices = (
             torch.nonzero(torch.sum(y != fill_value, dim=1))
             .squeeze(1)
@@ -117,7 +117,7 @@ def has_complete_residue(
 
 
 def is_complete_structure(
-    x: AtomTensor, residues: Union[List[str], str], fill_value: float = 1e-5
+    x: AtomTensor, residues: list[str] | str, fill_value: float = 1e-5
 ) -> bool:
     """Checks whether a protein structure has all of the requisite atoms.
 
@@ -190,8 +190,8 @@ def fill_missing_o_coords(x: AtomTensor):
 
 
 def fill_missing_backbone(
-    x: Union[AtomTensor, CoordTensor], fill_value: float = 1e-5
-) -> Union[AtomTensor, BackboneTensor]:
+    x: AtomTensor | CoordTensor, fill_value: float = 1e-5
+) -> AtomTensor | BackboneTensor:
     if has_complete_backbone(x, fill_value):
         return x
     # TODO

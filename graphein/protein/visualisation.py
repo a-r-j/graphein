@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from itertools import count
-from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -80,7 +80,7 @@ def colour_nodes(
     G: nx.Graph,
     colour_by: str,
     colour_map: matplotlib.colors.ListedColormap = plt.cm.plasma,
-) -> List[Tuple[float, float, float, float]]:
+) -> list[tuple[float, float, float, float]]:
     """
     Computes node colours based on ``"degree"``, ``"seq_position"`` or node
     attributes.
@@ -113,7 +113,7 @@ def colour_nodes(
         )
         colors = [chain_colours[d["chain_id"]] for _, d in G.nodes(data=True)]
     elif colour_by == "plddt":
-        levels: List[str] = ["Very High", "Confident", "Low", "Very Low"]
+        levels: list[str] = ["Very High", "Confident", "Low", "Very Low"]
         mapping = dict(zip(sorted(levels), count()))
         colors = []
         for _, d in G.nodes(data=True):
@@ -140,10 +140,10 @@ def colour_nodes(
 def colour_edges(
     G: nx.Graph,
     colour_map: matplotlib.colors.ListedColormap,
-    colour_by: Optional[str] = "kind",
+    colour_by: str | None = "kind",
     set_alpha: float = 1.0,
     return_as_rgba: bool = False,
-) -> List[Tuple[float, float, float, float]] or List[str]:
+) -> list[tuple[float, float, float, float]] or list[str]:
     """
     Computes edge colours based on the kind of bond/interaction.
 
@@ -198,8 +198,8 @@ def colour_edges(
 
 def plotly_protein_structure_graph(
     G: nx.Graph,
-    plot_title: Optional[str] = None,
-    figsize: Tuple[int, int] = (620, 650),
+    plot_title: str | None = None,
+    figsize: tuple[int, int] = (620, 650),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
     node_size_multiplier: float = 1.0,
@@ -208,7 +208,7 @@ def plotly_protein_structure_graph(
     node_colour_map=plt.cm.plasma,
     edge_color_map=plt.cm.plasma,
     colour_nodes_by: str = "degree",
-    colour_edges_by: Optional[str] = "kind",
+    colour_edges_by: str | None = "kind",
 ) -> go.Figure:
     """
     Plots protein structure graph using plotly.
@@ -381,8 +381,8 @@ def plotly_protein_structure_graph(
 def plot_protein_structure_graph(
     G: nx.Graph,
     angle: int = 30,
-    plot_title: Optional[str] = None,
-    figsize: Tuple[int, int] = (10, 7),
+    plot_title: str | None = None,
+    figsize: tuple[int, int] = (10, 7),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
     node_size_multiplier: float = 1.0,
@@ -393,7 +393,7 @@ def plot_protein_structure_graph(
     colour_edges_by: str = "kind",
     edge_alpha: float = 0.5,
     plot_style: str = "ggplot",
-    out_path: Optional[str] = None,
+    out_path: str | None = None,
     out_format: str = ".png",
 ) -> Axes3D:
     """
@@ -606,10 +606,10 @@ def add_vector_to_plot(
 
 
 def plot_distance_matrix(
-    g: Optional[nx.Graph],
-    dist_mat: Optional[np.ndarray] = None,
+    g: nx.Graph | None,
+    dist_mat: np.ndarray | None = None,
     use_plotly: bool = True,
-    title: Optional[str] = None,
+    title: str | None = None,
     show_residue_labels: bool = True,
 ) -> go.Figure:
     """Plots a distance matrix of the graph.
@@ -663,10 +663,10 @@ def plot_distance_matrix(
 
 
 def plot_distance_landscape(
-    g: Optional[nx.Graph] = None,
-    dist_mat: Optional[np.ndarray] = None,
+    g: nx.Graph | None = None,
+    dist_mat: np.ndarray | None = None,
     add_contour: bool = True,
-    title: Optional[str] = None,
+    title: str | None = None,
     width: int = 500,
     height: int = 500,
     autosize: bool = False,
@@ -744,14 +744,14 @@ def asteroid_plot(
     edge_colour_map: plt.cm.Colormap = plt.cm.plasma,
     edge_alpha: float = 1.0,
     show_labels: bool = True,
-    title: Optional[str] = None,
+    title: str | None = None,
     width: int = 600,
     height: int = 500,
     use_plotly: bool = True,
     show_edges: bool = False,
     show_legend: bool = True,
     node_size_multiplier: float = 10.0,
-) -> Union[go.Figure, matplotlib.figure.Figure]:
+) -> go.Figure | matplotlib.figure.Figure:
     # sourcery skip: remove-unnecessary-else, swap-if-else-branches
     """Plots a k-hop subgraph around a node as concentric shells.
 
@@ -796,8 +796,8 @@ def asteroid_plot(
     """
     assert node_id in g.nodes(), f"Node {node_id} not in graph"
 
-    nodes: Dict[int, List[str]] = {0: [node_id]}
-    seen_nodes: Set[str] = {node_id}
+    nodes: dict[int, list[str]] = {0: [node_id]}
+    seen_nodes: set[str] = {node_id}
     # Iterate over the number of hops and extract nodes in each shell
     for i in range(1, k):
         subgraph = extract_k_hop_subgraph(g, node_id, k=i)
@@ -842,8 +842,8 @@ def asteroid_plot(
                 )
                 edge_trace.append(tr)
 
-        node_x: List[str] = []
-        node_y: List[str] = []
+        node_x: list[str] = []
+        node_y: list[str] = []
         for node in subgraph.nodes():
             x, y = subgraph.nodes[node]["pos"]
             node_x.append(x)
@@ -921,7 +921,7 @@ def asteroid_plot(
 def plot_chord_diagram(
     g: nx.Graph,
     show_names: bool = True,
-    order: Optional[List] = None,
+    order: list | None = None,
     width: float = 0.1,
     pad: float = 2.0,
     gap: float = 0.03,

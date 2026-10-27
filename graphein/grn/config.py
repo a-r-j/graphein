@@ -5,8 +5,8 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
@@ -23,9 +23,9 @@ class TRRUSTConfig(BaseModel):
     :type kwargs: Dict[str, Union[str, int, float]], optional
     """
 
-    filtering_functions: Optional[List[Callable]] = None
-    root_dir: Optional[Path] = None
-    kwargs: Optional[Dict[str, Union[str, int, float]]] = None
+    filtering_functions: list[Callable] | None = None
+    root_dir: Path | None = None
+    kwargs: dict[str, str | int | float] | None = None
 
 
 class RegNetworkConfig(BaseModel):
@@ -37,9 +37,9 @@ class RegNetworkConfig(BaseModel):
 
     """
 
-    filtering_functions: Optional[List[Callable]] = None
-    root_dir: Optional[Path] = None
-    kwargs: Optional[Dict[str, Union[str, int, float]]] = None
+    filtering_functions: list[Callable] | None = None
+    root_dir: Path | None = None
+    kwargs: dict[str, str | int | float] | None = None
 
 
 class GRNGraphConfig(BaseModel):
@@ -53,9 +53,9 @@ class GRNGraphConfig(BaseModel):
     :type regnetwork_config: graphein.grn.config.RegNetworkConfig, optional
     """
 
-    kwargs: Optional[Dict[str, Union[str, int, float]]] = {}
-    trrust_config: Optional[TRRUSTConfig] = TRRUSTConfig()
-    regnetwork_config: Optional[RegNetworkConfig] = RegNetworkConfig()
+    kwargs: dict[str, str | int | float] | None = {}
+    trrust_config: TRRUSTConfig | None = TRRUSTConfig()
+    regnetwork_config: RegNetworkConfig | None = RegNetworkConfig()
 
     class Config:
         arbitrary_types_allowed: bool = True

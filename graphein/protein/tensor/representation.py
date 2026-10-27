@@ -6,7 +6,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Sequence, Tuple, Union
+from collections.abc import Sequence
 
 from loguru import logger as log
 
@@ -29,7 +29,7 @@ except ImportError:
 
 def get_full_atom_coords(
     atom_tensor: AtomTensor, fill_value: float = 1e-5
-) -> Tuple[CoordTensor, torch.Tensor, torch.Tensor]:
+) -> tuple[CoordTensor, torch.Tensor, torch.Tensor]:
     """Converts an ``AtomTensor`` to a full atom representation.
 
     Return tuple of coords ``(N_atoms x 3)``, residue_index ``(N_atoms)``,
@@ -123,9 +123,9 @@ def coarsen_sidechain(
 
 
 def get_backbone_frames(
-    x: Union[AtomTensor, BackboneTensor],
+    x: AtomTensor | BackboneTensor,
     bb_indices: Sequence[int] = (0, 1, 2, 4),
-) -> Tuple[BackboneFrameTensor, CoordTensor]:
+) -> tuple[BackboneFrameTensor, CoordTensor]:
     """
     Return the backbone frames from the atom tensor (tuple of rotation matrices
     and alpha carbon positions).

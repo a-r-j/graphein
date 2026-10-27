@@ -8,7 +8,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
@@ -22,9 +22,9 @@ if TYPE_CHECKING:
 
 def atom_type_one_hot(
     n,
-    d: Dict[str, Any],
+    d: dict[str, Any],
     return_array: bool = True,
-    allowable_set: Optional[List[str]] = None,
+    allowable_set: list[str] | None = None,
 ) -> np.ndarray:
     """Adds a one-hot encoding of atom types as a node attribute.
 
@@ -54,7 +54,7 @@ def atom_type_one_hot(
     return features
 
 
-def degree(n: str, d: Dict[str, Any]) -> int:
+def degree(n: str, d: dict[str, Any]) -> int:
     """Adds the degree of the node to the node data.
 
     N.B. this is the degree as defined by RDKit rather than the 'true' degree of the node in the graph. For the latter, use nx.degree()
@@ -71,14 +71,14 @@ def degree(n: str, d: Dict[str, Any]) -> int:
     return degree
 
 
-def degree_one_hot(n: str, d, allowable_set: List[int]):
+def degree_one_hot(n: str, d, allowable_set: list[int]):
     deg = degree(n, d)
     deg = onek_encoding_unk(deg, allowable_set)
     d["degree"] = deg
     return deg
 
 
-def total_degree(n: str, d: Dict[str, Any]) -> int:
+def total_degree(n: str, d: dict[str, Any]) -> int:
     """Adds the total degree of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -93,7 +93,7 @@ def total_degree(n: str, d: Dict[str, Any]) -> int:
     return total_degree
 
 
-def total_valence(n: str, d: Dict[str, Any]) -> int:
+def total_valence(n: str, d: dict[str, Any]) -> int:
     """Adds the total valence of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -108,7 +108,7 @@ def total_valence(n: str, d: Dict[str, Any]) -> int:
     return total_valence
 
 
-def explicit_valence(n: str, d: Dict[str, Any]) -> int:
+def explicit_valence(n: str, d: dict[str, Any]) -> int:
     """Adds explicit valence of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -123,7 +123,7 @@ def explicit_valence(n: str, d: Dict[str, Any]) -> int:
     return explicit_valence
 
 
-def implicit_valence(n: str, d: Dict[str, Any]) -> int:
+def implicit_valence(n: str, d: dict[str, Any]) -> int:
     """Adds implicit valence of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -138,7 +138,7 @@ def implicit_valence(n: str, d: Dict[str, Any]) -> int:
     return implicit_valence
 
 
-def num_implicit_h(n: str, d: Dict[str, Any]) -> int:
+def num_implicit_h(n: str, d: dict[str, Any]) -> int:
     """Adds the number of implicit Hydrogens of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -153,7 +153,7 @@ def num_implicit_h(n: str, d: Dict[str, Any]) -> int:
     return implicit_hs
 
 
-def num_explicit_h(n: str, d: Dict[str, Any]) -> int:
+def num_explicit_h(n: str, d: dict[str, Any]) -> int:
     """Adds the number of explicit Hydrogens of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -168,7 +168,7 @@ def num_explicit_h(n: str, d: Dict[str, Any]) -> int:
     return num_explicit_h
 
 
-def total_num_h(n: str, d: Dict[str, Any]) -> int:
+def total_num_h(n: str, d: dict[str, Any]) -> int:
     """Adds the total number of Hydrogens of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -183,7 +183,7 @@ def total_num_h(n: str, d: Dict[str, Any]) -> int:
     return total_num_h
 
 
-def num_radical_electrons(n: str, d: Dict[str, Any]) -> int:
+def num_radical_electrons(n: str, d: dict[str, Any]) -> int:
     """Adds the number of radical electrons of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -198,7 +198,7 @@ def num_radical_electrons(n: str, d: Dict[str, Any]) -> int:
     return num_radical_electrons
 
 
-def formal_charge(n: str, d: Dict[str, Any]) -> int:
+def formal_charge(n: str, d: dict[str, Any]) -> int:
     """Adds the formal charge of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -214,7 +214,7 @@ def formal_charge(n: str, d: Dict[str, Any]) -> int:
 
 
 def hybridization(
-    n: str, d: Dict[str, Any]
+    n: str, d: dict[str, Any]
 ) -> rdkit.Chem.rdchem.HybridizationType:
     """Adds the hybridization of the atom to the node data.
 
@@ -230,7 +230,7 @@ def hybridization(
     return hybridization
 
 
-def is_aromatic(n: str, d: Dict[str, Any]) -> bool:
+def is_aromatic(n: str, d: dict[str, Any]) -> bool:
     """Adds indicator of aromaticity of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -245,7 +245,7 @@ def is_aromatic(n: str, d: Dict[str, Any]) -> bool:
     return aromatic
 
 
-def is_ring(n: str, d: Dict[str, Any]) -> bool:
+def is_ring(n: str, d: dict[str, Any]) -> bool:
     """Adds indicator of ring membership of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -260,7 +260,7 @@ def is_ring(n: str, d: Dict[str, Any]) -> bool:
     return ring
 
 
-def is_ring_size(n: str, d: Dict[str, Any], ring_size: int) -> bool:
+def is_ring_size(n: str, d: dict[str, Any], ring_size: int) -> bool:
     """Adds indicator of ring membership of size ``ring_size`` of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -277,7 +277,7 @@ def is_ring_size(n: str, d: Dict[str, Any], ring_size: int) -> bool:
     return ring
 
 
-def is_isotope(n: str, d: Dict[str, Any]) -> int:
+def is_isotope(n: str, d: dict[str, Any]) -> int:
     """Adds indicator of whether or not the atom is an isotope to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -292,7 +292,7 @@ def is_isotope(n: str, d: Dict[str, Any]) -> int:
     return is_isotope
 
 
-def atomic_mass(n: str, d: Dict[str, Any]) -> float:
+def atomic_mass(n: str, d: dict[str, Any]) -> float:
     """Adds mass of the atom to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.
@@ -307,7 +307,7 @@ def atomic_mass(n: str, d: Dict[str, Any]) -> float:
     return mass
 
 
-def chiral_tag(n: str, d: Dict[str, Any]) -> rdkit.Chem.rdchem.ChiralType:
+def chiral_tag(n: str, d: dict[str, Any]) -> rdkit.Chem.rdchem.ChiralType:
     """Adds indicator of atom chirality to the node data.
 
     :param n: Node name, this is unused and only included for compatibility with the other functions.

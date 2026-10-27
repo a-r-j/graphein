@@ -8,7 +8,7 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 from loguru import logger as log
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 def add_bond_type(
-    u: str, v: str, d: Dict[str, Any]
+    u: str, v: str, d: dict[str, Any]
 ) -> rdkit.Chem.rdchem.BondType:
     """Adds bond type as an edge feature to the graph.
 
@@ -39,7 +39,7 @@ def add_bond_type(
     return bond_type
 
 
-def bond_is_aromatic(u: str, v: str, d: Dict[str, Any]) -> bool:
+def bond_is_aromatic(u: str, v: str, d: dict[str, Any]) -> bool:
     """Adds indicator of aromaticity of a bond to the graph as an edge feature.
 
     :param u: First node in the edge.
@@ -60,7 +60,7 @@ def bond_is_aromatic(u: str, v: str, d: Dict[str, Any]) -> bool:
     return bond_is_aromatic
 
 
-def bond_is_conjugated(u: str, v: str, d: Dict[str, Any]) -> bool:
+def bond_is_conjugated(u: str, v: str, d: dict[str, Any]) -> bool:
     """Adds indicator of conjugated bond to the graph as an edge feature.
 
     :param u: First node in the edge.
@@ -81,7 +81,7 @@ def bond_is_conjugated(u: str, v: str, d: Dict[str, Any]) -> bool:
     return bond_is_conjugated
 
 
-def bond_is_in_ring(u: str, v: str, d: Dict[str, Any]) -> bool:
+def bond_is_in_ring(u: str, v: str, d: dict[str, Any]) -> bool:
     """Adds indicator of ring membership to the graph as an edge feature.
 
     :param u: First node in the edge.
@@ -103,7 +103,7 @@ def bond_is_in_ring(u: str, v: str, d: Dict[str, Any]) -> bool:
 
 
 def bond_is_in_ring_size(
-    u: str, v: str, d: Dict[str, Any], ring_size: int
+    u: str, v: str, d: dict[str, Any], ring_size: int
 ) -> int:
     """Adds indicator of ring membership of size ``ring_size`` to the graph
     as an edge feature.
@@ -129,7 +129,7 @@ def bond_is_in_ring_size(
 
 
 def bond_stereo(
-    u: str, v: str, d: Dict[str, Any]
+    u: str, v: str, d: dict[str, Any]
 ) -> rdkit.Chem.rdchem.BondStereo:
     """Adds bond stereo configuration as an edge feature to the graph.
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import tempfile
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any
 
 import networkx as nx
 import pandas as pd
@@ -50,7 +50,7 @@ DSSP_SS = ["H", "B", "E", "G", "I", "T", "S"]
 """Secondary structure types detected by ``DSSP``"""
 
 
-def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
+def parse_dssp_df(dssp: dict[str, Any]) -> pd.DataFrame:
     """
     Parse ``DSSP`` output to DataFrame.
 
@@ -70,7 +70,7 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
 @requires_external_dependencies("mkdssp")
 def add_dssp_df(
     G: nx.Graph,
-    dssp_config: Optional[DSSPConfig],
+    dssp_config: DSSPConfig | None,
 ) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein graph.

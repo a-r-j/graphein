@@ -7,8 +7,9 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+from collections.abc import Callable
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 import networkx as nx
 from loguru import logger as log
@@ -26,7 +27,7 @@ def compute_propy_feature(
     G: nx.Graph,
     func: Callable,
     feature_name: str,
-    aggregation_type: Optional[List[str]] = None,
+    aggregation_type: list[str] | None = None,
 ) -> nx.Graph:
     """
     Computes Propy Descriptors over chains in a Protein Graph
@@ -62,7 +63,7 @@ def compute_propy_feature(
 
 
 def amino_acid_composition(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate the composition of Amino acids for a given protein sequence.
@@ -89,7 +90,7 @@ def amino_acid_composition(
 
 
 def dipeptide_composition(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate the composition of dipeptide for a given protein sequence.
@@ -117,7 +118,7 @@ def dipeptide_composition(
 
 
 def aa_dipeptide_composition(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate the composition of AADs, dipeptide and 3-mers for a given protein
@@ -146,7 +147,7 @@ def aa_dipeptide_composition(
 
 
 def aa_spectrum(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate the spectrum descriptors of 3-mers for a given protein. Contains
@@ -177,7 +178,7 @@ def aa_spectrum(
 
 
 def all_composition_descriptors(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate all composition descriptors based on seven different properties of
@@ -205,7 +206,7 @@ def all_composition_descriptors(
 
 
 def all_ctd_descriptors(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate all CTD descriptors based seven different properties of AADs.
@@ -233,9 +234,9 @@ def all_ctd_descriptors(
 
 def composition_descriptor(
     G: nx.Graph,
-    AAProperty: Dict[Any, Any],
+    AAProperty: dict[Any, Any],
     AAPName: str,
-    aggregation_type: Optional[List[str]] = None,
+    aggregation_type: list[str] | None = None,
 ) -> nx.Graph:
     """
     Compute composition descriptors.
@@ -269,7 +270,7 @@ def composition_descriptor(
 
 
 def composition_charge(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate composition descriptors based on Charge of AADs.
@@ -298,7 +299,7 @@ def composition_charge(
 
 
 def composition_hydrophobicity(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate composition descriptors based on Hydrophobicity of AADs.
@@ -325,7 +326,7 @@ def composition_hydrophobicity(
 
 
 def composition_normalized_vdwv(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate composition descriptors based on NormalizedVDWV of AADs.
@@ -352,7 +353,7 @@ def composition_normalized_vdwv(
 
 
 def composition_polarity(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate composition descriptors based on Polarity of AADs.
@@ -379,7 +380,7 @@ def composition_polarity(
 
 
 def composition_polarizability(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate composition descriptors based on Polarizability of AADs.
@@ -406,7 +407,7 @@ def composition_polarizability(
 
 
 def composition_secondary_str(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate composition descriptors based on SecondaryStr of AADs.
@@ -433,7 +434,7 @@ def composition_secondary_str(
 
 
 def composition_solvent_accessibility(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate composition descriptors based on SolventAccessibility of AADs.
@@ -460,7 +461,7 @@ def composition_solvent_accessibility(
 
 
 def all_distribution_descriptors(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate all distribution descriptors based on seven different properties
@@ -489,9 +490,9 @@ def all_distribution_descriptors(
 
 def distribution_descriptor(
     G: nx.Graph,
-    AAProperty: Dict[Any, Any],
+    AAProperty: dict[Any, Any],
     AAPName: str,
-    aggregation_type: Optional[List[str]] = None,
+    aggregation_type: list[str] | None = None,
 ) -> nx.Graph:
     """
     Compute distribution descriptors.
@@ -524,7 +525,7 @@ def distribution_descriptor(
 
 
 def distribution_charge(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate distribution descriptors based on Charge of AADs.
@@ -555,7 +556,7 @@ def distribution_charge(
 
 
 def distribution_hydrophobicity(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate distribution descriptors based on Hydrophobicity of AADs.
@@ -582,7 +583,7 @@ def distribution_hydrophobicity(
 
 
 def distribution_normalized_vdwv(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate distribution descriptors based on NormalizedVDWV of AADs.
@@ -609,7 +610,7 @@ def distribution_normalized_vdwv(
 
 
 def distribution_polarity(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate distribution descriptors based on Polarity of AADs.
@@ -636,7 +637,7 @@ def distribution_polarity(
 
 
 def distribution_polarizability(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate distribution descriptors based on Polarizability of AADs.
@@ -663,7 +664,7 @@ def distribution_polarizability(
 
 
 def distribution_secondary_str(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate distribution descriptors based on SecondaryStr of AADs.
@@ -690,7 +691,7 @@ def distribution_secondary_str(
 
 
 def distribution_solvent_accessibility(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate distribution descriptors based on SolventAccessibility of AADs.
@@ -718,7 +719,7 @@ def distribution_solvent_accessibility(
 
 
 def all_transition_descriptors(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate all transition descriptors based on seven different properties of
@@ -747,9 +748,9 @@ def all_transition_descriptors(
 
 def transition_descriptor(
     G: nx.Graph,
-    AAProperty: Dict[Any, Any],
+    AAProperty: dict[Any, Any],
     AAPName: str,
-    aggregation_type: Optional[List[str]] = None,
+    aggregation_type: list[str] | None = None,
 ) -> nx.Graph:
     """
     Compute transition descriptors.
@@ -780,7 +781,7 @@ def transition_descriptor(
 
 
 def transition_charge(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate transition descriptors based on Charge of AADs.
@@ -809,7 +810,7 @@ def transition_charge(
 
 
 def transition_hydrophobicity(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Calculate transition descriptors based on Hydrophobicity of AADs.
@@ -836,7 +837,7 @@ def transition_hydrophobicity(
 
 
 def transition_normalized_vdwv(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate transition descriptors based on NormalizedVDWV of AADs.
@@ -863,7 +864,7 @@ def transition_normalized_vdwv(
 
 
 def transition_polarity(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate transition descriptors based on Polarity of AADs.
@@ -890,7 +891,7 @@ def transition_polarity(
 
 
 def transition_polarizability(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate transition descriptors based on Polarizability of AADs.
@@ -917,7 +918,7 @@ def transition_polarizability(
 
 
 def transition_secondary_str(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate transition descriptors based on SecondaryStr of AADs.
@@ -944,7 +945,7 @@ def transition_secondary_str(
 
 
 def transition_solvent_accessibility(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate transition descriptors based on SolventAccessibility of AADs.
@@ -975,7 +976,7 @@ def transition_solvent_accessibility(
 
 
 def autocorrelation_total(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Compute all autocorrelation descriptors based on 8 properties of AADs.
@@ -1004,7 +1005,7 @@ def autocorrelation_total(
 
 
 def autocorrelation_geary_all(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Compute Geary autocorrelation descriptors based on 8 properties of AADs.
@@ -1033,7 +1034,7 @@ def autocorrelation_geary_all(
 
 
 def autocorrelation_geary_av_flexibility(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Geary Autocorrelation descriptors based on AvFlexibility.
@@ -1062,7 +1063,7 @@ def autocorrelation_geary_av_flexibility(
 
 
 def autocorrelation_geary_free_energy(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Geary Autocorrelation descriptors based on FreeEnergy.
@@ -1091,7 +1092,7 @@ def autocorrelation_geary_free_energy(
 
 
 def autocorrelation_geary_hydrophobicity(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Geary Autocorrelation descriptors based on hydrophobicity.
@@ -1120,7 +1121,7 @@ def autocorrelation_geary_hydrophobicity(
 
 
 def autocorrelation_geary_mutability(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Geary Autocorrelation descriptors based on Mutability.
@@ -1149,7 +1150,7 @@ def autocorrelation_geary_mutability(
 
 
 def autocorrelation_geary_polarizability(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Geary Autocorrelation descriptors based on polarizability.
@@ -1179,7 +1180,7 @@ def autocorrelation_geary_polarizability(
 
 
 def autocorrelation_geary_residue_asa(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Geary Autocorrelation descriptors based on ResidueASA.
@@ -1207,7 +1208,7 @@ def autocorrelation_geary_residue_asa(
 
 
 def autocorrelation_geary_residue_vol(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Geary Autocorrelation descriptors based on ResidueVol.
@@ -1236,7 +1237,7 @@ def autocorrelation_geary_residue_vol(
 
 
 def autocorrelation_geary_steric(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Geary Autocorrelation descriptors based on Steric. Result
@@ -1264,7 +1265,7 @@ def autocorrelation_geary_steric(
 
 
 def autocorrelation_moran_all(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Compute Moran autocorrelation descriptors based on 8 properties of AADs.
@@ -1293,7 +1294,7 @@ def autocorrelation_moran_all(
 
 
 def autocorrelation_moran_av_flexibility(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Moran Autocorrelation descriptors based on AvFlexibility.
@@ -1322,7 +1323,7 @@ def autocorrelation_moran_av_flexibility(
 
 
 def autocorrelation_moran_free_energy(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Moran Autocorrelation descriptors based on FreeEnergy.
@@ -1351,7 +1352,7 @@ def autocorrelation_moran_free_energy(
 
 
 def autocorrelation_moran_hydrophobicity(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Moran Autocorrelation descriptors based on hydrophobicity.
@@ -1380,7 +1381,7 @@ def autocorrelation_moran_hydrophobicity(
 
 
 def autocorrelation_moran_mutability(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Moran Autocorrelation descriptors based on Mutability.
@@ -1409,7 +1410,7 @@ def autocorrelation_moran_mutability(
 
 
 def autocorrelation_moran_polarizability(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Moran Autocorrelation descriptors based on polarizability.
@@ -1438,7 +1439,7 @@ def autocorrelation_moran_polarizability(
 
 
 def autocorrelation_moran_residue_asa(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Moran Autocorrelation descriptors based on ResidueASA.
@@ -1466,7 +1467,7 @@ def autocorrelation_moran_residue_asa(
 
 
 def autocorrelation_moran_residue_vol(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Moran Autocorrelation descriptors based on ResidueVol.
@@ -1495,7 +1496,7 @@ def autocorrelation_moran_residue_vol(
 
 
 def autocorrelation_moran_steric(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the Moran Autocorrelation descriptors based on Steric. Result
@@ -1523,7 +1524,7 @@ def autocorrelation_moran_steric(
 
 
 def autocorrelation_normalized_moreau_broto_all(
-    G: nx.Graph, aggregation_type: Optional[List[str]] = None
+    G: nx.Graph, aggregation_type: list[str] | None = None
 ) -> nx.Graph:
     """
     Compute NormalizedMoreauBroto autocorrelation descriptors based on 8
@@ -1553,7 +1554,7 @@ def autocorrelation_normalized_moreau_broto_all(
 
 
 def autocorrelation_normalized_moreau_broto_av_flexibility(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
@@ -1586,7 +1587,7 @@ def autocorrelation_normalized_moreau_broto_av_flexibility(
 
 
 def autocorrelation_normalized_moreau_broto_free_energy(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
@@ -1618,7 +1619,7 @@ def autocorrelation_normalized_moreau_broto_free_energy(
 
 
 def autocorrelation_normalized_moreau_broto_hydrophobicity(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
@@ -1651,7 +1652,7 @@ def autocorrelation_normalized_moreau_broto_hydrophobicity(
 
 
 def autocorrelation_normalized_moreau_broto_mutability(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
@@ -1683,7 +1684,7 @@ def autocorrelation_normalized_moreau_broto_mutability(
 
 
 def autocorrelation_normalized_moreau_broto_polarizability(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
@@ -1716,7 +1717,7 @@ def autocorrelation_normalized_moreau_broto_polarizability(
 
 
 def autocorrelation_normalized_moreau_broto_residue_asa(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
@@ -1748,7 +1749,7 @@ def autocorrelation_normalized_moreau_broto_residue_asa(
 
 
 def autocorrelation_normalized_moreau_broto_residue_vol(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on
@@ -1780,7 +1781,7 @@ def autocorrelation_normalized_moreau_broto_residue_vol(
 
 
 def autocorrelation_normalized_moreau_broto_steric(
-    G: nx.Graph, aggregation_type: Optional[List[str]]
+    G: nx.Graph, aggregation_type: list[str] | None
 ) -> nx.Graph:
     """
     Calculate the NormalizedMoreauBroto Autocorrelation descriptors based on

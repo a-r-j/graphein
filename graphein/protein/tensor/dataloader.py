@@ -1,5 +1,4 @@
-from collections.abc import Mapping
-from typing import List, Optional, Sequence, Union
+from collections.abc import Mapping, Sequence
 
 import torch
 import torch.utils.data
@@ -66,11 +65,11 @@ class ProteinDataLoader(torch.utils.data.DataLoader):
 
     def __init__(
         self,
-        dataset: Union[Dataset, Sequence[BaseData]],
+        dataset: Dataset | Sequence[BaseData],
         batch_size: int = 1,
         shuffle: bool = False,
-        follow_batch: Optional[List[str]] = None,
-        exclude_keys: Optional[List[str]] = None,
+        follow_batch: list[str] | None = None,
+        exclude_keys: list[str] | None = None,
         **kwargs,
     ):
         kwargs.pop("collate_fn", None)
