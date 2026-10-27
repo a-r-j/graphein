@@ -181,6 +181,11 @@ def add_bond_type_one_hot(
     :return: One-hot encoding of the bond type.
     :rtype: Union[np.ndarray, pd.Series]
     """
+    if "bond" not in d.keys():
+        log.debug(f"No RDKit bond found on edge {u}-{v}")
+        d["bond_type_one_hot"] = None
+        return None
+
     if allowable_set is None:
         allowable_set = [
             rdkit.Chem.rdchem.BondType.SINGLE,
@@ -188,11 +193,6 @@ def add_bond_type_one_hot(
             rdkit.Chem.rdchem.BondType.TRIPLE,
             rdkit.Chem.rdchem.BondType.AROMATIC,
         ]
-
-    if "bond" not in d.keys():
-        log.debug(f"No RDKit bond found on edge {u}-{v}")
-        d["bond_type_one_hot"] = None
-        return None
 
     features = onek_encoding_unk(d["bond"].GetBondType(), allowable_set)
 
