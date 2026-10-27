@@ -41,11 +41,6 @@ def reconstruct_dihedrals(
     ground truth.
 
     """
-    if dihedrals.shape[-1] == 6:
-        phi, psi, omg = dihedrals_to_rad(dihedrals)
-        # dihedrals = torch.stack([omg, phi, psi], dim=-1)  # This works
-        dihedrals = torch.stack([phi, psi, omg], dim=-1)
-
     bond_lengths = get_backbone_bond_lengths(ground_truth)
     bond_angles = get_backbone_bond_angles(ground_truth)
     bond_angles = torch.index_select(
@@ -60,9 +55,7 @@ def dihedrals_to_coords(
     bond_angles: torch.Tensor | None,
 ) -> AtomTensor:
     if dihedral.shape[-1] == 6:
-        phi, psi, omg = dihedrals_to_rad(dihedral)
-        # dihedrals = torch.stack([omg, phi, psi], dim=-1)  # This works
-        dihedral = torch.stack([phi, psi, omg], dim=-1)
+        dihedral = dihedrals_to_rad(dihedral, concat=True)
 
     if bond_lengths is None:
         pts = dihedral_to_point_fixed(dihedral.unsqueeze(1))
@@ -99,7 +92,7 @@ def dihedral_to_point_fixed(
     )
 
     # point_x = r_cos_theta.view(1, 1, -1).repeat(num_steps, batch_size, 1)
-    point_x = r_cos_theta.unsqueeze(1)
+    point_x = r_cos_theta.expand(dihedral.shape)
     point_y = torch.cos(dihedral) * r_sin_theta
     point_z = torch.sin(dihedral) * r_sin_theta
 
@@ -233,16 +226,19 @@ def point_to_coordinate(
         bc = F.normalize(prev_three_coords.c - prev_three_coords.b, dim=-1)
         # bc = F.normalize(prev_three_coords.b - prev_three_coords.c, dim=-1)
         n = F.normalize(
-            torch.cross(prev_three_coords.b - prev_three_coords.a, bc), dim=-1
+            torch.linalg.cross(prev_three_coords.b - prev_three_coords.a, bc),
+            dim=-1,
         )
         if multi_m:  # multiple fragments, one atom at a time
-            m = torch.stack([bc, torch.cross(n, bc), n]).permute(1, 2, 3, 0)
-            m = m.to(point.device)  ###
+            m = torch.stack([bc, torch.linalg.cross(n, bc), n]).permute(
+                1, 2, 3, 0
+            )
         else:  # single fragment, reconstructed entirely at once.
             s = point.shape + (3,)
-            m = torch.stack([bc, torch.cross(n, bc), n]).permute(1, 2, 0)
+            m = torch.stack([bc, torch.linalg.cross(n, bc), n]).permute(
+                1, 2, 0
+            )
             m = m.repeat(s[0], 1, 1).view(s)
-            m = m.to(point.device)  ###
         coord = (
             torch.squeeze(torch.matmul(m, point.unsqueeze(3)), dim=3)
             + prev_three_coords.c
@@ -327,8 +323,8 @@ def sn_nerf(
     AB = b - a
     BC = c - b
     bc = BC / l_bc
-    n = F.normalize(torch.cross(AB, bc), dim=0)
-    n_x_bc = torch.cross(n, bc)
+    n = F.normalize(torch.linalg.cross(AB, bc), dim=0)
+    n_x_bc = torch.linalg.cross(n, bc)
 
     M = torch.stack([bc, n_x_bc, n], dim=1).to(chi.device)
 

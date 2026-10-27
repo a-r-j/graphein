@@ -64,7 +64,7 @@ def plot_distance_matrix(
     :rtype: go.Figure
     """
     if x.ndim == 3:
-        x = get_full_atom_coords(x, **kwargs)
+        x = get_full_atom_coords(x, **kwargs)[0]
 
     dist_mat = torch.cdist(x, x)
     return px.imshow(dist_mat)
@@ -92,19 +92,18 @@ def plot_structure(
     """
 
     mode = "lines" if lines else "markers"
+    fig = go.Figure()
     if x.ndim == 2:
-        fig = go.Figure()
-        fig.add_trace(go.Scatter3d(x=x[:, 0], y=x[:, 1], z=x[:, 2], mode=mode))
-    if x.ndim == 3:
-        indices = [ATOM_NUMBERING[a] for a in atoms]
-        fig = go.Figure()
-        for idx in indices:
-            fig.add_scatter3d(
-                x=x[:, idx, 0],
-                y=x[:, idx, 1],
-                z=x[:, idx, 2],
-                mode=mode,
-                name=atoms[idx],
-                text=residue_ids,
-            )
+        fig.add_scatter3d(x=x[:, 0], y=x[:, 1], z=x[:, 2], mode=mode)
+        return fig
+    for atom in atoms:
+        idx = ATOM_NUMBERING[atom]
+        fig.add_scatter3d(
+            x=x[:, idx, 0],
+            y=x[:, idx, 1],
+            z=x[:, idx, 2],
+            mode=mode,
+            name=atom,
+            text=residue_ids,
+        )
     return fig

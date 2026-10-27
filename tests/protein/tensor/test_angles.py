@@ -1,6 +1,7 @@
 """Tests for graphein.protein.tensor.angles."""
 
 import math
+import warnings
 
 import numpy as np
 import pytest
@@ -8,7 +9,10 @@ import pytest
 from graphein.protein.tensor.angles import (
     _dihedral_angle,
     angle_to_unit_circle,
+    dihedrals,
     dihedrals_to_rad,
+    get_backbone_bond_angles,
+    get_backbone_bond_lengths,
     sidechain_torsion,
     to_ang,
     torsion_to_rad,
@@ -143,3 +147,50 @@ def test_pyl_torsion_angle():
         rtol=1e-5,
         atol=1e-5,
     )
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_batched_dihedrals_match_single():
+    # Three proteins of length 4: torch.cross without dim crossed along the
+    # first size-3 dimension (the batch) instead of the coordinates
+    torch.manual_seed(0)
+    coords = torch.rand(12, 4, 3) * 3
+    batch = torch.arange(3).repeat_interleave(4)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        batched = dihedrals(coords, batch=batch, embed=False)
+    single = torch.cat([dihedrals(c, embed=False) for c in coords.split(4)])
+    assert torch.allclose(batched, single, atol=1e-5)
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_backbone_geometry_nan_fill():
+    x = torch.rand(3, 4, 3) * 3
+    x[1, 0] = float("nan")  # missing N
+    lengths = get_backbone_bond_lengths(x)
+    # [Ca-C, C-N, N-Ca]; N-Ca is filled with the ideal N-Ca bond length
+    assert lengths[1, 2].item() == pytest.approx(1.458)
+    assert lengths[0, 1].item() == pytest.approx(1.320)
+    assert not lengths.isnan().any()
+    angles = get_backbone_bond_angles(x)
+    # [C-N-Ca, N-Ca-C, Ca-C-N]
+    assert angles[1, 1].item() == pytest.approx(1.941)
+    assert not angles.isnan().any()
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+@pytest.mark.parametrize("embed", [False, True])
+def test_sidechain_torsion_pads_trailing_residues(embed):
+    torch.manual_seed(0)
+    coords = torch.rand(4, 37, 3)
+    residues = ["SER", "GLY", "ALA", "SEC"]
+    angles, mask = sidechain_torsion(
+        coords, residues, embed=embed, return_mask=True
+    )
+    width = 8 if embed else 4
+    assert angles.shape == mask.shape == (4, width)
+    # GLY, ALA and SEC (no Se atoms with 37 atom types) are padded
+    pad = [1.0, 0.0] * 4 if embed else [0.0] * 4
+    assert angles[1:].tolist() == [pad] * 3
+    assert not mask[1:].any()
+    assert mask[0, : 2 if embed else 1].all()
