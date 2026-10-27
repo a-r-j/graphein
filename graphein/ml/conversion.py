@@ -250,13 +250,6 @@ class GraphFormatConvertor:
                 edge_transform_dict[i] = torch.Tensor(np.array(j))
         g.add_edges(edge_index[0], edge_index[1], edge_transform_dict)
 
-        # add graph level features
-        graph_dict = {
-            str(feat_name): [G.graph[feat_name]]
-            for feat_name in G.graph
-            if str(feat_name) in self.columns
-        }
-
         return g
 
     def convert_nx_to_pyg(self, G: nx.Graph) -> Data:
@@ -464,9 +457,8 @@ class GraphFormatConvertor:
         )
 
     def __call__(self, G: nx.Graph):
-        nx_g = eval("self.convert_" + self.src_format + "_to_nx(G)")
-        dst_g = eval("self.convert_nx_to_" + self.dst_format + "(nx_g)")
-        return dst_g
+        nx_g = getattr(self, f"convert_{self.src_format}_to_nx")(G)
+        return getattr(self, f"convert_nx_to_{self.dst_format}")(nx_g)
 
 
 def convert_nx_to_pyg_data(G: nx.Graph) -> Data:

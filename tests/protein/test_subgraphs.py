@@ -23,7 +23,6 @@ from graphein.protein.features.nodes import rsa, secondary_structure
 from graphein.protein.graphs import construct_graph
 from graphein.protein.subgraphs import (
     extract_k_hop_subgraph,
-    extract_subgraph,
     extract_subgraph_by_bond_type,
     extract_subgraph_by_sequence_position,
     extract_subgraph_from_atom_types,
@@ -273,17 +272,20 @@ def test_extract_subgraph_from_bond_type():
     config = ProteinGraphConfig(
         edge_construction_functions=[add_peptide_bonds, add_ionic_interactions]
     )
-    G = construct_graph(path=str(file_path))  # , config=config)
+    G = construct_graph(path=str(file_path), config=config)
 
     BOND_TYPES = ["ionic"]
+    ionic_edges = [
+        (u, v) for u, v, d in G.edges(data=True) if "ionic" in d["kind"]
+    ]
+    assert ionic_edges
 
     s_g = extract_subgraph_by_bond_type(G, BOND_TYPES, filter_dataframe=True)
 
-    for u, v, d in G.edges(data=True):
-        if d["kind"] in BOND_TYPES:
-            assert u in s_g.nodes()
-            assert v in s_g.nodes()
-            assert (u, v) in s_g.edges()
+    for u, v in ionic_edges:
+        assert u in s_g.nodes()
+        assert v in s_g.nodes()
+        assert (u, v) in s_g.edges()
 
     for u, v, d in s_g.edges(data=True):
         for bond in list(d["kind"]):

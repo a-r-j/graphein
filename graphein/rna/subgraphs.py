@@ -10,7 +10,6 @@ from typing import List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
-from loguru import logger as log
 
 import graphein.protein.subgraphs as protein
 from graphein.rna.constants import (

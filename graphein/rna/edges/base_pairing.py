@@ -58,11 +58,8 @@ def add_phosphodiester_bonds(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     # Iterate over dotbracket to build connectivity
-    bases = []
-    for i, c in enumerate(G.graph["dotbracket"]):
-        # Add adjacent edges (phosphodiester_bonds)
-        if i > 0:
-            G.add_edge(i, i - 1, attr="phosphodiester_bond", color="b")
+    for i in range(1, len(G.graph["dotbracket"])):
+        G.add_edge(i, i - 1, attr="phosphodiester_bond", color="b")
     log.debug("Added phosphodiester bonds as edges")
     return G
 

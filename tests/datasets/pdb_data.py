@@ -3,7 +3,6 @@ import functools
 import math
 
 import pandas as pd
-import pytest
 
 from graphein.datasets import PDBManager
 from graphein.protein.utils import read_fasta

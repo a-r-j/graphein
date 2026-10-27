@@ -1,5 +1,3 @@
-import argparse
-
 import pandas as pd
 import torch as torch
 from tqdm import tqdm

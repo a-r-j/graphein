@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import tempfile
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import networkx as nx
 import pandas as pd
@@ -20,6 +20,10 @@ from loguru import logger
 from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
 from graphein.protein.utils import save_pdb_df_to_pdb
 from graphein.utils.dependencies import is_tool, requires_external_dependencies
+
+if TYPE_CHECKING:
+    from graphein.protein.config import DSSPConfig
+
 
 DSSP_COLS = [
     "chain",

@@ -11,7 +11,6 @@ from typing import Dict, List, Union
 
 import pandas as pd
 import requests
-from loguru import logger as log
 
 
 def params_STRING(

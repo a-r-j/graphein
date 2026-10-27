@@ -34,13 +34,11 @@ from graphein.protein.edges.distance import (
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 from graphein.protein.resi_atoms import (
     AROMATIC_RESIS,
-    BOND_TYPES,
     CATION_RESIS,
     HYDROPHOBIC_RESIS,
     NEG_AA,
     PI_RESIS,
     POS_AA,
-    RESI_NAMES,
     SALT_BRIDGE_ANIONS,
     SALT_BRIDGE_CATIONS,
     SULPHUR_RESIS,

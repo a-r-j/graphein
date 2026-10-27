@@ -12,7 +12,7 @@ from graphein.protein.features.nodes.amino_acid import amino_acid_one_hot
 from graphein.protein.graphs import construct_graph
 
 try:
-    import torch_geometric
+    import torch_geometric  # noqa: F401
     from torch_geometric.utils import is_undirected
 
     PYG_AVAIL = True

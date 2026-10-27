@@ -6,7 +6,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import List, Tuple, Union
+from typing import Sequence, Tuple, Union
 
 from loguru import logger as log
 
@@ -68,7 +68,7 @@ def get_c_alpha(x: AtomTensor, index: int = 1) -> CoordTensor:
 
 
 def get_backbone(
-    x: AtomTensor, backbone_indices: List[int] = [0, 1, 2, 3]
+    x: AtomTensor, backbone_indices: Sequence[int] = (0, 1, 2, 3)
 ) -> BackboneTensor:
     """Returns tensor of backbone atoms: ``(L x 4 x 3)``
 
@@ -85,7 +85,7 @@ def get_backbone(
 
 def coarsen_sidechain(
     x: AtomTensor,
-    backbone_indices: List[int] = [0, 1, 2, 3],
+    backbone_indices: Sequence[int] = (0, 1, 2, 3),
     aggregation: str = "mean",
 ) -> CoordTensor:
     """Returns tensor of sidechain centroids: ``(L x 3``
@@ -124,7 +124,7 @@ def coarsen_sidechain(
 
 def get_backbone_frames(
     x: Union[AtomTensor, BackboneTensor],
-    bb_indices: List[int] = [0, 1, 2, 4],
+    bb_indices: Sequence[int] = (0, 1, 2, 4),
 ) -> Tuple[BackboneFrameTensor, CoordTensor]:
     """
     Return the backbone frames from the atom tensor (tuple of rotation matrices

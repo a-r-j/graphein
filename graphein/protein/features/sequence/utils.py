@@ -8,7 +8,6 @@
 from typing import Any, Callable, List
 
 import networkx as nx
-import numpy as np
 
 from graphein.utils.utils import parse_aggregation_type
 

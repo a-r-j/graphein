@@ -5,9 +5,9 @@ import os
 import subprocess
 import tempfile
 import time
+from xmlrpc.client import ServerProxy as Server
 
 from ..dependencies import requires_external_dependencies
-from .compat import Server
 
 HOST = os.environ.get("PYMOL_RPCHOST", "localhost")
 PORT = 9123

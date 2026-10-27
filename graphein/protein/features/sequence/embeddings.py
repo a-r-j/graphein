@@ -203,7 +203,7 @@ def esm_residue_embedding(
         embedding = embedding[0, 1:-1]
         subgraph = subset_by_node_feature_value(G, "chain_id", chain)
 
-        for i, (n, d) in enumerate(subgraph.nodes(data=True)):
+        for i, n in enumerate(subgraph.nodes):
             G.nodes[n]["esm_embedding"] = embedding[i]
 
     return G

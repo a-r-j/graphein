@@ -14,7 +14,7 @@ import traceback
 from contextlib import nullcontext
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import cpdb
 import networkx as nx
@@ -22,7 +22,6 @@ import numpy as np
 import pandas as pd
 from biopandas.mmcif import PandasMmcif
 from biopandas.mmtf import PandasMmtf
-from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
@@ -32,7 +31,7 @@ from graphein.protein.edges.distance import (
     add_distance_to_edges,
     compute_distmat,
 )
-from graphein.protein.resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
+from graphein.protein.resi_atoms import RESI_THREE_TO_1
 from graphein.protein.subgraphs import extract_subgraph_from_chains
 from graphein.protein.utils import (
     ProteinGraphConfigurationError,
@@ -349,7 +348,7 @@ def process_dataframe(
     insertions: bool = False,
     alt_locs: bool = False,
     deprotonate: bool = True,
-    keep_hets: List[str] = [],
+    keep_hets: Sequence[str] = (),
 ) -> pd.DataFrame:
     """
     Process ATOM and HETATM dataframes to produce singular dataframe used for
@@ -1077,7 +1076,7 @@ def compute_chain_graph(
     # Set nodes
     nodes_per_chain = {chain: 0 for chain in g.graph["chain_ids"]}
     sequences = {chain: "" for chain in g.graph["chain_ids"]}
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         nodes_per_chain[d["chain_id"]] += 1
         sequences[d["chain_id"]] += RESI_THREE_TO_1[d["residue_name"]]
 
@@ -1278,7 +1277,7 @@ def compute_line_graph(g: nx.Graph, repopulate_data: bool = True) -> nx.Graph:
         nx.set_node_attributes(l_g, source_edge_data)
 
         node_list = {}
-        for u, v, d in l_g.edges(data=True):
+        for u, v in l_g.edges():
             node_union = u + v
             for n in node_union:
                 if node_union.count(n) > 1:

@@ -8,13 +8,16 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 
 from graphein.molecule.atoms import BASE_ATOMS
 from graphein.utils.utils import onek_encoding_unk
+
+if TYPE_CHECKING:
+    import rdkit
 
 
 def atom_type_one_hot(

@@ -1,7 +1,7 @@
 """Utilities for sanity checking protein tensors."""
 
 from functools import partial
-from typing import List, Tuple, Union
+from typing import List, Sequence, Tuple, Union
 
 from loguru import logger as log
 
@@ -44,7 +44,7 @@ is_tensor_equal = partial(torch.allclose, rtol=0, atol=0)
 def has_complete_backbone(
     x: Union[AtomTensor, BackboneTensor],
     fill_value: float = 1e-5,
-    backbone_indices: List[int] = [0, 1, 2, 3],
+    backbone_indices: Sequence[int] = (0, 1, 2, 3),
 ) -> bool:
     """
     Checks a protein coordinate tensor (``L x Num Atoms (default 37) x 3``) for

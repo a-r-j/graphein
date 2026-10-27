@@ -79,7 +79,11 @@ def test_readme_molecule_graph_example():
 @pytest.mark.parametrize("config", CONFIGS)
 def test_generate_graph_mol2(config):
     """Tests graph construction from a Mol2 file."""
-    g = construct_graph(config=config, path=SHORT_MOL2)
+    g = construct_graph(
+        config=config,
+        path=SHORT_MOL2,
+        edge_construction_funcs=[add_atom_bonds],
+    )
     assert g.graph["name"] == "short_test"
     check_nodes(g)
     check_edges(g)
@@ -88,7 +92,9 @@ def test_generate_graph_mol2(config):
 @pytest.mark.parametrize("config", CONFIGS)
 def test_generate_graph_pdb(config):
     """Tests graph construction from a PDB file."""
-    g = construct_graph(config=config, path=LONG_PDB)
+    g = construct_graph(
+        config=config, path=LONG_PDB, edge_construction_funcs=[add_atom_bonds]
+    )
     assert g.graph["name"] == "long_test"
     check_nodes(g)
     check_edges(g)

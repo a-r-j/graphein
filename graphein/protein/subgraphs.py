@@ -373,7 +373,7 @@ def extract_subgraph_by_bond_type(
     log.debug(f"Found {len(node_list)} nodes in the bond type subgraph.")
 
     # Remove bond annotations
-    for u, v, d in g.edges(data=True):
+    for _, _, d in g.edges(data=True):
         for bond in list(d["kind"]):
             if not inverse:
                 if bond not in bond_types:

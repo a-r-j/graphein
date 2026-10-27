@@ -19,7 +19,7 @@ from tqdm.rich import tqdm
 from graphein.utils.dependencies import import_message
 
 try:
-    from smilite import *
+    import smilite
 except ImportError:
     import_message(
         "graphein.molecule.zinc", "smilite", "smilite", True, extras=True

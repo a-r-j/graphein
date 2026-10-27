@@ -11,7 +11,7 @@ Plotting functions for molecules wrap the methods defined on protein graphs and 
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -20,6 +20,10 @@ from graphein.protein.visualisation import (
     plot_protein_structure_graph,
     plotly_protein_structure_graph,
 )
+
+if TYPE_CHECKING:
+    import plotly.graph_objects as go
+    from mpl_toolkits.mplot3d import Axes3D
 
 
 def plot_molecular_graph(

@@ -10,7 +10,7 @@ from __future__ import annotations
 import importlib.util
 import os
 import time
-from typing import List, NamedTuple, Optional, Tuple
+from typing import TYPE_CHECKING, List, NamedTuple, Optional, Tuple
 
 from loguru import logger as log
 
@@ -21,6 +21,10 @@ from graphein.utils.dependencies import (
     requires_python_libs,
 )
 from graphein.utils.pymol import MolViewer
+
+if TYPE_CHECKING:
+    import torch
+
 
 try:
     from pytorch3d.structures import Meshes

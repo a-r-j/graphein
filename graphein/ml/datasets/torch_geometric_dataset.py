@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import Callable, Dict, Generator, List, Optional
 
 import networkx as nx
-from loguru import logger as log
 from tqdm import tqdm
 
 from graphein.ml.conversion import GraphFormatConvertor
@@ -21,7 +20,6 @@ from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.graphs import construct_graphs_mp
 from graphein.protein.utils import (
     download_alphafold_structure,
-    download_pdb,
     download_pdb_multiprocessing,
 )
 from graphein.utils.dependencies import import_message
@@ -605,7 +603,6 @@ class ProteinGraphDataset(Dataset):
         if self.pdb_transform:
             self.transform_pdbs()
 
-        idx = 0
         # Chunk dataset for parallel processing
         chunk_size = 128
 

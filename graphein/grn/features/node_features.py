@@ -3,7 +3,6 @@
 from typing import Any, Dict
 
 from bioservices import HGNC, UniProt
-from loguru import logger as log
 
 
 def add_sequence_to_nodes(n: str, d: Dict[str, Any]):

@@ -8,7 +8,7 @@
 
 import collections
 import os
-from typing import List, Optional, Union
+from typing import List, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -104,7 +104,7 @@ def protein_to_pyg(
     chain_selection: Union[str, List[str]] = "all",
     deprotonate: bool = True,
     keep_insertions: bool = True,
-    keep_hets: List[str] = [],
+    keep_hets: Sequence[str] = (),
     model_index: int = 1,
     atom_types: List[str] = PROTEIN_ATOMS,
     remove_nonstandard: bool = True,

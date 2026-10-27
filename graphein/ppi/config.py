@@ -4,7 +4,7 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Dict, List, Optional, Union
+from typing import Dict, Optional, Union
 
 from pydantic import BaseModel
 
@@ -100,9 +100,6 @@ class BioGridConfig(BaseModel):
     )
     searchIds: Optional[bool] = (
         True  # If ‘true’, the interactor ENTREZ_GENE, ORDERED LOCUS and SYSTEMATIC_NAME (orf) will be examined for a match with the geneList.
-    )
-    searchNames: Optional[bool] = (
-        True  # If ‘true’, the interactor OFFICIAL_SYMBOL will be examined for a match with the geneList.
     )
     searchSynonyms: Optional[bool] = (
         True  # If ‘true’, the interactor SYNONYMS will be examined for a match with the geneList.

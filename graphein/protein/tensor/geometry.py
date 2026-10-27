@@ -7,14 +7,13 @@ import copy
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import List, Tuple, Union
+from typing import Tuple, Union
 
 from loguru import logger as log
 
 from graphein.utils.dependencies import import_message
 
 from ..resi_atoms import (
-    CHI_ANGLES_ATOMS,
     IDEAL_BB_BOND_ANGLES,
     IDEAL_BB_BOND_LENGTHS,
 )
@@ -38,17 +37,6 @@ except ImportError:
         "graphein.protein.tensor.geometry",
         package="torch",
         conda_channel="pytorch",
-        pip_install=True,
-    )
-    log.warning(message)
-
-try:
-    from torch_geometric.data import Batch
-except ImportError:
-    message = import_message(
-        "graphein.protein.tensor.geometry",
-        package="torch_geometric",
-        conda_channel="pyg",
         pip_install=True,
     )
     log.warning(message)

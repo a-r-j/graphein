@@ -5,12 +5,14 @@ target-version = "py310"
 extend-exclude = ["*.ipynb", "*.md", "env"]
 
 [tool.ruff.lint]
-# Syntax errors, invalid comparisons/statements, import sorting and
-# NumPy 2.0 deprecations. ponytail: full pyflakes ("F") reports ~230
-# existing issues; enable it once those are cleaned up.
-select = ["E9", "F63", "F7", "I", "NPY201"]
+# Syntax errors, pyflakes, import sorting and NumPy 2.0 deprecations
+select = ["E9", "F", "I", "NPY201"]
 # jaxtyping shape strings (e.g. "residues 37 3") aren't forward annotations
 ignore = ["F722"]
+
+[tool.ruff.lint.per-file-ignores]
+# Package __init__ files re-export their submodules
+"__init__.py" = ["F401", "F403"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["graphein"]

@@ -30,13 +30,6 @@ try:
     from rdkit import Chem as Chem
     from rdkit import DataStructs
     from rdkit.Chem import AllChem
-    from rdkit.Chem.Descriptors import (
-        TPSA,
-        MolLogP,
-        MolWt,
-        NumHAcceptors,
-        NumHDonors,
-    )
     from rdkit.Chem.Descriptors3D import NPR1, NPR2
     from rdkit.Chem.rdMolTransforms import ComputeCentroid
 except ImportError:
@@ -208,7 +201,7 @@ def sanitize(mol: rdkit.Chem.rdchem.Mol) -> rdkit.Chem.rdchem.Mol:
     try:
         smiles = get_smiles(mol)
         mol = get_mol(smiles)
-    except Exception as e:
+    except Exception:
         return None
     return mol
 
@@ -356,7 +349,7 @@ def get_qed_score(
 
     try:
         return Chem.QED.qed(mol)
-    except Exception as e:
+    except Exception:
         # log.warning(e)
         return None
 

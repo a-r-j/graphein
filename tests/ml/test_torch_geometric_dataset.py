@@ -11,7 +11,7 @@ import graphein.protein as gp
 from graphein.ml import GraphFormatConvertor
 
 try:
-    import torch_geometric
+    import torch_geometric  # noqa: F401
 
     PYG_AVAIL = True
 except ImportError:

@@ -9,7 +9,7 @@ All plots are produced with Plotly and so are loggable to Weights and Biases.
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -71,7 +71,7 @@ def plot_distance_matrix(
 
 def plot_structure(
     x: Union[CoordTensor, AtomTensor],
-    atoms: List[str] = ["N", "CA", "C", "O", "CB"],
+    atoms: Sequence[str] = ("N", "CA", "C", "O", "CB"),
     lines: bool = True,
     residue_ids: Optional[List[str]] = None,
 ) -> go.Figure:

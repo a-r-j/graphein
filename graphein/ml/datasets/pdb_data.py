@@ -6,7 +6,16 @@ import subprocess
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Sequence,
+    Union,
+)
 
 import numpy as np
 import pandas as pd
@@ -589,7 +598,7 @@ class PDBManager:
         ) as f:
             for line in f:
                 try:
-                    pdb, chain, uniprot_id, cath_id = line.strip().split("\t")
+                    pdb, chain, uniprot_id, _ = line.strip().split("\t")
                     key = f"{pdb}_{chain}"
                     uniprot_mapping[key] = uniprot_id
                 except ValueError:
@@ -610,7 +619,7 @@ class PDBManager:
             next(f)  # Skip header line
             for line in f:
                 try:
-                    pdb, chain, uniprot_id, cath_id = line.strip().split("\t")
+                    pdb, chain, _, cath_id = line.strip().split("\t")
                     key = f"{pdb}_{chain}"
                     cath_mapping[key] = cath_id
                 except ValueError:
@@ -662,9 +671,7 @@ class PDBManager:
             next(f)  # Skip header line
             for line in f:
                 try:
-                    pdb, chain, uniprot_id, ec_number = line.strip().split(
-                        "\t"
-                    )
+                    pdb, chain, _, ec_number = line.strip().split("\t")
                     key = f"{pdb}_{chain}"
                     ec_number = None if ec_number == "?" else ec_number
                     ec_mapping[key] = ec_number
@@ -886,7 +893,7 @@ class PDBManager:
 
     def experiment_types(
         self,
-        types: List[str] = ["diffraction"],
+        types: Sequence[str] = ("diffraction",),
         splits: Optional[List[str]] = None,
         update: bool = False,
     ) -> pd.DataFrame:
@@ -1854,7 +1861,7 @@ class PDBManager:
     def write_chains(
         self,
         splits: Optional[List[str]] = None,
-        models: List[int] = [1],
+        models: Sequence[int] = (1,),
         force: bool = False,
     ) -> List[Path]:
         # sourcery skip: simplify-len-comparison, use-named-expression
@@ -2082,7 +2089,7 @@ class PDBManager:
         merge_fn: Callable,
         atom_df_name: str = "ATOM",
         max_num_chains_per_pdb_code: int = -1,
-        models: List[int] = [1],
+        models: Sequence[int] = (1,),
     ):
         """Record groups of PDB codes and associated chains
         as collated PDB files.
@@ -2169,7 +2176,7 @@ class PDBManager:
         out_dir: str = "collated_pdb",
         splits: Optional[List[str]] = None,
         max_num_chains_per_pdb_code: int = -1,
-        models: List[int] = [1],
+        models: Sequence[int] = (1,),
     ):
         """Write the given selection as a collection of PDB files.
 
@@ -2222,7 +2229,7 @@ class PDBManager:
         pdb_dir: str,
         splits: Optional[List[str]] = None,
         max_num_chains_per_pdb_code: int = -1,
-        models: List[int] = [1],
+        models: Sequence[int] = (1,),
         force: bool = False,
     ):
         """Write the selection as a collection of PDB files.

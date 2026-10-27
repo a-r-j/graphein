@@ -11,7 +11,6 @@ from typing import Dict, List, Union
 
 import pandas as pd
 import requests
-from loguru import logger as log
 
 
 def params_BIOGRID(
@@ -45,8 +44,6 @@ def params_BIOGRID(
         # Experimental System in the evidenceList will be included in the result
         "searchIds",  # If ‘true’, the interactor ENTREZ_GENE, ORDERED LOCUS and
         # SYSTEMATIC_NAME (orf) will be examined for a match with the geneList.
-        "searchNames",  # If ‘true’, the interactor OFFICIAL_SYMBOL will be
-        # examined for a match with the geneList.
         "searchSynonyms",  # If ‘true’, the interactor SYNONYMS will be examined
         # for a match with the geneList.
         "searchBiogridIds",  # If ‘true’, the entries in 'GENELIST' will be

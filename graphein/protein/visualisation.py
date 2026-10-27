@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from itertools import count
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Union
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -24,6 +24,10 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.dependencies import import_message
+
+if TYPE_CHECKING:
+    from pytorch3d.structures import Meshes
+
 
 try:
     from pytorch3d.ops import sample_points_from_meshes
@@ -555,7 +559,6 @@ def add_vector_to_plot(
         hoverinfo="text",
     )
     # Compute cone positions.
-    arrow_tip_ratio = 0.1
     arrow_starting_ratio = 0.98
     x = []
     y = []
@@ -749,7 +752,7 @@ def asteroid_plot(
     show_edges: bool = False,
     show_legend: bool = True,
     node_size_multiplier: float = 10.0,
-) -> Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]:
+) -> Union[go.Figure, matplotlib.figure.Figure]:
     # sourcery skip: remove-unnecessary-else, swap-if-else-branches
     """Plots a k-hop subgraph around a node as concentric shells.
 
@@ -1003,7 +1006,7 @@ def plot_chord_diagram(
     else:
         names = None
 
-    a = chord_diagram(
+    chord_diagram(
         mat,
         names=names,
         order=order,

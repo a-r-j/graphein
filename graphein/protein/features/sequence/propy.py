@@ -14,7 +14,6 @@ import networkx as nx
 from loguru import logger as log
 
 from graphein.protein.features.sequence.utils import (
-    aggregate_feature_over_chains,
     compute_feature_over_chains,
 )
 from graphein.protein.features.utils import (

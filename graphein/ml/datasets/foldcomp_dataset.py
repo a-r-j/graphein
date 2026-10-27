@@ -9,7 +9,6 @@
 import asyncio
 import os
 import random
-import shutil
 from pathlib import Path
 from typing import (
     Any,

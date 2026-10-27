@@ -18,7 +18,6 @@ from Bio import SeqUtils
 from multipledispatch import dispatch
 
 from graphein.protein.features.sequence.utils import (
-    aggregate_feature_over_chains,
     compute_feature_over_chains,
 )
 
@@ -31,7 +30,7 @@ def molecular_weight(protein: str, seq_type: str = "protein"):
 
 
 @dispatch(nx.Graph, seq_type=str)
-def molecular_weight(protein, seq_type: str = "protein"):
+def molecular_weight(protein, seq_type: str = "protein"):  # noqa: F811 (overload)
     func = partial(SeqUtils.molecular_weight, seq_type=seq_type)
 
     return compute_feature_over_chains(
@@ -108,7 +107,7 @@ def add_positional_encoding(
     if not add_to_nodes:
         G.graph["positional_encoding"] = sinusoid_table
     else:
-        for i, (n, d) in enumerate(G.nodes(data=True)):
-            d["positional_encoding"] = sinusoid_table[i, :]
+        for (_, d), encoding in zip(G.nodes(data=True), sinusoid_table):
+            d["positional_encoding"] = encoding
 
     return G

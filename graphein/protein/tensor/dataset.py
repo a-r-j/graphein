@@ -11,9 +11,8 @@ import os
 from collections.abc import Sequence
 from difflib import get_close_matches
 from pathlib import Path
-from typing import Callable, Dict, Generator, List, Optional, Union
+from typing import Callable, Generator, List, Optional, Union
 
-import networkx as nx
 import numpy as np
 from loguru import logger as log
 from tqdm import tqdm
@@ -26,7 +25,7 @@ from graphein.protein.utils import (  # download_pdb,
 from graphein.utils.dependencies import import_message
 
 from ..folding_utils import esmfold
-from .data import Protein, ProteinBatch, to_protein_mp
+from .data import Protein, to_protein_mp
 
 try:
     import torch

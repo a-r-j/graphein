@@ -10,7 +10,7 @@ from functools import partial
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 
 import looseversion
 import pandas as pd
@@ -29,8 +29,6 @@ from ..resi_atoms import PROTEIN_ATOMS
 from .angles import (
     alpha,
     dihedrals,
-    get_backbone_bond_angles,
-    get_backbone_bond_lengths,
     kappa,
     sidechain_torsion,
 )
@@ -63,7 +61,6 @@ from .types import (
     CoordTensor,
     DihedralTensor,
     EdgeTensor,
-    PositionTensor,
     TorsionTensor,
 )
 
@@ -371,7 +368,7 @@ class Protein(Data):
         chain_selection: Union[str, List[str]] = "all",
         deprotonate: bool = True,
         keep_insertions=False,
-        keep_hets: List[str] = [],
+        keep_hets: Sequence[str] = (),
         model_index: int = 1,
         atom_types: List[str] = PROTEIN_ATOMS,
         node_labels: Optional[torch.Tensor] = None,
@@ -401,7 +398,7 @@ class Protein(Data):
         chain_selection: str = "all",
         deprotonate: bool = True,
         keep_insertions=False,
-        keep_hets: List[str] = [],
+        keep_hets: Sequence[str] = (),
         model_index: int = 1,
         atom_types: List[str] = PROTEIN_ATOMS,
         node_labels: Optional[torch.Tensor] = None,
@@ -795,7 +792,7 @@ class Protein(Data):
         return plot_dihedrals(dh)
 
     def plot_structure(
-        self, atoms: List[str] = ["N", "CA", "C", "O"], lines: bool = True
+        self, atoms: Sequence[str] = ("N", "CA", "C", "O"), lines: bool = True
     ) -> go.Figure:
         """
         Plots a 3D structure of the protein in Plotly. This can be logged to
@@ -897,7 +894,7 @@ class ProteinBatch(Batch):
         atom_types: List[str] = PROTEIN_ATOMS,
         deprotonate: bool = True,
         keep_insertions: bool = False,
-        keep_hets: List[str] = [],
+        keep_hets: Sequence[str] = (),
     ):
         proteins = [
             Protein().from_pdb_code(
@@ -935,7 +932,7 @@ class ProteinBatch(Batch):
         atom_types: List[str] = PROTEIN_ATOMS,
         deprotonate: bool = True,
         keep_insertions: bool = False,
-        keep_hets: List[str] = [],
+        keep_hets: Sequence[str] = (),
     ):
         proteins = [
             Protein().from_pdb_file(
@@ -1356,7 +1353,7 @@ def to_protein(
     chain_selection: str = "all",
     deprotonate: bool = True,
     keep_insertions: bool = False,
-    keep_hets: List[str] = [],
+    keep_hets: Sequence[str] = (),
     model_index: int = 1,
     atom_types: List[str] = PROTEIN_ATOMS,
 ) -> "Protein":
@@ -1464,7 +1461,7 @@ def to_protein_mp(
     chain_selections: Optional[List[str]] = None,
     deprotonate: bool = True,
     keep_insertions: bool = False,
-    keep_hets: List[str] = [],
+    keep_hets: Sequence[str] = (),
     model_index: int = 1,
     atom_types: List[str] = PROTEIN_ATOMS,
     num_cores: int = 16,

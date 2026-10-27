@@ -26,7 +26,6 @@ from graphein.protein.edges.distance import (
     add_k_nn_edges,
     add_peptide_bonds,
 )
-from graphein.protein.features.nodes.aaindex import aaindex1
 from graphein.protein.features.nodes.amino_acid import (
     expasy_protein_scale,
     meiler_embedding,
@@ -41,8 +40,6 @@ from graphein.protein.features.nodes.dssp import (
 from graphein.protein.features.sequence.embeddings import (
     biovec_sequence_embedding,
     compute_esm_embedding,
-    esm_residue_embedding,
-    esm_sequence_embedding,
 )
 from graphein.protein.features.sequence.sequence import molecular_weight
 from graphein.protein.graphs import (
@@ -51,7 +48,6 @@ from graphein.protein.graphs import (
     compute_secondary_structure_graph,
     construct_graph,
     construct_graphs_mp,
-    deprotonate_structure,
     read_pdb_to_dataframe,
 )
 from graphein.protein.meshes import parse_pymol_commands

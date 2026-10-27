@@ -10,13 +10,15 @@ from __future__ import annotations
 
 import itertools
 from collections import Counter
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, Optional, Sequence, Union
 
-import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
 import plotly as ply
 import plotly.express as px
+
+if TYPE_CHECKING:
+    import plotly
 
 
 def plot_degree_distribution(
@@ -138,13 +140,13 @@ def plot_edge_type_distribution(
 
 def graph_summary(
     G: nx.Graph,
-    summary_statistics: List[str] = [
+    summary_statistics: Sequence[str] = (
         "degree",
         "betweenness_centrality",
         "closeness_centrality",
         "eigenvector_centrality",
         "communicability_betweenness_centrality",
-    ],
+    ),
     custom_data: Optional[Union[pd.DataFrame, pd.Series]] = None,
     plot: bool = False,
 ) -> pd.DataFrame:
@@ -208,14 +210,14 @@ def graph_summary(
 
 def plot_graph_metric_property_correlation(
     g: nx.Graph,
-    summary_statistics: List[str] = [
+    summary_statistics: Sequence[str] = (
         "degree",
         "betweenness_centrality",
         "closeness_centrality",
         "eigenvector_centrality",
         "communicability_betweenness_centrality",
-    ],
-    properties: List[str] = ["asa"],
+    ),
+    properties: Sequence[str] = ("asa",),
     colour_by: Optional[str] = "residue_type",
     opacity: float = 0.2,
     diagonal_visible: bool = True,
@@ -264,14 +266,14 @@ def plot_graph_metric_property_correlation(
 
     summary = graph_summary(g, summary_statistics=summary_statistics)
     summary = summary[
-        summary_statistics + ["residue_type", "position", "chain"]
+        [*summary_statistics, "residue_type", "position", "chain"]
     ]
     dataf = pd.concat([summary, protein_properties], axis=1)
 
     fig = px.scatter_matrix(
         data_frame=dataf,
         # custom_data=dataf.index,
-        dimensions=summary_statistics + properties,
+        dimensions=[*summary_statistics, *properties],
         opacity=opacity,
         labels={
             col: col.replace("_", " ") for col in dataf.columns

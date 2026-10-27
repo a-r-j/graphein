@@ -8,9 +8,12 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict
 
 from loguru import logger as log
+
+if TYPE_CHECKING:
+    import rdkit
 
 
 def add_bond_type(

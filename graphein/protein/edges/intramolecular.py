@@ -10,13 +10,17 @@ from __future__ import annotations
 import os
 import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import networkx as nx
 import pandas as pd
 from loguru import logger as log
 
 from graphein.protein.utils import download_pdb
+
+if TYPE_CHECKING:
+    from graphein.protein.config import GetContactsConfig
+
 
 CONTACTS_FILE_SUFFIX = "_contacts.tsv"
 

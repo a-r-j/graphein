@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import itertools
 from itertools import combinations, product
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import networkx as nx
 import numpy as np
@@ -17,12 +17,11 @@ import pandas as pd
 from loguru import logger as log
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import pdist, squareform
-from sklearn.neighbors import NearestNeighbors, kneighbors_graph
+from sklearn.neighbors import NearestNeighbors
 
 from graphein.protein.resi_atoms import (
     AA_RING_ATOMS,
     AROMATIC_RESIS,
-    BACKBONE_ATOMS,
     BOND_TYPES,
     CATION_PI_RESIS,
     CATION_RESIS,
@@ -1048,7 +1047,7 @@ def add_fully_connected_edges(G: nx.Graph):
     :type G: nx.Graph
     """
     for n1, n2 in itertools.product(G.nodes(), G.nodes()):
-        add_edge(G, n1, n2, f"fully_connected")
+        add_edge(G, n1, n2, "fully_connected")
 
 
 # TODO Support for directed edges

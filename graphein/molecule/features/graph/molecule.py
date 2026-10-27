@@ -27,11 +27,10 @@ from graphein.molecule.utils import (
 from graphein.utils.dependencies import import_message
 
 try:
-    from rdkit import Chem
     from rdkit.Chem import Descriptors
 except ImportError:
     import_message(
-        "graphe in.molecule.features.graph.molecule",
+        "graphein.molecule.features.graph.molecule",
         "rdkit",
         "rdkit",
         True,

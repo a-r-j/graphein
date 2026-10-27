@@ -13,7 +13,7 @@ N.B. ESMFold functionality require torch & ESMFold to be installed.
 import os
 import subprocess
 from functools import lru_cache
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence
 
 import requests
 from loguru import logger as log
@@ -150,8 +150,8 @@ def esm_embed_fasta(
     out_dir: str,
     model: str = "esm2_t33_650M_UR50D",
     max_tokens: Optional[int] = None,
-    repr_layers: Optional[List[int]] = [0, 32, 33],
-    include: Optional[List[str]] = ["mean", "per_tok"],
+    repr_layers: Optional[Sequence[int]] = (0, 32, 33),
+    include: Optional[Sequence[str]] = ("mean", "per_tok"),
     truncation_seq_length: Optional[int] = None,
 ):
     """

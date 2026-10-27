@@ -11,12 +11,21 @@ import tempfile
 from functools import lru_cache, partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple, Type, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import networkx as nx
-import numpy as np
 import pandas as pd
 import requests
 import wget
@@ -619,7 +628,10 @@ def cast_pdb_column_to_type(
 
 
 def extract_chains_to_file(
-    pdb_file: str, chains: List[str], out_dir: str, models: List[int] = [1]
+    pdb_file: str,
+    chains: List[str],
+    out_dir: str,
+    models: Sequence[int] = (1,),
 ) -> List[str]:
     """Extracts chains from a PDB file to separate files.
 

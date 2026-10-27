@@ -2,8 +2,6 @@ from pathlib import Path
 
 import networkx as nx
 import pytest
-from hypothesis import given
-from hypothesis.strategies import text
 
 from graphein.rna.config import RNAGraphConfig
 from graphein.rna.edges import (

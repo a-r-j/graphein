@@ -213,6 +213,6 @@ EdgeTensor = NewType("EdgeTensor", Int[Tensor, "2 edges"])
 OrientationTensor = NewType("OrientationTensor", Float[Tensor, "nodes 2 3"])
 
 
-ScalarTensor = NewType("ScalarTensor", Float[Tensor, "nodes"])
+ScalarTensor = NewType("ScalarTensor", Float[Tensor, "nodes"])  # noqa: F821
 
 OptTensor = NewType("OptTensor", Optional[Tensor])
