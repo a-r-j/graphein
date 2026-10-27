@@ -49,27 +49,8 @@ except ImportError:
         conda_channel="dglteam",
     )
 
-try:
-    import jax.numpy as jnp
-except ImportError:
-    import_message(
-        submodule="graphein.ml.conversion",
-        package="jax",
-        pip_install=True,
-        conda_channel="conda-forge",
-    )
-try:
-    import jraph
-except ImportError:
-    import_message(
-        submodule="graphein.ml.conversion",
-        package="jraph",
-        pip_install=True,
-        conda_channel="conda-forge",
-    )
 
-
-SUPPORTED_FORMATS = ["nx", "pyg", "dgl", "jraph"]
+SUPPORTED_FORMATS = ["nx", "pyg", "dgl"]
 """Supported conversion formats.
 
 ``"nx"``: NetworkX graph
@@ -77,8 +58,6 @@ SUPPORTED_FORMATS = ["nx", "pyg", "dgl", "jraph"]
 ``"pyg"``: PyTorch Geometric Data object
 
 ``"dgl"``: DGL graph
-
-``"Jraph"``: Jraph GraphsTuple
 """
 
 SUPPORTED_VERBOSITY = ["gnn", "default", "all_info"]
@@ -92,10 +71,10 @@ class GraphFormatConvertor:
     formats can be retrieved from :const:`~graphein.ml.conversion.SUPPORTED_FORMATS`.
 
     :param src_format: The type of graph you'd like to convert from. Supported formats are available in :const:`~graphein.ml.conversion.SUPPORTED_FORMATS`
-    :type src_format: Literal["nx", "pyg", "dgl", "jraph"]
+    :type src_format: Literal["nx", "pyg", "dgl"]
     :param dst_format: The type of graph format you'd like to convert to. Supported formats are available in:
         ``graphein.ml.conversion.SUPPORTED_FORMATS``
-    :type dst_format:  Literal["nx", "pyg", "dgl", "jraph"]
+    :type dst_format:  Literal["nx", "pyg", "dgl"]
     :param verbose: Select from ``"gnn"``, ``"default"``, ``"all_info"`` to determine how much information is preserved (features)
         as some are unsupported by various downstream frameworks
     :type verbose: graphein.ml.conversion.SUPPORTED_VERBOSITY
@@ -178,6 +157,7 @@ class GraphFormatConvertor:
             "chain_id": "str",
             "coords": "np.array",
             "dist_mat": "np.array",
+            "distance": "float",
             "element_symbol": "str",
             "node_id": "str",
             "residue_name": "str",
@@ -202,12 +182,10 @@ class GraphFormatConvertor:
         ## add node level feat
 
         node_dict = {}
-        for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
+        for _, feat_dict in G.nodes(data=True):
             for key, value in feat_dict.items():
                 if str(key) in self.columns:
-                    node_dict[str(key)] = (
-                        [value] if i == 0 else node_dict[str(key)] + [value]
-                    )
+                    node_dict.setdefault(str(key), []).append(value)
 
         string_dict = {}
         node_dict_transformed = {}
@@ -224,31 +202,25 @@ class GraphFormatConvertor:
                 string_dict[i] = j
             elif self.type2form[i] in ["float", "int"]:
                 node_dict_transformed[i] = torch.Tensor(np.array(j))
-        g.add_nodes(
-            len(node_id),
-            node_dict_transformed,
-        )
+        # DGL cannot add an empty feature dict, so pass None instead
+        g.add_nodes(len(node_id), node_dict_transformed or None)
 
         edge_dict = {}
         edge_index = torch.LongTensor(list(G.edges)).t().contiguous()
 
         # add edge level features
-        for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
+        for _, _, feat_dict in G.edges(data=True):
             for key, value in feat_dict.items():
                 if str(key) in self.columns:
-                    edge_dict[str(key)] = (
-                        list(value)
-                        if i == 0
-                        else edge_dict[str(key)] + list(value)
-                    )
+                    edge_dict.setdefault(str(key), []).append(value)
 
         edge_transform_dict = {}
-        for i, j in node_dict.items():
+        for i, j in edge_dict.items():
             if self.type2form[i] == "str":
                 string_dict[i] = j
             elif self.type2form[i] in ["float", "int"]:
                 edge_transform_dict[i] = torch.Tensor(np.array(j))
-        g.add_edges(edge_index[0], edge_index[1], edge_transform_dict)
+        g.add_edges(edge_index[0], edge_index[1], edge_transform_dict or None)
 
         # add graph level features
         graph_dict = {
@@ -397,71 +369,6 @@ class GraphFormatConvertor:
         :rtype: nx.Graph
         """
         return torch_geometric.utils.to_networkx(G)
-
-    def convert_nx_to_jraph(self, G: nx.Graph) -> jraph.GraphsTuple:
-        """Converts NetworkX graph (``nx.Graph``) to Jraph GraphsTuple graph. Requires ``jax`` and ``Jraph``.
-
-        :param G: Networkx graph to convert.
-        :type G: nx.Graph
-        :return: Jraph GraphsTuple graph.
-        :rtype: jraph.GraphsTuple
-        """
-        G = nx.convert_node_labels_to_integers(G)
-
-        n_node = len(G)
-        n_edge = G.number_of_edges()
-        edge_list = list(G.edges())
-        senders, receivers = zip(*edge_list)
-        senders, receivers = jnp.array(senders), jnp.array(receivers)
-
-        # Add node features
-        node_features = {}
-        for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
-            for key, value in feat_dict.items():
-                if str(key) in self.columns:
-                    # node_features[str(key)] = (
-                    #    [value]
-                    #    if i == 0
-                    #    else node_features[str(key)] + [value]
-                    # )
-                    feat = (
-                        [value]
-                        if i == 0
-                        else node_features[str(key)] + [value]
-                    )
-                    try:
-                        feat = torch.tensor(feat)
-                        node_features[str(key)] = feat
-                    except TypeError:
-                        node_features[str(key)] = feat
-
-        # Add edge features
-        edge_features = {}
-        for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
-            for key, value in feat_dict.items():
-                if str(key) in self.columns:
-                    edge_features[str(key)] = (
-                        list(value)
-                        if i == 0
-                        else edge_features[str(key)] + list(value)
-                    )
-
-        # Add graph features
-        global_context = {
-            str(feat_name): [G.graph[feat_name]]
-            for feat_name in G.graph
-            if str(feat_name) in self.columns
-        }
-
-        return jraph.GraphsTuple(
-            nodes=node_features,
-            senders=senders,
-            receivers=receivers,
-            edges=edge_features,
-            n_node=n_node,
-            n_edge=n_edge,
-            globals=global_context,
-        )
 
     def __call__(self, G: nx.Graph):
         nx_g = eval("self.convert_" + self.src_format + "_to_nx(G)")
