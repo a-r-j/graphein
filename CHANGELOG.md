@@ -2,7 +2,7 @@
 
 #### New Features
 
-* Add `graphein.protein.tensor.dssp`: optimised NumPy and PyTorch implementations of [PyDSSP](https://github.com/ShintaroMinami/PyDSSP) (`assign_dssp`, `get_hbond_map`, `assign_dssp_np`, `get_hbond_map_np`) for tensor-based protein representations. Up to ~10x (NumPy) and ~4x (PyTorch) faster than PyDSSP, with identical assignments. Also adds full 8-state DSSP (`assign_dssp8`, `assign_dssp8_np`; H, B, E, G, I, T, S, loop) matching mkdssp 4.6.1.
+* Add `graphein.protein.tensor.dssp`: optimised NumPy and PyTorch implementations of [PyDSSP](https://github.com/ShintaroMinami/PyDSSP) (`assign_dssp`, `get_hbond_map`, `assign_dssp_np`, `get_hbond_map_np`) for tensor-based protein representations. Up to ~10x (NumPy) and ~4x (PyTorch) faster than PyDSSP, with identical assignments. Also adds full 8-state DSSP (`assign_dssp8`, `assign_dssp8_np`; H, B, E, G, I, T, S, loop) matching mkdssp 4.6.1, and DSSP solvent accessibility (`accessibility`, `accessibility_np`) matching mkdssp 4.6.1.
 * Add `add_bond_type_one_hot` edge feature for molecules. Fixes [#430](https://github.com/a-r-j/graphein/issues/430)
 
 #### Misc

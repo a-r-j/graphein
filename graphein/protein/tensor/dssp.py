@@ -25,6 +25,9 @@ implementation. The PyTorch variant runs on any device and
 using mkdssp's own H-bond model and rules; output is identical to mkdssp
 4.6.1 (polyproline aside). Since mkdssp keeps at most two H-bonds per donor,
 everything after the H-bond energies works on an O(L) edge list.
+
+:func:`accessibility` (and :func:`accessibility_np`) compute DSSP's solvent
+accessible surface area per residue, identical to mkdssp 4.6.1.
 """
 
 # Graphein
@@ -38,6 +41,7 @@ from typing import Optional
 
 import numpy as np
 from loguru import logger as log
+from scipy.spatial import cKDTree
 
 from graphein.utils.dependencies import import_message
 
@@ -611,3 +615,136 @@ def assign_dssp8_np(
     if donor_mask is not None:
         donor_mask = np.asarray(donor_mask, dtype=bool)
     return _assign8_batched(np.asarray(x)[..., :4, :], np, donor_mask)
+
+
+# Solvent accessibility, following mkdssp 4.x. The arithmetic mirrors its
+# float32/float64 mix so that results match it exactly.
+_ASA_RADII = np.array([1.65, 1.87, 1.76, 1.4], dtype=np.float32)  # N CA C O
+_ASA_RADIUS_SIDE = np.float32(1.8)
+_ASA_RADIUS_WATER = np.float32(1.4)
+_ASA_CHUNK = 4096  # atoms per batch of (atom, dot) pairs
+
+
+def _surface_dots(n: int = 200):
+    """mkdssp's Fibonacci sphere: ``(2n + 1, 3)`` unit dots, and the float32
+    area fraction after ``k`` free dots (mkdssp sums the weight per dot)."""
+    P = 2 * n + 1
+    i = np.arange(-n, n + 1)
+    phi = np.float32((1 + 5**0.5) / 2)
+    lat = np.arcsin(np.float32(2.0) * i.astype(np.float32) / np.float32(P))
+    lon = np.fmod(i, np.float64(phi)) * 2 * np.pi / np.float64(phi)
+    lon = lon.astype(np.float32)
+    dots = np.stack(
+        [np.sin(lon) * np.cos(lat), np.cos(lon) * np.cos(lat), np.sin(lat)],
+        -1,
+    )
+    weight = np.full(P, 4 * np.pi / P, dtype=np.float32)
+    area = np.concatenate([[0], np.cumsum(weight, dtype=np.float32)])
+    return dots, area.astype(np.float32)
+
+
+def _accessibility(x: np.ndarray, present: np.ndarray) -> np.ndarray:
+    res, atom = np.nonzero(present)
+    xyz = x[res, atom].astype(np.float32)
+    r = np.where(atom < 4, _ASA_RADII[np.minimum(atom, 3)], _ASA_RADIUS_SIDE)
+    # atom radius + water, in float64 as mkdssp
+    r_probe = r.astype(np.float64) + np.float64(_ASA_RADIUS_WATER)
+
+    # Occluding neighbours: centres closer than both probe-extended radii.
+    a, b = (
+        cKDTree(xyz)
+        .query_pairs(2 * r_probe.max() + 1e-3, output_type="ndarray")
+        .T
+    )
+    d = xyz[a] - xyz[b]
+    dist2 = d[:, 0] * d[:, 0] + d[:, 1] * d[:, 1] + d[:, 2] * d[:, 2]
+    near = (dist2 < (r_probe[a] + r_probe[b]) ** 2) & (dist2 > 0.0001)
+    a, b, dist2 = a[near], b[near], dist2[near]
+    i, j = np.concatenate([a, b]), np.concatenate([b, a])
+    # Neighbour table, nearest first (as mkdssp), padded with -1.
+    order = np.lexsort((np.concatenate([dist2, dist2]), i))
+    i, j = i[order], j[order]
+    first = np.searchsorted(i, np.arange(len(xyz)))
+    degree = np.bincount(i, minlength=len(xyz))
+    table = np.full((len(xyz), max(degree.max(initial=0), 1)), -1)
+    table[i, np.arange(len(i)) - first[i]] = j
+    r2 = r_probe**2
+
+    # Track still-free (atom, dot) pairs and test them against each atom's
+    # k-th nearest neighbour in turn: most dots are buried within a few
+    # neighbours, so the work shrinks quickly (mkdssp exits early likewise).
+    dots, area = _surface_dots()
+    radius = (r + _ASA_RADIUS_WATER).astype(np.float32)
+    n_dots = len(dots)
+    # Dot positions per distinct probe radius, and neighbour offsets b - a.
+    radii, kind = np.unique(radius, return_inverse=True)
+    xx = (dots[None] * radii[:, None, None]).reshape(-1, 3).T.copy()
+    loc = xyz[table] - xyz[:, None]  # (M, max degree, 3); padding unused
+    loc = np.moveaxis(loc, -1, 0).reshape(3, -1)
+    width = table.shape[1]
+    n_free = np.zeros(len(xyz), dtype=np.int64)
+    for s in range(0, len(xyz), _ASA_CHUNK):
+        atoms = np.arange(s, min(s + _ASA_CHUNK, len(xyz)))
+        free_here = n_free[s : s + len(atoms)]  # view
+        fa = np.repeat(atoms, n_dots)
+        fx = kind[fa] * n_dots + np.tile(np.arange(n_dots), len(atoms))
+        for k in range(width):
+            nb = table[fa, k]
+            done = nb < 0  # no more neighbours: dot is free
+            free_here += np.bincount(fa[done] - s, minlength=len(atoms))
+            fa, fx, nb = fa[~done], fx[~done], nb[~done]
+            if not len(fa):
+                break
+            fl = fa * width + k
+            d2 = 0
+            for c in range(3):
+                diff = xx[c, fx] - loc[c, fl]
+                d2 = diff * diff if c == 0 else d2 + diff * diff
+            free = r2[nb] < d2
+            fa, fx = fa[free], fx[free]
+        free_here += np.bincount(fa - s, minlength=len(atoms))
+
+    atom_area = area[n_free] * radius * radius
+    acc = np.zeros(present.shape[0], dtype=np.float32)
+    np.add.at(acc, res, atom_area)  # in order: N, CA, C, O, side chain
+    return acc
+
+
+def accessibility(x: AtomTensor, fill_value: float = 1e-5) -> torch.Tensor:
+    """Solvent accessible surface area per residue, following mkdssp 4.x.
+
+    Uses DSSP's radii (N 1.65, CA 1.87, C 1.76, O 1.4, other heavy atoms
+    1.8, water 1.4 Angstrom) and its 401-dot Fibonacci sphere. Every heavy
+    atom in ``x`` occludes, so to match mkdssp ``x`` should hold only protein
+    residues with complete backbones (it ignores ligands, waters and
+    incomplete residues).
+
+    .. code-block:: python
+
+        import graphein.protein.tensor as gpt
+        from graphein.protein.tensor.dssp import accessibility
+
+        protein = gpt.Protein().from_pdb_code("1lds")
+        asa = accessibility(protein.coords)  # (L,) Angstrom^2
+
+    :param x: Atom coordinates of shape ``(L, A, 3)``. The first four atoms
+        must be ``N, CA, C, O``; any others are treated as side chain.
+    :type x: AtomTensor
+    :param fill_value: Value marking missing atoms. Default ``1e-5``.
+    :type fill_value: float
+    :return: ``(L,)`` accessible surface area in square Angstrom.
+    :rtype: torch.Tensor
+    """
+    return torch.as_tensor(
+        accessibility_np(x.detach().cpu().numpy(), fill_value),
+        device=x.device,
+    )
+
+
+def accessibility_np(x: np.ndarray, fill_value: float = 1e-5) -> np.ndarray:
+    """NumPy variant of :func:`accessibility`."""
+    x = np.asarray(x)
+    _check_shape(x)
+    if x.ndim != 3:
+        raise ValueError("accessibility expects a single protein (L, A, 3)")
+    return _accessibility(x, x[..., 0] != fill_value)
