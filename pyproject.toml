@@ -141,10 +141,9 @@ packages = ["graphein"]
 
 [tool.hatch.build.targets.sdist]
 include = [
+    "/graphein",
     "/README.md",
     "/LICENSE",
-    "/graphein/protein/features/nodes/amino_acid_properties.csv",
-    "/graphein/protein/features/nodes/meiler_embeddings.csv",
 ]
 
 [tool.uv]

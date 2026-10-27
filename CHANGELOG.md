@@ -6,6 +6,7 @@
 
 #### Bugfixes
 
+* Fix the sdist (and the wheel `uv build` builds from it) containing no Python code: the hatch sdist `include` list only listed the README, LICENSE and two CSVs. It now includes `graphein/`. Removes the unused `MANIFEST.in`, which hatchling ignores.
 * Replace deprecated class-based `Config` with `model_config = ConfigDict(...)` in `GRNGraphConfig` and `PPIGraphConfig` to silence `PydanticDeprecatedSince20` warnings.
 * Pin `setuptools<81` so `bioservices` can still import `pkg_resources`, which setuptools 81 removed. Newer `bioservices` releases drop `pkg_resources` but require `lxml<6`, which is affected by CVE-2026-41066.
 
