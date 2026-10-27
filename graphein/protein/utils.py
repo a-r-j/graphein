@@ -8,11 +8,13 @@
 
 import os
 import tempfile
+import time
 from functools import lru_cache, partial
+from http.client import RemoteDisconnected
 from multiprocessing import Pool
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple, Type, Union
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
 import networkx as nx
@@ -22,7 +24,7 @@ import requests
 import wget
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from .resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 
@@ -50,6 +52,12 @@ pdb_df_columns = [
     "line_idx",
 ]
 
+PDB_OBSOLETE_URL = "https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat"
+
+ALPHAFOLD_DB_BASE_URL = "https://alphafold.ebi.ac.uk/files/"
+
+ESM_ATLAS_BASE_URL = "https://api.esmatlas.com/foldSequence/v"
+
 
 class ProteinGraphConfigurationError(Exception):
     """
@@ -73,9 +81,7 @@ def get_obsolete_mapping() -> Dict[str, str]:
     """
     obs_dict: Dict[str, str] = {}
 
-    response = urlopen(
-        "https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat"
-    )
+    response = urlopen(PDB_OBSOLETE_URL)
     for line in response:
         entry = line.split()
         if len(entry) == 4:
@@ -87,7 +93,7 @@ def get_obsolete_mapping() -> Dict[str, str]:
     return obs_dict
 
 
-def read_fasta(file_path: str) -> Dict[str, str]:
+def read_fasta(file_path: str | Path) -> Dict[str, str]:
     """
     Reads a FASTA file and returns a dictionary mapping sequence names to
     their identifiers.
@@ -168,6 +174,49 @@ def download_pdb_multiprocessing(
     return results
 
 
+RCSB_DOWNLOAD_URL = "https://files.rcsb.org/download/"
+PDB_DOWNLOAD_SOURCES: Dict[str, Tuple[str, str]] = {
+    "pdb": (RCSB_DOWNLOAD_URL, ".pdb"),
+    "mmtf": ("https://mmtf.rcsb.org/v1.0/full/", ".mmtf.gz"),
+    "cif": (RCSB_DOWNLOAD_URL, ".cif.gz"),
+    "mmcif": (RCSB_DOWNLOAD_URL, ".cif.gz"),
+    "bcif": ("https://models.rcsb.org/", ".bcif.gz"),
+}
+"""Maps PDB download format to ``(base_url, file_extension)``."""
+
+
+def _download_with_retries(
+    download_url: str, output_path: Path, pdb_code: str, attempts: int = 3
+):
+    """Download ``download_url`` to ``output_path``, retrying transient errors.
+
+    A missing file (``HTTPError``) is logged and not retried.
+    """
+    transient_download_errors = (
+        ConnectionResetError,
+        RemoteDisconnected,
+        TimeoutError,
+        URLError,
+    )
+    for attempt in range(attempts):
+        try:
+            wget.download(download_url, out=str(output_path), bar=None)
+            return
+        except HTTPError:
+            log.warning(f"PDB {pdb_code} not found.")
+            return
+        except transient_download_errors as error:
+            if output_path.exists():
+                output_path.unlink()
+            if attempt == attempts - 1:
+                raise error
+            log.warning(
+                f"Download failed for {pdb_code} ({error}). Retrying "
+                f"({attempt + 2}/{attempts})..."
+            )
+            time.sleep(attempt + 1)
+
+
 def download_pdb(
     pdb_code: str,
     out_dir: Optional[Union[str, Path]] = None,
@@ -202,30 +251,17 @@ def download_pdb(
     :rtype: Path
     """
     pdb_code = pdb_code.lower()
-    if format == "pdb":
-        BASE_URL = "https://files.rcsb.org/download/"
-        extension = ".pdb"
-    elif format == "mmtf":
-        BASE_URL = "https://mmtf.rcsb.org/v1.0/full/"
-        extension = ".mmtf.gz"
-    elif format == "cif" or format == "mmcif":
-        BASE_URL = "https://files.rcsb.org/download/"
-        extension = ".cif.gz"
-    elif format == "bcif":
-        BASE_URL = "https://models.rcsb.org/"
-        extension = ".bcif.gz"
-    else:
+    if format not in PDB_DOWNLOAD_SOURCES:
         raise ValueError(
             f"Invalid format: {format}. Must be 'pdb', 'mmtf', '(mm)cif' or 'bcif'."
         )
+    BASE_URL, extension = PDB_DOWNLOAD_SOURCES[format]
 
     # Make output directory if it doesn't exist or set it to tempdir if None
-    if out_dir is not None:
-        out_dir = Path(out_dir)
-    else:
-        out_dir = Path(tempfile.TemporaryDirectory().name)
-
-    os.makedirs(Path(out_dir), exist_ok=True)
+    out_dir: Path = (
+        Path(out_dir) if out_dir is not None else Path(tempfile.mkdtemp())
+    )
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     if check_obsolete:
         obs_map = get_obsolete_mapping()
@@ -252,22 +288,17 @@ def download_pdb(
         return out_dir / f"{pdb_code}{extension}"
 
     # Download
-    try:
-        wget.download(
-            f"{BASE_URL}{pdb_code}{extension}",
-            out=str(out_dir / f"{pdb_code}{extension}"),
-            bar=None,
-        )
-    except HTTPError:
-        log.warning(f"PDB {pdb_code} not found.")
+    output_path = out_dir / f"{pdb_code}{extension}"
+    download_url = f"{BASE_URL}{pdb_code}{extension}"
+    _download_with_retries(download_url, output_path, pdb_code)
 
     # Check file exists
     if strict:
-        assert os.path.exists(out_dir / f"{pdb_code}{extension}"), (
+        assert os.path.exists(output_path), (
             f"{pdb_code} download failed. Not found in {out_dir}"
         )
     log.debug(f"{pdb_code} downloaded to {out_dir}")
-    return out_dir / f"{pdb_code}{extension}"
+    return output_path
 
 
 def get_protein_name_from_filename(path: str) -> str:
@@ -361,15 +392,19 @@ def download_alphafold_structure(
     :return: path to output. Tuple if several outputs specified.
     :rtype: Union[str, Tuple[str, str]]
     """
-    BASE_URL = "https://alphafold.ebi.ac.uk/files/"
+
     uniprot_id = uniprot_id.upper()
 
     if not mmcif and not pdb:
         raise ValueError("Must specify either mmcif or pdb.")
     if mmcif:
-        query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.cif"
+        query_url = (
+            f"{ALPHAFOLD_DB_BASE_URL}AF-{uniprot_id}-F1-model_v{version}.cif"
+        )
     if pdb:
-        query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.pdb"
+        query_url = (
+            f"{ALPHAFOLD_DB_BASE_URL}AF-{uniprot_id}-F1-model_v{version}.pdb"
+        )
 
     try:
         structure_filename = wget.download(query_url, out=out_dir)
@@ -391,7 +426,7 @@ def download_alphafold_structure(
     log.debug(f"Downloaded AlphaFold PDB file for: {uniprot_id}")
     if aligned_score:
         score_query = (
-            BASE_URL
+            ALPHAFOLD_DB_BASE_URL
             + "AF-"
             + uniprot_id
             + f"-F1-predicted_aligned_error_v{version}.json"
@@ -580,7 +615,7 @@ def esmfold(
     --------
     self
     """
-    URL = f"https://api.esmatlas.com/foldSequence/v{version}/{format}/"
+    URL = f"{ESM_ATLAS_BASE_URL}{version}/{format}/"
 
     headers: Dict[str, str] = {
         "Content-Type": "application/x-www-form-urlencoded",

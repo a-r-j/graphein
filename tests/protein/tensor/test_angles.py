@@ -80,11 +80,8 @@ def test_torsion_to_rad():
     angles_emb = angle_to_unit_circle(angles)
     angles_rads = torsion_to_rad(angles_emb)
 
-    delta = torch.abs(angles_rads - angles)
-
-    delta[delta.nonzero()] = torch.abs(delta[torch.nonzero(delta)] - 2 * np.pi)
-
-    delta = ((delta + 2 * np.pi) / np.pi) % 2
+    # Wrap the difference into [-pi, pi) so angles equal modulo 2pi compare ~0
+    delta = torch.remainder(angles_rads - angles + np.pi, 2 * np.pi) - np.pi
     np.testing.assert_allclose(
         delta, torch.zeros_like(delta), atol=1e-3, rtol=1e-3
     )
@@ -121,11 +118,8 @@ def test_dihedrals_to_rad():
     angles_emb = angle_to_unit_circle(angles)
     angles_rads = dihedrals_to_rad(angles_emb, concat=True)
 
-    delta = torch.abs(angles_rads - angles)
-
-    delta[delta.nonzero()] = torch.abs(delta[torch.nonzero(delta)] - 2 * np.pi)
-
-    delta = ((delta + 2 * np.pi) / np.pi) % 2
+    # Wrap the difference into [-pi, pi) so angles equal modulo 2pi compare ~0
+    delta = torch.remainder(angles_rads - angles + np.pi, 2 * np.pi) - np.pi
     np.testing.assert_allclose(
         delta, torch.zeros_like(delta), atol=1e-4, rtol=1e-4
     )
