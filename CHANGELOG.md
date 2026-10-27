@@ -2,6 +2,7 @@
 
 #### Bugfixes
 
+* Mesh creation no longer hangs forever if PyMOL fails to start or write the `.obj` file. `ProteinMeshConfig.max_wait_seconds` (default `600`, `None` to wait indefinitely) bounds both waits; `create_mesh` now raises `TimeoutError` or `RuntimeError` instead of hanging [#449](https://github.com/a-r-j/graphein/pull/449)
 * Fix computation of `GetContacts` edges for local renamed structures [#436](https://github.com/a-r-j/graphein/pull/436). Fixes [#435](https://github.com/a-r-j/graphein/issues/435)
 * Hotfix for incorrect dataframe indexing resulting in correct edge addition in `add_distance_threshold` [#419](https://github.com/a-r-j/graphein/pull/419)
 * Fixes unnecessary download for pre-existing structure files retrieved from AlphaFold database in `graphein.ml.ProteinGraphDataset`[#426](https://github.com/a-r-j/graphein/pull/426)

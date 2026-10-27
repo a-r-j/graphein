@@ -20,7 +20,7 @@ from graphein.utils.dependencies import (
     requires_external_dependencies,
     requires_python_libs,
 )
-from graphein.utils.pymol import MolViewer
+from graphein.utils.pymol import viewer
 
 try:
     from pytorch3d.structures import Meshes
@@ -54,15 +54,17 @@ def configure_pymol_session(
     :param config: :class:`~graphein.protein.config.ProteinMeshConfig` to use. Defaults to ``None`` which uses default config.
     :type config: graphein.protein.config.ProteinMeshConfig
     """
-    pymol = MolViewer()
-    pymol.delete("all")  # delete all objects from other sessions if necessary.
+    pymol = viewer
 
     # If no config is provided, use default
     if config is None:
         config = ProteinMeshConfig()
 
     # Start PyMol session
-    pymol.start([config.pymol_command_line_options])
+    pymol.start(
+        [config.pymol_command_line_options], timeout=config.max_wait_seconds
+    )
+    pymol.delete("all")  # delete all objects from other sessions if necessary.
 
 
 @requires_external_dependencies("pymol")
@@ -87,7 +89,7 @@ def get_obj_file(
     :return: returns path to ``.obj`` file (str)
     :rtype: str
     """
-    pymol = MolViewer()
+    pymol = viewer
 
     # Check inputs
     if not pdb_code and not pdb_file:
@@ -100,7 +102,10 @@ def get_obj_file(
     if out_dir is None:
         out_dir = "/tmp/"
 
-    configure_pymol_session()
+    if config is None:
+        config = ProteinMeshConfig()
+
+    configure_pymol_session(config)
 
     # Load structure
     pymol.load(pdb_file) if pdb_file else pymol.fetch(pdb_code)
@@ -109,12 +114,13 @@ def get_obj_file(
         f"{pdb_file[:-3]}obj" if pdb_file else out_dir + pdb_code + ".obj"
     )
 
-    if config is None:
-        config = ProteinMeshConfig()
-
     commands = parse_pymol_commands(config)
     print(commands)
     run_pymol_commands(commands)
+
+    # Remove stale output so it can't be mistaken for this run's mesh
+    if os.path.isfile(file_name):
+        os.remove(file_name)
 
     # Save surface object as .obj
     pymol.do(f"save {file_name}")
@@ -147,7 +153,7 @@ def run_pymol_commands(commands: List[str]) -> None:
     :param commands: List of commands to pass to PyMol.
     :type commands: List[str]
     """
-    pymol = MolViewer()
+    pymol = viewer
 
     for c in commands:
         log.debug(c)
@@ -160,7 +166,6 @@ def create_mesh(
     pdb_code: Optional[str] = None,
     out_dir: Optional[str] = None,
     config: Optional[ProteinMeshConfig] = None,
-    max_wait_seconds: Optional[float] = None,
 ) -> Tuple[torch.FloatTensor, NamedTuple, NamedTuple]:
     """
     Creates a ``PyTorch3D`` mesh from a ``pdb_file`` or ``pdb_code``.
@@ -173,9 +178,6 @@ def create_mesh(
     :type out_dir: str, optional
     :param config:  :class:`~graphein.protein.config.ProteinMeshConfig` config to use. Defaults to default config in ``graphein.protein.config``.
     :type config: graphein.protein.config.ProteinMeshConfig
-    :param max_wait_seconds: Maximum time to wait for ``.obj`` mesh generation.
-        If ``None``, uses ``config.max_wait_seconds``.
-    :type max_wait_seconds: Optional[float]
     :return: ``verts``, ``faces``, ``aux``.
     :rtype: Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
     """
@@ -183,34 +185,36 @@ def create_mesh(
 
     if config is None:
         config = ProteinMeshConfig()
-    if max_wait_seconds is None:
-        max_wait_seconds = config.max_wait_seconds
 
     obj_file = get_obj_file(
         pdb_code=pdb_code, pdb_file=pdb_file, out_dir=out_dir, config=config
     )
-    wait_for_obj_file(obj_file, max_wait_seconds=max_wait_seconds)
+    wait_for_obj_file(obj_file, max_wait_seconds=config.max_wait_seconds)
 
     verts, faces, aux = load_obj(obj_file)
     return verts, faces, aux
 
 
 def wait_for_obj_file(
-    obj_file: str,
-    max_wait_seconds: Optional[float] = None,
-    poll_interval: float = 0.1,
+    obj_file: str, max_wait_seconds: Optional[float] = None
 ) -> None:
-    """Waits for an ``.obj`` mesh file to be generated."""
+    """Waits for PyMOL to write an ``.obj`` mesh file.
+
+    :raises RuntimeError: if the PyMOL process exits before the file appears.
+    :raises TimeoutError: if the file is not found after ``max_wait_seconds``.
+    """
     start_time = time.monotonic()
-    while os.path.isfile(obj_file) is False:
+    while not os.path.isfile(obj_file):
+        if not viewer._process_is_running():
+            raise RuntimeError(f"PyMOL exited before writing {obj_file}")
         if (
             max_wait_seconds is not None
-            and time.monotonic() - start_time > max_wait_seconds
+            and time.monotonic() - start_time >= max_wait_seconds
         ):
             raise TimeoutError(
                 f"{obj_file} not found after {max_wait_seconds} seconds"
             )
-        time.sleep(poll_interval)
+        time.sleep(0.1)
 
 
 @requires_python_libs("torch")

@@ -31,12 +31,15 @@ class MolViewer(object):
         return self._process is not None and self._process.poll() is None
 
     @requires_external_dependencies("pymol")
-    def start(self, args=("-Q",), exe="pymol"):
+    def start(self, args=("-Q",), exe="pymol", timeout=None):
         """Start the PyMOL RPC server and connect to it
         Start simple GUI (-xi), suppress all output (-Q):
             >>> viewer.start(["-xiQ"])
         Start headless (-cK), with some output (-q):
             >>> viewer.start(["-cKq"])
+        Raises ``RuntimeError`` if PyMOL exits before the server is up and
+        ``TimeoutError`` if it is not up after ``timeout`` seconds
+        (``None`` waits indefinitely).
         """
         if self._process_is_running():
             print("A PyMOL RPC server is already running.")
@@ -49,11 +52,25 @@ class MolViewer(object):
         self._server = Server(uri="http://%s:%d/RPC2" % (self.host, self.port))
 
         # wait for the server
+        start_time = time.monotonic()
         while True:
             try:
                 self._server.bg_color("white")
                 break
             except IOError:
+                if self._process.poll() is not None:
+                    raise RuntimeError(
+                        f"PyMOL exited with code {self._process.returncode} "
+                        "before its RPC server started"
+                    )
+                if (
+                    timeout is not None
+                    and time.monotonic() - start_time >= timeout
+                ):
+                    self.stop()
+                    raise TimeoutError(
+                        f"PyMOL RPC server not up after {timeout} seconds"
+                    )
                 time.sleep(0.1)
 
     def stop(self):
