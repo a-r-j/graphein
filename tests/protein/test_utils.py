@@ -157,9 +157,9 @@ def test_save_pdb_df_to_pdb_keeps_charges(tmp_path):
     df = cpdb.parse(pdb_str=CHARGED_PDB)
     path = tmp_path / "charged.pdb"
     save_pdb_df_to_pdb(df, str(path))
-    charges = pd.to_numeric(
-        read_pdb_to_dataframe(str(path))["charge"], errors="coerce"
-    )
+    lines = [l for l in path.read_text().splitlines() if l[:6].strip()]
+    assert [l[76:80] for l in lines[:3]] == ["ZN2+", "CL1-", " C  "]
+    charges = pdb_charge_to_numeric(read_pdb_to_dataframe(str(path))["charge"])
     assert charges.tolist()[:2] == [2.0, -1.0]
     assert np.isnan(charges.iloc[2])
 

@@ -460,9 +460,8 @@ def pdb_charge_to_numeric(charge: pd.Series) -> pd.Series:
     """Converts PDB formal charges to numbers.
 
     PDB files write charges as a digit followed by a sign (e.g. ``"2+"``,
-    ``"1-"``), which is how ``cpdb>=0.3.0`` returns them. Signed (``"-1"``)
-    and unsigned (``"2"``) values are also accepted. Blank or invalid charges
-    become ``NaN``.
+    ``"1-"``), which is how ``cpdb`` returns them. Signed (``"-1"``) values
+    are also accepted. Blank or invalid charges become ``NaN``.
 
     :param charge: Charge column of a PDB DataFrame.
     :type charge: pd.Series
@@ -497,33 +496,7 @@ def save_graph_to_pdb(
     :param gz: Whether to gzip the file. Defaults to ``False``.
     :type gz: bool
     """
-    ppd = PandasPdb()
-
-    df = g.graph["pdb_df"].copy()
-    # format charge correctly
-    df.charge = pdb_charge_to_numeric(df.charge)
-
-    # Add blank columns
-    blank_cols = [
-        "blank_1",
-        "blank_2",
-        "blank_3",
-        "blank_4",
-        "segment_id",
-    ]
-    for col in blank_cols:
-        if col not in df.columns:
-            df[col] = ""
-    df["line_idx"] = range(1, len(df) + 1)
-    df = df[pdb_df_columns]
-    atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
-    hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
-
-    if atoms:
-        ppd.df["ATOM"] = atom_df
-    if hetatms:
-        ppd.df["HETATM"] = hetatm_df
-    ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
+    save_pdb_df_to_pdb(g.graph["pdb_df"], path, gz, atoms, hetatms)
     log.debug(f"Successfully saved graph to {path}")
 
 
@@ -544,8 +517,15 @@ def save_pdb_df_to_pdb(
     :type gz: bool
     """
     df = df.copy()
-    # format charge correctly
-    df.charge = pdb_charge_to_numeric(df.charge)
+    # biopandas writes charges as floats (" 2.0"), not the PDB "2+", so append
+    # the PDB-formatted charge to the element symbol and leave charge blank.
+    charge = pdb_charge_to_numeric(df.charge)
+    sign = np.where(charge > 0, "+", "-")
+    charge = (charge.abs().astype("Int64").astype(str) + sign).where(
+        charge.fillna(0) != 0, ""
+    )
+    df.element_symbol = df.element_symbol.fillna("").str.rjust(2) + charge
+    df.charge = np.nan
     df.alt_loc = df.alt_loc.fillna(" ")
     blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
     for col in blank_cols:
@@ -588,27 +568,7 @@ def save_rgroup_df_to_pdb(
     :param gz: Whether to gzip the file. Defaults to ``False``.
     :type gz: bool
     """
-    ppd = PandasPdb()
-    df = g.graph["rgroup_df"].copy()
-
-    # format charge correctly
-    df.charge = pdb_charge_to_numeric(df.charge)
-
-    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
-    for col in blank_cols:
-        if col not in df.columns:
-            df[col] = [""] * len(df)
-    df["line_idx"] = range(1, len(df) + 1)
-    df = df[pdb_df_columns]
-
-    atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
-    hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
-
-    if atoms:
-        ppd.df["ATOM"] = atom_df
-    if hetatms:
-        ppd.df["HETATM"] = hetatm_df
-    ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
+    save_pdb_df_to_pdb(g.graph["rgroup_df"], path, gz, atoms, hetatms)
     log.debug(f"Successfully saved rgroup data to {path}")
 
 
