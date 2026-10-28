@@ -45,7 +45,7 @@ dependencies = [
     "scipy>=1.8",
     # bioservices<1.15 imports pkg_resources, removed in setuptools 81. bioservices>=1.15
     # drops it but pins lxml<6, which reintroduces CVE-2026-41066.
-    "setuptools>=78.1.1,<81",
+    "setuptools>=78.1.1,<85",
     "tqdm",
     "wget",
     "xarray",
