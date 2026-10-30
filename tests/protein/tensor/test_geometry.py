@@ -67,9 +67,9 @@ def test_whole_protein_kabsch():
     coords_aligned = r.mm(coords_distorted.T).T + t
 
     assert rmsd(coords_aligned, coords) < 1e-6, "RMSD too high after alignment"
-    assert torch.allclose(
-        coords_aligned, coords, atol=1e-6
-    ), "Coords differ too much after alignment"
+    assert torch.allclose(coords_aligned, coords, atol=1e-6), (
+        "Coords differ too much after alignment"
+    )
 
 
 def test_idealise_backbone():
@@ -89,9 +89,9 @@ def test_idealise_backbone():
     ideal_ba = IDEAL_BA - get_backbone_bond_angles(ideal[:, :4, :])
     true_ba = IDEAL_BA - get_backbone_bond_angles(protein.coords[:, :4, :])
 
-    assert torch.mean(torch.abs(ideal_ba)) < torch.mean(
-        torch.abs(true_ba)
-    ), "Bond angles not more idealised"
-    assert torch.mean(torch.abs(ideal_bl)) < torch.mean(
-        torch.abs(true_bl)
-    ), "Bond lengths not more idealised"
+    assert torch.mean(torch.abs(ideal_ba)) < torch.mean(torch.abs(true_ba)), (
+        "Bond angles not more idealised"
+    )
+    assert torch.mean(torch.abs(ideal_bl)) < torch.mean(torch.abs(true_bl)), (
+        "Bond lengths not more idealised"
+    )

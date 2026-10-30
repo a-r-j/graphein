@@ -76,15 +76,7 @@ def nodes_equal(g: nx.Graph, h: nx.Graph) -> bool:
     :type h: :class:`networkx.Graph`
     :raises AssertionError: If the graphs do not contain the same nodes
     """
-    for n in g.nodes():
-        if n not in h.nodes():
-            log.info(f"Node {n} (graph g) not in graph h")
-            return False
-    for n in h.nodes():
-        if n not in g.nodes():
-            log.info(f"Node {n} (graph h) not in graph g")
-            return False
-    return True
+    return set(g) == set(h)
 
 
 def edges_equal(g: nx.Graph, h: nx.Graph) -> bool:

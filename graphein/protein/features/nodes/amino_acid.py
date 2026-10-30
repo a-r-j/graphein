@@ -92,7 +92,7 @@ def expasy_protein_scale(
         features = df[amino_acid]
         if selection is not None:
             features = features.filter(selection)
-    except:
+    except KeyError:
         features = pd.Series(np.zeros(len(df)))
 
     if return_array:
@@ -217,7 +217,7 @@ def hydrogen_bond_donor(
         except KeyError:
             features = 0
     else:  # Residue graph
-        if res not in HYDROGEN_BOND_DONORS.keys():
+        if res not in HYDROGEN_BOND_DONORS:
             features = 0
         else:
             features = sum(HYDROGEN_BOND_DONORS[res].values())
@@ -265,7 +265,7 @@ def hydrogen_bond_acceptor(
         except KeyError:
             features = 0
     else:  # Residue graph
-        if res not in HYDROGEN_BOND_ACCEPTORS.keys():
+        if res not in HYDROGEN_BOND_ACCEPTORS:
             features = 0
         else:
             features = sum(HYDROGEN_BOND_ACCEPTORS[res].values())

@@ -79,7 +79,7 @@ def add_base_pairing_interactions(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     # Check sequence is used
-    check_base_pairing = "sequence" in G.graph.keys()
+    check_base_pairing = "sequence" in G.graph
     # Iterate over dotbracket to build connectivity
     bases = []
     for i, c in enumerate(G.graph["dotbracket"]):
@@ -121,7 +121,7 @@ def add_pseudoknots(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     # Check sequence is used
-    check_base_pairing = "sequence" in G.graph.keys()
+    check_base_pairing = "sequence" in G.graph
     # Iterate over dotbracket to build connectivity
     knot_bases_1 = []  # for [[[]]] knots
     knot_bases_2 = []  # for {{{}}} knots

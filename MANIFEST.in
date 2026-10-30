@@ -1,3 +1,0 @@
-include README.md
-include graphein/protein/features/nodes/amino_acid_properties.csv
-include graphein/protein/features/nodes/meiler_embeddings.csv

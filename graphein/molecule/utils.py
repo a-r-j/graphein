@@ -15,6 +15,7 @@ Junction tree code adapted from Wengong Jin https://github.com/wengong-jin/icml1
 from __future__ import annotations
 
 import collections
+import itertools
 from typing import Any, List, Optional, Tuple, Union
 
 import networkx as nx
@@ -71,9 +72,9 @@ def get_center(
     """
     if isinstance(mol, nx.Graph):
         mol = mol.graph["rdmol"]
-    assert (
-        mol.GetNumConformers() > 0
-    ), "Molecule must have at least one conformer."
+    assert mol.GetNumConformers() > 0, (
+        "Molecule must have at least one conformer."
+    )
     return np.array(ComputeCentroid(mol.GetConformer(0), weights=weights))
 
 
@@ -88,9 +89,9 @@ def get_shape_moments(mol: Union[nx.Graph, Chem.Mol]) -> Tuple[float, float]:
     """
     if isinstance(mol, nx.Graph):
         mol = mol.graph["rdmol"]
-    assert (
-        mol.GetNumConformers() > 0
-    ), "Molecule must have at least one conformer."
+    assert mol.GetNumConformers() > 0, (
+        "Molecule must have at least one conformer."
+    )
     npr1 = NPR1(mol)
     npr2 = NPR2(mol)
     return npr1, npr2
@@ -224,7 +225,7 @@ def copy_edit_mol(mol: rdkit.Chem.rdchem.Mol) -> rdkit.Chem.rdchem.Mol:
     """
     new_mol = Chem.RWMol(Chem.MolFromSmiles(""))
     for atom in mol.GetAtoms():
-        new_atom = copy_atom(atom)
+        new_atom = copy_rdmol_atom(atom)
         new_mol.AddAtom(new_atom)
     for bond in mol.GetBonds():
         a1 = bond.GetBeginAtom().GetIdx()
@@ -430,8 +431,8 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
     cliques.extend(ssr)
 
     nei_list = [[] for _ in range(n_atoms)]
-    for i in range(len(cliques)):
-        for atom in cliques[i]:
+    for i, clique in enumerate(cliques):
+        for atom in clique:
             nei_list[atom].append(i)
 
     # Merge Rings with intersection > 2 atoms
@@ -448,10 +449,10 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
                     cliques[i] = list(set(cliques[i]))
                     cliques[j] = []
 
-    cliques = [c for c in cliques if len(c) > 0]
+    cliques = [c for c in cliques if c]
     nei_list = [[] for _ in range(n_atoms)]
-    for i in range(len(cliques)):
-        for atom in cliques[i]:
+    for i, clique in enumerate(cliques):
+        for atom in clique:
             nei_list[atom].append(i)
 
     # Build edges and add singleton cliques
@@ -462,8 +463,8 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
         cnei = nei_list[atom]
         bonds = [c for c in cnei if len(cliques[c]) == 2]
         rings = [c for c in cnei if len(cliques[c]) > 4]
-        if len(bonds) > 2 or (
-            len(bonds) == 2 and len(cnei) > 2
+        if (
+            len(bonds) > 2 or (len(bonds) == 2 and len(cnei) > 2)
         ):  # In general, if len(cnei) >= 3, a singleton should be added, but 1 bond + 2 ring is currently not dealt with.
             cliques.append([atom])
             c2 = len(cliques) - 1
@@ -475,11 +476,9 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
             for c1 in cnei:
                 edges[(c1, c2)] = MST_MAX_WEIGHT - 1
         else:
-            for i in range(len(cnei)):
-                for j in range(i + 1, len(cnei)):
-                    c1, c2 = cnei[i], cnei[j]
-                    inter = set(cliques[c1]) & set(cliques[c2])
-                    edges[(c1, c2)] = max(edges[(c1, c2)], len(inter))
+            for c1, c2 in itertools.combinations(cnei, 2):
+                inter = set(cliques[c1]) & set(cliques[c2])
+                edges[(c1, c2)] = max(edges[(c1, c2)], len(inter))
     edges = [u + (MST_MAX_WEIGHT - v,) for u, v in edges.items()]
     if not edges:
         return cliques, edges
@@ -490,5 +489,5 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
     clique_graph = csr_matrix((data, (row, col)), shape=(n_clique, n_clique))
     junc_tree = minimum_spanning_tree(clique_graph)
     row, col = junc_tree.nonzero()
-    edges = [(row[i], col[i]) for i in range(len(row))]
+    edges = list(zip(row, col))
     return (cliques, edges)

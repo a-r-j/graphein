@@ -46,7 +46,7 @@ except ImportError:
 @requires_python_libs("rdkit")
 def initialise_graph_with_metadata(
     name: str,
-    rdmol: rdkit.Mol,
+    rdmol: Chem.Mol,
     coords: np.ndarray,
 ) -> nx.Graph:
     """
@@ -56,7 +56,7 @@ def initialise_graph_with_metadata(
         on how the graph was created.
     :type name: str
     :param rdmol: Processed DataFrame of molecule structure.
-    :type rdmol: rdkit.Mol
+    :type rdmol: Chem.Mol
     :return: Returns initial molecule structure graph with metadata.
     :rtype: nx.Graph
     """
@@ -92,7 +92,7 @@ def add_nodes_to_graph(
         )
 
     if verbose:
-        print(nx.info(G))
+        print(G)
         print(G.nodes())
 
     return G
@@ -140,7 +140,7 @@ def generate_3d(
 @requires_python_libs("rdkit")
 def construct_graph(
     config: Optional[MoleculeGraphConfig] = None,
-    mol: Optional[rdkit.Mol] = None,
+    mol: Optional[Chem.Mol] = None,
     path: Optional[str] = None,
     smiles: Optional[str] = None,
     zinc_id: Optional[str] = None,
@@ -164,8 +164,8 @@ def construct_graph(
     :param config: :class:`~graphein.molecule.config.MoleculeGraphConfig`
         object. If None, defaults to config in ``graphein.molecule.config``.
     :type config: graphein.molecule.config.MoleculeGraphConfig, optional
-    :param mol: rdkit.Mol object to build graph from. Defaults to ``None``.
-    :type mol: rdkit.Mol, optional
+    :param mol: Chem.Mol object to build graph from. Defaults to ``None``.
+    :type mol: Chem.Mol, optional
     :param path: Path to either a ``.sdf``, ``.mol2``, ``.smi`` or ``pdb`` file. # noqa: E501
         Defaults to ``None``.
     :type path: str

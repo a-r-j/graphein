@@ -77,7 +77,7 @@ def add_interacting_proteins(
     protein_1 = df["p1"].values
     protein_2 = df["p2"].values
 
-    interacting_proteins = set(list(zip(protein_1, protein_2)))
+    interacting_proteins = set(zip(protein_1, protein_2))
 
     for p1, p2 in interacting_proteins:
         if G.has_edge(p1, p2):

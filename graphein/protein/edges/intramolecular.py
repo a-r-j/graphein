@@ -16,7 +16,7 @@ import networkx as nx
 import pandas as pd
 from loguru import logger as log
 
-from graphein.protein.utils import download_pdb
+from graphein.protein.utils import download_pdb, sequence_positions
 
 CONTACTS_FILE_SUFFIX = "_contacts.tsv"
 
@@ -31,6 +31,8 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     log.debug("Adding peptide bonds to graph")
+    pdb_df = G.graph["pdb_df"]
+    positions = dict(zip(pdb_df["node_id"], sequence_positions(pdb_df)))
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
         # Find chain residues
@@ -47,11 +49,10 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             cond_1 = (
                 residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
             )
-            # Asserts residue numbers are adjacent
+            # Asserts residues are adjacent in sequence
             cond_2 = (
                 abs(
-                    residue[1]["residue_number"]
-                    - chain_residues[i + 1][1]["residue_number"]
+                    positions[residue[0]] - positions[chain_residues[i + 1][0]]
                 )
                 == 1
             )
@@ -59,14 +60,11 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             # If this checks out, we add a peptide bond
             if cond_1 and cond_2:
                 # Adds "peptide_bond" between current residue and the next
-                if G.has_edge(i, i + 1):
-                    G.edges[i, i + 1]["kind"].add("peptide_bond")
+                u, v = residue[0], chain_residues[i + 1][0]
+                if G.has_edge(u, v):
+                    G.edges[u, v]["kind"].add("peptide_bond")
                 else:
-                    G.add_edge(
-                        residue[0],
-                        chain_residues[i + 1][0],
-                        kind={"peptide_bond"},
-                    )
+                    G.add_edge(u, v, kind={"peptide_bond"})
             else:
                 continue
     return G
@@ -167,8 +165,8 @@ def run_get_contacts(
     output_path = config.contacts_dir / (pdb_path.stem + CONTACTS_FILE_SUFFIX)
 
     command = f"{config.get_contacts_path}/get_static_contacts.py "
-    command += f"--structure {str(pdb_path)} "
-    command += f"--output {str(output_path)} "
+    command += f"--structure {pdb_path} "
+    command += f"--output {output_path} "
     command += "--itypes all"  # --sele "protein"'
 
     log.info(f"Running GetContacts: {command}")
@@ -272,7 +270,7 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     # Select specific interaction type
     interactions = contacts[contacts["interaction_type"] == interaction_type]
 
-    for _, [res1, res2, interaction_type] in interactions.iterrows():
+    for res1, res2, interaction_type in interactions.itertuples(index=False):
         # Check residues are actually in graph
         if not (G.has_node(res1) and G.has_node(res2)):
             continue

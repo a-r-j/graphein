@@ -52,14 +52,6 @@ def read_dbn_file(path: str) -> Tuple[str, str]:
     """
     with open(path, "r") as f:
         lines = f.readlines()
-    print(lines)
     sequence = lines[-2]
     dotbracket = lines[-1]
     return sequence, dotbracket
-
-
-if __name__ == "__main__":
-    # download_bp_rna_1m(".")
-    seq, db = read_dbn_file("./bp_rna_1m/dbnFiles/bpRNA_CRW_23156.dbn")
-    print(seq)
-    print(db)
