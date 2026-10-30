@@ -513,6 +513,32 @@ INSERTION_PDB = (
 )
 
 
+@pytest.mark.parametrize(
+    "edge_fn",
+    [add_peptide_bonds, peptide_bonds],
+    ids=["add", "intramolecular"],
+)
+def test_peptide_bonds_across_insertion_codes(edge_fn):
+    """Residues differing only by insertion code are bonded in sequence."""
+    config = ProteinGraphConfig(edge_construction_functions=[edge_fn])
+    G = construct_graph(path=str(INSERTION_PDB), config=config)
+    for u, v in [
+        ("H:TRP:52", "H:TYR:52:A"),
+        ("H:TYR:52:A", "H:ASP:53"),
+        ("H:TYR:100:A", "H:VAL:100:B"),
+    ]:
+        assert G.has_edge(u, v), f"Missing peptide bond between {u} and {v}"
+
+
+def test_sequence_distance_edges_across_insertion_codes():
+    """52 and 53 are two apart when 52A is between them."""
+    config = ProteinGraphConfig(
+        edge_construction_functions=[partial(add_sequence_distance_edges, d=2)]
+    )
+    G = construct_graph(path=str(INSERTION_PDB), config=config)
+    assert G.has_edge("H:TRP:52", "H:ASP:53")
+
+
 # kNN keeps separations > long_interaction_threshold; the distance functions
 # keep separations >= it. So a separation of 1 is excluded at 1 / 2 and
 # included at 0 / 1 respectively.

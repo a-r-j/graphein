@@ -456,6 +456,36 @@ def three_to_one_with_mods(res: str) -> str:
     return RESI_THREE_TO_1[res]
 
 
+def sequence_positions(pdb_df: pd.DataFrame) -> np.ndarray:
+    """Returns the position in sequence of each row's residue.
+
+    Residues are taken in order of appearance in each chain. Each one is
+    placed after the previous one by the difference in residue numbers, but
+    at least one, so residues that differ only by insertion code are distinct
+    positions and gaps in numbering (missing residues) are kept. E.g.
+    ``52, 52A, 53`` are at ``52, 53, 54`` and ``100, 100A-100F, 101`` puts
+    ``101`` seven after ``100``. Insertions before their residue (e.g.
+    ``1B, 1A, 1``) work the same way. Atoms of a residue share its position.
+
+    :param pdb_df: PDB DataFrame.
+    :type pdb_df: pd.DataFrame
+    :return: Position of each row's residue.
+    :rtype: np.ndarray
+    """
+    keys = ["chain_id", "residue_number"]
+    df = pdb_df[keys].copy()
+    if "insertion" in pdb_df.columns:
+        df["insertion"] = pdb_df["insertion"].fillna("")
+        keys.append("insertion")
+    residues = df.drop_duplicates()
+    chains = residues["chain_id"]
+    step = residues.groupby(chains)["residue_number"].diff().clip(lower=1)
+    step = step.fillna(residues["residue_number"])  # first residue of chains
+    residues = residues.assign(position=step.groupby(chains).cumsum())
+    positions = df.merge(residues, on=keys, how="left")["position"]
+    return positions.to_numpy().astype(int)
+
+
 def pdb_charge_to_numeric(charge: pd.Series) -> pd.Series:
     """Converts PDB formal charges to numbers.
 

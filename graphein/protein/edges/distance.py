@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import itertools
 from itertools import combinations, product
-from typing import Callable, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -41,7 +41,7 @@ from graphein.protein.resi_atoms import (
     SULPHUR_RESIS,
     VDW_RADII,
 )
-from graphein.protein.utils import filter_dataframe
+from graphein.protein.utils import filter_dataframe, sequence_positions
 
 INFINITE_DIST = 10_000.0  # np.inf leads to errors in some cases
 
@@ -173,7 +173,8 @@ def add_sequence_distance_edges(
     Adds edges based on sequence distance to residues in each chain.
 
     Eg. if ``d=6`` then we join: nodes ``(1,7), (2,8), (3,9)..``
-    based on their sequence number.
+    based on their position in sequence (see
+    :func:`~graphein.protein.utils.sequence_positions`).
 
     :param G: Networkx protein graph.
     :type G: nx.Graph
@@ -183,6 +184,8 @@ def add_sequence_distance_edges(
     :return G: Networkx protein graph with added peptide bonds.
     :rtype: nx.Graph
     """
+    pdb_df = G.graph["pdb_df"]
+    positions = dict(zip(pdb_df["node_id"], sequence_positions(pdb_df)))
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
         # Find chain residues
@@ -218,11 +221,11 @@ def add_sequence_distance_edges(
                     residue[1]["chain_id"]
                     == chain_residues[i + d][1]["chain_id"]
                 )
-                # Asserts residue numbers are adjacent
+                # Asserts residues are d apart in sequence
                 cond_2 = (
                     abs(
-                        residue[1]["residue_number"]
-                        - chain_residues[i + d][1]["residue_number"]
+                        positions[residue[0]]
+                        - positions[chain_residues[i + d][0]]
                     )
                     == d
                 )
@@ -932,37 +935,6 @@ def add_delaunay_triangulation(
             add_edge(G, n1, n2, "delaunay")
 
 
-def sequence_separation(pdb_df: pd.DataFrame) -> Callable[[int, int], int]:
-    """Returns a function giving the separation in sequence between two rows
-    of ``pdb_df``.
-
-    Separation is the difference in residue numbers. Residues that share a
-    residue number but differ in insertion code (e.g. ``52`` and ``52A``) are
-    distinct residues, so they are one position apart. N.B. insertions don't
-    add to the separation of other residues: ``100`` and ``101`` are one
-    apart even with ``100A``-``100F`` between them.
-
-    :param pdb_df: PDB DataFrame.
-    :type pdb_df: pd.DataFrame
-    :return: Function mapping two row positions to their separation.
-    :rtype: Callable[[int, int], int]
-    """
-    positions = pdb_df["residue_number"].to_numpy()
-    insertions = (
-        pdb_df["insertion"].to_numpy()
-        if "insertion" in pdb_df.columns
-        else np.full(len(pdb_df), "")
-    )
-
-    def separation(a1: int, a2: int) -> int:
-        sep = abs(positions[a1] - positions[a2])
-        if sep == 0 and insertions[a1] != insertions[a2]:
-            return 1
-        return sep
-
-    return separation
-
-
 def add_distance_threshold(
     G: nx.Graph, long_interaction_threshold: int, threshold: float = 5.0
 ):
@@ -974,7 +946,8 @@ def add_distance_threshold(
     :param G: Protein Structure graph to add distance edges to
     :type G: nx.Graph
     :param long_interaction_threshold: minimum distance in sequence for two
-        nodes to be connected. See :func:`sequence_separation`.
+        nodes to be connected. See
+        :func:`~graphein.protein.utils.sequence_positions`.
     :type long_interaction_threshold: int
     :param threshold: Distance in angstroms, below which two nodes are connected
     :type threshold: float
@@ -990,11 +963,13 @@ def add_distance_threshold(
     log.info(f"Found: {len(interacting_nodes)} distance edges")
     node_ids = pdb_df["node_id"].to_numpy()
     chains = pdb_df["chain_id"].to_numpy()
-    separation = sequence_separation(pdb_df)
+    positions = sequence_positions(pdb_df)
     count = 0
     for a1, a2 in interacting_nodes:
         condition_1 = chains[a1] == chains[a2]
-        condition_2 = separation(a1, a2) < long_interaction_threshold
+        condition_2 = (
+            abs(positions[a1] - positions[a2]) < long_interaction_threshold
+        )
 
         if not (condition_1 and condition_2):
             count += 1
@@ -1021,7 +996,8 @@ def add_distance_window(
     :type min: float
     :param max: Maximum distance in angstroms allowed for an edge.
     :param long_interaction_threshold: minimum distance in sequence for two
-        nodes to be connected. See :func:`sequence_separation`.
+        nodes to be connected. See
+        :func:`~graphein.protein.utils.sequence_positions`.
     :type long_interaction_threshold: int
     :return: Graph with distance-based edges added
     """
@@ -1043,11 +1019,13 @@ def add_distance_window(
     log.info(f"Found: {len(interacting_nodes)} distance edges")
     node_ids = pdb_df["node_id"].to_numpy()
     chains = pdb_df["chain_id"].to_numpy()
-    separation = sequence_separation(pdb_df)
+    positions = sequence_positions(pdb_df)
     count = 0
     for a1, a2 in interacting_nodes:
         condition_1 = chains[a1] == chains[a2]
-        condition_2 = separation(a1, a2) < long_interaction_threshold
+        condition_2 = (
+            abs(positions[a1] - positions[a2]) < long_interaction_threshold
+        )
 
         if not (condition_1 and condition_2):
             count += 1
@@ -1088,7 +1066,8 @@ def add_k_nn_edges(
     :param G: Protein Structure graph to add distance edges to
     :type G: nx.Graph
     :param long_interaction_threshold: minimum distance in sequence for two
-        nodes to be connected. See :func:`sequence_separation`.
+        nodes to be connected. See
+        :func:`~graphein.protein.utils.sequence_positions`.
     :type long_interaction_threshold: int
     :param k: Number of neighbors for each sample.
     :type k: int
@@ -1150,7 +1129,7 @@ def add_k_nn_edges(
     dists = dist_mat.to_numpy()
     node_ids = pdb_df["node_id"].to_numpy()
     chains = pdb_df["chain_id"].to_numpy()
-    separation = sequence_separation(pdb_df)
+    positions = sequence_positions(pdb_df)
     for a1, a2 in interacting_nodes:
         if dists[a1, a2] == INFINITE_DIST:
             continue
@@ -1158,7 +1137,9 @@ def add_k_nn_edges(
         # Check residues are not on same chain
         condition_1 = chains[a1] != chains[a2]
         # Check residues are separated by long_interaction_threshold
-        condition_2 = separation(a1, a2) > long_interaction_threshold
+        condition_2 = (
+            abs(positions[a1] - positions[a2]) > long_interaction_threshold
+        )
 
         # If not on same chain add edge or
         # If on same chain and separation is sufficient add edge

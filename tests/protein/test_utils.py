@@ -22,6 +22,7 @@ from graphein.protein.utils import (
     save_graph_to_pdb,
     save_pdb_df_to_pdb,
     save_rgroup_df_to_pdb,
+    sequence_positions,
 )
 
 protein_utils = importlib.import_module("graphein.protein.utils")
@@ -212,3 +213,35 @@ if __name__ == "__main__":
     test_save_graph_to_pdb()
     test_save_pdb_df_to_pdb()
     test_save_rgroup_df_to_pdb()
+
+
+@pytest.mark.parametrize(
+    "residues,expected",
+    [
+        # Antibody numbering: insertions follow their residue
+        ([(52, ""), (52, "A"), (53, ""), (54, "")], [52, 53, 54, 55]),
+        ([(100, ""), (100, "A"), (100, "B"), (101, "")], [100, 101, 102, 103]),
+        # Chymotrypsin numbering (e.g. thrombin): insertions precede it
+        ([(1, "B"), (1, "A"), (1, ""), (2, "")], [1, 2, 3, 4]),
+        # Gaps in numbering (missing residues) are kept
+        ([(10, ""), (15, ""), (15, "A")], [10, 15, 16]),
+    ],
+)
+def test_sequence_positions(residues, expected):
+    # Two atoms per residue, two chains: atoms share their residue's position
+    rows = [
+        (chain, num, ins)
+        for chain in "AB"
+        for num, ins in residues
+        for _ in range(2)
+    ]
+    df = pd.DataFrame(
+        rows, columns=["chain_id", "residue_number", "insertion"]
+    )
+    expected = [pos for _ in "AB" for pos in expected for _ in range(2)]
+    assert sequence_positions(df).tolist() == expected
+
+
+def test_sequence_positions_without_insertion_column():
+    df = pd.DataFrame({"chain_id": ["A"] * 3, "residue_number": [3, 4, 9]})
+    assert sequence_positions(df).tolist() == [3, 4, 9]
