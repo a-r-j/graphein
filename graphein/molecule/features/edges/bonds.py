@@ -8,9 +8,18 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
+import numpy as np
+import pandas as pd
 from loguru import logger as log
+
+from graphein.utils.utils import onek_encoding_unk
+
+try:
+    import rdkit.Chem.rdchem
+except ImportError:
+    pass
 
 
 def add_bond_type(
@@ -27,7 +36,7 @@ def add_bond_type(
     :return: Returns the bond type.
     :rtype: rdkit.Chem.rdchem.BondType
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["bond_type"] = None
         return None
@@ -48,7 +57,7 @@ def bond_is_aromatic(u: str, v: str, d: Dict[str, Any]) -> bool:
     :return: Returns indicator of aromaticity of bond.
     :rtype: bool
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["aromatic"] = None
         return None
@@ -69,7 +78,7 @@ def bond_is_conjugated(u: str, v: str, d: Dict[str, Any]) -> bool:
     :return: Returns indicator of conjugated bond.
     :rtype: bool
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["conjugated"] = None
         return None
@@ -90,7 +99,7 @@ def bond_is_in_ring(u: str, v: str, d: Dict[str, Any]) -> bool:
     :return: Returns indicator of ring membership of bond.
     :rtype: bool
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["ring"] = None
         return None
@@ -116,7 +125,7 @@ def bond_is_in_ring_size(
     :return: Returns ring size of bond.
     :rtype: int
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d[f"ring_size_{ring_size}"] = None
         return None
@@ -139,10 +148,59 @@ def bond_stereo(
     :return: Returns the bond stereo.
     :rtype: rdkit.Chem.rdchem.BondStereo
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["bond_stereo"] = None
         return None
     bond_stereo = d["bond"].GetStereo()
     d["bond_stereo"] = bond_stereo
     return bond_stereo
+
+
+def add_bond_type_one_hot(
+    u: str,
+    v: str,
+    d: Dict[str, Any],
+    return_array: bool = True,
+    allowable_set: Optional[List[Any]] = None,
+) -> np.ndarray:
+    """Adds a one-hot encoding of the bond type as an edge feature.
+
+    :param u: First node in the edge.
+    :type u: str
+    :param v: Second node in the edge.
+    :type v: str
+    :param d: Dictionary of edge metadata.
+    :type d: Dict[str, Any]
+    :param return_array: If ``True``, returns a ``np.ndarray``, otherwise a
+        ``pd.Series`` indexed by the allowable set. Defaults to ``True``.
+    :type return_array: bool
+    :param allowable_set: Bond types to encode. Defaults to single, double,
+        triple and aromatic.
+    :type allowable_set: Optional[List[rdkit.Chem.rdchem.BondType]]
+    :return: One-hot encoding of the bond type.
+    :rtype: Union[np.ndarray, pd.Series]
+    """
+    if "bond" not in d.keys():
+        log.debug(f"No RDKit bond found on edge {u}-{v}")
+        d["bond_type_one_hot"] = None
+        return None
+
+    if allowable_set is None:
+        allowable_set = [
+            rdkit.Chem.rdchem.BondType.SINGLE,
+            rdkit.Chem.rdchem.BondType.DOUBLE,
+            rdkit.Chem.rdchem.BondType.TRIPLE,
+            rdkit.Chem.rdchem.BondType.AROMATIC,
+        ]
+
+    features = onek_encoding_unk(d["bond"].GetBondType(), allowable_set)
+
+    if return_array:
+        features = np.array(features).astype(int)
+    else:
+        features = pd.Series(features).astype(int)
+        features.index = allowable_set
+
+    d["bond_type_one_hot"] = features
+    return features

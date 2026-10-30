@@ -1,7 +1,13 @@
+import importlib
 import os
+from http.client import RemoteDisconnected
 
+import cpdb
 import networkx as nx
-from pandas.testing import assert_frame_equal
+import numpy as np
+import pandas as pd
+import pytest
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from graphein.protein.graphs import (
     construct_graph,
@@ -12,10 +18,13 @@ from graphein.protein.utils import (
     download_pdb,
     download_pdb_multiprocessing,
     get_obsolete_mapping,
+    pdb_charge_to_numeric,
     save_graph_to_pdb,
     save_pdb_df_to_pdb,
     save_rgroup_df_to_pdb,
 )
+
+protein_utils = importlib.import_module("graphein.protein.utils")
 
 
 def test_save_graph_to_pdb():
@@ -100,6 +109,61 @@ def test_save_rgroup_df_to_pdb():
     )
 
 
+@pytest.mark.parametrize(
+    "charge,expected",
+    [
+        ("2+", 2.0),
+        ("1-", -1.0),
+        (" 2+", 2.0),
+        ("-1", -1.0),
+        ("+2", 2.0),
+        ("2", 2.0),
+        ("", np.nan),
+        ("x", np.nan),
+    ],
+)
+def test_pdb_charge_to_numeric(charge, expected):
+    assert_series_equal(
+        pdb_charge_to_numeric(pd.Series([charge])),
+        pd.Series([expected]),
+    )
+
+
+def test_pdb_charge_to_numeric_numeric_input():
+    charge = pd.Series([2.0, np.nan, -1.0])
+    assert_series_equal(pdb_charge_to_numeric(charge), charge)
+
+
+CHARGED_PDB = (
+    "HETATM    1 ZN    ZN A 101      10.000  10.000  10.000  1.00  0.00"
+    "          ZN2+\n"
+    "HETATM    2 CL    CL A 102      12.000  10.000  10.000  1.00  0.00"
+    "          CL1-\n"
+    "ATOM      3  CA  GLY A   1      14.000  10.000  10.000  1.00  0.00"
+    "           C  \n"
+)
+"""Two ions with PDB-style charges (``2+``, ``1-``) and an uncharged atom."""
+
+
+def test_pdb_charge_to_numeric_from_cpdb():
+    """Charges as parsed by ``cpdb`` (e.g. ``"2+"``) keep their sign."""
+    df = cpdb.parse(pdb_str=CHARGED_PDB)
+    assert pdb_charge_to_numeric(df["charge"]).tolist()[:2] == [2.0, -1.0]
+    assert np.isnan(pdb_charge_to_numeric(df["charge"]).iloc[2])
+
+
+def test_save_pdb_df_to_pdb_keeps_charges(tmp_path):
+    """Charged atoms keep their charge (and sign) when saved."""
+    df = cpdb.parse(pdb_str=CHARGED_PDB)
+    path = tmp_path / "charged.pdb"
+    save_pdb_df_to_pdb(df, str(path))
+    lines = [l for l in path.read_text().splitlines() if l[:6].strip()]
+    assert [l[76:80] for l in lines[:3]] == ["ZN2+", "CL1-", " C  "]
+    charges = pdb_charge_to_numeric(read_pdb_to_dataframe(str(path))["charge"])
+    assert charges.tolist()[:2] == [2.0, -1.0]
+    assert np.isnan(charges.iloc[2])
+
+
 def test_download_obsolete_structure():
     fp = download_pdb(pdb_code="116L", check_obsolete=True)
     assert os.path.exists(fp)
@@ -108,6 +172,26 @@ def test_download_obsolete_structure():
 
 def test_download_structure():
     fp = download_pdb(pdb_code="4hhb")
+    assert os.path.exists(fp)
+    assert str(fp).endswith("4hhb.pdb")
+
+
+def test_download_structure_retries_transient_errors(monkeypatch, tmp_path):
+    attempts = {"count": 0}
+
+    def fake_download(url, out, bar=None):
+        attempts["count"] += 1
+        if attempts["count"] < 3:
+            raise RemoteDisconnected("connection dropped")
+        with open(out, "w", encoding="utf-8") as handle:
+            handle.write("HEADER\n")
+
+    monkeypatch.setattr(protein_utils.wget, "download", fake_download)
+    monkeypatch.setattr(protein_utils.time, "sleep", lambda _: None)
+
+    fp = download_pdb(pdb_code="4hhb", out_dir=tmp_path)
+
+    assert attempts["count"] == 3
     assert os.path.exists(fp)
     assert str(fp).endswith("4hhb.pdb")
 

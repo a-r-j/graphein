@@ -59,14 +59,11 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             # If this checks out, we add a peptide bond
             if cond_1 and cond_2:
                 # Adds "peptide_bond" between current residue and the next
-                if G.has_edge(i, i + 1):
-                    G.edges[i, i + 1]["kind"].add("peptide_bond")
+                u, v = residue[0], chain_residues[i + 1][0]
+                if G.has_edge(u, v):
+                    G.edges[u, v]["kind"].add("peptide_bond")
                 else:
-                    G.add_edge(
-                        residue[0],
-                        chain_residues[i + 1][0],
-                        kind={"peptide_bond"},
-                    )
+                    G.add_edge(u, v, kind={"peptide_bond"})
             else:
                 continue
     return G
@@ -167,8 +164,8 @@ def run_get_contacts(
     output_path = config.contacts_dir / (pdb_path.stem + CONTACTS_FILE_SUFFIX)
 
     command = f"{config.get_contacts_path}/get_static_contacts.py "
-    command += f"--structure {str(pdb_path)} "
-    command += f"--output {str(output_path)} "
+    command += f"--structure {pdb_path} "
+    command += f"--output {output_path} "
     command += "--itypes all"  # --sele "protein"'
 
     log.info(f"Running GetContacts: {command}")
@@ -272,7 +269,7 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     # Select specific interaction type
     interactions = contacts[contacts["interaction_type"] == interaction_type]
 
-    for _, [res1, res2, interaction_type] in interactions.iterrows():
+    for res1, res2, interaction_type in interactions.itertuples(index=False):
         # Check residues are actually in graph
         if not (G.has_node(res1) and G.has_node(res2)):
             continue

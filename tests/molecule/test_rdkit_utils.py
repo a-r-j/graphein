@@ -19,9 +19,9 @@ TEST_MOL_GRAPH = gm.construct_graph(
 
 def test_get_center():
     center = u.get_center(TEST_MOL_GRAPH)
-    assert isinstance(
-        center, np.ndarray
-    ), f"Center is not a numpy array ({type(center)}"
+    assert isinstance(center, np.ndarray), (
+        f"Center is not a numpy array ({type(center)}"
+    )
     assert center.shape == (3,), f"Center has wrong shape ({center.shape})"
     np.testing.assert_allclose(
         np.array([-0.21303333, 0.06743333, 0.0818]), center
@@ -30,19 +30,21 @@ def test_get_center():
 
 def test_get_shape_moments():
     moments = u.get_shape_moments(TEST_MOL_GRAPH)
-    assert isinstance(
-        moments, tuple
-    ), f"Moment is not a tuple ({type(moments)})"
-    assert isinstance(
-        moments[0], float
-    ), f"Moment is not a float ({type(moments[0])})"
-    assert isinstance(
-        moments[1], float
-    ), f"Moment is not a float ({type(moments[1])})"
-    assert moments == (
-        0.12940962096031391,
-        0.8705903790396854,
-    ), f"Moments are not correct ({moments})"
+    assert isinstance(moments, tuple), (
+        f"Moment is not a tuple ({type(moments)})"
+    )
+    assert isinstance(moments[0], float), (
+        f"Moment is not a float ({type(moments[0])})"
+    )
+    assert isinstance(moments[1], float), (
+        f"Moment is not a float ({type(moments[1])})"
+    )
+    assert np.isclose(moments[0], 0.12940962096031391), (
+        f"Moment 0 is not correct ({moments[0]})"
+    )
+    assert np.isclose(moments[1], 0.8705903790396854), (
+        f"Moment 1 is not correct ({moments[1]})"
+    )
 
 
 def test_count_fragment():
@@ -59,9 +61,9 @@ def test_get_max_ring_size():
 
 def test_get_morgan_fp():
     fp = u.get_morgan_fp(TEST_GRAPH)
-    assert isinstance(
-        fp, rdkit.DataStructs.cDataStructs.ExplicitBitVect
-    ), f"fp is not a BitVect ({type(fp)})"
+    assert isinstance(fp, rdkit.DataStructs.cDataStructs.ExplicitBitVect), (
+        f"fp is not a BitVect ({type(fp)})"
+    )
 
 
 def test_get_morgan_fp_np():

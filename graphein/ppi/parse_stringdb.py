@@ -7,6 +7,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+import io
 from typing import Dict, List, Union
 
 import pandas as pd
@@ -46,7 +47,7 @@ def params_STRING(
         kwarg_name = f"STRING_{p}"
         if kwarg_name in kwargs:
             value = kwargs[kwarg_name]
-            if type(value) is list:
+            if isinstance(value, list):
                 value = "%0d".join(value)
             params[p] = value
     return params
@@ -79,7 +80,7 @@ def parse_STRING(
     output_format = "json"  # "tsv-no-header"
     method = "network"
     request_url = "/".join([string_api_url, output_format, method])
-    if type(ncbi_taxon_id) is list:
+    if isinstance(ncbi_taxon_id, list):
         ncbi_taxon_id = "%0d".join(ncbi_taxon_id)
     params = {
         "identifiers": "%0d".join(protein_list),
@@ -90,7 +91,7 @@ def parse_STRING(
 
     # Call STRING
     response = requests.post(request_url, data=params)
-    return pd.read_json(response.text.strip())
+    return pd.read_json(io.StringIO(response.text.strip()))
 
 
 def filter_STRING(df: pd.DataFrame, **kwargs) -> pd.DataFrame:

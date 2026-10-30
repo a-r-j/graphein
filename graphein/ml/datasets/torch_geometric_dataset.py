@@ -13,7 +13,7 @@ from typing import Callable, Dict, Generator, List, Optional
 
 import networkx as nx
 from loguru import logger as log
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
@@ -165,9 +165,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         elif self.uniprot_ids:
             self.structures = uniprot_ids
         self.af_version = af_version
-        self.bad_pdbs: List[str] = (
-            []
-        )  # list of pdb codes that failed to download
+        self.bad_pdbs: List[
+            str
+        ] = []  # list of pdb codes that failed to download
 
         # Labels & Chains
         self.graph_label_map = graph_label_map
@@ -270,7 +270,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             chain_selections = [
                 (
                     self.chain_selection_map[pdb]
-                    if pdb in self.chain_selection_map.keys()
+                    if pdb in self.chain_selection_map
                     else "all"
                 )
                 for pdb in self.structures
@@ -508,17 +508,17 @@ class ProteinGraphDataset(Dataset):
 
     def validate_input(self):
         if self.graph_label_map is not None:
-            assert len(self.structures) == len(
-                self.graph_label_map
-            ), "Number of proteins and graph labels must match"
+            assert len(self.structures) == len(self.graph_label_map), (
+                "Number of proteins and graph labels must match"
+            )
         if self.node_label_map is not None:
-            assert len(self.structures) == len(
-                self.node_label_map
-            ), "Number of proteins and node labels must match"
+            assert len(self.structures) == len(self.node_label_map), (
+                "Number of proteins and node labels must match"
+            )
         if self.chain_selection_map is not None:
-            assert len(self.structures) == len(
-                self.chain_selection_map
-            ), "Number of proteins and chain selections must match"
+            assert len(self.structures) == len(self.chain_selection_map), (
+                "Number of proteins and chain selections must match"
+            )
             assert len(
                 {
                     f"{pdb}_{chain}"
@@ -590,7 +590,6 @@ class ProteinGraphDataset(Dataset):
         if self.pdb_transform:
             self.transform_pdbs()
 
-        idx = 0
         # Chunk dataset for parallel processing
         chunk_size = 128
 

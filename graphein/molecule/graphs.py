@@ -37,7 +37,9 @@ try:
     from rdkit import Chem
     from rdkit.Chem import AllChem
 except ImportError:
-    msg = import_message("graphein.molecule.graphs", "rdkit", "rdkit", True)
+    msg = import_message(
+        "graphein.molecule.graphs", "rdkit", "rdkit", True, extras=True
+    )
     log.warning(msg)
 
 
@@ -90,7 +92,7 @@ def add_nodes_to_graph(
         )
 
     if verbose:
-        print(nx.info(G))
+        print(G)
         print(G.nodes())
 
     return G
