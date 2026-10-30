@@ -235,9 +235,11 @@ def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
 
     centroids = calculate_centroid_positions(df)
     df = df.loc[df["atom_name"] == "CA"].reset_index(drop=True)
-    df["x_coord"] = centroids["x_coord"]
-    df["y_coord"] = centroids["y_coord"]
-    df["z_coord"] = centroids["z_coord"]
+    # Match centroids to residues by key: their row order differs (groupby
+    # sorts, df is in file order)
+    keys = ["chain_id", "residue_number", "residue_name", "insertion"]
+    coords = ["x_coord", "y_coord", "z_coord"]
+    df[coords] = df[keys].merge(centroids, on=keys, how="left")[coords]
 
     return df
 
@@ -661,7 +663,8 @@ def calculate_centroid_positions(
     """
     centroids = (
         atoms.groupby(
-            ["residue_number", "chain_id", "residue_name", "insertion"]
+            ["residue_number", "chain_id", "residue_name", "insertion"],
+            dropna=False,
         )
         .mean(numeric_only=True)[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
