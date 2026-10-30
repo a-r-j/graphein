@@ -3,6 +3,7 @@
 from functools import partial
 from pathlib import Path
 
+import networkx as nx
 import pytest
 import torch
 
@@ -207,6 +208,74 @@ def test_convert_nx_to_pyg_data_edge_features():
     for k, (_, _, d) in enumerate(edges):
         assert data.kind[k] == d["kind"]
         assert float(data.distance[k]) == pytest.approx(d["distance"])
+
+
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
+def test_nx_to_pyg_missing_numeric_edge_feature_is_nan():
+    """An edge without a numeric feature gets NaN; the feature stays a
+    tensor."""
+    g = _multi_kind_graph()
+    u, v = next(iter(g.edges))
+    del g.edges[u, v]["distance"]
+    data = GraphFormatConvertor(
+        "nx", "pyg", columns=["edge_index", "distance"]
+    )(g)
+    assert isinstance(data.distance, torch.Tensor)
+    assert data.distance.isnan().sum() == 2  # both directions of (u, v)
+
+
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
+def test_nx_to_pyg_graph_feature_does_not_replace_edge_feature():
+    """A graph-level attribute named like an edge feature doesn't replace
+    it."""
+    g = _multi_kind_graph()
+    g.graph["distance"] = 0.0
+    data = GraphFormatConvertor(
+        "nx", "pyg", columns=["edge_index", "distance"]
+    )(g)
+    assert data.distance.shape == torch.Size([data.edge_index.shape[1]])
+
+
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
+def test_nx_to_pyg_multigraph_keeps_parallel_edges():
+    """Parallel edges in a ``MultiGraph`` are kept, with their own
+    features."""
+    g = nx.MultiGraph()
+    g.add_edge("a", "b", kind={"x"}, distance=1.0)
+    g.add_edge("a", "b", kind={"y"}, distance=2.0)
+    g.add_edge("b", "c", kind={"x"}, distance=3.0)
+    data = GraphFormatConvertor(
+        "nx",
+        "pyg",
+        columns=["edge_index", "kind", "distance", "edge_index_x"],
+    )(g)
+    assert data.edge_index.shape == torch.Size([2, 6])
+    assert sorted(data.distance.tolist()) == [1.0, 1.0, 2.0, 2.0, 3.0, 3.0]
+    for k, d in zip(data.kind, data.distance.tolist()):
+        assert k == ({"y"} if d == 2.0 else {"x"})
+    assert data.edge_index_x.shape == torch.Size([2, 4])
+
+
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
+def test_nx_to_pyg_node_feature_missing_on_some_nodes():
+    """Node features stay aligned when only some nodes have them."""
+    g = nx.Graph()
+    g.add_node("a")
+    g.add_node("b", charge=1.0)
+    g.add_edge("a", "b")
+    data = GraphFormatConvertor("nx", "pyg", columns=["charge"])(g)
+    assert data.charge.isnan().tolist() == [True, False]
+
+
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
+def test_convert_nx_to_pyg_data_mixed_key_types():
+    """Edge attribute keys of mixed types (str and int) are accepted."""
+    g = nx.Graph()
+    g.add_edge("a", "b", kind={"x"})
+    g.add_edge("b", "c")
+    g.edges["b", "c"][0] = 1.0
+    data = convert_nx_to_pyg_data(g)
+    assert len(data.kind) == 2
 
 
 @pytest.mark.skipif(not DGL_AVAIL, reason="DGL not installed")
