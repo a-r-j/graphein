@@ -52,6 +52,7 @@ Output (can customize name using corresponding CLI arguments):
 
 import argparse
 import time
+from typing import Optional
 
 from loguru import logger
 from rcsbapi.config import config
@@ -132,7 +133,7 @@ def _iter_entry_chem_comp_ids(entry: dict):
 
 def process_chem_comp_results_and_write_to_file(
     entry_chem_comp_results: dict,
-    pdb_to_cc_output_file: str,
+    pdb_to_cc_output_file: Optional[str],
     cc_to_pdb_output_file: str,
     cc_extras_output_file: str,
     generate_cc_extra_file: bool,
@@ -155,14 +156,15 @@ def process_chem_comp_results_and_write_to_file(
             chem_comp_to_pdb_map.setdefault(chem_id, set()).add(pdb_id)
 
     # Write the final PDB -> CC mapping to a TSV file
-    with open(pdb_to_cc_output_file, "w", encoding="utf-8") as f:
-        for pdbid, ccids in pdb_to_chem_comp_map.items():
-            f.write(f"{pdbid}\t{' '.join(sorted(ccids))}\n")
-    logger.info(
-        "PDB → CC mapping written to '{path}' for {n_pdb} PDB IDs",
-        path=pdb_to_cc_output_file,
-        n_pdb=len(pdb_to_chem_comp_map),
-    )
+    if pdb_to_cc_output_file is not None:
+        with open(pdb_to_cc_output_file, "w", encoding="utf-8") as f:
+            for pdbid, ccids in pdb_to_chem_comp_map.items():
+                f.write(f"{pdbid}\t{' '.join(sorted(ccids))}\n")
+        logger.info(
+            "PDB → CC mapping written to '{path}' for {n_pdb} PDB IDs",
+            path=pdb_to_cc_output_file,
+            n_pdb=len(pdb_to_chem_comp_map),
+        )
 
     # Write the final CC -> PDB mapping to a TSV file
     with open(cc_to_pdb_output_file, "w", encoding="utf-8") as f:
@@ -237,7 +239,7 @@ def generate_cc_extra_data(chem_comp_to_pdb_map):
 
 def generate_pdb_ligand_mappings(
     chem_comp_types=None,
-    pdb_to_cc_output_file: str = "pdb-to-cc.tsv",
+    pdb_to_cc_output_file: Optional[str] = "pdb-to-cc.tsv",
     cc_to_pdb_output_file: str = "cc-to-pdb.tsv",
     cc_extras_output_file: str = "cc-counts-extra.tsv",
     max_concurrent_api_requests: int = 10,
@@ -254,7 +256,7 @@ def generate_pdb_ligand_mappings(
         Iterable of chemical component type labels to include. Must be drawn
         from ``ALLOWED_CHEM_COMP_TYPES``. If ``None``, uses ``DEFAULT_CHEM_COMP_TYPES``.
     pdb_to_cc_output_file:
-        Path for the PDB → CC mapping TSV file.
+        Path for the PDB → CC mapping TSV file. If ``None``, it isn't written.
     cc_to_pdb_output_file:
         Path for the CC → PDB mapping TSV file.
     cc_extras_output_file:
@@ -266,6 +268,12 @@ def generate_pdb_ligand_mappings(
     """
     if chem_comp_types is None:
         chem_comp_types = DEFAULT_CHEM_COMP_TYPES
+    invalid = sorted(set(chem_comp_types) - set(ALLOWED_CHEM_COMP_TYPES))
+    if invalid:
+        raise ValueError(
+            f"Invalid chem_comp_types: {invalid}. Allowed values are: "
+            f"{ALLOWED_CHEM_COMP_TYPES}."
+        )
 
     # Map high-level chem component type labels to the underlying RCSB Data API
     # return fields.
