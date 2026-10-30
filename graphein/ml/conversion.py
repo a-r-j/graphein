@@ -76,7 +76,10 @@ def _feature_lists(attr_dicts, keep=lambda key: True) -> dict:
     for key in keys:
         values = [d.get(key) for d in attr_dicts]
         present = next((v for v in values if v is not None), None)
-        if any(v is None for v in values) and np.asarray(present).dtype.kind in "biuf":
+        if (
+            any(v is None for v in values)
+            and np.asarray(present).dtype.kind in "biuf"
+        ):
             nan = np.full(np.shape(present), np.nan)
             values = [nan if v is None else v for v in values]
         features[key] = values
