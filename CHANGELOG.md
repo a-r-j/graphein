@@ -18,6 +18,7 @@
 
 #### Misc
 
+* Build the docs with a GitHub Actions workflow (`.github/workflows/docs.yaml`) on every PR and deploy them to GitHub Pages on pushes to `master`, replacing manual pushes to the `gh-pages` branch (last updated in 2022). Notebooks are rendered from their saved outputs. Fixes the docs build with Sphinx 9 (`NewTypeDataDocumenter` removed, duplicate intersphinx URLs rejected) and `rdkit.Mol` annotations in `graphein.molecule.graphs` (now `Chem.Mol`), which broke `sphinx_codeautolink`.
 * Remove `.gitattributes`, whose only rule (`export-subst` for versioneer's `graphein/_version.py`) targeted a file deleted in [#276](https://github.com/a-r-j/graphein/pull/276).
 * Speed up `graphein.protein.tensor` helpers by replacing per-atom and per-residue tensor loops with single `.tolist()` calls and dict lookups: `to_dataframe` (~6x on 4hhb), `infer_residue_types` and `is_complete_structure` (~7x), `protein_df_to_tensor`, and the sidechain torsion atom indexing used by `sidechain_torsion`. Output is unchanged. Adds tests for `is_complete_structure` and `has_complete_residue`. [#472](https://github.com/a-r-j/graphein/pull/472)
 * Drop support for Python 3.10, which has reached end of life. Minimum supported version is now Python 3.11.
