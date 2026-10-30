@@ -21,6 +21,8 @@ from graphein.protein.edges.distance import (
     INFINITE_DIST,
     add_aromatic_sulphur_interactions,
     add_cation_pi_interactions,
+    add_distance_threshold,
+    add_distance_window,
     add_k_nn_edges,
     add_peptide_bonds,
     add_salt_bridges,
@@ -504,3 +506,29 @@ def test_add_k_nn_edges_between_residues_with_insertion_codes():
     ]:
         assert u in G and v in G
         assert G.has_edge(u, v), f"Missing kNN edge between {u} and {v}"
+
+
+INSERTION_PDB = (
+    Path(__file__).parent.parent / "test_data" / "input_pdb_cryst1.pdb"
+)
+
+
+# kNN keeps separations > long_interaction_threshold; the distance functions
+# keep separations >= it. So a separation of 1 is excluded at 1 / 2 and
+# included at 0 / 1 respectively.
+@pytest.mark.parametrize(
+    "edge_fn,excluded_at,included_at",
+    [
+        (partial(add_k_nn_edges, k=5), 1, 0),
+        (partial(add_distance_threshold, threshold=5.0), 2, 1),
+        (partial(add_distance_window, min=1.0, max=5.0), 2, 1),
+    ],
+)
+def test_insertion_codes_one_residue_apart(edge_fn, excluded_at, included_at):
+    """Residues differing only by insertion code (52 and 52A) are one
+    position apart in sequence, like 52 and 53."""
+    for threshold, connected in [(excluded_at, False), (included_at, True)]:
+        fn = partial(edge_fn, long_interaction_threshold=threshold)
+        config = ProteinGraphConfig(edge_construction_functions=[fn])
+        G = construct_graph(path=str(INSERTION_PDB), config=config)
+        assert G.has_edge("H:TRP:52", "H:TYR:52:A") is connected
