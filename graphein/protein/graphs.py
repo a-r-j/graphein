@@ -45,7 +45,6 @@ from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
-    compute_edges,
 )
 
 try:
@@ -171,19 +170,19 @@ def label_node_id(
     :rtype: pd.DataFrame
     """
     df["node_id"] = (
-        df["chain_id"].apply(str)
+        df["chain_id"].astype(str)
         + ":"
         + df["residue_name"]
         + ":"
-        + df["residue_number"].apply(str)
+        + df["residue_number"].astype(str)
     )
 
     if insertions:
-        df["node_id"] = df["node_id"] + ":" + df["insertion"].apply(str)
+        df["node_id"] = df["node_id"] + ":" + df["insertion"].astype(str)
         # Replace trailing : for non insertions
         df["node_id"] = df["node_id"].str.replace(":$", "", regex=True)
     # Add Alt Loc identifiers
-    df["node_id"] = df["node_id"] + ":" + df["alt_loc"].apply(str)
+    df["node_id"] = df["node_id"] + ":" + df["alt_loc"].astype(str)
     df["node_id"] = df["node_id"].str.replace(":$", "", regex=True)
     df["residue_id"] = df["node_id"]
     if granularity == "atom":
@@ -192,7 +191,7 @@ def label_node_id(
         df["node_id"] = (
             df["node_id"]
             + ":"
-            + df["atom_number"].apply(str)
+            + df["atom_number"].astype(str)
             + ":"
             + df["atom_name"]
         )
@@ -236,9 +235,11 @@ def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
 
     centroids = calculate_centroid_positions(df)
     df = df.loc[df["atom_name"] == "CA"].reset_index(drop=True)
-    df["x_coord"] = centroids["x_coord"]
-    df["y_coord"] = centroids["y_coord"]
-    df["z_coord"] = centroids["z_coord"]
+    # Match centroids to residues by key: their row order differs (groupby
+    # sorts, df is in file order)
+    keys = ["chain_id", "residue_number", "residue_name", "insertion"]
+    coords = ["x_coord", "y_coord", "z_coord"]
+    df[coords] = df[keys].merge(centroids, on=keys, how="left")[coords]
 
     return df
 
@@ -456,8 +457,9 @@ def process_dataframe(
 
     log.debug(f"Detected {len(protein_df)} total nodes")
 
-    # Sort dataframe to place HETATMs
+    # Sort dataframe to place HETATMs and reset index
     protein_df = sort_dataframe(protein_df)
+    protein_df = protein_df.reset_index(drop=True)
 
     return protein_df
 
@@ -615,7 +617,7 @@ def add_nodes_to_graph(
     if protein_df is None:
         protein_df: pd.DataFrame = G.graph["pdb_df"]
     # Assign intrinsic node attributes
-    chain_id = protein_df["chain_id"].apply(str)
+    chain_id = protein_df["chain_id"].astype(str)
     residue_name = protein_df["residue_name"]
     residue_number = protein_df["residue_number"]  # .apply(str)
     coords = np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]])
@@ -640,7 +642,7 @@ def add_nodes_to_graph(
 
     # TODO: include charge, line_idx for traceability?
     if verbose:
-        print(nx.info(G))
+        print(G)
         print(G.nodes())
 
     return G
@@ -661,7 +663,8 @@ def calculate_centroid_positions(
     """
     centroids = (
         atoms.groupby(
-            ["residue_number", "chain_id", "residue_name", "insertion"]
+            ["residue_number", "chain_id", "residue_name", "insertion"],
+            dropna=False,
         )
         .mean(numeric_only=True)[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
@@ -986,9 +989,9 @@ def construct_graphs_mp(
         problem in constructing the graph for this particular pdb.
     :rtype: Union[List[nx.Graph], Dict[str, nx.Graph]]
     """
-    assert (
-        pdb_code_it is not None or path_it is not None
-    ), "Iterable of pdb codes, pdb paths or uniprot IDs required."
+    assert pdb_code_it is not None or path_it is not None, (
+        "Iterable of pdb codes, pdb paths or uniprot IDs required."
+    )
 
     if pdb_code_it is not None:
         pdbs = pdb_code_it
@@ -1089,7 +1092,7 @@ def compute_chain_graph(
     # Add edges
     for u, v, d in g.edges(data=True):
         h.add_edge(
-            g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=d["kind"]
+            g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=set(d["kind"])
         )
     # Remove self-loops if necessary. Checks for equality between nodes in a
     # given edge.
@@ -1129,7 +1132,7 @@ def compute_weighted_graph_from_multigraph(g: nx.MultiGraph) -> nx.Graph:
                 except KeyError:
                     H[u][v][kind] = 1
         else:
-            H.add_edge(u, v, weight=len(d["kind"]), kind=d["kind"])
+            H.add_edge(u, v, weight=len(d["kind"]), kind=set(d["kind"]))
             for kind in list(d["kind"]):
                 H[u][v][kind] = 1
     return H
@@ -1184,7 +1187,7 @@ def compute_secondary_structure_graph(
 
     # Check nodes have secondary structure assignment & store them in list
     for _, d in g.nodes(data=True):
-        if "ss" not in d.keys():
+        if "ss" not in d:
             raise ProteinGraphConfigurationError(
                 "Secondary structure not defined for all nodes."
             )
@@ -1228,7 +1231,7 @@ def compute_secondary_structure_graph(
     for u, v, d in g.edges(data=True):
         try:
             h.add_edge(
-                ss_list[u], ss_list[v], kind=d["kind"], source=f"{u}_{v}"
+                ss_list[u], ss_list[v], kind=set(d["kind"]), source=f"{u}_{v}"
             )
         except KeyError as e:
             log.debug(

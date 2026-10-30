@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from itertools import count
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -180,9 +180,9 @@ def colour_edges(
             for _, _, d in G.edges(data=True)
         ]
 
-    assert (
-        0.0 <= set_alpha <= 1.0
-    ), f"Alpha value {set_alpha} must be between 0.0 and 1.0"
+    assert 0.0 <= set_alpha <= 1.0, (
+        f"Alpha value {set_alpha} must be between 0.0 and 1.0"
+    )
     colors = [c[:3] + (set_alpha,) for c in colors]
     if return_as_rgba:
         return [
@@ -260,8 +260,8 @@ def plotly_protein_structure_graph(
         if feature == "degree":
             return lambda k: node_size_min + node_size_multiplier * G.degree[k]
         elif feature == "rsa":
-            return (
-                lambda k: node_size_min
+            return lambda k: (
+                node_size_min
                 + node_size_multiplier * G.nodes(data=True)[k]["rsa"]
             )
 
@@ -269,8 +269,10 @@ def plotly_protein_structure_graph(
         p = re.compile("meiler-([1-7])")
         dim = p.search(feature)[1]
         if dim:
-            return lambda k: node_size_min + node_size_multiplier * max(
-                0, G.nodes(data=True)[k]["meiler"][f"dim_{dim}"]
+            return lambda k: (
+                node_size_min
+                + node_size_multiplier
+                * max(0, G.nodes(data=True)[k]["meiler"][f"dim_{dim}"])
             )  # Meiler values may be negative
         else:
             raise ValueError(f"Cannot size nodes by feature '{feature}'")
@@ -283,6 +285,7 @@ def plotly_protein_structure_graph(
     z_nodes = []
     node_sizes = []
     node_labels = []
+    node_list = list(G.nodes())
 
     # Loop on the pos dictionary to extract the x,y,z coordinates of each node
     for i, (key, value) in enumerate(pos.items()):
@@ -292,7 +295,7 @@ def plotly_protein_structure_graph(
         node_sizes.append(get_node_size(key))
 
         if label_node_ids:
-            node_labels.append(list(G.nodes())[i])
+            node_labels.append(node_list[i])
 
     nodes = go.Scatter3d(
         x=x_nodes,
@@ -330,9 +333,7 @@ def plotly_protein_structure_graph(
     )
 
     repeated_edge_colours = []
-    for (
-        edge_col
-    ) in (
+    for edge_col in (
         edge_colors
     ):  # Repeat as each line segment is ({x,y,z}_start, {x,y,z}_end, None)
         repeated_edge_colours.extend((edge_col, edge_col, edge_col))
@@ -455,6 +456,7 @@ def plot_protein_structure_graph(
         ax = Axes3D(fig)
         fig.add_axes(ax)
 
+        node_list = list(G.nodes())
         # Loop on the pos dictionary to extract the x,y,z coordinates of each
         # node
         for i, (key, value) in enumerate(pos.items()):
@@ -473,7 +475,7 @@ def plot_protein_structure_graph(
                 alpha=node_alpha,
             )
             if label_node_ids:
-                label = list(G.nodes())[i]
+                label = node_list[i]
                 ax.text(xi, yi, zi, label)
 
         # Loop on the list of edges to get the x,y,z, coordinates of the
@@ -549,7 +551,7 @@ def add_vector_to_plot(
         z=z_edges,
         mode="lines",
         line={"color": colour, "width": width},
-        text=3 * [f"{vector}" for _ in range(len(g))],
+        text=[vector] * (3 * len(g)),
         hoverinfo="text",
     )
     # Compute cone positions.
@@ -589,7 +591,7 @@ def add_vector_to_plot(
         u=u,
         v=v,
         w=w,
-        text=[f"{vector}" for _ in range(len(g.nodes()))],
+        text=[vector] * len(g),
         hoverinfo="u+v+w+text",
         colorscale=colour,
         showlegend=False,
@@ -793,14 +795,14 @@ def asteroid_plot(
     assert node_id in g.nodes(), f"Node {node_id} not in graph"
 
     nodes: Dict[int, List[str]] = {0: [node_id]}
-    node_list: List[str] = [node_id]
+    seen_nodes: Set[str] = {node_id}
     # Iterate over the number of hops and extract nodes in each shell
     for i in range(1, k):
         subgraph = extract_k_hop_subgraph(g, node_id, k=i)
         candidate_nodes = subgraph.nodes()
         # Check we've not already found nodes in the previous shells
-        nodes[i] = [n for n in candidate_nodes if n not in node_list]
-        node_list += candidate_nodes
+        nodes[i] = [n for n in candidate_nodes if n not in seen_nodes]
+        seen_nodes.update(candidate_nodes)
     shells = [nodes[i] for i in range(k)]
     log.debug(f"Plotting shells: {shells}")
 
@@ -878,7 +880,6 @@ def asteroid_plot(
                     title="Shell",
                     tickvals=list(range(k)),
                     xanchor="left",
-                    titleside="right",
                 ),
                 line_width=2,
             ),
@@ -888,10 +889,9 @@ def asteroid_plot(
         return go.Figure(
             data=data,
             layout=go.Layout(
-                title=title or f'Asteroid Plot - {g.graph["name"]}',
+                title=title or f"Asteroid Plot - {g.graph['name']}",
                 width=width,
                 height=height,
-                titlefont_size=16,
                 legend=dict(yanchor="top", y=1, xanchor="left", x=1.10),
                 showlegend=show_legend,
                 hovermode="closest",

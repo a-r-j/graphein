@@ -29,7 +29,7 @@ from sklearn.model_selection import train_test_split
 from torch_geometric import transforms as T
 from torch_geometric.data import Data, Dataset
 from torch_geometric.loader import DataLoader
-from tqdm.autonotebook import tqdm
+from tqdm.auto import tqdm
 
 from graphein.protein.resi_atoms import (
     ATOM_NUMBERING,
@@ -61,9 +61,13 @@ try:
     nest_asyncio.apply()
 except ImportError:
     message = import_message(
-        "graphein.ml.datasets.foldcomp", "nest_asyncio", None, True
+        "graphein.ml.datasets.foldcomp",
+        "nest_asyncio",
+        None,
+        True,
+        extras=True,
     )
-    message += "You can safely ignore this message if you are not working in a Jupyter Notebook."
+    message += "\nYou can safely ignore this message if you are not working in a Jupyter Notebook."
     log.warning(message)
 
 FOLDCOMP_DATABASE_TYPES: List[str] = [
@@ -285,7 +289,9 @@ class FoldCompDataset(Dataset):
                 self.root / self.database, ids=self.ids, decompress=False
             )  # type: ignore
         else:
-            self.db = foldcomp.open(self.root / self.database, decompress=False)  # type: ignore
+            self.db = foldcomp.open(
+                self.root / self.database, decompress=False
+            )  # type: ignore
 
     @staticmethod
     def fc_to_pyg(data: Dict[str, Any], name: Optional[str] = None) -> Protein:
@@ -321,7 +327,7 @@ class FoldCompDataset(Dataset):
         return Protein(
             coords=torch.from_numpy(coords).float(),
             residues=res,
-            residue_id=[f"A:{m}:{str(n)}" for m, n in zip(res, res_num)],
+            residue_id=[f"A:{m}:{n}" for m, n in zip(res, res_num)],
             chains=torch.zeros(n_res),
             residue_type=residue_type.long(),
             b_factor=torch.from_numpy(b_factor).float(),

@@ -13,7 +13,7 @@ from typing import Callable, Dict, Generator, List, Optional
 
 import networkx as nx
 from loguru import logger as log
-from tqdm.autonotebook import tqdm
+from tqdm.auto import tqdm
 
 from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
@@ -58,7 +58,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         pre_transform: Optional[Callable] = None,
         pre_filter: Optional[Callable] = None,
         num_cores: int = 16,
-        af_version: int = 2,
+        af_version: int = 6,
     ):
         """In Memory dataset for protein graphs.
 
@@ -125,7 +125,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             construction, defaults to ``16``.
         :type num_cores: int, optional
         :param af_version: Version of AlphaFoldDB structures to use,
-            defaults to ``2``.
+            defaults to ``6``.
         :type af_version: int, optional
         """
         self.name = name
@@ -165,9 +165,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         elif self.uniprot_ids:
             self.structures = uniprot_ids
         self.af_version = af_version
-        self.bad_pdbs: List[str] = (
-            []
-        )  # list of pdb codes that failed to download
+        self.bad_pdbs: List[
+            str
+        ] = []  # list of pdb codes that failed to download
 
         # Labels & Chains
         self.graph_label_map = graph_label_map
@@ -188,7 +188,9 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             pre_filter=pre_filter,
         )
         self.config.pdb_dir = Path(self.raw_dir)
-        self.data, self.slices = torch.load(self.processed_paths[0])
+        self.data, self.slices = torch.load(
+            self.processed_paths[0], weights_only=False
+        )
 
     @property
     def raw_file_names(self) -> List[str]:
@@ -268,7 +270,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             chain_selections = [
                 (
                     self.chain_selection_map[pdb]
-                    if pdb in self.chain_selection_map.keys()
+                    if pdb in self.chain_selection_map
                     else "all"
                 )
                 for pdb in self.structures
@@ -351,7 +353,7 @@ class ProteinGraphDataset(Dataset):
         pre_transform: Optional[Callable] = None,
         pre_filter: Optional[Callable] = None,
         num_cores: int = 16,
-        af_version: int = 2,
+        af_version: int = 6,
     ):
         """Dataset class for protein graphs.
 
@@ -412,7 +414,7 @@ class ProteinGraphDataset(Dataset):
             construction, defaults to ``16``.
         :type num_cores: int, optional
         :param af_version: Version of AlphaFoldDB structures to use,
-            defaults to ``2``.
+            defaults to ``6``.
         :type af_version: int, optional
         """
         self.pdb_codes = (
@@ -506,17 +508,17 @@ class ProteinGraphDataset(Dataset):
 
     def validate_input(self):
         if self.graph_label_map is not None:
-            assert len(self.structures) == len(
-                self.graph_label_map
-            ), "Number of proteins and graph labels must match"
+            assert len(self.structures) == len(self.graph_label_map), (
+                "Number of proteins and graph labels must match"
+            )
         if self.node_label_map is not None:
-            assert len(self.structures) == len(
-                self.node_label_map
-            ), "Number of proteins and node labels must match"
+            assert len(self.structures) == len(self.node_label_map), (
+                "Number of proteins and node labels must match"
+            )
         if self.chain_selection_map is not None:
-            assert len(self.structures) == len(
-                self.chain_selection_map
-            ), "Number of proteins and chain selections must match"
+            assert len(self.structures) == len(self.chain_selection_map), (
+                "Number of proteins and chain selections must match"
+            )
             assert len(
                 {
                     f"{pdb}_{chain}"
@@ -548,6 +550,11 @@ class ProteinGraphDataset(Dataset):
                 if not os.path.exists(Path(self.raw_dir) / f"{pdb}.pdb")
             ]
         if self.uniprot_ids:
+            to_download = [
+                uniprot
+                for uniprot in set(self.uniprot_ids)
+                if not os.path.exists(Path(self.raw_dir) / f"{uniprot}.pdb")
+            ]
             [
                 download_alphafold_structure(
                     uniprot,
@@ -555,7 +562,7 @@ class ProteinGraphDataset(Dataset):
                     version=self.af_version,
                     aligned_score=False,
                 )
-                for uniprot in tqdm(self.uniprot_ids)
+                for uniprot in tqdm(to_download)
             ]
 
     def len(self) -> int:
@@ -583,7 +590,6 @@ class ProteinGraphDataset(Dataset):
         if self.pdb_transform:
             self.transform_pdbs()
 
-        idx = 0
         # Chunk dataset for parallel processing
         chunk_size = 128
 
@@ -667,11 +673,13 @@ class ProteinGraphDataset(Dataset):
                     self.processed_dir,
                     f"{self.structures[idx]}_\
                         {self.chain_selection_map[idx]}.pt",
-                )
+                ),
+                weights_only=False,
             )
         else:
             return torch.load(
-                os.path.join(self.processed_dir, f"{self.structures[idx]}.pt")
+                os.path.join(self.processed_dir, f"{self.structures[idx]}.pt"),
+                weights_only=False,
             )
 
 
@@ -697,7 +705,9 @@ class ProteinGraphListDataset(InMemoryDataset):
         self.data_list = data_list
         self.name = name
         super().__init__(root, transform)
-        self.data, self.slices = torch.load(self.processed_paths[0])
+        self.data, self.slices = torch.load(
+            self.processed_paths[0], weights_only=False
+        )
 
     @property
     def processed_file_names(self):

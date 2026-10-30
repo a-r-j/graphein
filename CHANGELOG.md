@@ -1,3 +1,83 @@
+### 1.7.9 - UNRELEASED
+
+#### New Features
+
+* Add `add_bond_type_one_hot` edge feature for molecules. Fixes [#430](https://github.com/a-r-j/graphein/issues/430)
+
+#### Bugfixes
+
+* Fix `granularity="centroids"` (and `"rna_centroid"`) giving most residues of multi-chain structures another residue's centroid (up to ~70 Å off). `convert_structure_to_centroids` assigned centroids to CA rows by row order, but `calculate_centroid_positions` sorts residues by residue number before chain. Centroids are now matched to residues by chain, residue number, residue name and insertion code. Reported in [#423](https://github.com/a-r-j/graphein/pull/423).
+* Fix `add_k_nn_edges`, `add_distance_threshold` and `add_distance_window` treating residues that share a residue number but differ in insertion code (e.g. 52 and 52A) as 0 apart in sequence, so kNN edges between them were never added. Fix `add_sequence_distance_edges` / `add_peptide_bonds` and `peptide_bonds` not bonding them (e.g. 52-52A). Sequence separation now comes from the new `graphein.protein.utils.sequence_positions`, which counts inserted residues as positions of their own (so 100 and 101 are 7 apart with 100A-100F between them) and keeps gaps in numbering. Fixes [#410](https://github.com/a-r-j/graphein/issues/410) [#457](https://github.com/a-r-j/graphein/pull/457)
+* Fix `GraphFormatConvertor` (nx → pyg) misaligning edge features with `edge_index` on undirected graphs: `to_undirected` doubled and reordered the edges but not `kind` (left with one entry per undirected edge, in the original order). All edge features, tensor or not, now follow the symmetrized `edge_index`. `edge_index_<kind>` names now use the sorted kinds, so they no longer depend on set iteration order. Self-loop features are no longer summed, and edges without a `kind` no longer raise. Node and edge features missing on some nodes / edges no longer misalign or raise; numeric ones are `NaN` there (also for DGL). Graph-level attributes no longer replace node or edge features of the same name. Parallel edges in multigraphs are kept. No longer needs `to_undirected(..., reduce=...)`. Fix `convert_nx_to_pyg_data` flattening edge feature values (and failing on numeric ones). Fixes [#392](https://github.com/a-r-j/graphein/issues/392), [#217](https://github.com/a-r-j/graphein/issues/217)
+* Fix `save_graph_to_pdb`, `save_pdb_df_to_pdb` and `save_rgroup_df_to_pdb` dropping atom charges. `cpdb` returns charges as written in the PDB (`"2+"`, `"1-"`), which `pd.to_numeric(..., errors="coerce")` turned into `NaN`. Charges are now written in PDB format (`2+`, `1-` in columns 79-80) rather than biopandas' float format. `save_graph_to_pdb` and `save_rgroup_df_to_pdb` now call `save_pdb_df_to_pdb`. Adds `pdb_charge_to_numeric`.
+* Fix `add_peptide_bonds` / `add_sequence_distance_edges` and `peptide_bonds` overwriting the kinds of existing edges (they checked `G.has_edge` with loop positions instead of node IDs). [#461](https://github.com/a-r-j/graphein/pull/461)
+* Fix `compute_chain_graph` and `compute_secondary_structure_graph` with `return_weighted_graph=True` adding edge kinds to the input graph (edge kind sets were shared rather than copied). [#461](https://github.com/a-r-j/graphein/pull/461)
+* Fix the sdist (and the wheel `uv build` builds from it) containing no Python code: the hatch sdist `include` list only listed the README, LICENSE and two CSVs. It now includes `graphein/`. Removes the unused `MANIFEST.in`, which hatchling ignores.
+* Replace deprecated class-based `Config` with `model_config = ConfigDict(...)` in `GRNGraphConfig` and `PPIGraphConfig` to silence `PydanticDeprecatedSince20` warnings.
+* Pin `setuptools<81` so `bioservices` can still import `pkg_resources`, which setuptools 81 removed. Newer `bioservices` releases drop `pkg_resources` but require `lxml<6`, which is affected by CVE-2026-41066.
+
+#### Misc
+
+* Remove `.gitattributes`, whose only rule (`export-subst` for versioneer's `graphein/_version.py`) targeted a file deleted in [#276](https://github.com/a-r-j/graphein/pull/276).
+* Speed up `graphein.protein.tensor` helpers by replacing per-atom and per-residue tensor loops with single `.tolist()` calls and dict lookups: `to_dataframe` (~6x on 4hhb), `infer_residue_types` and `is_complete_structure` (~7x), `protein_df_to_tensor`, and the sidechain torsion atom indexing used by `sidechain_torsion`. Output is unchanged. Adds tests for `is_complete_structure` and `has_complete_residue`. [#472](https://github.com/a-r-j/graphein/pull/472)
+* Drop support for Python 3.10, which has reached end of life. Minimum supported version is now Python 3.11.
+* Use `tqdm.auto` in `graphein.protein.tensor.dataset`, the remaining module still importing plain `tqdm`, so its progress bars render as widgets in Jupyter instead of printing a new line per update. [#422](https://github.com/a-r-j/graphein/pull/422)
+
+### 1.7.8 - 24/01/2026
+
+#### Breaking Changes
+
+* Require Python >= 3.10 and pin `cpdb-protein==0.3.0` (which requires Python >= 3.10). Drop Python 3.8 and 3.9 from the CI matrices. [#460](https://github.com/a-r-j/graphein/pull/460)
+
+#### New Features
+
+* Add `num_heavy_atoms` molecule node feature to count non-hydrogen neighbours of each atom.
+
+#### Breaking Changes
+
+* Remove Jraph support from `graphein.ml.GraphFormatConvertor` (`"jraph"` is no longer a supported format). Jraph is no longer maintained, and `convert_nx_to_jraph` crashed on any graph with more than one node. [#462](https://github.com/a-r-j/graphein/pull/462)
+
+#### Bugfixes
+
+* Fix `GraphFormatConvertor` conversion to DGL: edge features were built from node features (so edges got node attributes, or the conversion failed), conversion with the default `verbose="gnn"` columns crashed because DGL rejects an empty feature dict, numeric edge features raised `TypeError`, and selecting the `distance` edge feature raised `KeyError`. Feature collection is also now linear in graph size. [#462](https://github.com/a-r-j/graphein/pull/462)
+* Fix `import_message` calls that wrongly did (`biovec`) or did not (`rdkit` in `graphein.molecule.graphs`, `nest_asyncio`) suggest `pip install graphein[extras]`, and add a test checking every call against `.requirements/extras.in`. Fixes [#248](https://github.com/a-r-j/graphein/issues/248)
+* Fix file-based molecular graph names for dotted filenames and Windows paths.
+* Fix the README molecular graph example to initialize `MoleculeGraphConfig` and call `construct_graph`.
+* Fix `NameError` in `graphein.molecule.atoms` when rdkit is not installed by guarding rdkit-dependent constants with `_HAS_RDKIT` flag
+* Fix computation of `GetContacts` edges for local renamed structures [#436](https://github.com/a-r-j/graphein/pull/436). Fixes [#435](https://github.com/a-r-j/graphein/issues/435)
+* Hotfix for incorrect dataframe indexing resulting in correct edge addition in `add_distance_threshold` [#419](https://github.com/a-r-j/graphein/pull/419)
+* Fixes unnecessary download for pre-existing structure files retrieved from AlphaFold database in `graphein.ml.ProteinGraphDataset`[#426](https://github.com/a-r-j/graphein/pull/426)
+* Fixes H coords are included when constructing molecule graph from SD file [#427](https://github.com/a-r-j/graphein/issues/427).
+* Fix `add_aromatic_sulphur_interactions` and `add_cation_pi_interactions` never adding edges (they compared node IDs against residue names). Their tests now require at least one edge. [#460](https://github.com/a-r-j/graphein/pull/460)
+* `add_distance_threshold` and `add_distance_window` now look up nodes in the filtered DataFrame the distance matrix was computed from, not `G.graph["pdb_df"]`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `PDBManager._frames_are_sequential` only checking the last pair of split time frames; it now checks that all frames are strictly increasing. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `NameError` on importing `graphein.ml.metrics` (missing `Union` and `unbatch` imports in `gdt.py`). [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `NameError` in `graphein.molecule.utils.copy_edit_mol` (and so `get_clique_mol`), which called an undefined `copy_atom`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix `graphein.ml.clustering.get_seq_records` with an `alphabet`: Biopython >= 1.78 rejects the `alphabet` argument and removed `_verify_alphabet`. `alphabet` is now a string of allowed letters, every sequence is checked (not only `*`-terminated ones), and the warning reports `record.id` instead of crashing on `record.seq.id`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Fix the same-chain check in `graphein.rna.edges.atomic.add_atomic_edges`, which only rejected empty chain IDs and so allowed covalent edges between chains. Ports the protein fix from [#201](https://github.com/a-r-j/graphein/pull/201) ([#199](https://github.com/a-r-j/graphein/issues/199)). [#460](https://github.com/a-r-j/graphein/pull/460)
+* Replace insecure `tempfile.mktemp` with `tempfile.mkstemp` in `graphein.utils.pymol.core` when exporting PyMOL session images.
+
+#### Misc
+
+* Speed up edge construction and features [#460](https://github.com/a-r-j/graphein/pull/460):
+  * Replace per-pair `.loc` lookups with arrays or dicts in the protein distance threshold, distance window, kNN, pi-stacking, T-stacking, aromatic-sulphur and cation-pi edges.
+  * Use a set for the minimum-distance filter in `add_distance_window`.
+  * Stop rebuilding `list(G.nodes())` per element in the molecule distance-threshold and kNN edges and in the protein 3D plots.
+  * Use `itertuples` for GetContacts edges.
+  * Use precomputed coordinate dicts in the geometry vector features.
+  * Use `.astype(str)` when building node IDs.
+  * Use column arrays in the protein and RNA covalent (`add_atomic_edges`) loops.
+  * Use sets for membership checks in `extract_subgraph_from_node_list(inverse=True)` and `asteroid_plot`.
+* Remove quadratic list-membership checks in `create_pairs_for_clustering`, `generate_random_sets` and `PDBManager` PDB download checks. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Close files opened in `blast` and `generate_random_sets`. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Replace `black`, `isort` and `flake8` with `ruff` (formatting, import sorting and linting) in CI, pre-commit and dev requirements, and consolidate the code style CI jobs into one. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Remove dead code (an overwritten unbatch result in `ProteinBatch`, unused locals in `GDT_TS`/`TMScore`) and tidy idioms across the codebase. [#460](https://github.com/a-r-j/graphein/pull/460)
+* Switch to UV package management. ([#451](https://github.com/a-r-j/graphein/pull/451))
+* Replace `tqdm` with `tqdm.auto`. ([#445](https://github.com/a-r-j/graphein/pull/445))
+* Wrap JSON parsing in `StringIO` due to pandas deprecating string parsing. ([#445](https://github.com/a-r-j/graphein/pull/445))
+* Bump `cpdb` version. ([#451](https://github.com/a-r-j/graphein/pull/451))
+* Add `weights_only=False` to notebooks. ([#451](https://github.com/a-r-j/graphein/pull/451))
+
 ### 1.7.7 - 03/08/2024
 
 #### Bugfixes
@@ -58,7 +138,7 @@
 
 #### API Changes
 
-* Chain selections are now specified with either `"all"` or a list of strings (e.g. `["A", "B"]`) rather than a single selection string (e.g. `"AB"`). This is a necessary chain due to MMTF support which can have multicharacter chain identifiers. [#307](https://github.com/a-r-j/graphein/pull/307)
+* Chain selections are now specified with either `"all"` or a list of strings (e.g. `["A", "B"]`) rather than a single selection string (e.g. `"AB"`). This is a necessary change due to MMTF support which can have multicharacter chain identifiers. [#307](https://github.com/a-r-j/graphein/pull/307)
 
 #### Improvements
 
@@ -86,19 +166,18 @@
 
 #### Other Changes
 
-
--   Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
--   Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
--   Adds support for `.ent` files to `graphein.protein.graphs.read_pdb_to_dataframe`. [#310](https://github.com/a-r-j/graphein/pull/310)
--   Obsolete residues with no replacement are now returned by `graphein.protein.utils.get_obsolete_mapping`. [#310](https://github.com/a-r-j/graphein/pull/310)
--   Adds the ability to store a dictionary of HETATM positions in `Data`/`Protein` objects created in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
--   Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
--   Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
--   `plot_pyg_data` now also plots some geometric features if present. [#305](https://github.com/a-r-j/graphein/pull/305)
--   Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
--   Improve FoldComp dataloading performance and include B factors (pLDDT) in output. [#313](https://github.com/a-r-j/graphein/pull/313) [#315](https://github.com/a-r-j/graphein/pull/315)
--   Add new helper functions to PDBManager [#322](https://github.com/a-r-j/graphein/pull/322) (@amorehead)
--   Add non-standard 'CYX' to `RESI_THREE_TO_1`.
+* Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
+* Adds entry point for biopandas dataframes in `graphein.protein.tensor.io.protein_to_pyg`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Adds support for `.ent` files to `graphein.protein.graphs.read_pdb_to_dataframe`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Obsolete residues with no replacement are now returned by `graphein.protein.utils.get_obsolete_mapping`. [#310](https://github.com/a-r-j/graphein/pull/310)
+* Adds the ability to store a dictionary of HETATM positions in `Data`/`Protein` objects created in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
+* Improved handling of non-standard residues in the `graphein.protein.tensor` module. [#307](https://github.com/a-r-j/graphein/pull/307)
+* Insertions retained by default in the `graphein.protein.tensor` module. I.e. `insertions=True` is now the default behaviour.[#307](https://github.com/a-r-j/graphein/pull/307)
+* `plot_pyg_data` now also plots some geometric features if present. [#305](https://github.com/a-r-j/graphein/pull/305)
+* Adds transform composition to FoldComp Dataset [#312](https://github.com/a-r-j/graphein/pull/312)
+* Improve FoldComp dataloading performance and include B factors (pLDDT) in output. [#313](https://github.com/a-r-j/graphein/pull/313) [#315](https://github.com/a-r-j/graphein/pull/315)
+* Add new helper functions to PDBManager [#322](https://github.com/a-r-j/graphein/pull/322) (@amorehead)
+* Add non-standard 'CYX' to `RESI_THREE_TO_1`.
 
 ### 1.7.0 - 10 /04/2023
 

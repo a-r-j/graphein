@@ -284,11 +284,7 @@ def construct_rna_graph_2d(
         sequence, dotbracket = read_dbn_file(config.path)
 
     # Build node IDs first.
-    node_ids = (
-        list(range(len(sequence)))
-        if sequence
-        else list(range(len(dotbracket)))
-    )
+    node_ids = range(len(sequence or dotbracket))
 
     if use_nussinov:
         dotbracket = nussinov(sequence)

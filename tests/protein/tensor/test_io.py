@@ -52,20 +52,20 @@ def test_protein_df_to_chain_tensor():
 
     chains = protein_df_to_chain_tensor(df, one_hot=True)
     print(chains)
-    assert (
-        chains.shape[0] == num_residues
-    ), "Number of residues and chain IDs do not match."
-    assert (
-        chains.shape[1] == num_chains
-    ), "Number of chains do not match dimension"
+    assert chains.shape[0] == num_residues, (
+        "Number of residues and chain IDs do not match."
+    )
+    assert chains.shape[1] == num_chains, (
+        "Number of chains do not match dimension"
+    )
     assert chains.max() == 1, "Chain IDs are not one hot."
     if num_chains > 1:
         assert chains.min() == 0, "Chain IDs are not one hot."
 
     chain = protein_df_to_chain_tensor(df, one_hot=False)
-    assert (
-        chain.shape[0] == num_residues
-    ), "Number of residues and chain IDs do not match."
+    assert chain.shape[0] == num_residues, (
+        "Number of residues and chain IDs do not match."
+    )
     assert chain.max() == num_chains - 1, "Chain IDs are not zero-indexed."
     assert chain.min() == 0, "Chain IDs are not zero-indexed."
 

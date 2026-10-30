@@ -20,7 +20,7 @@ from graphein.protein.features.sequence.utils import (
     compute_feature_over_chains,
     subset_by_node_feature_value,
 )
-from graphein.utils.dependencies import import_message
+from graphein.utils.dependencies import import_message, requires_python_libs
 
 try:
     import torch
@@ -40,7 +40,6 @@ except ImportError:
         submodule="graphein.protein.features.sequence.embeddings",
         package="biovec",
         pip_install=True,
-        extras=True,
     )
     log.debug(message)
 
@@ -231,6 +230,7 @@ def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
 
 
 @lru_cache()
+@requires_python_libs("biovec")
 def _load_biovec_model():
     """Loads pretrained ProtVec Model.
 
@@ -250,6 +250,7 @@ def _load_biovec_model():
     )
 
 
+@requires_python_libs("biovec")
 def biovec_sequence_embedding(G: nx.Graph) -> nx.Graph:
     """
     Adds BioVec sequence embedding feature to the graph. Computed over chains.

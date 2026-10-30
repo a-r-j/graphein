@@ -8,11 +8,13 @@
 
 import os
 import tempfile
+import time
 from functools import lru_cache, partial
+from http.client import RemoteDisconnected
 from multiprocessing import Pool
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple, Type, Union
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
 import networkx as nx
@@ -22,7 +24,7 @@ import requests
 import wget
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
-from tqdm.autonotebook import tqdm
+from tqdm.auto import tqdm
 
 from .resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
 
@@ -50,6 +52,12 @@ pdb_df_columns = [
     "line_idx",
 ]
 
+PDB_OBSOLETE_URL = "https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat"
+
+ALPHAFOLD_DB_BASE_URL = "https://alphafold.ebi.ac.uk/files/"
+
+ESM_ATLAS_BASE_URL = "https://api.esmatlas.com/foldSequence/v"
+
 
 class ProteinGraphConfigurationError(Exception):
     """
@@ -73,9 +81,7 @@ def get_obsolete_mapping() -> Dict[str, str]:
     """
     obs_dict: Dict[str, str] = {}
 
-    response = urlopen(
-        "https://files.wwpdb.org/pub/pdb/data/status/obsolete.dat"
-    )
+    response = urlopen(PDB_OBSOLETE_URL)
     for line in response:
         entry = line.split()
         if len(entry) == 4:
@@ -87,7 +93,7 @@ def get_obsolete_mapping() -> Dict[str, str]:
     return obs_dict
 
 
-def read_fasta(file_path: str) -> Dict[str, str]:
+def read_fasta(file_path: str | Path) -> Dict[str, str]:
     """
     Reads a FASTA file and returns a dictionary mapping sequence names to
     their identifiers.
@@ -168,6 +174,49 @@ def download_pdb_multiprocessing(
     return results
 
 
+RCSB_DOWNLOAD_URL = "https://files.rcsb.org/download/"
+PDB_DOWNLOAD_SOURCES: Dict[str, Tuple[str, str]] = {
+    "pdb": (RCSB_DOWNLOAD_URL, ".pdb"),
+    "mmtf": ("https://mmtf.rcsb.org/v1.0/full/", ".mmtf.gz"),
+    "cif": (RCSB_DOWNLOAD_URL, ".cif.gz"),
+    "mmcif": (RCSB_DOWNLOAD_URL, ".cif.gz"),
+    "bcif": ("https://models.rcsb.org/", ".bcif.gz"),
+}
+"""Maps PDB download format to ``(base_url, file_extension)``."""
+
+
+def _download_with_retries(
+    download_url: str, output_path: Path, pdb_code: str, attempts: int = 3
+):
+    """Download ``download_url`` to ``output_path``, retrying transient errors.
+
+    A missing file (``HTTPError``) is logged and not retried.
+    """
+    transient_download_errors = (
+        ConnectionResetError,
+        RemoteDisconnected,
+        TimeoutError,
+        URLError,
+    )
+    for attempt in range(attempts):
+        try:
+            wget.download(download_url, out=str(output_path), bar=None)
+            return
+        except HTTPError:
+            log.warning(f"PDB {pdb_code} not found.")
+            return
+        except transient_download_errors as error:
+            if output_path.exists():
+                output_path.unlink()
+            if attempt == attempts - 1:
+                raise error
+            log.warning(
+                f"Download failed for {pdb_code} ({error}). Retrying "
+                f"({attempt + 2}/{attempts})..."
+            )
+            time.sleep(attempt + 1)
+
+
 def download_pdb(
     pdb_code: str,
     out_dir: Optional[Union[str, Path]] = None,
@@ -202,30 +251,17 @@ def download_pdb(
     :rtype: Path
     """
     pdb_code = pdb_code.lower()
-    if format == "pdb":
-        BASE_URL = "https://files.rcsb.org/download/"
-        extension = ".pdb"
-    elif format == "mmtf":
-        BASE_URL = "https://mmtf.rcsb.org/v1.0/full/"
-        extension = ".mmtf.gz"
-    elif format == "cif" or format == "mmcif":
-        BASE_URL = "https://files.rcsb.org/download/"
-        extension = ".cif.gz"
-    elif format == "bcif":
-        BASE_URL = "https://models.rcsb.org/"
-        extension = ".bcif.gz"
-    else:
+    if format not in PDB_DOWNLOAD_SOURCES:
         raise ValueError(
             f"Invalid format: {format}. Must be 'pdb', 'mmtf', '(mm)cif' or 'bcif'."
         )
+    BASE_URL, extension = PDB_DOWNLOAD_SOURCES[format]
 
     # Make output directory if it doesn't exist or set it to tempdir if None
-    if out_dir is not None:
-        out_dir = Path(out_dir)
-    else:
-        out_dir = Path(tempfile.TemporaryDirectory().name)
-
-    os.makedirs(Path(out_dir), exist_ok=True)
+    out_dir: Path = (
+        Path(out_dir) if out_dir is not None else Path(tempfile.mkdtemp())
+    )
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     if check_obsolete:
         obs_map = get_obsolete_mapping()
@@ -252,22 +288,17 @@ def download_pdb(
         return out_dir / f"{pdb_code}{extension}"
 
     # Download
-    try:
-        wget.download(
-            f"{BASE_URL}{pdb_code}{extension}",
-            out=str(out_dir / f"{pdb_code}{extension}"),
-            bar=None,
-        )
-    except HTTPError:
-        log.warning(f"PDB {pdb_code} not found.")
+    output_path = out_dir / f"{pdb_code}{extension}"
+    download_url = f"{BASE_URL}{pdb_code}{extension}"
+    _download_with_retries(download_url, output_path, pdb_code)
 
     # Check file exists
     if strict:
-        assert os.path.exists(
-            out_dir / f"{pdb_code}{extension}"
-        ), f"{pdb_code} download failed. Not found in {out_dir}"
+        assert os.path.exists(output_path), (
+            f"{pdb_code} download failed. Not found in {out_dir}"
+        )
     log.debug(f"{pdb_code} downloaded to {out_dir}")
-    return out_dir / f"{pdb_code}{extension}"
+    return output_path
 
 
 def get_protein_name_from_filename(path: str) -> str:
@@ -329,7 +360,7 @@ def compute_rgroup_dataframe(pdb_df: pd.DataFrame) -> pd.DataFrame:
 
 def download_alphafold_structure(
     uniprot_id: str,
-    version: int = 2,
+    version: int = 6,
     out_dir: str = ".",
     rename: bool = True,
     pdb: bool = True,
@@ -342,7 +373,7 @@ def download_alphafold_structure(
 
     :param uniprot_id: UniProt ID of desired protein.
     :type uniprot_id: str
-    :param version: Version of the structure to download
+    :param version: Version of the structure to download. Defaults to ``6``.
     :type version: int
     :param out_dir: string specifying desired output location. Default is pwd.
     :type out_dir: str
@@ -361,15 +392,19 @@ def download_alphafold_structure(
     :return: path to output. Tuple if several outputs specified.
     :rtype: Union[str, Tuple[str, str]]
     """
-    BASE_URL = "https://alphafold.ebi.ac.uk/files/"
+
     uniprot_id = uniprot_id.upper()
 
     if not mmcif and not pdb:
         raise ValueError("Must specify either mmcif or pdb.")
     if mmcif:
-        query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.cif"
+        query_url = (
+            f"{ALPHAFOLD_DB_BASE_URL}AF-{uniprot_id}-F1-model_v{version}.cif"
+        )
     if pdb:
-        query_url = f"{BASE_URL}AF-{uniprot_id}-F1-model_v{version}.pdb"
+        query_url = (
+            f"{ALPHAFOLD_DB_BASE_URL}AF-{uniprot_id}-F1-model_v{version}.pdb"
+        )
 
     try:
         structure_filename = wget.download(query_url, out=out_dir)
@@ -391,7 +426,7 @@ def download_alphafold_structure(
     log.debug(f"Downloaded AlphaFold PDB file for: {uniprot_id}")
     if aligned_score:
         score_query = (
-            BASE_URL
+            ALPHAFOLD_DB_BASE_URL
             + "AF-"
             + uniprot_id
             + f"-F1-predicted_aligned_error_v{version}.json"
@@ -421,6 +456,55 @@ def three_to_one_with_mods(res: str) -> str:
     return RESI_THREE_TO_1[res]
 
 
+def sequence_positions(pdb_df: pd.DataFrame) -> np.ndarray:
+    """Returns the position in sequence of each row's residue.
+
+    Residues are taken in order of appearance in each chain. Each one is
+    placed after the previous one by the difference in residue numbers, but
+    at least one, so residues that differ only by insertion code are distinct
+    positions and gaps in numbering (missing residues) are kept. E.g.
+    ``52, 52A, 53`` are at ``52, 53, 54`` and ``100, 100A-100F, 101`` puts
+    ``101`` seven after ``100``. Insertions before their residue (e.g.
+    ``1B, 1A, 1``) work the same way. Atoms of a residue share its position.
+
+    :param pdb_df: PDB DataFrame.
+    :type pdb_df: pd.DataFrame
+    :return: Position of each row's residue.
+    :rtype: np.ndarray
+    """
+    keys = ["chain_id", "residue_number"]
+    df = pdb_df[keys].copy()
+    if "insertion" in pdb_df.columns:
+        df["insertion"] = pdb_df["insertion"].fillna("")
+        keys.append("insertion")
+    residues = df.drop_duplicates()
+    chains = residues["chain_id"]
+    step = residues.groupby(chains)["residue_number"].diff().clip(lower=1)
+    step = step.fillna(residues["residue_number"])  # first residue of chains
+    residues = residues.assign(position=step.groupby(chains).cumsum())
+    positions = df.merge(residues, on=keys, how="left")["position"]
+    return positions.to_numpy().astype(int)
+
+
+def pdb_charge_to_numeric(charge: pd.Series) -> pd.Series:
+    """Converts PDB formal charges to numbers.
+
+    PDB files write charges as a digit followed by a sign (e.g. ``"2+"``,
+    ``"1-"``), which is how ``cpdb`` returns them. Signed (``"-1"``) values
+    are also accepted. Blank or invalid charges become ``NaN``.
+
+    :param charge: Charge column of a PDB DataFrame.
+    :type charge: pd.Series
+    :return: Charges as floats.
+    :rtype: pd.Series
+    """
+    if pd.api.types.is_numeric_dtype(charge):
+        return charge.astype(float)
+    charge = charge.astype(str).str.strip()
+    charge = charge.str.replace(r"^(\d+)([+-])$", r"\2\1", regex=True)
+    return pd.to_numeric(charge, errors="coerce").astype(float)
+
+
 def save_graph_to_pdb(
     g: nx.Graph,
     path: str,
@@ -442,33 +526,7 @@ def save_graph_to_pdb(
     :param gz: Whether to gzip the file. Defaults to ``False``.
     :type gz: bool
     """
-    ppd = PandasPdb()
-
-    df = g.graph["pdb_df"].copy()
-    # format charge correctly
-    df.charge = pd.to_numeric(df.charge, errors="coerce")
-
-    # Add blank columns
-    blank_cols = [
-        "blank_1",
-        "blank_2",
-        "blank_3",
-        "blank_4",
-        "segment_id",
-    ]
-    for col in blank_cols:
-        if col not in df.columns:
-            df[col] = ""
-    df["line_idx"] = list(range(1, len(df) + 1))
-    df = df[pdb_df_columns]
-    atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
-    hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
-
-    if atoms:
-        ppd.df["ATOM"] = atom_df
-    if hetatms:
-        ppd.df["HETATM"] = hetatm_df
-    ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
+    save_pdb_df_to_pdb(g.graph["pdb_df"], path, gz, atoms, hetatms)
     log.debug(f"Successfully saved graph to {path}")
 
 
@@ -489,14 +547,21 @@ def save_pdb_df_to_pdb(
     :type gz: bool
     """
     df = df.copy()
-    # format charge correctly
-    df.charge = pd.to_numeric(df.charge, errors="coerce")
+    # biopandas writes charges as floats (" 2.0"), not the PDB "2+", so append
+    # the PDB-formatted charge to the element symbol and leave charge blank.
+    charge = pdb_charge_to_numeric(df.charge)
+    sign = np.where(charge > 0, "+", "-")
+    charge = (charge.abs().astype("Int64").astype(str) + sign).where(
+        charge.fillna(0) != 0, ""
+    )
+    df.element_symbol = df.element_symbol.fillna("").str.rjust(2) + charge
+    df.charge = np.nan
     df.alt_loc = df.alt_loc.fillna(" ")
     blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
     for col in blank_cols:
         if col not in df.columns:
             df[col] = ""
-    df["line_idx"] = list(range(1, len(df) + 1))
+    df["line_idx"] = range(1, len(df) + 1)
     df = df[pdb_df_columns]
 
     atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
@@ -533,27 +598,7 @@ def save_rgroup_df_to_pdb(
     :param gz: Whether to gzip the file. Defaults to ``False``.
     :type gz: bool
     """
-    ppd = PandasPdb()
-    df = g.graph["rgroup_df"].copy()
-
-    # format charge correctly
-    df.charge = pd.to_numeric(df.charge, errors="coerce")
-
-    blank_cols = ["blank_1", "blank_2", "blank_3", "blank_4", "segment_id"]
-    for col in blank_cols:
-        if col not in df.columns:
-            df[col] = [""] * len(df)
-    df["line_idx"] = list(range(1, len(df) + 1))
-    df = df[pdb_df_columns]
-
-    atom_df = filter_dataframe(df, "record_name", ["ATOM"], boolean=True)
-    hetatm_df = filter_dataframe(df, "record_name", ["HETATM"], boolean=True)
-
-    if atoms:
-        ppd.df["ATOM"] = atom_df
-    if hetatms:
-        ppd.df["HETATM"] = hetatm_df
-    ppd.to_pdb(path=path, records=None, gz=gz, append_newline=True)
+    save_pdb_df_to_pdb(g.graph["rgroup_df"], path, gz, atoms, hetatms)
     log.debug(f"Successfully saved rgroup data to {path}")
 
 
@@ -580,7 +625,7 @@ def esmfold(
     --------
     self
     """
-    URL = f"https://api.esmatlas.com/foldSequence/v{version}/{format}/"
+    URL = f"{ESM_ATLAS_BASE_URL}{version}/{format}/"
 
     headers: Dict[str, str] = {
         "Content-Type": "application/x-www-form-urlencoded",

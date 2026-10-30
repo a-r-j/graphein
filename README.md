@@ -1,15 +1,14 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/a-r-j/graphein-binder/master?urlpath=git-pull%3Frepo%3Dhttps%253A%252F%252Fgithub.com%252Fa-r-j%252Fgraphein%26urlpath%3Dlab%252Ftree%252Fgraphein%252Fnotebooks%26branch%3Dmaster)
 [![PyPI version](https://badge.fury.io/py/graphein.svg)](https://badge.fury.io/py/graphein)
 ![supported python versions](https://img.shields.io/pypi/pyversions/graphein)
-[![Docs](https://assets.readthedocs.org/static/projects/badges/passing-flat.svg)](http://www.graphein.ai)
+[![Docs](https://img.shields.io/website?url=https%3A%2F%2Fgraphein.ai&label=docs)](https://graphein.ai)
 [![DOI:10.1101/2020.07.15.204701](https://zenodo.org/badge/DOI/10.1101/2020.07.15.204701.svg)](https://doi.org/10.1101/2020.07.15.204701)
-[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![CodeFactor](https://www.codefactor.io/repository/github/a-r-j/graphein/badge)](https://www.codefactor.io/repository/github/a-r-j/graphein)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=alert_status)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=bugs)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=a-r-j_graphein&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=a-r-j_graphein)
-[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/graphein)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
@@ -37,7 +36,7 @@ This package provides functionality for producing geometric representations of p
 | 1.7.0 | [FoldComp Datasets](http://graphein.ai/notebooks/foldcomp.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/foldcomp.ipynb)   |
 | 1.7.0 | [Creating Datasets from the PDB](http://graphein.ai/notebooks/creating_datasets_from_the_pdb.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/creating_datasets_from_the_pdb.ipynb)   |
 | 1.6.0 | [Protein Tensor Module](http://graphein.ai/notebooks/protein_tensors.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/protein_tensors.ipynb)   |
-| 1.5.0 | [Protein Graph Creation from AlphaFold2!](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) |
+| 1.5.0 | [Protein Graph Creation from AlphaFold2!](http://graphein.ai/notebooks/alphafold_protein_graph_tutorial.html)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/alphafold_protein_graph_tutorial.ipynb) |
 | 1.5.0 | [RNA Graph Construction from Dotbracket notation](http://graphein.ai/modules/graphein.rna.html) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/rna_graph_tutorial.ipynb) |
 | 1.4.0 | [Constructing molecular graphs](http://graphein.ai/notebooks/molecule_tutorial.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/molecule_tutorial.ipynb)   |
 | 1.3.0 | [Ready-to-go Dataloaders for PyTorch Geometric](http://graphein.ai/notebooks/dataloader_tutorial.html)  |  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/dataloader_tutorial.ipynb)   |
@@ -54,7 +53,7 @@ Graphein provides both a programmatic API and a command-line interface for const
 
 ### CLI
 
-Graphein configs can be specified as `.yaml` files to batch process graphs from the commandline.
+Graphein configs can be specified as `.yaml` files to batch process graphs from the command line.
 
 [Docs](http://graphein.ai/getting_started/usage.html)
 
@@ -67,7 +66,7 @@ graphein -c config.yaml -p path/to/pdbs -o path/to/output
 |   |   |   |
 |---|---|---|
 [Tutorial (Residue-level)](http://graphein.ai/notebooks/residue_graphs.html) | [Tutorial (Atomic)](http://graphein.ai/notebooks/atom_graph_tutorial.html) | [Docs](http://graphein.ai/modules/graphein.protein.html#module-graphein.protein.graphs)
-| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) | [![Open In Colab(https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/atom_graph_tutorial.ipynb) | |
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/residue_graphs.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/atom_graph_tutorial.ipynb) | |
 
 ```python
 from graphein.protein.config import ProteinGraphConfig
@@ -105,12 +104,13 @@ g = construct_graph(config=config, path=fp)
 from graphein.protein.config import ProteinMeshConfig
 from graphein.protein.meshes import create_mesh
 
+config = ProteinMeshConfig()
 verts, faces, aux = create_mesh(pdb_code="3eiy", config=config)
 ```
 
 ### Creating Molecular Graphs
 
-Graphein can create molecular graphs from smiles strings as well as `.sdf`, `.mol2`, and `.pdb` files
+Graphein can create molecular graphs from SMILES strings as well as `.sdf`, `.mol2`, and `.pdb` files.
 
 |   |   |
 |---|---|
@@ -121,8 +121,8 @@ Graphein can create molecular graphs from smiles strings as well as `.sdf`, `.mo
 from graphein.molecule.config import MoleculeGraphConfig
 from graphein.molecule.graphs import construct_graph
 
-g = create_graph(smiles="CC(=O)OC1=CC=CC=C1C(=O)O", config=config)
-
+config = MoleculeGraphConfig()
+g = construct_graph(smiles="CC(=O)OC1=CC=CC=C1C(=O)O", config=config)
 ```
 
 ### Creating an RNA Graph
@@ -168,6 +168,8 @@ g = compute_ppi_graph(config=config,
 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/a-r-j/graphein/blob/master/notebooks/grn_tutorial.ipynb) |
 
 ```python
+from functools import partial
+
 from graphein.grn.config import GRNGraphConfig
 from graphein.grn.graphs import compute_grn_graph
 from graphein.grn.edges import add_regnetwork_edges, add_trrust_edges
@@ -188,7 +190,7 @@ g = compute_grn_graph(
 
 ### Pip
 
-The simplest install is via pip. *N.B this does not install ML/DL libraries which are required for conversion to their data formats and for generating protein structure meshes with PyTorch 3D.* [Further details](http://graphein.ai//getting_started/installation.html)
+The simplest install is via pip. *N.B. this does not install ML/DL libraries which are required for conversion to their data formats and for generating protein structure meshes with PyTorch 3D.* [Further details](http://graphein.ai/getting_started/installation.html)
 
 ```bash
 pip install graphein # For base install
@@ -196,6 +198,21 @@ pip install graphein[extras] # For additional featurisation dependencies
 pip install graphein[dev] # For dev dependencies
 pip install graphein[all] # To get the lot
 ```
+
+### uv (recommended for development)
+
+Install [uv](https://docs.astral.sh/uv/), then from a clone of this repository:
+
+```bash
+git clone https://www.github.com/a-r-j/graphein
+cd graphein
+uv sync                          # base install (editable)
+uv sync --extra extras           # optional featurisation dependencies
+uv sync --extra dev --extra extras  # development environment
+uv sync --all-extras             # dev + extras + docs
+```
+
+Run commands inside the project environment with `uv run`, e.g. `uv run pytest`.
 
 However, there are a number of (optional) utilities ([DSSP](https://anaconda.org/salilab/dssp), [PyMol](https://pymol.org/2/), [GetContacts](https://getcontacts.github.io/)) that are not available via PyPI:
 
@@ -210,7 +227,8 @@ git clone https://github.com/getcontacts/getcontacts
 # Add folder to PATH
 echo "export PATH=\$PATH:`pwd`/getcontacts" >> ~/.bashrc
 source ~/.bashrc
-To test the installation, run:
+
+# To test the installation, run:
 
 cd getcontacts/example/5xnd
 get_dynamic_contacts.py --topology 5xnd_topology.pdb \
@@ -227,7 +245,7 @@ The dev environment includes GPU Builds (CUDA 11.1) for each of the deep learnin
 git clone https://www.github.com/a-r-j/graphein
 cd graphein
 conda env create -f environment-dev.yml
-pip install -e .
+uv sync --all-extras
 ```
 
 A lighter install can be performed with:
@@ -236,12 +254,12 @@ A lighter install can be performed with:
 git clone https://www.github.com/a-r-j/graphein
 cd graphein
 conda env create -f environment.yml
-pip install -e .
+uv sync
 ```
 
 ### Dockerfile
 
-We provide two `docker-compose` files for CPU (`docker-compose.cpu.yml`) and GPU usage (`docker-compose.yml`) locally. For GPU usage please ensure that you have [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) installed. Ensure that you install the locally mounted volume after entering the container (`pip install -e .`). This will also setup the dev environment locally.
+We provide two `docker-compose` files for CPU (`docker-compose.cpu.yml`) and GPU usage (`docker-compose.yml`) locally. For GPU usage please ensure that you have [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) installed. Ensure that you install the locally mounted volume after entering the container (`uv sync --all-extras` or `pip install -e ".[dev,extras]"`). This will also set up the dev environment locally.
 
 To build (GPU) run:
 

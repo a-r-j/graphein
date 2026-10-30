@@ -192,7 +192,7 @@ def esm_embed_fasta(
 
     cmd = f"esm-extract {model} {fasta} {out_dir} "
     if repr_layers is not None:
-        cmd += f"--repr_layers {' '.join([str(l) for l in repr_layers])} "
+        cmd += f"--repr_layers {' '.join(map(str, repr_layers))} "
     if include is not None:
         cmd += f"--include {' '.join(include)} "
     if truncation_seq_length is not None:

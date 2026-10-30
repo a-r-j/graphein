@@ -1,39 +1,166 @@
-# Sanely format your code with no heated arguments! :)
-[tool.black]
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | env
-  | venv
-)/
-'''
-include = '\.pyi?$'
-line-length = 79
-target-version = ['py38']
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-# A tool for automatically formatting imports correctly!
-[tool.isort]
-ensure_newline_before_comments = true
-force_grid_wrap = 0
-include_trailing_comma = true
-line_length = 79 # match our custom config above
-multi_line_output = 3
-src_paths = ["graphein", "test"]
-float_to_top = true
-use_parentheses = true
+[project]
+name = "graphein"
+dynamic = ["version"]
+description = "Protein & Interactomic Graph Construction for Machine Learning"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "Arian Jamasb", email = "arian@jamasb.io" }]
+keywords = ["bioinformatics", "graph", "machine-learning", "protein"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "pandas",
+    "biopandas>=0.5.1",
+    "biopython",
+    "bioservices>=1.10.0",
+    "cpdb-protein>=0.3.1",
+    "cython",
+    "deepdiff",
+    "loguru",
+    "looseversion",
+    "matplotlib>=3.4.3",
+    "multipledispatch",
+    "networkx",
+    "numpy<2",
+    "plotly",
+    "pydantic",
+    "rcsb-api>=1.4.0",
+    "rich",
+    "rich-click",
+    "seaborn",
+    "pyyaml!=6.0.0,!=5.4.0,!=5.4.1",
+    "scikit-learn",
+    "scipy>=1.8",
+    # bioservices<1.15 imports pkg_resources, removed in setuptools 81. bioservices>=1.15
+    # drops it but pins lxml<6, which reintroduces CVE-2026-41066.
+    "setuptools>=78.1.1,<81",
+    "tqdm",
+    "wget",
+    "xarray",
+    "jaxtyping",
+]
+
+[project.optional-dependencies]
+extras = [
+    "propy3",
+    "pyaaisc",
+    "mpl_chord_diagram==0.3.2",
+    "rdkit",
+    "selfies",
+    "smilite",
+    "einops",
+    "foldcomp",
+    "nest_asyncio",
+]
+dev = [
+    "hypothesis",
+    "interrogate",
+    "nbstripout",
+    "nbval",
+    "pandoc",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "ruff",
+]
+docs = [
+    "furo",
+    "nbsphinx",
+    "nbsphinx-link",
+    "sphinx-copybutton",
+    "m2r2",
+    "nbstripout",
+    "pandoc",
+    "pydocstyle",
+    "sphinx",
+    "sphinx-inline-tabs",
+    "sphinxext-opengraph",
+    "sphinxcontrib-gtagjs",
+    "ipython",
+    "watermark",
+    "sphinx_codeautolink",
+]
+all = [
+    "propy3",
+    "pyaaisc",
+    "mpl_chord_diagram==0.3.2",
+    "rdkit",
+    "selfies",
+    "smilite",
+    "einops",
+    "foldcomp",
+    "nest_asyncio",
+    "hypothesis",
+    "interrogate",
+    "nbstripout",
+    "nbval",
+    "pandoc",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "ruff",
+]
+
+[project.urls]
+Homepage = "https://github.com/a-r-j/graphein"
+Documentation = "https://graphein.ai/"
+Repository = "https://github.com/a-r-j/graphein"
+Issues = "https://github.com/a-r-j/graphein/issues"
+Changelog = "https://github.com/a-r-j/graphein/blob/master/CHANGELOG.md"
+
+[project.scripts]
+graphein = "graphein.cli:main"
+
+[tool.hatch.version]
+path = "graphein/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["graphein"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/graphein",
+    "/README.md",
+    "/LICENSE",
+]
+
+[tool.uv]
+package = true
+
+# Formatting, import sorting and linting
+[tool.ruff]
+line-length = 79
+extend-exclude = ["*.ipynb", "*.md", "env"]
+
+[tool.ruff.lint]
+# Syntax errors, invalid comparisons/statements, import sorting and
+# NumPy 2.0 deprecations. ponytail: full pyflakes ("F") reports ~230
+# existing issues; enable it once those are cleaned up.
+select = ["E9", "F63", "F7", "I", "NPY201"]
+# jaxtyping shape strings (e.g. "residues 37 3") aren't forward annotations
+ignore = ["F722"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["graphein"]
 
 # Can reinstate later: Measures docstring coverage,
 # super good for guaranteeing that there's docs!
 [tool.interrogate]
-exclude = ["setup.py", "docs", "build", "nbconvert_config.py"]
+exclude = ["docs", "build", "nbconvert_config.py"]
 fail-under = 77
 ignore-init-method = true
 ignore-init-module = true
@@ -42,9 +169,6 @@ ignore-private = false
 ignore-semiprivate = false
 quiet = false
 verbose = 2
-
-[tool.ruff.lint]
-select = ["NPY201"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

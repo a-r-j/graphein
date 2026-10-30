@@ -22,55 +22,43 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11"]
-        torch: [1.13.0, 2.1.0, 2.2.0, 2.3.0, 2.4.0]
-    # https://github.com/marketplace/actions/setup-miniconda#use-a-default-shell
+        python-version: ["3.11", "3.12"]
+        torch: [2.6.0, 2.7.0, 2.8.0]
     defaults:
       run:
         shell: bash -l {0}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-        # See: https://github.com/marketplace/actions/setup-miniconda
-      - name: Setup miniconda
-        uses: conda-incubator/setup-miniconda@v3
+        uses: actions/checkout@v4
+      - name: Setup micromamba
+        uses: mamba-org/setup-micromamba@v2
         with:
-          auto-update-conda: true
-          miniforge-variant: Mambaforge
-          channels: "conda-forge, salilab, pytorch, pyg"
-          python-version: ${{ matrix.python-version }}
-          use-mamba: true
-      - name: Install setuptools
-        run: pip install setuptools==69.5.1
-      - name: Install Boost 1.7.3 (for DSSP)
-        run: conda install -c anaconda libboost=1.73.0
+          micromamba-version: "latest"
+          environment-name: test_env
+          init-shell: bash
+          create-args: python=${{matrix.python-version}}
+          post-cleanup: "all"
       - name: Install DSSP
-        run: conda install dssp -c salilab
-      - name: Install mmseqs
-        run: mamba install -c conda-forge -c bioconda mmseqs2
-      - name: Install PyTorch (1.13.0)
-        if: matrix.torch == '1.13.0'
-        run: pip install torch==${{matrix.torch}}+cpu --extra-index-url https://download.pytorch.org/whl/cpu
-      - name: Install PyTorch (2.0+)
-        if: matrix.torch != '1.13.0'
-        run: pip install torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
+        run: micromamba install dssp -c salilab
+      - name: Install Boost 1.7.3 (for DSSP)
+        run: micromamba install -c anaconda libboost=1.73.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Install Graphein and dependencies
+        run: uv sync --locked --extra dev --extra extras --extra docs
+      - name: Install PyTorch
+        run: uv pip install torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
       - name: Install PyG
-        #run: mamba install -c pyg pyg
-        run: pip install torch_geometric
+        run: uv pip install --no-build torch_geometric==2.7.0
       - name: Install torch-cluster
-        #run: mamba install pytorch-cluster -c pyg
-        run: pip install torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
-      - name: Install BLAST
-        run: sudo apt install ncbi-blast+
-      - name: Install Graphein
-        run: pip install -e .
-      - name: Install Extras
-        run: pip install -r .requirements/extras.in
-      - name: Install Dev Dependencies
-        run: pip install -r .requirements/dev.in
-      - name: Install doc dependencies
-        run: pip install -r .requirements/docs.in
+        run: uv pip install torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
+      # mmseqs2 via apt: the conda libboost pin above would uninstall it
+      - name: Install BLAST and MMseqs2
+        run: sudo apt install ncbi-blast+ mmseqs2
       - name: Run unit tests and generate coverage report
-        run: pytest .
+        run: uv run --no-sync pytest .
       - name: Test notebook execution
-        run: pytest --nbval-lax notebooks/ --nbval-current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/grn_tutorial.ipynb"
+        run: uv run --no-sync pytest --nbval-lax notebooks/ --nbval-current-env --ignore-glob="notebooks/dataloader_tutorial.ipynb" --ignore-glob="notebooks/datasets_and_dataloaders.ipynb" --ignore-glob="notebooks/foldcomp.ipynb" --ignore-glob="notebooks/grn_tutorial.ipynb"

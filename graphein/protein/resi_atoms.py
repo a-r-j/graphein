@@ -14,7 +14,6 @@ We also include mappings of covalent radii and bond lengths for the amino acids 
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-
 from typing import Dict, List, Union
 
 import numpy as np

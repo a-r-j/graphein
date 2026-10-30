@@ -33,7 +33,9 @@ def plot_ppi_graph(
             (
                 "r"
                 if g[u][v]["kind"] == {"string"}
-                else "b" if g[u][v]["kind"] == {"biogrid"} else "y"
+                else "b"
+                if g[u][v]["kind"] == {"biogrid"}
+                else "y"
             )
             for u, v in g.edges()
         ]
@@ -115,7 +117,6 @@ def plotly_ppi_graph(
         data=traces,
         layout=go.Layout(
             title=title,
-            titlefont_size=16,
             showlegend=False,
             width=width,
             height=height,
@@ -165,7 +166,6 @@ def get_node_trace(
                 thickness=15,
                 title="Node Connections",
                 xanchor="left",
-                titleside="right",
             ),
             line_width=2,
         ),
@@ -215,37 +215,3 @@ def get_edge_trace(
         )
         traces.append(edge_trace)
     return traces
-
-
-if __name__ == "__main__":
-    from functools import partial
-
-    from graphein.ppi.config import PPIGraphConfig
-    from graphein.ppi.edges import add_biogrid_edges, add_string_edges
-    from graphein.ppi.graphs import compute_ppi_graph
-
-    config = PPIGraphConfig()
-
-    protein_list = [
-        "CDC42",
-        "CDK1",
-        "KIF23",
-        "PLK1",
-        "RAC2",
-        "RACGAP1",
-        "RHOA",
-        "RHOB",
-    ]
-
-    g = compute_ppi_graph(
-        protein_list=protein_list,
-        edge_construction_funcs=[
-            partial(add_string_edges),
-            partial(add_biogrid_edges),
-        ],
-    )
-
-    plot_ppi_graph(g)
-    plotly_ppi_graph(g)
-
-# %%

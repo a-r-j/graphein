@@ -8,7 +8,6 @@ sudo apt install ncbi-blast+
 Otherwise, please see: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
 """
 
-import contextlib
 import os
 import random
 import sys
@@ -52,7 +51,7 @@ def build_fasta_file_from_graphs(
 
 def get_seq_records(
     filename,
-    alphabet=None,  # alphabet=generic_protein,
+    alphabet=None,
     check_sequences=False,
     file_format="fasta",
     return_as_dictionary=False,
@@ -62,7 +61,9 @@ def get_seq_records(
 
     :param filename: File with sequences [fasta in our case].
     :type filename: str
-    :param alphabet: alphabet to be used.
+    :param alphabet: String of allowed sequence letters, e.g.
+        ``"ACDEFGHIKLMNPQRSTVWY"``. Used when ``check_sequences=True``.
+    :type alphabet: Optional[str]
     :param check_sequences: Sanity check on the sequences.
     :type check_sequences: bool
     :param file_format: We use fasta format (don't change this).
@@ -86,21 +87,17 @@ def get_seq_records(
         )
         check_sequences = False
     with open(filename, "r") as handle:
-        records = list(SeqIO.parse(handle, file_format, alphabet=alphabet))
+        records = list(SeqIO.parse(handle, file_format))
     del handle
     if check_sequences:
         for record in records:
             if record.seq[-1] == "*":
                 record.seq = record.seq[:-1]
-                if alphabet is not None:
-                    good = False
-                    with contextlib.suppress(ValueError):
-                        good = _verify_alphabet(record.seq)
-                    if not good:
-                        sys.stderr.write(
-                            f"WARNING in {get_seq_records.__name__} sequence {record.seq.id} from file "
-                            f"{filename} is not compatible with declared alphabet {str(alphabet)}\n"
-                        )
+            if not set(record.seq) <= set(alphabet):
+                sys.stderr.write(
+                    f"WARNING in {get_seq_records.__name__} sequence {record.id} from file "
+                    f"{filename} is not compatible with declared alphabet {alphabet}\n"
+                )
     return SeqIO.to_dict(records) if return_as_dictionary else records
 
 
@@ -137,10 +134,11 @@ def create_pairs_for_clustering(
     rec = get_seq_records(fasta_file)
     # blast each sequence on the database to get the identity pairs
     pairs = []
+    seen_pairs = set()
     corresponding_identities = []
     for s in rec:
-        pairs += [(s.id, s.id)]
-        corresponding_identities += [100.0]
+        pairs.append((s.id, s.id))
+        corresponding_identities.append(100.0)
         b_res = blast(
             s,
             fasta_file,
@@ -168,12 +166,11 @@ def create_pairs_for_clustering(
                 )  # maximum identity between different possible alignments
                 if not 0 <= max_id <= 100:
                     print(f"Max_id problem: {max_id}, {k}, {s.id}")
-                if (
-                    max_id > seq_id_low_thresh
-                    and frozenset([k, s.id]) not in pairs
-                ):
-                    pairs += [frozenset([s.id, k])]
-                    corresponding_identities += [max_id]
+                pair = frozenset([s.id, k])
+                if max_id > seq_id_low_thresh and pair not in seen_pairs:
+                    seen_pairs.add(pair)
+                    pairs.append(pair)
+                    corresponding_identities.append(max_id)
         else:
             b_res = process_blast_results(
                 b_res,
@@ -186,23 +183,17 @@ def create_pairs_for_clustering(
                 if p[0] == s.id:
                     continue  # we added this manually at the beginning
                 if p[-1] > seq_id_low_thresh:
-                    pairs += [frozenset([s.id, p[0]])]
-                    corresponding_identities += [p[-1]]
+                    pairs.append(frozenset([s.id, p[0]]))
+                    corresponding_identities.append(p[-1])
 
-    if out_file is not None:
-        out = open(out_file, "w")
     done = {}
-    for j, p in enumerate(pairs):
-        if out_file is not None:
+    with open(out_file, "w") as out:
+        for p, identity in zip(pairs, corresponding_identities):
             if p in done:
                 continue
             ff = list(p)
-            out.write(
-                "%s\t%s\t%lf\n" % (ff[0], ff[1], corresponding_identities[j])
-            )
-        done[p] = corresponding_identities[j]
-    if out_file is not None:
-        out.close()
+            out.write("%s\t%s\t%lf\n" % (ff[0], ff[1], identity))
+            done[p] = identity
     if delete_blast_databases_when_done:
         os.system(f"rm -f {fasta_file}.phr {fasta_file}.pin {fasta_file}.psq")
     return done
@@ -315,7 +306,7 @@ def blast(
             tmp_folder += "/"
         if delete_blast_file and tmp_folder not in blast_filename:
             blast_filename = tmp_folder + blast_filename
-    if type(sequence) is not str:  # we assume is a Seq object
+    if not isinstance(sequence, str):  # we assume is a Seq object
         sequence_name = sequence.id
         sequence = str(sequence.seq)
     if blast_path != "" and not os.path.isfile(
@@ -383,15 +374,15 @@ def blast(
             + " -num_threads "
             + str(n_cpu)
         )
-    resultf = open(blast_filename, mode="r").read().splitlines()
+    with open(blast_filename) as f:
+        resultf = f.read().splitlines()
 
-    results = []
-    if len(resultf) == 0:
+    if not resultf:
         return None
+    results = []
     for line in resultf:
         tmp = line.split("\t")
-        numb_list = [tmp[0]] + list(map(lambda x: float(x), tmp[1:]))
-        results.append(numb_list)
+        results.append([tmp[0]] + [float(x) for x in tmp[1:]])
     if delete_blast_file:
         os.system("rm -f " + blast_filename)
     os.system("rm -f " + tmp_folder + "sequence_temp.txt")
@@ -479,14 +470,11 @@ def generate_random_sets(
     :param early_break: if True, break after a suitable combination of training-test set is generated to feed the model
     :return:
     """
-    if type(clusters) is str and os.path.isfile(clusters):
-        clusters = open(clusters, mode="r").read().splitlines()
-        clusters = [cl.split() for cl in clusters]
-    num_ids = 0
-    c_sizes = []
-    for c in clusters:
-        c_sizes += [len(c)]
-        num_ids += len(c)
+    if isinstance(clusters, str) and os.path.isfile(clusters):
+        with open(clusters) as f:
+            clusters = [cl.split() for cl in f.read().splitlines()]
+    c_sizes = [len(c) for c in clusters]
+    num_ids = sum(c_sizes)
     print(f"{num_ids} ids in {len(clusters)} clusters")
     random.seed(a=42)  # for reproducibility
     n = 0
@@ -504,7 +492,7 @@ def generate_random_sets(
                     cl_id = int(random.random() * len(clusters))
                     while cl_id in in_other_tests:
                         cl_id = int(random.random() * len(clusters))
-                    in_other_tests += [cl_id]
+                    in_other_tests.append(cl_id)
                     if len(in_other_tests) == len(clusters):
                         print(
                             f"\nWARNING in {generate_random_sets.__name__} we have already generated test files"
@@ -512,16 +500,17 @@ def generate_random_sets(
                             f"Starting from {n} included...\n"
                         )
                         in_other_tests = []
-                    ids_in_test += [cl_id]
+                    ids_in_test.append(cl_id)
                     for idt in clusters[cl_id]:
-                        print(f"{str(idt)}", file=test)
+                        print(idt, file=test)
                         labs_in_test.append(idt)
                     test_rel_size += 1.0 * c_sizes[cl_id] / float(num_ids)
                     seq_in_test += c_sizes[cl_id]
-                for j in range(len(clusters)):
-                    if j not in ids_in_test:
-                        for idt in clusters[j]:
-                            print(f"{str(idt)}", file=train)
+                ids_in_test_set = set(ids_in_test)
+                for j, cluster in enumerate(clusters):
+                    if j not in ids_in_test_set:
+                        for idt in cluster:
+                            print(idt, file=train)
                 print(
                     f"Generated set {train_set_name} and {test_set_name} - {seq_in_test} sequences"
                     f" for {len(ids_in_test)} clusters in test, among ({num_ids}, {len(clusters)}) in total."

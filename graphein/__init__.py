@@ -12,7 +12,7 @@ from graphein.utils.utils import *
 from .testing import *
 
 __author__ = "Arian Jamasb <arian@jamasb.io>"
-__version__ = "1.7.7"
+__version__ = "1.7.8"
 
 
 logger.configure(
