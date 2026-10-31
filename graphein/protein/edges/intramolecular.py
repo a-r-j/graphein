@@ -16,7 +16,7 @@ import networkx as nx
 import pandas as pd
 from loguru import logger as log
 
-from graphein.protein.utils import download_pdb
+from graphein.protein.utils import download_pdb, sequence_positions
 
 CONTACTS_FILE_SUFFIX = "_contacts.tsv"
 
@@ -31,6 +31,8 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     log.debug("Adding peptide bonds to graph")
+    pdb_df = G.graph["pdb_df"]
+    positions = dict(zip(pdb_df["node_id"], sequence_positions(pdb_df)))
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
         # Find chain residues
@@ -47,11 +49,10 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             cond_1 = (
                 residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
             )
-            # Asserts residue numbers are adjacent
+            # Asserts residues are adjacent in sequence
             cond_2 = (
                 abs(
-                    residue[1]["residue_number"]
-                    - chain_residues[i + 1][1]["residue_number"]
+                    positions[residue[0]] - positions[chain_residues[i + 1][0]]
                 )
                 == 1
             )

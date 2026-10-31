@@ -635,3 +635,26 @@ def test_weighted_chain_graph_does_not_modify_input():
     before = {(u, v): set(d["kind"]) for u, v, d in g.edges(data=True)}
     compute_chain_graph(g, return_weighted_graph=True)
     assert {(u, v): d["kind"] for u, v, d in g.edges(data=True)} == before
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        PDB_DATA_PATH,  # chains A-D in order
+        # chains L, H, A (not in alphabetical order) and insertion codes
+        Path(__file__).resolve().parent / "test_data" / "input_pdb_cryst1.pdb",
+    ],
+)
+def test_centroids_match_their_residue(path):
+    """Each node's centroid is the mean of its own residue's atoms."""
+    config = ProteinGraphConfig(granularity="centroids")
+    g = construct_graph(config=config, path=str(path))
+    atoms = read_pdb_to_dataframe(path=str(path))
+    atoms = atoms.loc[atoms["record_name"] == "ATOM"]
+    keys = ["chain_id", "residue_number", "insertion"]
+    expected = atoms.groupby(keys)[["x_coord", "y_coord", "z_coord"]].mean()
+    nodes = g.graph["pdb_df"].set_index(keys)
+    np.testing.assert_allclose(
+        np.stack([g.nodes[n]["coords"] for n in nodes["node_id"]]),
+        expected.loc[nodes.index].to_numpy(),
+    )

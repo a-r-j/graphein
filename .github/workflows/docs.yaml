@@ -1,0 +1,66 @@
+name: docs
+
+# Builds the Sphinx docs on every PR and deploys them to GitHub Pages
+# (graphein.ai) on pushes to master.
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel superseded PR builds; let master builds and deployments finish.
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      # nbsphinx converts the notebooks with pandoc
+      - name: Install pandoc
+        run: sudo apt-get install -y pandoc
+      - name: Install Graphein and dependencies
+        run: uv sync --locked --extra docs --extra extras
+      # autodoc imports every module: graphein.ml and graphein.protein.tensor
+      # need torch and PyG, and foldcomp_dataset needs lightning
+      - name: Install PyTorch
+        run: uv pip install torch==2.8.0 -f https://download.pytorch.org/whl/cpu
+      - name: Install PyG and Lightning
+        run: uv pip install --no-build torch_geometric==2.7.0 lightning
+      # Notebooks are rendered from their saved outputs rather than re-run
+      - name: Build docs
+        run: >-
+          uv run --no-sync sphinx-build -b html -j auto
+          -D nbsphinx_execute=never
+          docs/source docs/build/html
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/build/html
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

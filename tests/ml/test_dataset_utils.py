@@ -5,6 +5,8 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
+import pytest
+
 MODULE_PATH = (
     Path(__file__).resolve().parents[2] / "graphein/ml/datasets/utils.py"
 )
@@ -161,3 +163,65 @@ def test_generate_pdb_ligand_mappings_uses_requested_types(
     assert config.DATA_API_MAX_CONCURRENT_REQUESTS == 7
     assert pdb_to_cc_output_file.read_text() == "1ABC\tATP\n"
     assert cc_to_pdb_output_file.read_text() == "ATP\t1ABC\n"
+
+
+def test_generate_pdb_ligand_mappings_rejects_invalid_types(
+    monkeypatch, tmp_path
+):
+    module, config = _load_dataset_utils_module(monkeypatch)
+
+    with pytest.raises(ValueError, match=r"\['invalid_type'\]"):
+        module.generate_pdb_ligand_mappings(
+            chem_comp_types=("nonpolymer", "invalid_type"),
+            pdb_to_cc_output_file=tmp_path / "pdb-to-cc.tsv",
+            cc_to_pdb_output_file=tmp_path / "cc-to-pdb.tsv",
+        )
+    assert config.DATA_API_MAX_CONCURRENT_REQUESTS is None
+
+
+def test_process_chem_comp_results_skips_pdb_to_cc_file_if_none(
+    monkeypatch, tmp_path
+):
+    module, _ = _load_dataset_utils_module(monkeypatch)
+    cc_to_pdb_output_file = tmp_path / "cc-to-pdb.tsv"
+    entry = {
+        "rcsb_id": "1ABC",
+        "nonpolymer_entities": [
+            {
+                "rcsb_nonpolymer_entity_container_identifiers": {
+                    "nonpolymer_comp_id": "ATP"
+                }
+            }
+        ],
+    }
+
+    module.process_chem_comp_results_and_write_to_file(
+        entry_chem_comp_results=[entry],
+        pdb_to_cc_output_file=None,
+        cc_to_pdb_output_file=cc_to_pdb_output_file,
+        cc_extras_output_file=tmp_path / "cc-counts-extra.tsv",
+        generate_cc_extra_file=False,
+    )
+
+    assert [f.name for f in tmp_path.iterdir()] == ["cc-to-pdb.tsv"]
+    assert cc_to_pdb_output_file.read_text() == "ATP\t1ABC\n"
+
+
+def test_pdb_manager_generates_only_cc_to_pdb_map(monkeypatch, tmp_path):
+    """PDBManager only needs the CC -> PDB map; it used to write the
+    PDB -> CC map to the same file first."""
+    pdb_data = pytest.importorskip("graphein.ml.datasets.pdb_data")
+    observed = {}
+    monkeypatch.setattr(
+        pdb_data,
+        "generate_pdb_ligand_mappings",
+        lambda **kw: observed.update(kw),
+    )
+    manager = pdb_data.PDBManager.__new__(pdb_data.PDBManager)
+    manager.root_dir = tmp_path
+    manager.ligand_map_filename = "cc-to-pdb.tdd"
+
+    manager._generate_ligand_map()
+
+    assert observed["pdb_to_cc_output_file"] is None
+    assert observed["cc_to_pdb_output_file"] == tmp_path / "cc-to-pdb.tdd"

@@ -17,7 +17,7 @@ import re
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from tqdm.autonotebook import tqdm
+from tqdm.auto import tqdm
 
 urls = requests.get("https://web.expasy.org/protscale/")
 urls_list = urls.text.split("<PRE>")[1].split("</PRE>")[0]
