@@ -138,12 +138,14 @@ def add_atomic_edges(G: nx.Graph, tolerance: float = 0.56) -> nx.Graph:
     # Get node IDs from non NaN entries in the thresholded distance matrix and
     # add the edge to the graph
     inds = zip(*np.where(~np.isnan(t_distmat)))
+    node_ids = G.graph["pdb_df"]["node_id"].to_numpy()
+    chain_ids = G.graph["pdb_df"]["chain_id"].to_numpy()
     for i in inds:
         length = t_distmat[i[0]][i[1]]
-        node_1 = G.graph["pdb_df"]["node_id"][i[0]]
-        node_2 = G.graph["pdb_df"]["node_id"][i[1]]
-        chain_1 = G.graph["pdb_df"]["chain_id"][i[0]]
-        chain_2 = G.graph["pdb_df"]["chain_id"][i[1]]
+        node_1 = node_ids[i[0]]
+        node_2 = node_ids[i[1]]
+        chain_1 = chain_ids[i[0]]
+        chain_2 = chain_ids[i[1]]
 
         # Check nodes are in graph
         if not (G.has_node(node_1) and G.has_node(node_2)):
@@ -346,14 +348,10 @@ def assign_bond_orders(G: nx.Graph) -> nx.Graph:
             )
             bond_angles[n] = dihed
 
-    print(bond_angles)
-
     # Assign Bond angles to dataframe
     G.graph["pdb_df"]["bond_angles"] = G.graph["pdb_df"]["node_id"].map(
         bond_angles
     )
-    print(G.graph["pdb_df"].to_string())
-
     # Assign Hybridisation state from Bond Angles
     hybridisation_state = {
         n: "sp"

@@ -84,7 +84,7 @@ def add_interacting_genes(
     gene_2 = df["g2"].values
     reg_type = df["regtype"].values
 
-    interacting_genes = set(list(zip(gene_1, gene_2, reg_type)))
+    interacting_genes = set(zip(gene_1, gene_2, reg_type))
 
     for g1, g2, r in interacting_genes:
         if G.has_edge(g1, g2):

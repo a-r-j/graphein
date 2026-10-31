@@ -14,7 +14,6 @@ import networkx as nx
 import numpy as np
 import torch
 from loguru import logger as log
-from torch_geometric.utils.undirected import to_undirected
 
 from graphein.utils.dependencies import import_message
 
@@ -49,27 +48,8 @@ except ImportError:
         conda_channel="dglteam",
     )
 
-try:
-    import jax.numpy as jnp
-except ImportError:
-    import_message(
-        submodule="graphein.ml.conversion",
-        package="jax",
-        pip_install=True,
-        conda_channel="conda-forge",
-    )
-try:
-    import jraph
-except ImportError:
-    import_message(
-        submodule="graphein.ml.conversion",
-        package="jraph",
-        pip_install=True,
-        conda_channel="conda-forge",
-    )
 
-
-SUPPORTED_FORMATS = ["nx", "pyg", "dgl", "jraph"]
+SUPPORTED_FORMATS = ["nx", "pyg", "dgl"]
 """Supported conversion formats.
 
 ``"nx"``: NetworkX graph
@@ -77,12 +57,47 @@ SUPPORTED_FORMATS = ["nx", "pyg", "dgl", "jraph"]
 ``"pyg"``: PyTorch Geometric Data object
 
 ``"dgl"``: DGL graph
-
-``"Jraph"``: Jraph GraphsTuple
 """
 
 SUPPORTED_VERBOSITY = ["gnn", "default", "all_info"]
 """Supported verbosity levels for preserving graph features in conversion."""
+
+
+def _feature_lists(attr_dicts, keep=lambda key: True) -> dict:
+    """Returns ``{key: [value per node/edge]}`` for the keys ``keep`` accepts.
+
+    Every list has one entry per dict (``None`` where one lacks the key), so
+    features stay aligned with the nodes / ``edge_index``. Missing entries of
+    numeric features are ``NaN`` so the feature can still become a tensor.
+    """
+    attr_dicts = [{str(k): v for k, v in d.items()} for d in attr_dicts]
+    keys = sorted({k for d in attr_dicts for k in d if keep(k)})
+    features = {}
+    for key in keys:
+        values = [d.get(key) for d in attr_dicts]
+        present = next((v for v in values if v is not None), None)
+        if (
+            any(v is None for v in values)
+            and np.asarray(present).dtype.kind in "biuf"
+        ):
+            nan = np.full(np.shape(present), np.nan)
+            values = [nan if v is None else v for v in values]
+        features[key] = values
+    return features
+
+
+def _symmetrize(edge_index: torch.Tensor, num_nodes: int):
+    """Adds the reverse of each edge (except self-loops), sorted like
+    ``to_undirected``. Unlike ``to_undirected``, parallel edges are kept.
+
+    :return: Symmetrized ``edge_index`` and each edge's original position.
+    """
+    edge_id = torch.arange(edge_index.shape[1])
+    rev = edge_index[0] != edge_index[1]
+    edge_index = torch.cat([edge_index, edge_index[:, rev].flip(0)], dim=1)
+    edge_id = torch.cat([edge_id, edge_id[rev]])
+    order = torch.sort(edge_index[0] * num_nodes + edge_index[1], stable=True)
+    return edge_index[:, order.indices], edge_id[order.indices]
 
 
 class GraphFormatConvertor:
@@ -92,10 +107,10 @@ class GraphFormatConvertor:
     formats can be retrieved from :const:`~graphein.ml.conversion.SUPPORTED_FORMATS`.
 
     :param src_format: The type of graph you'd like to convert from. Supported formats are available in :const:`~graphein.ml.conversion.SUPPORTED_FORMATS`
-    :type src_format: Literal["nx", "pyg", "dgl", "jraph"]
+    :type src_format: Literal["nx", "pyg", "dgl"]
     :param dst_format: The type of graph format you'd like to convert to. Supported formats are available in:
         ``graphein.ml.conversion.SUPPORTED_FORMATS``
-    :type dst_format:  Literal["nx", "pyg", "dgl", "jraph"]
+    :type dst_format:  Literal["nx", "pyg", "dgl"]
     :param verbose: Select from ``"gnn"``, ``"default"``, ``"all_info"`` to determine how much information is preserved (features)
         as some are unsupported by various downstream frameworks
     :type verbose: graphein.ml.conversion.SUPPORTED_VERBOSITY
@@ -178,6 +193,7 @@ class GraphFormatConvertor:
             "chain_id": "str",
             "coords": "np.array",
             "dist_mat": "np.array",
+            "distance": "float",
             "element_symbol": "str",
             "node_id": "str",
             "residue_name": "str",
@@ -201,13 +217,9 @@ class GraphFormatConvertor:
 
         ## add node level feat
 
-        node_dict = {}
-        for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
-            for key, value in feat_dict.items():
-                if str(key) in self.columns:
-                    node_dict[str(key)] = (
-                        [value] if i == 0 else node_dict[str(key)] + [value]
-                    )
+        node_dict = _feature_lists(
+            [d for _, d in G.nodes(data=True)], lambda k: k in self.columns
+        )
 
         string_dict = {}
         node_dict_transformed = {}
@@ -224,31 +236,23 @@ class GraphFormatConvertor:
                 string_dict[i] = j
             elif self.type2form[i] in ["float", "int"]:
                 node_dict_transformed[i] = torch.Tensor(np.array(j))
-        g.add_nodes(
-            len(node_id),
-            node_dict_transformed,
-        )
+        # DGL cannot add an empty feature dict, so pass None instead
+        g.add_nodes(len(node_id), node_dict_transformed or None)
 
-        edge_dict = {}
         edge_index = torch.LongTensor(list(G.edges)).t().contiguous()
 
         # add edge level features
-        for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
-            for key, value in feat_dict.items():
-                if str(key) in self.columns:
-                    edge_dict[str(key)] = (
-                        list(value)
-                        if i == 0
-                        else edge_dict[str(key)] + list(value)
-                    )
+        edge_dict = _feature_lists(
+            [d for _, _, d in G.edges(data=True)], lambda k: k in self.columns
+        )
 
         edge_transform_dict = {}
-        for i, j in node_dict.items():
+        for i, j in edge_dict.items():
             if self.type2form[i] == "str":
                 string_dict[i] = j
             elif self.type2form[i] in ["float", "int"]:
                 edge_transform_dict[i] = torch.Tensor(np.array(j))
-        g.add_edges(edge_index[0], edge_index[1], edge_transform_dict)
+        g.add_edges(edge_index[0], edge_index[1], edge_transform_dict or None)
 
         # add graph level features
         graph_dict = {
@@ -274,49 +278,39 @@ class GraphFormatConvertor:
         G = nx.convert_node_labels_to_integers(G)
 
         # Construct Edge Index
+        # G.edges() rather than G.edges: (u, v) pairs, also for multigraphs
         edge_index = (
-            torch.LongTensor(list(G.edges)).t().contiguous().view(2, -1)
+            torch.LongTensor(list(G.edges())).t().contiguous().view(2, -1)
         )
 
         # Add node features
-        node_feature_names = G.nodes(data=True)[0].keys()
-        for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
-            for key, value in feat_dict.items():
-                key = str(key)
-                if key in self.columns:
-                    if i == 0:
-                        data[key] = []
-                    data[key].append(value)
-
-        # Add edge features
-        edge_list = list(G.edges(data=True))
-        edge_feature_names = edge_list[0][2].keys() if edge_list else []
-        edge_feature_names = list(
-            filter(
-                lambda x: x in self.columns and x != "kind", edge_feature_names
+        data.update(
+            _feature_lists(
+                [d for _, d in G.nodes(data=True)], lambda k: k in self.columns
             )
         )
-        for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
-            for key, value in feat_dict.items():
-                key = str(key)
-                if key in self.columns or key == "kind":
-                    if i == 0:
-                        data[key] = []
-                    data[key].append(value)
 
-        # Add graph-level features
+        # Add edge features, aligned with edge_index
+        edge_features = _feature_lists(
+            [d for _, _, d in G.edges(data=True)],
+            lambda k: k in self.columns or k == "kind",
+        )
+        data.update(edge_features)
+
+        # Add graph-level features, without replacing node or edge features
         for feat_name in G.graph:
-            if str(feat_name) in self.columns:
-                if str(feat_name) not in node_feature_names:
-                    data[str(feat_name)] = G.graph[feat_name]
+            if str(feat_name) in self.columns and str(feat_name) not in data:
+                data[str(feat_name)] = G.graph[feat_name]
         if "edge_index" in self.columns:
             data["edge_index"] = edge_index
 
-        # Split edge index by edge kind
+        # Split edge index by edge kind. Kinds are sets, so sort them for a
+        # name that doesn't depend on set iteration order.
         kind_strs = np.array(
-            list(map(lambda x: "_".join(x), data.get("kind", [])))
+            ["_".join(sorted(k or ())) for k in data.get("kind") or []]
         )
-        for kind in set(kind_strs):
+        kinds = set(kind_strs) - {""}  # edges without a kind
+        for kind in kinds:
             key = f"edge_index_{kind}"
             if key in self.columns:
                 mask = kind_strs == kind
@@ -339,23 +333,26 @@ class GraphFormatConvertor:
 
         # Symmetrize if undirected
         if not G.is_directed():
-            # Edge index and edge features
-            edge_index, edge_features = to_undirected(
-                edge_index,
-                [getattr(data, attr) for attr in edge_feature_names],
-                data.num_nodes,
-            )
+            # Reorder every edge feature (tensor or not, e.g. kind) to match
+            # the symmetrized edge_index.
+            edge_index, edge_id = _symmetrize(edge_index, data.num_nodes)
             if "edge_index" in self.columns:
                 data.edge_index = edge_index
-            for attr, val in zip(edge_feature_names, edge_features):
-                setattr(data, attr, val)
+            for attr in edge_features:
+                if attr not in data:
+                    continue
+                val = getattr(data, attr)
+                if isinstance(val, torch.Tensor):
+                    setattr(data, attr, val[edge_id])
+                else:
+                    setattr(data, attr, [val[i] for i in edge_id.tolist()])
 
             # Edge indices of different kinds
-            for kind in set(kind_strs):
+            for kind in kinds:
                 key = f"edge_index_{kind}"
                 if key in self.columns:
-                    edge_index_kind = to_undirected(
-                        getattr(data, key), num_nodes=data.num_nodes
+                    edge_index_kind, _ = _symmetrize(
+                        getattr(data, key), data.num_nodes
                     )
                     setattr(data, key, edge_index_kind)
 
@@ -398,71 +395,6 @@ class GraphFormatConvertor:
         """
         return torch_geometric.utils.to_networkx(G)
 
-    def convert_nx_to_jraph(self, G: nx.Graph) -> jraph.GraphsTuple:
-        """Converts NetworkX graph (``nx.Graph``) to Jraph GraphsTuple graph. Requires ``jax`` and ``Jraph``.
-
-        :param G: Networkx graph to convert.
-        :type G: nx.Graph
-        :return: Jraph GraphsTuple graph.
-        :rtype: jraph.GraphsTuple
-        """
-        G = nx.convert_node_labels_to_integers(G)
-
-        n_node = len(G)
-        n_edge = G.number_of_edges()
-        edge_list = list(G.edges())
-        senders, receivers = zip(*edge_list)
-        senders, receivers = jnp.array(senders), jnp.array(receivers)
-
-        # Add node features
-        node_features = {}
-        for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
-            for key, value in feat_dict.items():
-                if str(key) in self.columns:
-                    # node_features[str(key)] = (
-                    #    [value]
-                    #    if i == 0
-                    #    else node_features[str(key)] + [value]
-                    # )
-                    feat = (
-                        [value]
-                        if i == 0
-                        else node_features[str(key)] + [value]
-                    )
-                    try:
-                        feat = torch.tensor(feat)
-                        node_features[str(key)] = feat
-                    except TypeError:
-                        node_features[str(key)] = feat
-
-        # Add edge features
-        edge_features = {}
-        for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
-            for key, value in feat_dict.items():
-                if str(key) in self.columns:
-                    edge_features[str(key)] = (
-                        list(value)
-                        if i == 0
-                        else edge_features[str(key)] + list(value)
-                    )
-
-        # Add graph features
-        global_context = {
-            str(feat_name): [G.graph[feat_name]]
-            for feat_name in G.graph
-            if str(feat_name) in self.columns
-        }
-
-        return jraph.GraphsTuple(
-            nodes=node_features,
-            senders=senders,
-            receivers=receivers,
-            edges=edge_features,
-            n_node=n_node,
-            n_edge=n_edge,
-            globals=global_context,
-        )
-
     def __call__(self, G: nx.Graph):
         nx_g = eval("self.convert_" + self.src_format + "_to_nx(G)")
         dst_g = eval("self.convert_nx_to_" + self.dst_format + "(nx_g)")
@@ -476,19 +408,11 @@ def convert_nx_to_pyg_data(G: nx.Graph) -> Data:
     G = nx.convert_node_labels_to_integers(G)
 
     # Construct Edge Index
-    edge_index = torch.LongTensor(list(G.edges)).t().contiguous()
+    edge_index = torch.LongTensor(list(G.edges())).t().contiguous()
 
-    # Add node features
-    for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
-        for key, value in feat_dict.items():
-            data[str(key)] = [value] if i == 0 else data[str(key)] + [value]
-
-    # Add edge features
-    for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
-        for key, value in feat_dict.items():
-            data[str(key)] = (
-                list(value) if i == 0 else data[str(key)] + list(value)
-            )
+    # Add node and edge features
+    data.update(_feature_lists([d for _, d in G.nodes(data=True)]))
+    data.update(_feature_lists([d for _, _, d in G.edges(data=True)]))
 
     # Add graph-level features
     for feat_name in G.graph:

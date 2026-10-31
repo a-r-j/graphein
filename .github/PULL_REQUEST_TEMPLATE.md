@@ -21,7 +21,7 @@ Please fill out the following checklist if applicable. For more more information
 - [ ] Added appropriate unit test functions in the `./graphein/tests/*` directories (if applicable)
 - [ ] Modify documentation in the corresponding Jupyter Notebook under `./notebooks/` (if applicable)
 - [ ] Ran `python -m py.test tests/` and make sure that all unit tests pass (for small modifications, it might be sufficient to only run the specific test file, e.g., `python -m py.test tests/protein/test_graphs.py`)
-- [ ] Checked for style issues by running `black .` and `isort .`
+- [ ] Checked for style issues by running `ruff check --fix .` and `ruff format .`
 
 
 <!--

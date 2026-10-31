@@ -19,7 +19,12 @@ import graphein.protein as gp
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
     INFINITE_DIST,
+    add_aromatic_sulphur_interactions,
+    add_cation_pi_interactions,
+    add_distance_threshold,
+    add_distance_window,
     add_k_nn_edges,
+    add_peptide_bonds,
     add_salt_bridges,
     add_sequence_distance_edges,
     add_vdw_clashes,
@@ -29,6 +34,7 @@ from graphein.protein.edges.distance import (
     get_ring_atoms,
     get_ring_centroids,
 )
+from graphein.protein.edges.intramolecular import peptide_bonds
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 from graphein.protein.resi_atoms import (
     AROMATIC_RESIS,
@@ -121,9 +127,14 @@ def test_add_aromatic_interactions(net):
         assert net.nodes[n2]["residue_name"] in AROMATIC_RESIS
 
 
-def test_add_aromatic_sulphur_interactions(net):
+def test_add_aromatic_sulphur_interactions():
     """Tests the function add_aromatic_sulphur_interactions_."""
+    config = ProteinGraphConfig(
+        edge_construction_functions=[add_aromatic_sulphur_interactions]
+    )
+    net = construct_graph(config=config, path=str(DATA_PATH))
     resis = get_edges_by_bond_type(net, "aromatic_sulphur")
+    assert resis
     for n1, n2 in resis:
         condition1 = (
             net.nodes[n1]["residue_name"] in SULPHUR_RESIS
@@ -172,9 +183,14 @@ def test_get_ring_centroids(pdb_df):
     assert len(centroid_PHE) == 18
 
 
-def test_add_cation_pi_interactions(net):
+def test_add_cation_pi_interactions():
     """Tests the function add_cation_pi_interactions."""
+    config = ProteinGraphConfig(
+        edge_construction_functions=[add_cation_pi_interactions]
+    )
+    net = construct_graph(config=config, path=str(DATA_PATH))
     resis = get_edges_by_bond_type(net, "cation_pi")
+    assert resis
     for n1, n2 in resis:
         resi1 = net.nodes[n1]["residue_name"]
         resi2 = net.nodes[n2]["residue_name"]
@@ -227,9 +243,9 @@ def test_salt_bridge_interactions():
 
         assert (
             res1 in SALT_BRIDGE_CATIONS and res2 in SALT_BRIDGE_ANIONS
-        ) or (
-            res1 in SALT_BRIDGE_ANIONS and res2 in SALT_BRIDGE_CATIONS
-        ), "Salt bridge not between cations and anions"
+        ) or (res1 in SALT_BRIDGE_ANIONS and res2 in SALT_BRIDGE_CATIONS), (
+            "Salt bridge not between cations and anions"
+        )
 
     # Test distances on atom graphs
     g = construct_graph(
@@ -245,9 +261,9 @@ def test_salt_bridge_interactions():
 
         assert (
             res1 in SALT_BRIDGE_CATIONS and res2 in SALT_BRIDGE_ANIONS
-        ) or (
-            res1 in SALT_BRIDGE_ANIONS and res2 in SALT_BRIDGE_CATIONS
-        ), "Salt bridge not between cations and anions"
+        ) or (res1 in SALT_BRIDGE_ANIONS and res2 in SALT_BRIDGE_CATIONS), (
+            "Salt bridge not between cations and anions"
+        )
         assert d["distance"] < 4.0, "Salt bridge distance is too long"
 
 
@@ -281,9 +297,9 @@ def test_vdw_interactions():
         rad2 = VDW_RADII[res2]
 
         assert res1 != "H" and res2 != "H", "Hydrogen in vdw interaction"
-        assert (
-            d["distance"] < 0.5 + rad1 + rad2
-        ), f"Vdw distance is too long: {d['distance']}"
+        assert d["distance"] < 0.5 + rad1 + rad2, (
+            f"Vdw distance is too long: {d['distance']}"
+        )
 
 
 def test_vdw_clashes():
@@ -316,9 +332,9 @@ def test_vdw_clashes():
         rad2 = VDW_RADII[res2]
 
         assert res1 != "H" and res2 != "H", "Hydrogen in vdw clash interaction"
-        assert (
-            d["distance"] < rad1 + rad2
-        ), f"Vdw clash distance is too long: {d['distance']}"
+        assert d["distance"] < rad1 + rad2, (
+            f"Vdw clash distance is too long: {d['distance']}"
+        )
 
 
 def test_filter_distmat():
@@ -454,3 +470,91 @@ def test_insertion_codes_in_add_k_nn_edges():
     ]
 
     assert set(g.edges()) == set(edges_expected)
+
+
+@pytest.mark.parametrize("peptide_fn", [add_peptide_bonds, peptide_bonds])
+def test_peptide_bonds_keep_existing_edge_kinds(peptide_fn):
+    """Adding peptide bonds must not overwrite kinds of existing edges."""
+    knn = partial(add_k_nn_edges, k=3)
+    kinds = []
+    for funcs in ([knn, peptide_fn], [peptide_fn, knn]):
+        config = ProteinGraphConfig(edge_construction_functions=funcs)
+        g = construct_graph(config=config, path=str(DATA_PATH))
+        kinds.append(
+            {frozenset((u, v)): d["kind"] for u, v, d in g.edges(data=True)}
+        )
+    assert kinds[0] == kinds[1]
+    assert any({"knn", "peptide_bond"} <= k for k in kinds[0].values())
+
+
+def test_add_k_nn_edges_between_residues_with_insertion_codes():
+    """Residues that share a residue number but differ in insertion code
+    (e.g. 52 and 52A) are distinct residues and should be connectable by kNN
+    edges."""
+    file_path = (
+        Path(__file__).parent.parent / "test_data" / "input_pdb_cryst1.pdb"
+    )
+    config = ProteinGraphConfig(
+        edge_construction_functions=[partial(add_k_nn_edges, k=5)]
+    )
+    G = construct_graph(path=str(file_path), config=config)
+
+    for u, v in [
+        ("H:TRP:52", "H:TYR:52:A"),
+        ("H:ASP:100", "H:TYR:100:A"),
+        ("H:TYR:100:A", "H:VAL:100:B"),
+    ]:
+        assert u in G and v in G
+        assert G.has_edge(u, v), f"Missing kNN edge between {u} and {v}"
+
+
+INSERTION_PDB = (
+    Path(__file__).parent.parent / "test_data" / "input_pdb_cryst1.pdb"
+)
+
+
+@pytest.mark.parametrize(
+    "edge_fn",
+    [add_peptide_bonds, peptide_bonds],
+    ids=["add", "intramolecular"],
+)
+def test_peptide_bonds_across_insertion_codes(edge_fn):
+    """Residues differing only by insertion code are bonded in sequence."""
+    config = ProteinGraphConfig(edge_construction_functions=[edge_fn])
+    G = construct_graph(path=str(INSERTION_PDB), config=config)
+    for u, v in [
+        ("H:TRP:52", "H:TYR:52:A"),
+        ("H:TYR:52:A", "H:ASP:53"),
+        ("H:TYR:100:A", "H:VAL:100:B"),
+    ]:
+        assert G.has_edge(u, v), f"Missing peptide bond between {u} and {v}"
+
+
+def test_sequence_distance_edges_across_insertion_codes():
+    """52 and 53 are two apart when 52A is between them."""
+    config = ProteinGraphConfig(
+        edge_construction_functions=[partial(add_sequence_distance_edges, d=2)]
+    )
+    G = construct_graph(path=str(INSERTION_PDB), config=config)
+    assert G.has_edge("H:TRP:52", "H:ASP:53")
+
+
+# kNN keeps separations > long_interaction_threshold; the distance functions
+# keep separations >= it. So a separation of 1 is excluded at 1 / 2 and
+# included at 0 / 1 respectively.
+@pytest.mark.parametrize(
+    "edge_fn,excluded_at,included_at",
+    [
+        (partial(add_k_nn_edges, k=5), 1, 0),
+        (partial(add_distance_threshold, threshold=5.0), 2, 1),
+        (partial(add_distance_window, min=1.0, max=5.0), 2, 1),
+    ],
+)
+def test_insertion_codes_one_residue_apart(edge_fn, excluded_at, included_at):
+    """Residues differing only by insertion code (52 and 52A) are one
+    position apart in sequence, like 52 and 53."""
+    for threshold, connected in [(excluded_at, False), (included_at, True)]:
+        fn = partial(edge_fn, long_interaction_threshold=threshold)
+        config = ProteinGraphConfig(edge_construction_functions=[fn])
+        G = construct_graph(path=str(INSERTION_PDB), config=config)
+        assert G.has_edge("H:TRP:52", "H:TYR:52:A") is connected

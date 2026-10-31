@@ -539,13 +539,13 @@ def test_secondary_structure_graphs():
     h = compute_secondary_structure_graph(g, remove_non_ss=False)
     # Check number of residues preserved
     res_counts = sum(d["residue_counts"] for _, d in h.nodes(data=True))
-    assert res_counts == len(
-        g
-    ), "Residue counts in SS graph should match number of residues in original \
+    assert res_counts == len(g), (
+        "Residue counts in SS graph should match number of residues in original \
         graph"
-    assert nx.is_connected(
-        h
-    ), "SS graph should be connected in this configuration"
+    )
+    assert nx.is_connected(h), (
+        "SS graph should be connected in this configuration"
+    )
 
     h = compute_secondary_structure_graph(
         g,
@@ -553,9 +553,9 @@ def test_secondary_structure_graphs():
         remove_self_loops=False,
         return_weighted_graph=False,
     )
-    assert len(g.edges) == len(
-        h.edges
-    ), "Multigraph should have same number of edges."
+    assert len(g.edges) == len(h.edges), (
+        "Multigraph should have same number of edges."
+    )
 
 
 @pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
@@ -603,9 +603,9 @@ def test_df_processing():
     g3 = construct_graph(config=config2, pdb_code="4cvi")
 
     for n, d in g1.nodes(data=True):
-        assert (
-            int(d["residue_number"]) % 2 == 0
-        ), "Only even residues should be present"
+        assert int(d["residue_number"]) % 2 == 0, (
+            "Only even residues should be present"
+        )
 
     assert len(g1) != len(g2), "Graphs should not be equal"
     for n, d in g3.nodes(data=True):
@@ -622,3 +622,39 @@ def test_df_processing():
         if d["element_symbol"] in {"H", "D", "T"}:
             has_H.append(n)
     assert len(has_H) > 0, "No hydrogen isotopes are present"
+
+
+def test_weighted_chain_graph_does_not_modify_input():
+    config = ProteinGraphConfig(
+        edge_construction_functions=[
+            partial(add_k_nn_edges, k=5),
+            add_ionic_interactions,
+        ]
+    )
+    g = construct_graph(config=config, path=str(PDB_DATA_PATH))
+    before = {(u, v): set(d["kind"]) for u, v, d in g.edges(data=True)}
+    compute_chain_graph(g, return_weighted_graph=True)
+    assert {(u, v): d["kind"] for u, v, d in g.edges(data=True)} == before
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        PDB_DATA_PATH,  # chains A-D in order
+        # chains L, H, A (not in alphabetical order) and insertion codes
+        Path(__file__).resolve().parent / "test_data" / "input_pdb_cryst1.pdb",
+    ],
+)
+def test_centroids_match_their_residue(path):
+    """Each node's centroid is the mean of its own residue's atoms."""
+    config = ProteinGraphConfig(granularity="centroids")
+    g = construct_graph(config=config, path=str(path))
+    atoms = read_pdb_to_dataframe(path=str(path))
+    atoms = atoms.loc[atoms["record_name"] == "ATOM"]
+    keys = ["chain_id", "residue_number", "insertion"]
+    expected = atoms.groupby(keys)[["x_coord", "y_coord", "z_coord"]].mean()
+    nodes = g.graph["pdb_df"].set_index(keys)
+    np.testing.assert_allclose(
+        np.stack([g.nodes[n]["coords"] for n in nodes["node_id"]]),
+        expected.loc[nodes.index].to_numpy(),
+    )

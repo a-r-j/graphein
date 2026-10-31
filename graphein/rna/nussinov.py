@@ -129,7 +129,7 @@ def write_structure(
     :return: Dot-bracket notation as a string.
     :rtype: str
     """
-    dot_bracket = ["." for _ in range(len(sequence))]
+    dot_bracket = ["."] * len(sequence)
     for s in structure:
         dot_bracket[min(s)] = "("
         dot_bracket[max(s)] = ")"

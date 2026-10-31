@@ -71,8 +71,8 @@ if __name__ == "__main__":
     # Iterate over rows to produce Graph, pickle graph and label
     for row in tqdm(range(len(df))):
         example = df.iloc[row]
-        file_path = f'pdbs/{example["Free PDB"]}.pdb'
-        contact_file = f'contacts/{example["Free PDB"]}_contacts.tsv'
+        file_path = f"pdbs/{example['Free PDB']}.pdb"
+        contact_file = f"contacts/{example['Free PDB']}_contacts.tsv"
 
         g = construct_graph(config=config, pdb_code=example["Free PDB"])
 
