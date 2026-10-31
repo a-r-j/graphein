@@ -14,7 +14,7 @@ import networkx as nx
 import numpy as np
 import pytest
 
-from graphein.protein.config import DSSPConfig, ProteinGraphConfig
+from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
     add_ionic_interactions,
     add_peptide_bonds,
@@ -34,9 +34,6 @@ from graphein.protein.subgraphs import (
     extract_subgraph_from_secondary_structure,
     extract_surface_subgraph,
 )
-from graphein.utils.dependencies import is_tool
-
-DSSP_AVAILABLE = is_tool("mkdssp")
 
 
 def test_node_list_subgraphing():
@@ -319,13 +316,10 @@ def test_extract_k_hop_subgraph():
         assert n in s_g.nodes()
 
 
-@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_surface_subgraph():
     """Tests surface subgraph extraction."""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
-    config = ProteinGraphConfig(
-        graph_metadata_functions=[rsa], dssp_config=DSSPConfig()
-    )
+    config = ProteinGraphConfig(graph_metadata_functions=[rsa])
     G = construct_graph(path=str(file_path), config=config)
 
     RSA_THRESHOLD: float = 0.2
@@ -339,13 +333,11 @@ def test_surface_subgraph():
             assert n in s_g.nodes(), print(n, d)
 
 
-@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_secondary_structure_subgraph():
     """Tests secondary subgraph extraction."""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
     config = ProteinGraphConfig(
         graph_metadata_functions=[secondary_structure],
-        dssp_config=DSSPConfig(),
     )
     G = construct_graph(path=str(file_path), config=config)
 
@@ -362,13 +354,11 @@ def test_secondary_structure_subgraph():
             assert n in s_g.nodes()
 
 
-@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_successful_pickle():
     """Tests subgraphs can be successfully pickled and unpickled"""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
     config = ProteinGraphConfig(
         graph_metadata_functions=[secondary_structure],
-        dssp_config=DSSPConfig(),
     )
     G = construct_graph(path=str(file_path), config=config)
     s_g = extract_subgraph_from_residue_types(

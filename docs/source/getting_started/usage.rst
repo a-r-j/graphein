@@ -31,7 +31,6 @@ A ``.yaml`` config file can be specified to specify any of the config objects. T
             - !func:graphein.protein.edges.distance.add_distance_threshold
                 long_interaction_threshold: 5
                 threshold: 10.
-        dssp_config: !DSSPConfig
 
 .. code-block:: python
 
@@ -56,6 +55,5 @@ Reading the example ``.yaml file`` above with the ``parse_config`` function, wou
                 threshold=10.0,
             ),
         ],
-        "dssp_config": DSSPConfig(),
     }
     config = ProteinGraphConfig(**protein_graph_config)

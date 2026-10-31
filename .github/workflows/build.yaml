@@ -24,24 +24,9 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12"]
         torch: [2.6.0, 2.7.0, 2.8.0]
-    defaults:
-      run:
-        shell: bash -l {0}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup micromamba
-        uses: mamba-org/setup-micromamba@v2
-        with:
-          micromamba-version: "latest"
-          environment-name: test_env
-          init-shell: bash
-          create-args: python=${{matrix.python-version}}
-          post-cleanup: "all"
-      - name: Install DSSP
-        run: micromamba install dssp -c salilab
-      - name: Install Boost 1.7.3 (for DSSP)
-        run: micromamba install -c anaconda libboost=1.73.0
       - name: Install uv
         uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
@@ -55,7 +40,6 @@ jobs:
         run: uv pip install --no-build torch_geometric==2.7.0
       - name: Install torch-cluster
         run: uv pip install torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${{matrix.torch}}+cpu.html
-      # mmseqs2 via apt: the conda libboost pin above would uninstall it
       - name: Install BLAST and MMseqs2
         run: sudo apt install ncbi-blast+ mmseqs2
       - name: Run unit tests and generate coverage report
