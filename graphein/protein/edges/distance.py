@@ -15,7 +15,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from loguru import logger as log
-from scipy.spatial import Delaunay
+from scipy.spatial import Delaunay, cKDTree
 from scipy.spatial.distance import pdist, squareform
 from sklearn.neighbors import NearestNeighbors, kneighbors_graph
 
@@ -41,6 +41,7 @@ from graphein.protein.resi_atoms import (
     SALT_BRIDGE_ATOMS,
     SALT_BRIDGE_CATIONS,
     SALT_BRIDGE_RESIDUES,
+    STANDARD_AMINO_ACID_MAPPING_1_TO_3,
     SULPHUR_RESIS,
     VDW_RADII,
 )
@@ -354,11 +355,18 @@ def add_hydrogen_bond_interactions(
     amide nitrogens (``N``, except in proline and its variants) are donors and
     backbone oxygens (``O`` and ``OXT``) are acceptors.
 
-    Atoms in the same residue are never paired. Backbone-backbone pairs between
-    residues joined by a peptide bond are also ignored, as the ``N`` and ``O``
-    atoms either side of a peptide bond are always ~2.3 Angstroms apart.
-    Peptide bonds are identified from the backbone ``C`` and ``N`` coordinates,
-    so insertion codes and gaps in residue numbering are handled.
+    Side chain atoms of residue variants (e.g. ``HIE``, ``DSN``) are matched
+    to those of their parent residue via
+    :const:`~graphein.protein.resi_atoms.RESI_THREE_TO_1`. Atoms of other
+    residues (e.g. ligands) are not considered.
+
+    Atoms in the same residue are never paired. Pairs involving a backbone
+    atom are also ignored between residues joined by a peptide bond, as
+    their geometry alone puts e.g. the ``N`` and ``O`` atoms either side of a
+    peptide bond ~2.3 Angstroms apart, and a Ser ``OG`` ~3 Angstroms from the
+    next residue's ``N``. Peptide bonds are identified from the backbone ``C``
+    and ``N`` coordinates, so insertion codes and gaps in residue numbering
+    are handled.
 
     Hydrogen positions are not used, so this is a geometric approximation.
 
@@ -366,7 +374,9 @@ def add_hydrogen_bond_interactions(
     :type G: nx.Graph
     :param rgroup_df: Atomic dataframe to find interactions in. If ``None``
         (default), ``G.graph["raw_pdb_df"]`` is used. Backbone hydrogen bonds
-        are only found if this dataframe contains backbone atoms.
+        are only found if this dataframe contains backbone atoms. Atoms are
+        assigned to nodes by chain, residue number and insertion code (and
+        atom name and alt_loc for atom graphs).
     :type rgroup_df: Optional[pd.DataFrame]
     :param distance_threshold: Maximum donor-acceptor distance in Angstroms.
         Defaults to ``3.5``.
@@ -374,10 +384,13 @@ def add_hydrogen_bond_interactions(
     :param hbond_types: Hydrogen bonds to add, by the location of the donor and
         acceptor atoms: ``"bb-bb"`` (backbone-backbone), ``"bb-sc"``
         (backbone-side chain) and/or ``"sc-sc"`` (side chain-side chain).
-        Defaults to all three (:const:`HBOND_TYPES`).
+        A single type can be given as a string. Defaults to all three
+        (:const:`HBOND_TYPES`).
     :type hbond_types: Iterable[str]
     :raises ValueError: If ``hbond_types`` contains an unknown type.
     """
+    if isinstance(hbond_types, str):
+        hbond_types = [hbond_types]
     hbond_types = set(hbond_types)
     if not hbond_types.issubset(HBOND_TYPES):
         raise ValueError(
@@ -386,9 +399,35 @@ def add_hydrogen_bond_interactions(
         )
     if rgroup_df is None:
         rgroup_df = G.graph["raw_pdb_df"]
-    df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
 
-    res_atom = df["residue_name"] + ":" + df["atom_name"]
+    # Assign atoms to nodes by key rather than node_id: residue node IDs carry
+    # the CA's alt_loc, which the residue's other atoms may not share, and
+    # without insertions inserted residues share their parent's node ID.
+    nodes = G.graph["pdb_df"]
+    nodes = nodes.loc[nodes["node_id"].isin(list(G.nodes()))]
+    key = ["chain_id", "residue_number", "insertion"]
+    df = rgroup_df.drop(columns="node_id", errors="ignore")
+    if G.graph.get("node_type") == "atom":
+        key += ["atom_name", "alt_loc"]
+    else:
+        # Avoid a circular import (graphs imports this module)
+        from graphein.protein.graphs import remove_alt_locs
+
+        alt_locs = getattr(G.graph.get("config"), "alt_locs", "max_occupancy")
+        if alt_locs != "include":
+            df = remove_alt_locs(df, keep=alt_locs)
+    nodes = nodes[key + ["node_id"]].assign(
+        insertion=nodes["insertion"].fillna("")
+    )
+    df = df.assign(insertion=df["insertion"].fillna("")).merge(nodes, on=key)
+
+    # Map residue variants (e.g. HIE, DSN) to their parent residue
+    parent = (
+        df["residue_name"]
+        .map(RESI_THREE_TO_1)
+        .map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
+    )
+    res_atom = parent + ":" + df["atom_name"]
     sc_donors = [
         f"{res}:{atom}"
         for res, atoms in HYDROGEN_BOND_DONORS.items()
@@ -401,54 +440,55 @@ def add_hydrogen_bond_interactions(
     ]
     is_amino_acid = df["residue_name"].isin(list(RESI_THREE_TO_1))
     # Proline variants (e.g. HYP, DPR) also lack a backbone amide hydrogen
-    is_proline = df["residue_name"].map(RESI_THREE_TO_1) == "P"
+    is_proline = parent == "PRO"
     bb_donor = is_amino_acid & (df["atom_name"] == "N") & ~is_proline
     bb_acceptor = is_amino_acid & df["atom_name"].isin(["O", "OXT"])
     donor = (bb_donor | res_atom.isin(sc_donors)).to_numpy()
     acceptor = (bb_acceptor | res_atom.isin(sc_acceptors)).to_numpy()
     backbone = (bb_donor | bb_acceptor).to_numpy()
 
-    residue = (
+    all_residues = (
         df["chain_id"].astype(str)
         + ":"
         + df["residue_number"].astype(str)
         + ":"
-        + df["insertion"].fillna("").astype(str)
+        + df["insertion"]
     )
-    coord_cols = ["x_coord", "y_coord", "z_coord"]
-    c_coords = (
-        df.loc[is_amino_acid & (df["atom_name"] == "C"), coord_cols]
-        .groupby(residue)
-        .first()
-    )
-    n_coords = (
-        df.loc[is_amino_acid & (df["atom_name"] == "N"), coord_cols]
-        .groupby(residue)
-        .first()
-    )
-
+    all_atoms = df
     keep = donor | acceptor
     df = df.loc[keep].reset_index(drop=True)
-    residue = residue[keep].to_numpy()
+    residue = all_residues[keep].to_numpy()
     donor, acceptor, backbone = donor[keep], acceptor[keep], backbone[keep]
-    if len(df.index) < 2:
-        return
 
-    distmat = compute_distmat(df)
-    i, j = np.nonzero(np.triu(distmat.to_numpy() <= distance_threshold, k=1))
+    coord_cols = ["x_coord", "y_coord", "z_coord"]
+    i, j = (
+        cKDTree(df[coord_cols].to_numpy())
+        .query_pairs(distance_threshold, output_type="ndarray")
+        .T
+    )
 
     n_backbone = backbone[i].astype(int) + backbone[j].astype(int)
-    pair_type = np.array(["sc-sc", "bb-sc", "bb-bb"])[n_backbone]
+    allowed = [["sc-sc", "bb-sc", "bb-bb"].index(t) for t in hbond_types]
     is_hbond = (
         ((donor[i] & acceptor[j]) | (donor[j] & acceptor[i]))
         & (residue[i] != residue[j])
-        & np.isin(pair_type, list(hbond_types))
+        & np.isin(n_backbone, allowed)
     )
 
-    # Drop backbone-backbone pairs between residues joined by a peptide bond
-    # (C-N ~1.33A). Missing C or N coordinates give NaN, i.e. not bonded.
-    bb = np.flatnonzero(is_hbond & (n_backbone == 2))
+    # Drop pairs with a backbone atom between residues joined by a peptide
+    # bond (C-N ~1.33A). Missing C or N coordinates give NaN, i.e. not bonded.
+    bb = np.flatnonzero(is_hbond & (n_backbone > 0))
     if len(bb) > 0:
+
+        def _coords(atom_name):
+            mask = is_amino_acid & (all_atoms["atom_name"] == atom_name)
+            return (
+                all_atoms.loc[mask, coord_cols]
+                .groupby(all_residues[mask])
+                .first()
+            )
+
+        c_coords, n_coords = _coords("C"), _coords("N")
         res_i, res_j = residue[i[bb]], residue[j[bb]]
 
         def _peptide_bonded(c_res, n_res):
