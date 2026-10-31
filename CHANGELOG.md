@@ -4,6 +4,10 @@
 
 * Add `add_bond_type_one_hot` edge feature for molecules. Fixes [#430](https://github.com/a-r-j/graphein/issues/430)
 
+#### Breaking Changes
+
+* `add_hydrogen_bond_interactions` no longer adds `hbond` edges between sulphur atoms (Cys `SG`, Met `SD`), which are weak hydrogen bond donors/acceptors at best, or involving atoms of non-amino acid residues, such as ligands kept with `keep_hets`. Edges are added between donor-acceptor pairs only, so many existing `hbond` edges change. [#458](https://github.com/a-r-j/graphein/pull/458)
+
 #### Bugfixes
 
 * Fix `graphein.ml.datasets.foldcomp_dataset` failing to import without the optional `lightning` package (`NameError: name 'L' is not defined`), which also made `FoldCompDataset` unusable. Only `FoldCompLightningDataModule` needs `lightning`; it now raises an `ImportError` with install instructions when created without it.
@@ -17,6 +21,7 @@
 * Fix the sdist (and the wheel `uv build` builds from it) containing no Python code: the hatch sdist `include` list only listed the README, LICENSE and two CSVs. It now includes `graphein/`. Removes the unused `MANIFEST.in`, which hatchling ignores.
 * Replace deprecated class-based `Config` with `model_config = ConfigDict(...)` in `GRNGraphConfig` and `PPIGraphConfig` to silence `PydanticDeprecatedSince20` warnings.
 * Pin `setuptools<81` so `bioservices` can still import `pkg_resources`, which setuptools 81 removed. Newer `bioservices` releases drop `pkg_resources` but require `lxml<6`, which is affected by CVE-2026-41066.
+* Fix `add_hydrogen_bond_interactions` finding few or no hydrogen bonds. It paired any of a list of truncated atom names (e.g. `ND`, `OE`) that rarely matched real atom names, and searched `rgroup_df`, which has no backbone atoms. Edges now require a donor-acceptor pair (using `HYDROGEN_BOND_DONORS`/`HYDROGEN_BOND_ACCEPTORS`, and backbone `N`/`O`) in different residues, ignoring pairs with a backbone atom between peptide-bonded residues (e.g. Ser `OG`(i)-`N`(i+1)). Residue variants (e.g. `HIE`, `DSN`) use their parent residue's side chain donors/acceptors. Atoms are assigned to nodes by chain, residue number and insertion code, so residues whose CA has an alt_loc keep their other atoms, and with `insertions=False` removed inserted residues no longer add edges to their parent residue. Adds `distance_threshold` and `hbond_types` (backbone-backbone, backbone-side chain, side chain-side chain) arguments. Pairs are found with a KD-tree rather than a full distance matrix, so large structures no longer need O(N²) memory. Fixes [#437](https://github.com/a-r-j/graphein/issues/437) [#458](https://github.com/a-r-j/graphein/pull/458)
 
 #### Misc
 
