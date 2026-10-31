@@ -151,6 +151,8 @@ def _hbonds(x, xp, cutoff=DEFAULT_CUTOFF):
     within :func:`_prune_radius`. Exactly equal to the dense computation."""
     n, h, c, o = _backbone(x, xp)
     d2 = _pdist2(n, o)
+    if d2.shape[-1] == 0:  # L < 2: no pairs
+        return d2 < cutoff
     b = float(xp.nan_to_num(xp.sqrt(((c - o) ** 2).sum(-1))).max())
     near = d2 < _prune_radius(b, cutoff) ** 2
     idx = np.nonzero(near) if xp is np else torch.nonzero(near, as_tuple=True)
@@ -719,6 +721,8 @@ def _surface_dots(n: int = 200):
 
 def _accessibility(x: np.ndarray, present: np.ndarray) -> np.ndarray:
     res, atom = np.nonzero(present)
+    if not len(res):
+        return np.zeros(present.shape[0], dtype=np.float32)
     xyz = x[res, atom].astype(np.float32)
     r = np.where(atom < 4, _ASA_RADII[np.minimum(atom, 3)], _ASA_RADIUS_SIDE)
     # atom radius + water, in float64 as mkdssp

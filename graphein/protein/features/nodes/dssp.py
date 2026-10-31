@@ -17,6 +17,10 @@ from Bio.PDB.DSSP import residue_max_acc
 from loguru import logger
 
 from graphein.protein import dssp_core
+from graphein.protein.resi_atoms import (
+    RESI_THREE_TO_1,
+    STANDARD_AMINO_ACID_MAPPING_1_TO_3,
+)
 
 if TYPE_CHECKING:
     from graphein.protein.config import DSSPConfig
@@ -87,13 +91,15 @@ def compute_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
         df["record_name"].isin(["ATOM", "HETATM"])
         & ~df["element_symbol"].isin(["H", "D", "T"])
     ]
-    # One conformer per atom (highest occupancy), then file order.
+    # One conformer per atom (highest occupancy), then file order. Row
+    # position, not atom_number: serials wrap or restart per chain.
     df = (
-        df.sort_values("occupancy", ascending=False, kind="stable")
+        df.assign(_row=np.arange(len(df)))
+        .sort_values("occupancy", ascending=False, kind="stable")
         .drop_duplicates(
             ["chain_id", "residue_number", "insertion", "atom_name"]
         )
-        .sort_values("atom_number", kind="stable")
+        .sort_values("_row")
     )
     keys = ["chain_id", "residue_number", "insertion"]
     res = df.groupby(keys, sort=False, dropna=False).ngroup().to_numpy()
@@ -123,6 +129,11 @@ def compute_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
     bonded[idx[:-1]] |= link
     keep &= ~het | bonded
     x, present, residues = x[keep], present[keep], residues[keep]
+    if not len(x):
+        raise ValueError(
+            "DSSP could not be calculated: no protein residues with a "
+            "complete backbone (N, CA, C, O)."
+        )
 
     bb = x[:, :4]
     L = len(bb)
@@ -291,7 +302,13 @@ def rsa(G: nx.Graph) -> nx.Graph:
     except KeyError:
         G = add_dssp_df(G, G.graph["config"].dssp_config)
         dssp_df = G.graph["dssp_df"]
-    dssp_df["max_acc"] = dssp_df["aa"].map(residue_max_acc["Sander"].get)
+    # Modified residues (e.g. MSE) use their parent's maximum.
+    parent = (
+        dssp_df["aa"]
+        .map(RESI_THREE_TO_1)
+        .map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
+    )
+    dssp_df["max_acc"] = parent.map(residue_max_acc["Sander"].get)
     dssp_df[["asa", "max_acc"]] = dssp_df[["asa", "max_acc"]].astype(float)
     dssp_df["rsa"] = dssp_df["asa"] / dssp_df["max_acc"]
 

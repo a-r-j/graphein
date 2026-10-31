@@ -3,12 +3,19 @@ import functools
 import pathlib
 
 # test
+import networkx as nx
+import numpy as np
 import pytest
+from Bio.PDB.DSSP import residue_max_acc
 
+from graphein.protein import dssp_core
 from graphein.protein.config import DSSPConfig, ProteinGraphConfig
 from graphein.protein.edges import distance as D
 from graphein.protein.features.nodes import rsa, secondary_structure
-from graphein.protein.features.nodes.dssp import DSSP_COLS, compute_dssp_df
+from graphein.protein.features.nodes.dssp import (
+    DSSP_COLS,
+    compute_dssp_df,
+)
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 from graphein.protein.subgraphs import extract_surface_subgraph
 from graphein.protein.utils import ProteinGraphConfigurationError
@@ -168,3 +175,40 @@ def test_deprecated_dssp_config_still_works():
             config=config, path=str(pdb_path.parent / "1lds.pdb")
         )
     assert all("ss" in d for _, d in g.nodes(data=True))
+
+
+def _4hhb_df():
+    return read_pdb_to_dataframe(path=str(pdb_path.parent / "4hhb.pdb"))
+
+
+def test_compute_dssp_df_ignores_atom_serials():
+    # Serials wrap past 99,999 atoms or restart per chain in merged files.
+    df = _4hhb_df()
+    ref = compute_dssp_df(df)
+    wrapped = compute_dssp_df(df.assign(atom_number=df["atom_number"] % 1000))
+    assert wrapped.equals(ref)
+
+
+def test_rsa_of_modified_residue_uses_parent_max_acc():
+    df = _4hhb_df()
+    met = (df["chain_id"] == "A") & (df["residue_number"] == 32)
+    df.loc[met, "residue_name"] = "MSE"
+    df.loc[met, "record_name"] = "HETATM"
+    G = nx.Graph(dssp_df=compute_dssp_df(df), config=ProteinGraphConfig())
+    G = rsa(G)
+    row = G.graph["dssp_df"].query("chain == 'A' and resnum == 32").iloc[0]
+    assert row["aa"] == "MSE"
+    assert row["rsa"] == row["asa"] / residue_max_acc["Sander"]["MET"]
+
+
+def test_compute_dssp_df_without_backbone_raises():
+    df = _4hhb_df()
+    with pytest.raises(ValueError, match="complete backbone"):
+        compute_dssp_df(df[df["atom_name"] == "CA"])
+
+
+def test_dssp_core_degenerate_inputs():
+    x = np.random.default_rng(0).random((1, 4, 3)).astype(np.float32)
+    assert dssp_core.assign_dssp_np(x).shape == (1, 3)
+    acc = dssp_core._accessibility(np.zeros((2, 5, 3)), np.zeros((2, 5), bool))
+    assert acc.tolist() == [0, 0]
