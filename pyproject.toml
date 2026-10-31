@@ -33,7 +33,7 @@ dependencies = [
     "matplotlib>=3.4.3",
     "multipledispatch",
     "networkx",
-    "numpy<2",
+    "numpy<3",
     "plotly",
     "pydantic",
     "rcsb-api>=1.4.0",
