@@ -8,11 +8,9 @@
 from __future__ import annotations
 
 import itertools
-from typing import Union
 
 import networkx as nx
 import numpy as np
-import pandas as pd
 from loguru import logger as log
 from sklearn.metrics import pairwise_distances
 from sklearn.neighbors import kneighbors_graph
@@ -98,7 +96,7 @@ def add_k_nn_edges(
     mode: str = "connectivity",
     metric: str = "minkowski",
     p: int = 2,
-    include_self: Union[bool, str] = False,
+    include_self: bool | str = False,
 ):
     """
     Adds edges to nodes based on K nearest neighbours.

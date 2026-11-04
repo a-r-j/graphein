@@ -6,7 +6,7 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Callable, List, Optional
+from collections.abc import Callable
 
 import networkx as nx
 import pandas as pd
@@ -17,7 +17,7 @@ from graphein.grn.parse_trrust import TRRUST_df
 
 
 def add_trrust_edges(
-    G: nx.Graph, trrust_filtering_funcs: Optional[List[Callable]] = None
+    G: nx.Graph, trrust_filtering_funcs: list[Callable] | None = None
 ) -> nx.Graph:
     """
     Adds edges from TRRUST to GRNGraph
@@ -43,7 +43,7 @@ def add_trrust_edges(
 
 
 def add_regnetwork_edges(
-    G: nx.Graph, regnetwork_filtering_funcs: Optional[List[Callable]] = None
+    G: nx.Graph, regnetwork_filtering_funcs: list[Callable] | None = None
 ) -> nx.Graph:
     """
     Adds edges from RegNetwork to GRNGraph

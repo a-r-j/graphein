@@ -9,7 +9,8 @@ All plots are produced with Plotly and so are loggable to Weights and Biases.
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Any, Dict, List, Optional, Union
+from collections.abc import Sequence
+from typing import Any
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -52,7 +53,7 @@ def plot_dihedrals(
 
 
 def plot_distance_matrix(
-    x: Union[CoordTensor, AtomTensor], **kwargs: Dict[str, Any]
+    x: CoordTensor | AtomTensor, **kwargs: dict[str, Any]
 ) -> go.Figure:
     """
     Computes and plots a distance matrix of a ``CoordTensor`` or ``AtomTensor``.
@@ -63,17 +64,17 @@ def plot_distance_matrix(
     :rtype: go.Figure
     """
     if x.ndim == 3:
-        x = get_full_atom_coords(x, **kwargs)
+        x = get_full_atom_coords(x, **kwargs)[0]
 
     dist_mat = torch.cdist(x, x)
     return px.imshow(dist_mat)
 
 
 def plot_structure(
-    x: Union[CoordTensor, AtomTensor],
-    atoms: List[str] = ["N", "CA", "C", "O", "CB"],
+    x: CoordTensor | AtomTensor,
+    atoms: Sequence[str] = ("N", "CA", "C", "O", "CB"),
     lines: bool = True,
-    residue_ids: Optional[List[str]] = None,
+    residue_ids: list[str] | None = None,
 ) -> go.Figure:
     """Plots a protein structure in 3D.
 
@@ -91,19 +92,18 @@ def plot_structure(
     """
 
     mode = "lines" if lines else "markers"
+    fig = go.Figure()
     if x.ndim == 2:
-        fig = go.Figure()
-        fig.add_trace(go.Scatter3d(x=x[:, 0], y=x[:, 1], z=x[:, 2], mode=mode))
-    if x.ndim == 3:
-        indices = [ATOM_NUMBERING[a] for a in atoms]
-        fig = go.Figure()
-        for idx in indices:
-            fig.add_scatter3d(
-                x=x[:, idx, 0],
-                y=x[:, idx, 1],
-                z=x[:, idx, 2],
-                mode=mode,
-                name=atoms[idx],
-                text=residue_ids,
-            )
+        fig.add_scatter3d(x=x[:, 0], y=x[:, 1], z=x[:, 2], mode=mode)
+        return fig
+    for atom in atoms:
+        idx = ATOM_NUMBERING[atom]
+        fig.add_scatter3d(
+            x=x[:, idx, 0],
+            y=x[:, idx, 1],
+            z=x[:, idx, 2],
+            mode=mode,
+            name=atom,
+            text=residue_ids,
+        )
     return fig

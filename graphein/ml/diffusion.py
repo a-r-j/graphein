@@ -7,8 +7,6 @@ and returns a 2D xarray.
 These arrays can then be stacked to generate a diffusion tensor.
 """
 
-from typing import Dict
-
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -34,14 +32,14 @@ def identity_matrix(G: nx.Graph) -> xr.DataArray:
 
 def adjacency_matrix_power(
     G: nx.Graph,
-    amat_kwargs: Dict = {},
+    amat_kwargs: dict | None = None,
     with_identity: bool = True,
     power: float = 1,
 ) -> xr.DataArray:
     """
     Return the matrix power of the adjacency matrix.
 
-    :param amat_kwargs: Keyword arguments to configure NetworkX's ``adjacency_matrix`` function. Defaults to ``{}``
+    :param amat_kwargs: Keyword arguments to configure NetworkX's ``adjacency_matrix`` function. Defaults to ``None``
     :type amat_kwargs: Dict[str, Any]
     :param with_identity: Whether or not to add in the identity matrix to the adjacency matrix. Effectively adding "self loops". Defaults to True.
     :type with_identity: bool
@@ -51,7 +49,7 @@ def adjacency_matrix_power(
     :rtype: xr.DataArray
     """
     adjacency_matrix_kwargs = {"weight": "weight", "nodelist": None}
-    adjacency_matrix_kwargs.update(amat_kwargs)
+    adjacency_matrix_kwargs.update(amat_kwargs or {})
     amat = nx.adjacency_matrix(G, **adjacency_matrix_kwargs)
     if with_identity:
         amat = amat + np.eye(len(G))

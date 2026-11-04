@@ -7,7 +7,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Any, Dict
+from typing import Any
 
 import networkx as nx
 import numpy as np
@@ -239,7 +239,7 @@ def add_bond_order(G: nx.Graph) -> nx.Graph:
 
 
 def identify_bond_type_from_mapping(
-    G: nx.Graph, u: str, v: str, a: Dict[str, Any], query: str
+    G: nx.Graph, u: str, v: str, a: dict[str, Any], query: str
 ):
     """
     Compares the bond length between two atoms in the graph, and the relevant

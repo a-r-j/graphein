@@ -8,8 +8,8 @@
 from __future__ import annotations
 
 import itertools
+from collections.abc import Iterable
 from itertools import combinations, product
-from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -17,12 +17,11 @@ import pandas as pd
 from loguru import logger as log
 from scipy.spatial import Delaunay, cKDTree
 from scipy.spatial.distance import pdist, squareform
-from sklearn.neighbors import NearestNeighbors, kneighbors_graph
+from sklearn.neighbors import NearestNeighbors
 
 from graphein.protein.resi_atoms import (
     AA_RING_ATOMS,
     AROMATIC_RESIS,
-    BACKBONE_ATOMS,
     BOND_TYPES,
     CATION_PI_RESIS,
     CATION_RESIS,
@@ -255,7 +254,7 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
 
 
 def add_hydrophobic_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+    G: nx.Graph, rgroup_df: pd.DataFrame | None = None
 ):
     """
     Find all hydrophobic interactions.
@@ -288,7 +287,7 @@ def add_hydrophobic_interactions(
 
 
 def add_disulfide_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+    G: nx.Graph, rgroup_df: pd.DataFrame | None = None
 ):
     """
     Find all disulfide interactions between CYS residues
@@ -332,7 +331,7 @@ def add_disulfide_interactions(
         )
 
 
-HBOND_TYPE_BACKBONE_ATOMS: Dict[str, int] = {
+HBOND_TYPE_BACKBONE_ATOMS: dict[str, int] = {
     "sc-sc": 0,
     "bb-sc": 1,
     "bb-bb": 2,
@@ -340,16 +339,16 @@ HBOND_TYPE_BACKBONE_ATOMS: Dict[str, int] = {
 """Number of backbone atoms in the donor-acceptor pair of each hydrogen bond
 type."""
 
-HBOND_TYPES: List[str] = list(HBOND_TYPE_BACKBONE_ATOMS)
+HBOND_TYPES: list[str] = list(HBOND_TYPE_BACKBONE_ATOMS)
 """Hydrogen bond types by the location (backbone or side chain) of the donor
 and acceptor atoms."""
 
-NO_AMIDE_HYDROGEN_RESIS: List[str] = ["3HP", "4HP", "BMT", "MLE", "MVA", "SAR"]
+NO_AMIDE_HYDROGEN_RESIS: list[str] = ["3HP", "4HP", "BMT", "MLE", "MVA", "SAR"]
 """Residues whose backbone ``N`` has no hydrogen, so is not a hydrogen bond
 donor, besides those :const:`~graphein.protein.resi_atoms.RESI_THREE_TO_1`
 maps to proline: hydroxyprolines mapped to ``X`` and N-methylated residues."""
 
-HBOND_RESIDUE_VARIANTS: Dict[str, str] = {
+HBOND_RESIDUE_VARIANTS: dict[str, str] = {
     "ASH": "ASP",
     "DAR": "ARG",
     "DAS": "ASP",
@@ -382,7 +381,7 @@ deliberately not included."""
 
 def add_hydrogen_bond_interactions(
     G: nx.Graph,
-    rgroup_df: Optional[pd.DataFrame] = None,
+    rgroup_df: pd.DataFrame | None = None,
     distance_threshold: float = 3.5,
     hbond_types: Iterable[str] = HBOND_TYPES,
 ):
@@ -580,9 +579,7 @@ def add_hydrogen_bond_interactions(
     add_interacting_resis(G, (i[is_hbond], j[is_hbond]), df, ["hbond"])
 
 
-def add_ionic_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
-):
+def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame | None = None):
     """
     Find all ionic interactions.
 
@@ -623,9 +620,7 @@ def add_ionic_interactions(
                     G.remove_edge(r1, r2)
 
 
-def add_aromatic_interactions(
-    G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None
-):
+def add_aromatic_interactions(G: nx.Graph, pdb_df: pd.DataFrame | None = None):
     """
     Find all aromatic-aromatic interaction.
 
@@ -681,7 +676,7 @@ def add_aromatic_interactions(
 
 
 def add_aromatic_sulphur_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+    G: nx.Graph, rgroup_df: pd.DataFrame | None = None
 ):
     """Find all aromatic-sulphur interactions.
 
@@ -726,7 +721,7 @@ def add_aromatic_sulphur_interactions(
 
 
 def add_cation_pi_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+    G: nx.Graph, rgroup_df: pd.DataFrame | None = None
 ):
     """Add cation-pi interactions.
 
@@ -835,7 +830,7 @@ def add_vdw_clashes(
 
 def add_pi_stacking_interactions(
     G: nx.Graph,
-    pdb_df: Optional[pd.DataFrame] = None,
+    pdb_df: pd.DataFrame | None = None,
     centroid_distance: float = 7.0,
 ):
     """Adds Pi-stacking interactions to graph.
@@ -912,7 +907,7 @@ def add_pi_stacking_interactions(
             add_edge(G, n1, n2, "pi_stacking")
 
 
-def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
+def add_t_stacking(G: nx.Graph, pdb_df: pd.DataFrame | None = None):
     if pdb_df is None:
         pdb_df = G.graph["raw_pdb_df"]
     dfs = []
@@ -1023,7 +1018,7 @@ def add_backbone_carbonyl_carbonyl_interactions(
 
 def add_salt_bridges(
     G: nx.Graph,
-    rgroup_df: Optional[pd.DataFrame] = None,
+    rgroup_df: pd.DataFrame | None = None,
     threshold: float = 4.0,
 ):
     """Compute salt bridge interactions.
@@ -1086,7 +1081,7 @@ def get_interacting_atoms(
 
 
 def add_delaunay_triangulation(
-    G: nx.Graph, allowable_nodes: Optional[List[str]] = None
+    G: nx.Graph, allowable_nodes: list[str] | None = None
 ):
     """
     Compute the Delaunay triangulation of the protein structure.
@@ -1118,7 +1113,7 @@ def add_delaunay_triangulation(
     """
     if allowable_nodes is None:
         coords = np.array([d["coords"] for _, d in G.nodes(data=True)])
-        node_map: Dict[int, str] = dict(enumerate(G.nodes()))
+        node_map: dict[int, str] = dict(enumerate(G.nodes()))
     else:
         coords = np.array(
             [
@@ -1127,12 +1122,12 @@ def add_delaunay_triangulation(
                 if d["atom_type"] in allowable_nodes
             ]
         )
-        node_map: Dict[int, str] = {
+        node_map: dict[int, str] = {
             i: n
             for i, (n, d) in enumerate(G.nodes(data=True))
             if d["atom_type"] in allowable_nodes
         }
-        node_map: Dict[int, str] = dict(enumerate(node_map.values()))
+        node_map: dict[int, str] = dict(enumerate(node_map.values()))
 
     tri = Delaunay(coords)  # this is the triangulation
     log.debug(
@@ -1257,7 +1252,7 @@ def add_fully_connected_edges(G: nx.Graph):
     :type G: nx.Graph
     """
     for n1, n2 in itertools.product(G.nodes(), G.nodes()):
-        add_edge(G, n1, n2, f"fully_connected")
+        add_edge(G, n1, n2, "fully_connected")
 
 
 # TODO Support for directed edges
@@ -1462,7 +1457,7 @@ def compute_angle(
 
 def get_edges_by_bond_type(
     G: nx.Graph, bond_type: str
-) -> List[Tuple[str, str]]:
+) -> list[tuple[str, str]]:
     """
     Return edges of a particular bond type.
 
@@ -1479,7 +1474,7 @@ def get_edges_by_bond_type(
     ]
 
 
-def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
+def node_coords(G: nx.Graph, n: str) -> tuple[float, float, float]:
     """
     Return the ``x, y, z`` coordinates of a node.
     This is a helper function. Simplifies the code.
@@ -1499,7 +1494,7 @@ def add_interacting_resis(
     G: nx.Graph,
     interacting_atoms: np.ndarray,
     dataframe: pd.DataFrame,
-    kind: List[str],
+    kind: list[str],
 ):
     """
     Add interacting residues to graph.

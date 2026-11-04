@@ -7,12 +7,12 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Any, Dict
+from typing import Any
 
 from graphein.rna.constants import RNA_ATOM_BOND_STATE, RNA_ATOMIC_RADII
 
 
-def add_atomic_radii(n: str, d: Dict[str, Any]) -> float:
+def add_atomic_radii(n: str, d: dict[str, Any]) -> float:
     """Add atomic radii to nodes based on values provided in:
 
     Structures of the Molecular Components in DNA and RNA with Bond

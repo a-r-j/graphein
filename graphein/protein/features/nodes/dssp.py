@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 import tempfile
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any
 
 import networkx as nx
 import pandas as pd
@@ -25,6 +25,10 @@ CRYST1_PLACEHOLDER = (
     "CRYST1    1.000    1.000    1.000  90.00  90.00  90.00 P 1           1"
 )
 """Unit cell record prepended to reconstructed PDB files for DSSP."""
+
+if TYPE_CHECKING:
+    from graphein.protein.config import DSSPConfig
+
 
 DSSP_COLS = [
     "chain",
@@ -51,7 +55,7 @@ DSSP_SS = ["H", "B", "E", "G", "I", "T", "S"]
 """Secondary structure types detected by ``DSSP``"""
 
 
-def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
+def parse_dssp_df(dssp: dict[str, Any]) -> pd.DataFrame:
     """
     Parse ``DSSP`` output to DataFrame.
 
@@ -71,7 +75,7 @@ def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
 @requires_external_dependencies("mkdssp")
 def add_dssp_df(
     G: nx.Graph,
-    dssp_config: Optional[DSSPConfig],
+    dssp_config: DSSPConfig | None,
 ) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein graph.
@@ -243,8 +247,7 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
             cannot be added to atom granularity graph"
         )
 
-    else:
-        nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
+    nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
 
     if config.verbose:
         logger.debug("Added " + feature + " features to graph nodes")

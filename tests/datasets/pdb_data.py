@@ -3,13 +3,12 @@ import functools
 import math
 
 import pandas as pd
-import pytest
 
 from graphein.datasets import PDBManager
 from graphein.protein.utils import read_fasta
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def init_class() -> PDBManager:
     return PDBManager("tmp/")
 

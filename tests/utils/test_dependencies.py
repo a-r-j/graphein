@@ -4,7 +4,6 @@ import ast
 import re
 import tomllib
 from pathlib import Path
-from typing import List, Tuple
 
 import pytest
 
@@ -22,7 +21,7 @@ def _extras_packages() -> set:
     }
 
 
-def _import_message_calls() -> List[Tuple[str, int, str, bool]]:
+def _import_message_calls() -> list[tuple[str, int, str, bool]]:
     """Return ``(file, line, package, extras)`` for each ``import_message``
     call in the graphein package."""
     calls = []
@@ -83,5 +82,5 @@ def test_import_message_extras_flag_matches_extras_requirements(
     assert extras == in_extras, (
         f"{path}:{line}: import_message for {package!r} has "
         f"extras={extras}, but {package!r} is "
-        f"{'' if in_extras else 'not '}in {EXTRAS_FILE.name}"
+        f"{'' if in_extras else 'not '}in the pyproject.toml extras"
     )
