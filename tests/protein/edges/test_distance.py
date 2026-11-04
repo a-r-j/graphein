@@ -376,7 +376,8 @@ def test_add_hydrogen_bond_interactions_empty_types():
 
 
 @pytest.mark.parametrize(
-    "granularity,columns", [("CA", ["insertion"]), ("atom", ["alt_loc"])]
+    "granularity,columns",
+    [("CA", ["insertion", "occupancy"]), ("atom", ["alt_loc"])],
 )
 def test_add_hydrogen_bond_interactions_missing_columns(granularity, columns):
     """Dataframes without insertion / alt_loc columns are treated as blank."""
@@ -487,9 +488,46 @@ def test_add_hydrogen_bond_interactions_insertion_codes():
     assert "hbond" in g.edges[o, n_new]["kind"]
 
 
-@pytest.mark.parametrize("variant", ["HYP", "DPR"])
+def test_add_hydrogen_bond_interactions_same_number_hetatm():
+    """A kept water numbered like a protein residue gets none of its atoms.
+
+    Moves a water to the number of the ``O(i)`` residue of a helical hbond.
+    Atoms were matched to nodes without the residue name, so the residue's
+    ``O`` was also assigned to the water's ``O`` node.
+    """
+    o, n = _helical_backbone_hbond(_hbond_graph("atom"))
+    chain, _, res_num, _ = o.split(":")
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    water = df.index[(df["chain_id"] == chain) & (df["residue_name"] == "HOH")]
+    df.loc[water[0], "residue_number"] = int(res_num)
+
+    # alt_locs="include": otherwise graph construction keeps only one of
+    # the two O atoms with the same chain and residue number.
+    g = _hbond_graph(
+        "atom",
+        df=df,
+        config_kwargs={"keep_hets": ["HOH"], "alt_locs": "include"},
+    )
+    water_node = f"{chain}:HOH:{res_num}:O"
+    assert water_node in g
+    assert g.has_edge(o, n)
+    # Waters are not hydrogen bond donors or acceptors here
+    assert not any(
+        "hbond" in g.edges[water_node, nbr]["kind"]
+        for nbr in g.neighbors(water_node)
+    )
+
+
+@pytest.mark.parametrize(
+    "variant", ["HYP", "DPR", "3HP", "4HP", "SAR", "MLE", "MVA", "BMT"]
+)
 def test_add_hydrogen_bond_interactions_proline_variants(variant):
-    """Backbone N of proline variants is not a hydrogen bond donor."""
+    """Backbone N without an amide hydrogen is not a hydrogen bond donor.
+
+    Covers proline variants (including hydroxyprolines 3HP / 4HP, which
+    RESI_THREE_TO_1 maps to X) and N-methylated residues.
+    """
     _, n = _helical_backbone_hbond(_hbond_graph("atom"))
     chain, res_name, res_num, _ = n.split(":")
 

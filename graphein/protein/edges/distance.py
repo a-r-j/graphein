@@ -344,6 +344,11 @@ HBOND_TYPES: List[str] = list(HBOND_TYPE_BACKBONE_ATOMS)
 """Hydrogen bond types by the location (backbone or side chain) of the donor
 and acceptor atoms."""
 
+NO_AMIDE_HYDROGEN_RESIS: List[str] = ["3HP", "4HP", "BMT", "MLE", "MVA", "SAR"]
+"""Residues whose backbone ``N`` has no hydrogen, so is not a hydrogen bond
+donor, besides those :const:`~graphein.protein.resi_atoms.RESI_THREE_TO_1`
+maps to proline: hydroxyprolines mapped to ``X`` and N-methylated residues."""
+
 HBOND_RESIDUE_VARIANTS: Dict[str, str] = {
     "ASH": "ASP",
     "DAR": "ARG",
@@ -389,8 +394,9 @@ def add_hydrogen_bond_interactions(
     the other. Side chain donors and acceptors are defined in
     :const:`~graphein.protein.resi_atoms.HYDROGEN_BOND_DONORS` and
     :const:`~graphein.protein.resi_atoms.HYDROGEN_BOND_ACCEPTORS`. Backbone
-    amide nitrogens (``N``, except in proline and its variants) are donors and
-    backbone oxygens (``O`` and ``OXT``) are acceptors.
+    amide nitrogens (``N``, except in proline variants and N-methylated
+    residues; :const:`NO_AMIDE_HYDROGEN_RESIS`) are donors and backbone
+    oxygens (``O`` and ``OXT``) are acceptors.
 
     Side chain atoms of the residue variants in :const:`HBOND_RESIDUE_VARIANTS`
     (e.g. ``HIE``, ``DSN``) are matched to those of their parent residue.
@@ -414,9 +420,11 @@ def add_hydrogen_bond_interactions(
         (default), ``G.graph["raw_pdb_df"]`` is used. Backbone hydrogen bonds
         are only found if this dataframe contains backbone atoms (unlike
         ``G.graph["rgroup_df"]``), and a warning is logged if they are
-        requested but there are none. Atoms are
-        assigned to nodes by chain, residue number and insertion code (and
-        atom name and alt_loc for atom graphs).
+        requested but there are none. Atoms are assigned to nodes by chain,
+        residue name and number and insertion code (and atom name and alt_loc
+        for atom graphs); any ``node_id`` column is ignored. Missing
+        ``insertion`` and ``alt_loc`` columns are treated as blank, and a
+        missing ``occupancy`` column as equal occupancies.
     :type rgroup_df: Optional[pd.DataFrame]
     :param distance_threshold: Maximum donor-acceptor distance in Angstroms.
         Defaults to ``3.5``.
@@ -447,10 +455,12 @@ def add_hydrogen_bond_interactions(
     # without insertions inserted residues share their parent's node ID.
     nodes = G.graph["pdb_df"]
     nodes = nodes.loc[nodes["node_id"].isin(list(G.nodes()))]
-    key = ["chain_id", "residue_number", "insertion"]
+    key = ["chain_id", "residue_name", "residue_number", "insertion"]
     df = rgroup_df.drop(columns="node_id", errors="ignore")
     for col in ("insertion", "alt_loc"):
         df[col] = df[col].fillna("") if col in df else ""
+    if "occupancy" not in df:
+        df["occupancy"] = 1.0
     if G.graph.get("node_type") == "atom":
         key += ["atom_name", "alt_loc"]
     else:
@@ -477,9 +487,12 @@ def add_hydrogen_bond_interactions(
         for atom in atoms
     ]
     is_amino_acid = df["residue_name"].isin(list(RESI_THREE_TO_1))
-    # Proline variants (e.g. HYP, DPR) also lack a backbone amide hydrogen
-    is_proline = df["residue_name"].map(RESI_THREE_TO_1) == "P"
-    bb_donor = is_amino_acid & (df["atom_name"] == "N") & ~is_proline
+    # Proline variants (e.g. HYP, DPR) and N-methylated residues also lack a
+    # backbone amide hydrogen
+    no_amide_h = (df["residue_name"].map(RESI_THREE_TO_1) == "P") | df[
+        "residue_name"
+    ].isin(NO_AMIDE_HYDROGEN_RESIS)
+    bb_donor = is_amino_acid & (df["atom_name"] == "N") & ~no_amide_h
     bb_acceptor = is_amino_acid & df["atom_name"].isin(["O", "OXT"])
     donor = (bb_donor | res_atom.isin(sc_donors)).to_numpy()
     acceptor = (bb_acceptor | res_atom.isin(sc_acceptors)).to_numpy()
@@ -499,7 +512,7 @@ def add_hydrogen_bond_interactions(
         + ":"
         + df["insertion"]
     )
-    all_atoms = df
+    merged = df
     keep = donor | acceptor
     df = df.loc[keep].reset_index(drop=True)
     residue = all_residues[keep].to_numpy()
@@ -526,21 +539,16 @@ def add_hydrogen_bond_interactions(
     atom = df["atom_name"].to_numpy()
 
     def _gamma_to_n(x, y):
-        return (
-            np.isin(atom[x], ["OG", "OG1"])
-            & ~backbone[x]
-            & (atom[y] == "N")
-            & backbone[y]
-        )
+        return np.isin(atom[x], ["OG", "OG1"]) & (atom[y] == "N") & backbone[y]
 
     gamma_ij, gamma_ji = _gamma_to_n(i, j), _gamma_to_n(j, i)
     bb = np.flatnonzero(is_hbond & ((n_backbone == 2) | gamma_ij | gamma_ji))
     if len(bb) > 0:
 
         def _coords(atom_name):
-            mask = is_amino_acid & (all_atoms["atom_name"] == atom_name)
+            mask = is_amino_acid & (merged["atom_name"] == atom_name)
             return (
-                all_atoms.loc[mask, coord_cols]
+                merged.loc[mask, coord_cols]
                 .groupby(all_residues[mask])
                 .first()
             )
