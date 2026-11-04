@@ -422,7 +422,8 @@ def add_hydrogen_bond_interactions(
         ``G.graph["rgroup_df"]``), and a warning is logged if they are
         requested but there are none. Atoms are assigned to nodes by chain,
         residue name and number and insertion code (and atom name and alt_loc
-        for atom graphs); any ``node_id`` column is ignored. Missing
+        for atom graphs), and a warning is logged if none match; any
+        ``node_id`` column is ignored. Missing
         ``insertion`` and ``alt_loc`` columns are treated as blank, and a
         missing ``occupancy`` column as equal occupancies.
     :type rgroup_df: Optional[pd.DataFrame]
@@ -472,6 +473,12 @@ def add_hydrogen_bond_interactions(
             df = remove_alt_locs(df, keep=alt_locs)
     nodes = nodes[key + ["node_id"]].fillna({"insertion": "", "alt_loc": ""})
     df = df.merge(nodes, on=key)
+    if df.empty:
+        log.warning(
+            "No atoms in rgroup_df match a graph node by "
+            f"{', '.join(key)}, so no hydrogen bonds were added."
+        )
+        return
 
     # Map residue variants (e.g. HIE, DSN) to their parent residue
     parent = df["residue_name"].replace(HBOND_RESIDUE_VARIANTS)

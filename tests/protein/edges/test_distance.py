@@ -370,6 +370,16 @@ def test_add_hydrogen_bond_interactions_no_backbone_warns(monkeypatch):
     assert "backbone" in log.warning.call_args.args[0]
 
 
+def test_add_hydrogen_bond_interactions_no_matching_atoms_warns(monkeypatch):
+    """A dataframe whose atoms match no graph node logs a warning."""
+    g = _hbond_graph("CA")
+    df = g.graph["raw_pdb_df"].assign(chain_id="Z")
+    log = MagicMock()
+    monkeypatch.setattr(distance, "log", log)
+    add_hydrogen_bond_interactions(g, rgroup_df=df)
+    assert "No atoms" in log.warning.call_args.args[0]
+
+
 def test_add_hydrogen_bond_interactions_empty_types():
     with pytest.raises(ValueError):
         _hbond_graph("atom", hbond_types=[])
