@@ -203,3 +203,24 @@ def test_sidechain_torsion_selenocysteine():
     coords[1, [n, ca, cb, sg]] = coords[0, [n, ca, cb, 37]]
     angles = sidechain_torsion(coords, ["SEC", "CYS"])
     assert angles[0, 0] == pytest.approx(angles[1, 0].item())
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+@pytest.mark.parametrize("last", ["PYL", "MSE"])
+def test_sidechain_torsion_one_row_per_residue(last):
+    # Residues without chi angles at the end must still get a (masked) row
+    torch.manual_seed(0)
+    coords = torch.rand(3, 37, 3, requires_grad=True)
+    angles, mask = sidechain_torsion(
+        coords, ["SER", "LYS", last], return_mask=True
+    )
+    assert angles.shape == mask.shape == (3, 4)
+    assert mask.tolist() == [
+        [True, False, False, False],
+        [True, True, True, True],
+        [False] * 4,
+    ]
+    assert not angles[2].any()
+    # Masked chi angles don't give NaN gradients
+    angles.sum().backward()
+    assert not coords.grad.isnan().any()

@@ -6,6 +6,8 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+from functools import lru_cache
+
 import numpy as np
 from loguru import logger as log
 
@@ -36,57 +38,29 @@ except ImportError:
     )
     log.warning(message)
 
-# Atom indices of each chi angle's four atoms, per residue type
-_CHI_ATOM_INDICES = {
-    res: [[ATOM_NUMBERING_MODIFIED[a] for a in group] for group in groups]
-    for res, groups in CHI_ANGLES_ATOMS.items()
-}
+# Row of each residue type in the chi atom table; the extra last row is for
+# residues without chi angles
+_CHI_ROWS = {res: i for i, res in enumerate(CHI_ANGLES_ATOMS)}
+_NO_CHI = len(_CHI_ROWS)
 
 
-def _extract_torsion_coords(
-    coords: AtomTensor, res_types: list[str]
+@lru_cache(maxsize=None)
+def _chi_atom_table(
+    device: torch.device,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Returns a ``(L*?) x 4 x 3`` tensor of the coordinates of the atoms for
-    each sidechain torsion angle. The first dimension will be larger than the
-    input as we flatten the array of torsion angles per residue.
-
-    Also returns a ``(L*?) x 1`` indexing tensor to map back to each residue
-    (this is because we have variable numbers of torsion angles per residue).
-
-    :param coords: AtomTensor of shape ``(L*?, 37, 3)``
-    :type coords: AtomTensor
-    :param res_types: List of 3-letter residue types
-    :type res_types: List[str]
-    :return: Coordinates for computing each sidechain torsion angle
-        and indexing tensor.
-    :rtype: Tuple[torch.Tensor, torch.Tensor]
+    """Returns the atom indices of the (up to) four chi angles of each residue
+    type (``(num types + 1) x 4 x 4``) and a mask of which chi angles exist
+    (``(num types + 1) x 4``). Rows follow ``_CHI_ROWS``.
     """
-    res_atoms = []
-    idxs = []
-
-    # Whether or not the protein contains selenocysteine
-    selenium = coords.shape[1] == 38
-
-    # Iterate over residues and grab indices of the atoms for each Chi angle
-    for i, res in enumerate(res_types):
-        try:
-            angle_groups = _CHI_ATOM_INDICES[res]
-        except KeyError:
-            log.warning(
-                f"Can't determine chi angle groups for non-standard residue: {res}. These will be set to 0"
+    index = torch.zeros(_NO_CHI + 1, 4, 4, dtype=torch.long)
+    mask = torch.zeros(_NO_CHI + 1, 4, dtype=torch.bool)
+    for res, row in _CHI_ROWS.items():
+        for k, group in enumerate(CHI_ANGLES_ATOMS[res]):
+            index[row, k] = torch.tensor(
+                [ATOM_NUMBERING_MODIFIED[a] for a in group]
             )
-            angle_groups = []
-        if (not selenium and res == "SEC") or res == "PYL":
-            angle_groups = []
-
-        res_atoms.extend(angle_groups)
-        idxs.extend([i] * len(angle_groups))
-
-    idxs = torch.tensor(idxs, dtype=torch.long, device=coords.device)
-    res_atoms = torch.tensor(res_atoms, dtype=torch.long, device=coords.device)
-
-    # Select the coordinates for each chi angle
-    return idxs, coords[idxs.unsqueeze(-1), res_atoms.view(-1, 4)]
+            mask[row, k] = True
+    return index.to(device), mask.to(device)
 
 
 def sidechain_torsion(
@@ -100,71 +74,60 @@ def sidechain_torsion(
     Computes sidechain torsion angles for a protein.
 
     Atom groups used to define each chi angle are specified in
-    :ref:`graphein.protein.resi_atoms.CHI_ANGLES_ATOMS`.
+    :ref:`graphein.protein.resi_atoms.CHI_ANGLES_ATOMS`. Missing chi angles
+    are ``0`` (``[1, 0]`` if ``embed=True``) and ``False`` in the mask.
 
     :param coords: Tensor of shape ``(L, N, 3)`` where ``L`` is the number of
         residues, ``N`` is the number of atoms per residue (Default is 37;
-        problems may occur with differing selections).
+        problems may occur with differing selections). With ``N = 38``,
+        selenocysteine (``SEC``) has a chi angle (``SE`` at index 37).
     :type coords: AtomTensor
     :param res_types: List of three-letter residue types.
     :type res_types: List[str]
     :param rad: If ``True``, returns angles in radians, else in degrees.
         Defaults to ``True``.
     :type rad: bool, optional
-    :param return_mask: _description_, defaults to False
+    :param embed: If ``True``, returns ``[cos(chi1), sin(chi1), ...]``
+        (``L x 8``). Defaults to ``False``.
+    :type embed: bool, optional
+    :param return_mask: Whether to also return a boolean mask of the chi angles
+        that exist, defaults to ``False``.
     :type return_mask: bool, optional
-    :return: _description_
+    :return: Torsion tensor of shape ``(L, 4)`` (``(L, 8)`` if ``embed=True``)
+        and, if ``return_mask=True``, the mask of the same shape.
     :rtype: Union[TorsionTensor, Tuple[TorsionTensor, torch.Tensor]]
     """
-    # Whether or not the protein contains selenocysteine
-    selenium = coords.shape[1] == 38
-
-    idxs, coords = _extract_torsion_coords(coords, res_types)
-    angles = _dihedral_angle(
-        coords[:, 0, :].unsqueeze(1),
-        coords[:, 1, :].unsqueeze(1),
-        coords[:, 2, :].unsqueeze(1),
-        coords[:, 3, :].unsqueeze(1),
-    )
-
     if embed and not rad:
         raise ValueError("Cannot embed torsion angles in degrees.")
+
+    for res in sorted(set(res_types) - _CHI_ROWS.keys()):
+        log.warning(
+            f"Can't determine chi angle groups for non-standard residue: {res}. These will be set to 0"
+        )
+    # Without Se atoms (38th atom type), SEC has no chi angles
+    no_chi = {"PYL"} if coords.shape[1] == 38 else {"PYL", "SEC"}
+    rows = torch.tensor(
+        [
+            _NO_CHI if res in no_chi else _CHI_ROWS.get(res, _NO_CHI)
+            for res in res_types
+        ],
+        device=coords.device,
+    )
+    index, mask = _chi_atom_table(coords.device)
+    index, mask = index[rows], mask[rows]
+
+    # (L, 4 chi angles, 4 atoms, 3)
+    chi_coords = coords[
+        torch.arange(len(rows), device=coords.device).view(-1, 1, 1), index
+    ]
+    angles = _dihedral_angle(*chi_coords.unbind(2)).masked_fill(~mask, 0.0)
 
     if not rad:
         angles = angles * 180 / torch.pi
 
-    # Always 4 chi angles per residue, even if no residue has all 4
-    angles, mask = to_dense_batch(angles, idxs, max_num_nodes=4)
-    angles = angles.squeeze(-1)
-
-    # Interleave sin and cos transformed tensors
     if embed:
         angles = angle_to_unit_circle(angles)
         mask = mask.repeat_interleave(2, dim=1)
-
-    # Pad if last residues are a run of ALA, GLY or UNK
-    # If we have selenocysteine but no Se atoms, SEC is padded too
-    pad_residues = (
-        {"ALA", "GLY", "UNK"} if selenium else {"ALA", "GLY", "UNK", "SEC"}
-    )
-    post_pad_len = 0
-    for res in reversed(res_types):
-        if res not in pad_residues:
-            break
-        post_pad_len += 1
-
-    if post_pad_len != 0:
-        if embed:
-            msk = torch.tensor([1.0, 0.0] * 4, device=coords.device).repeat(
-                post_pad_len, 1
-            )
-        else:
-            msk = torch.zeros(post_pad_len, 4, device=coords.device)
-        mask_msk = torch.zeros(
-            msk.shape, device=coords.device, dtype=torch.bool
-        )
-        angles = torch.vstack([angles, msk])
-        mask = torch.vstack([mask, mask_msk])
 
     return (angles, mask) if return_mask else angles
 
