@@ -276,15 +276,14 @@ def identify_bond_type_from_mapping(
             G.edges[u, v]["kind"].add("DOUBLE")
         else:
             G.edges[u, v]["kind"].add("SINGLE")
+    # If max triple, compare the length to the triple watershed distance,
+    # w_dt, then double, else assign single
+    elif a["bond_length"] < BOND_LENGTHS[query]["w_dt"]:
+        G.edges[u, v]["kind"].add("TRIPLE")
+    elif a["bond_length"] < BOND_LENGTHS[query]["w_sd"]:
+        G.edges[u, v]["kind"].add("DOUBLE")
     else:
-        # If max triple, compare the length to the triple watershed distance,
-        # w_dt, then double, else assign single
-        if a["bond_length"] < BOND_LENGTHS[query]["w_dt"]:
-            G.edges[u, v]["kind"].add("TRIPLE")
-        elif a["bond_length"] < BOND_LENGTHS[query]["w_sd"]:
-            G.edges[u, v]["kind"].add("DOUBLE")
-        else:
-            G.edges[u, v]["kind"].add("SINGLE")
+        G.edges[u, v]["kind"].add("SINGLE")
     return G
 
 

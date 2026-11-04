@@ -77,7 +77,7 @@ def parse_STRING(
     string_api_url = "https://string-db.org/api"
     output_format = "json"  # "tsv-no-header"
     method = "network"
-    request_url = "/".join([string_api_url, output_format, method])
+    request_url = f"{string_api_url}/{output_format}/{method}"
     if isinstance(ncbi_taxon_id, list):
         ncbi_taxon_id = "%0d".join(ncbi_taxon_id)
     params = {

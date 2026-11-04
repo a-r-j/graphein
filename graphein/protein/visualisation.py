@@ -187,12 +187,9 @@ def colour_edges(
     assert 0.0 <= set_alpha <= 1.0, (
         f"Alpha value {set_alpha} must be between 0.0 and 1.0"
     )
-    colors = [c[:3] + (set_alpha,) for c in colors]
+    colors = [(*c[:3], set_alpha) for c in colors]
     if return_as_rgba:
-        return [
-            f"rgba{tuple(list(co.convert_to_RGB_255(c[:3])) + [c[3]])}"
-            for c in colors
-        ]
+        return [f"rgba{(*co.convert_to_RGB_255(c[:3]), c[3])}" for c in colors]
     return colors
 
 
@@ -856,9 +853,9 @@ def asteroid_plot(
         if colour_nodes_by == "shell":
             node_colours = []
             for n in subgraph.nodes():
-                for k, v in nodes.items():
-                    if n in v:
-                        node_colours.append(k)
+                for shell, members in nodes.items():
+                    if n in members:
+                        node_colours.append(shell)
         else:
             raise NotImplementedError(
                 f"Colour by {colour_nodes_by} not implemented."
@@ -887,7 +884,7 @@ def asteroid_plot(
             },
         )
 
-        data = edge_trace + [node_trace] if show_edges else [node_trace]
+        data = [*edge_trace, node_trace] if show_edges else [node_trace]
         return go.Figure(
             data=data,
             layout=go.Layout(

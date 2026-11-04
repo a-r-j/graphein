@@ -70,7 +70,7 @@ def test_import_message_calls_found():
 
 
 @pytest.mark.parametrize(
-    "path,line,package,extras",
+    ("path", "line", "package", "extras"),
     _import_message_calls(),
     ids=lambda x: x if isinstance(x, str) else None,
 )

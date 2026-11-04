@@ -148,13 +148,12 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
                 self.structures = uniprot_ids
         # Use local saved pdb_files instead of download or move them to
         # self.root/raw dir
-        else:
-            if isinstance(self.paths, list):
-                self.structures = [
-                    os.path.splitext(os.path.split(path)[-1])[0]
-                    for path in self.paths
-                ]
-                self.path, _ = os.path.split(self.paths[0])
+        elif isinstance(self.paths, list):
+            self.structures = [
+                os.path.splitext(os.path.split(path)[-1])[0]
+                for path in self.paths
+            ]
+            self.path, _ = os.path.split(self.paths[0])
 
         if self.pdb_codes and self.uniprot_ids:
             self.structures = self.pdb_codes + self.uniprot_ids
@@ -442,13 +441,12 @@ class ProteinGraphDataset(Dataset):
                 self.structures = uniprot_ids
         # Use local saved pdb_files instead of download or move them to
         # self.root/raw dir
-        else:
-            if isinstance(self.paths, list):
-                self.structures = [
-                    os.path.splitext(os.path.split(path)[-1])[0]
-                    for path in self.paths
-                ]
-                self.path, _ = os.path.split(self.paths[0])
+        elif isinstance(self.paths, list):
+            self.structures = [
+                os.path.splitext(os.path.split(path)[-1])[0]
+                for path in self.paths
+            ]
+            self.path, _ = os.path.split(self.paths[0])
 
         # Labels & Chains
 

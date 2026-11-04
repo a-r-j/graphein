@@ -44,14 +44,14 @@ def test_construct_rna_graph():
     assert len(g.nodes()) == len(TEST_DOTBRACKET)
 
     # Check node features are in alphabet
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         assert d["dotbracket_symbol"] in SUPPORTED_DOTBRACKET_NOTATION
         assert d["nucleotide"] in RNA_BASES
 
     # Count edges for each type
     phosphodiesters = 0
     bp = 0
-    for u, v, d in g.edges(data=True):
+    for _, _, d in g.edges(data=True):
         if d["attr"] == "phosphodiester_bond":
             phosphodiesters += 1
         elif d["attr"] == "base_pairing":

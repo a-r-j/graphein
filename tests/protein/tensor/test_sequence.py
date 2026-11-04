@@ -22,7 +22,7 @@ from graphein.protein.tensor.sequence import (
 )
 
 try:
-    import torch  # noqa: F401
+    import torch
 
     TORCH_AVAIL = True
 except ImportError:

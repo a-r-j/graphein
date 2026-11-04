@@ -130,7 +130,7 @@ def filter_distmat(
             edges_to_excl.extend(list(product(nodes0, nodes1)))
 
     # Filter distance matrix based on indices of edges to exclude
-    if len(edges_to_excl):
+    if edges_to_excl:
         row_idx_to_excl, col_idx_to_excl = zip(*edges_to_excl)
         distmat.iloc[row_idx_to_excl, col_idx_to_excl] = INFINITE_DIST
         distmat.iloc[col_idx_to_excl, row_idx_to_excl] = INFINITE_DIST
@@ -470,7 +470,7 @@ def add_hydrogen_bond_interactions(
         alt_locs = getattr(G.graph.get("config"), "alt_locs", "max_occupancy")
         if alt_locs != "include":
             df = remove_alt_locs(df, keep=alt_locs)
-    nodes = nodes[key + ["node_id"]].fillna({"insertion": "", "alt_loc": ""})
+    nodes = nodes[[*key, "node_id"]].fillna({"insertion": "", "alt_loc": ""})
     df = df.merge(nodes, on=key)
     if df.empty:
         log.warning(
@@ -1316,8 +1316,7 @@ def add_k_nn_edges(
 
     # Reduce k if number of nodes is less (to avoid sklearn error)
     # Note: - 1 because self-loops are not included
-    if G.number_of_nodes() - 1 < k:
-        k = G.number_of_nodes() - 1
+    k = min(k, G.number_of_nodes() - 1)
 
     if k == 0:
         return

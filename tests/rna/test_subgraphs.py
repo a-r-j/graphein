@@ -104,7 +104,7 @@ def test_extract_subgraph_from_residue_types():
     # Check we get back a graph and it contains the correct nodes
     assert isinstance(g, nx.Graph)
     assert len(g) == A_COUNT + G_COUNT
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         assert d["residue_name"] in RESIDUE_TYPES
     assert (
         g.graph["pdb_df"]["residue_name"]
@@ -159,7 +159,7 @@ def test_extract_subgraph_from_point():
     s_g = extract_subgraph_from_point(G, POINT, RADIUS, filter_dataframe=True)
 
     # Check all nodes are within the sphere
-    for n, d in s_g.nodes(data=True):
+    for _, d in s_g.nodes(data=True):
         assert np.linalg.norm(d["coords"] - POINT) < RADIUS
 
     # Check we have extracted all the nodes
@@ -172,7 +172,7 @@ def test_extract_subgraph_from_point():
     )
 
     # Check all nodes are not within the sphere
-    for n, d in s_g.nodes(data=True):
+    for _, d in s_g.nodes(data=True):
         assert np.linalg.norm(d["coords"] - POINT) > RADIUS
 
     # Check we have extracted all the nodes
@@ -190,7 +190,7 @@ def test_extract_subgraph_from_chains():
     s_g = extract_subgraph_from_chains(G, CHAINS, filter_dataframe=True)
 
     # Test we only selected the correct chains
-    for n, d in s_g.nodes(data=True):
+    for _, d in s_g.nodes(data=True):
         assert d["chain_id"] in CHAINS
 
     # Test we have extracted all the nodes
@@ -206,7 +206,7 @@ def test_extract_subgraph_from_chains():
     )
 
     # Test we only selected the correct chains
-    for n, d in s_g.nodes(data=True):
+    for _, d in s_g.nodes(data=True):
         assert d["chain_id"] not in CHAINS
 
     # Test we have extracted all the nodes
@@ -229,7 +229,7 @@ def test_extract_subgraph_from_sequence_position():
         filter_dataframe=True,
     )
     # Test we only selected the correct chains
-    for n, d in s_g.nodes(data=True):
+    for _, d in s_g.nodes(data=True):
         assert d["residue_number"] in SEQ_POS
 
     # Test we have extracted all the nodes
@@ -244,7 +244,7 @@ def test_extract_subgraph_from_sequence_position():
         G, SEQ_POS, filter_dataframe=True, inverse=True
     )
     # Test we only selected the correct chains
-    for n, d in s_g.nodes(data=True):
+    for _, d in s_g.nodes(data=True):
         assert d["residue_number"] not in SEQ_POS
 
     # Test we have extracted all the nodes
@@ -268,7 +268,7 @@ def test_extract_subgraph_from_bond_type():
             assert v in s_g.nodes()
             assert (u, v) in s_g.edges()
 
-    for u, v, d in s_g.edges(data=True):
+    for _, _, d in s_g.edges(data=True):
         for bond in list(d["kind"]):
             assert bond in BOND_TYPES
 
@@ -280,7 +280,7 @@ def test_extract_subgraph_from_bond_type():
         if d["kind"] in BOND_TYPES:
             assert (u, v) not in s_g.edges()
 
-    for u, v, d in s_g.edges(data=True):
+    for _, _, d in s_g.edges(data=True):
         for bond in list(d["kind"]):
             assert bond not in BOND_TYPES
 

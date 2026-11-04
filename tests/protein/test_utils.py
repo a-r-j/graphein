@@ -111,7 +111,7 @@ def test_save_rgroup_df_to_pdb():
 
 
 @pytest.mark.parametrize(
-    "charge,expected",
+    ("charge", "expected"),
     [
         ("2+", 2.0),
         ("1-", -1.0),
@@ -216,7 +216,7 @@ if __name__ == "__main__":
 
 
 @pytest.mark.parametrize(
-    "residues,expected",
+    ("residues", "expected"),
     [
         # Antibody numbering: insertions follow their residue
         ([(52, ""), (52, "A"), (53, ""), (54, "")], [52, 53, 54, 55]),

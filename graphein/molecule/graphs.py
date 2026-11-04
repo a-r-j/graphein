@@ -85,7 +85,7 @@ def add_nodes_to_graph(
             G.graph["coords"][i] if G.graph["coords"] is not None else None
         )
         G.add_node(
-            f"{atom.GetSymbol()}:{str(atom.GetIdx())}",
+            f"{atom.GetSymbol()}:{atom.GetIdx()}",
             atomic_num=atom.GetAtomicNum(),
             element=atom.GetSymbol(),
             rdmol_atom=atom,
