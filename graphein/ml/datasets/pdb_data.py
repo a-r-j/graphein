@@ -90,11 +90,11 @@ class PDBManager:
         )
         self.pdb_availability_url = "https://files.wwpdb.org/pub/pdb/compatible/pdb_bundle/pdb_bundle_index.txt"
 
-        self.pdb_chain_cath_uniprot_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz"
+        self.pdb_chain_cath_uniprot_url = "http://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz"
 
         self.cath_id_cath_code_url = "ftp://orengoftp.biochem.ucl.ac.uk/cath/releases/latest-release/cath-classification-data/cath-domain-list.txt"
 
-        self.pdb_chain_ec_number_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz"
+        self.pdb_chain_ec_number_url = "http://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz"
 
         self.pdb_dir = self.root_dir / "pdb"
         if not os.path.exists(self.pdb_dir):
@@ -418,7 +418,7 @@ class PDBManager:
 
     def _download_pdb_chain_cath_uniprot_map(self):
         """Download mapping from PDB chain to uniprot accession and CATH ID from
-        https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz
+        http://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz
         """
         if not os.path.exists(
             self.root_dir / self.pdb_chain_cath_uniprot_filename
@@ -440,7 +440,7 @@ class PDBManager:
 
     def _download_pdb_chain_ec_number_map(self):
         """Download mapping from PDB chains to EC number from
-        https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz
+        http://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz
         """
         if not os.path.exists(
             self.root_dir / self.pdb_chain_ec_number_filename
