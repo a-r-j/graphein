@@ -181,7 +181,7 @@ def add_bond_type_one_hot(
     :return: One-hot encoding of the bond type.
     :rtype: Union[np.ndarray, pd.Series]
     """
-    if "bond" not in d.keys():
+    if "bond" not in d:
         log.debug(f"No RDKit bond found on edge {u}-{v}")
         d["bond_type_one_hot"] = None
         return None

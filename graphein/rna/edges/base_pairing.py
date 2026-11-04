@@ -174,5 +174,4 @@ def add_all_dotbracket_edges(G: nx.Graph) -> nx.Graph:
     # Iterate over dotbracket to build connectivity
     G = add_phosphodiester_bonds(G)
     G = add_base_pairing_interactions(G)
-    G = add_pseudoknots(G)
-    return G
+    return add_pseudoknots(G)

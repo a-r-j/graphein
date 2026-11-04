@@ -167,7 +167,7 @@ def download_pdb_multiprocessing(
         strict=strict,
     )
     with Pool(processes=max_workers) as pool:
-        results = list(
+        return list(
             tqdm(
                 pool.imap_unordered(func, pdb_codes, chunksize=chunksize),
                 total=len(pdb_codes),
@@ -175,7 +175,6 @@ def download_pdb_multiprocessing(
                 unit="file",
             )
         )
-    return results
 
 
 RCSB_DOWNLOAD_URL = "https://files.rcsb.org/download/"
@@ -315,8 +314,7 @@ def get_protein_name_from_filename(path: str) -> str:
     :rtype: str
     """
     _, tail = os.path.split(path)
-    tail = os.path.splitext(tail)[0]
-    return tail
+    return os.path.splitext(tail)[0]
 
 
 def filter_dataframe(

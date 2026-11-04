@@ -171,6 +171,4 @@ def STRING_df(
         protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs
     )
     df = filter_STRING(df, **kwargs)
-    df = standardise_STRING(df)
-
-    return df
+    return standardise_STRING(df)

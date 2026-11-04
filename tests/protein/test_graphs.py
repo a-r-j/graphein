@@ -187,7 +187,7 @@ def test_construct_graphs_mp():
     )
     assert isinstance(g, dict)
     assert len(g.keys()) == len(graph_list) / 5
-    for k, v in g.items():
+    for v in g.values():
         assert isinstance(v, (nx.Graph, None))
     g = construct_graphs_mp(
         pdb_code_it=graph_list, config=ProteinGraphConfig(), return_dict=False
@@ -333,13 +333,13 @@ def test_node_features():
     # Check for existence of features
     for _, d in G.nodes(data=True):
         # Todo these functions return pd.Series, rather than adding to the node
-        assert "meiler" in d.keys()
-        assert "expasy" in d.keys()
-        assert "rsa" in d.keys()
-        assert "asa" in d.keys()
-        assert "phi" in d.keys()
-        assert "psi" in d.keys()
-        assert "ss" in d.keys()
+        assert "meiler" in d
+        assert "expasy" in d
+        assert "rsa" in d
+        assert "asa" in d
+        assert "phi" in d
+        assert "psi" in d
+        assert "ss" in d
         continue
 
 

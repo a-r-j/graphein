@@ -152,12 +152,12 @@ def test_protein_graph_dataset_skips_failed_graphs(tmp_path, monkeypatch):
     import torch
 
     labels = [torch.tensor([0]), torch.tensor([1]), torch.tensor([2])]
-    kwargs = dict(
-        root=str(tmp_path / "ds"),
-        paths=_structures_with_a_bad_file(tmp_path),
-        graph_labels=labels,
-        num_cores=1,
-    )
+    kwargs = {
+        "root": str(tmp_path / "ds"),
+        "paths": _structures_with_a_bad_file(tmp_path),
+        "graph_labels": labels,
+        "num_cores": 1,
+    }
     ds = ProteinGraphDataset(**kwargs)
 
     assert ds.failed_examples == ["bad"]
