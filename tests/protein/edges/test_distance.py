@@ -34,8 +34,11 @@ from graphein.protein.edges.distance import (
     add_sequence_distance_edges,
     add_vdw_clashes,
     add_vdw_interactions,
+    compute_distmat,
     filter_distmat,
     get_edges_by_bond_type,
+    get_interacting_atom_pairs,
+    get_interacting_atoms,
     get_ring_atoms,
     get_ring_centroids,
 )
@@ -1188,3 +1191,19 @@ def test_hbond_residue_variants_derived_from_parent_table():
     assert NON_STANDARD_RESIS_PARENT["DTR"] == "TRP"
     for modified in ("SEP", "TPO", "PTR", "TYS", "STY"):
         assert modified not in distance.HBOND_RESIDUE_VARIANTS
+
+
+@pytest.mark.parametrize("angstroms", [0.0, 2.2, 5.0])
+def test_get_interacting_atom_pairs_matches_distance_matrix(angstroms):
+    df = read_pdb_to_dataframe(
+        path=str(Path(__file__).parent.parent / "test_data" / "4hhb.pdb")
+    ).head(1000)
+    rows, cols = get_interacting_atoms(angstroms, compute_distmat(df))
+    expected = {(i, j) for i, j in zip(rows, cols) if i < j}
+
+    i, j = get_interacting_atom_pairs(angstroms, df)
+    assert set(zip(i, j)) == expected
+    assert len(i) == len(expected)
+
+    i, j = get_interacting_atom_pairs(angstroms, df.iloc[:0])
+    assert len(i) == len(j) == 0
