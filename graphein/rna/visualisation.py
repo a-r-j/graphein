@@ -13,6 +13,11 @@ from itertools import chain
 import networkx as nx
 from loguru import logger as log
 
+# Re-exported as graphein.rna.plotly_rna_structure_graph
+from graphein.protein.visualisation import (  # noqa: F401
+    plotly_protein_structure_graph as plotly_rna_structure_graph,
+)
+
 
 def plot_rna_graph(
     g: nx.Graph,
