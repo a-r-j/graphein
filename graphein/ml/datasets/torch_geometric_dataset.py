@@ -13,6 +13,7 @@ from collections.abc import Callable, Generator
 from pathlib import Path
 
 import networkx as nx
+from loguru import logger as log
 from tqdm.auto import tqdm
 
 from graphein.ml.conversion import GraphFormatConvertor
@@ -246,9 +247,6 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
                 for uniprot in tqdm(self.uniprot_ids)
             ]
 
-    def __len__(self) -> int:
-        return len(self.structures)
-
     def transform_pdbs(self):
         """
         Performs pre-processing of PDB structures before constructing graphs.
@@ -292,6 +290,15 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
             return_dict=True,
             num_cores=self.num_cores,
         )
+        graphs = dict(zip(self.structures, graphs.values()))
+        failed = [k for k, g in graphs.items() if g is None]
+        if failed:
+            log.warning(
+                f"Graph construction failed for {len(failed)} structures, "
+                f"which are left out of the dataset: {failed}"
+            )
+        graphs = {k: g for k, g in graphs.items() if g is not None}
+
         # Transform graphs
         if self.graph_transformation_funcs is not None:
             print("Transforming Nx Graphs...")
@@ -301,7 +308,6 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         # Convert to PyTorch Geometric Data
         print("Converting Graphs...")
         graphs = {k: self.graph_format_convertor(v) for k, v in graphs.items()}
-        graphs = dict(zip(self.structures, graphs.values()))
 
         # Assign labels
         if self.graph_label_map:
@@ -492,23 +498,45 @@ class ProteinGraphDataset(Dataset):
             pre_filter=pre_filter,
         )
         self.config.pdb_dir = Path(self.raw_dir)
+        self._file_names = self.processed_file_names
 
     @property
     def raw_file_names(self) -> list[str]:
         """Names of raw files in the dataset."""
         return [f"{pdb}.pdb" for pdb in self.structures]
 
+    def _example_name(self, idx: int) -> str:
+        """Name of an example, used for its processed file."""
+        if self.chain_selection_map is not None:
+            return f"{self.structures[idx]}_{self.chain_selection_map[idx]}"
+        return self.structures[idx]
+
+    @property
+    def _failed_examples_path(self) -> str:
+        return os.path.join(self.processed_dir, "failed_examples.txt")
+
+    @property
+    def failed_examples(self) -> list[str]:
+        """Names of examples left out of the dataset because graph
+        construction failed or ``pre_filter`` rejected them.
+
+        :return: Example names (``{pdb}`` or ``{pdb}_{chain}``).
+        :rtype: List[str]
+        """
+        if not os.path.exists(self._failed_examples_path):
+            return []
+        with open(self._failed_examples_path) as f:
+            return f.read().splitlines()
+
     @property
     def processed_file_names(self) -> list[str]:
         """Names of processed files to look for"""
-        if self.chain_selection_map is not None:
-            return [
-                f"{pdb}_{chain}.pt"
-                for pdb, chain in zip(
-                    self.structures, self.chain_selection_map.values()
-                )
-            ]
-        return [f"{pdb}.pt" for pdb in self.structures]
+        failed = set(self.failed_examples)
+        return [
+            f"{name}.pt"
+            for name in map(self._example_name, self.examples)
+            if name not in failed
+        ]
 
     @property
     def raw_dir(self) -> str:
@@ -577,7 +605,7 @@ class ProteinGraphDataset(Dataset):
 
     def len(self) -> int:
         """Returns length of data set (number of structures)."""
-        return len(self.structures)
+        return len(self._file_names)
 
     def transform_pdbs(self):
         """
@@ -612,6 +640,7 @@ class ProteinGraphDataset(Dataset):
             divide_chunks(list(self.examples.keys()), chunk_size)
         )
 
+        failed: list[str] = []
         for chunk in tqdm(chunks):
             pdbs = [self.examples[idx] for idx in chunk]
             # Get chain selections
@@ -631,43 +660,42 @@ class ProteinGraphDataset(Dataset):
                 chain_selections=chain_selections,
                 return_dict=False,
             )
-            if self.graph_transformation_funcs is not None:
-                graphs = [self.transform_graphein_graphs(g) for g in graphs]
+            # Keep each graph with its example index so failed graphs don't
+            # shift labels and file names onto other examples
+            for idx, g in zip(chunk, graphs):
+                name = self._example_name(idx)
+                if g is None:
+                    failed.append(name)
+                    continue
+                if self.graph_transformation_funcs is not None:
+                    g = self.transform_graphein_graphs(g)
 
-            # Convert to PyTorch Geometric Data
-            graphs = [self.graph_format_convertor(g) for g in graphs]
+                # Convert to PyTorch Geometric Data
+                data = self.graph_format_convertor(g)
 
-            # Assign labels
-            if self.graph_label_map:
-                labels = [self.graph_label_map[idx] for idx in chunk]
-                for i, _ in enumerate(chunk):
-                    graphs[i].graph_y = labels[i]
-            if self.node_label_map:
-                labels = [self.node_label_map[idx] for idx in chunk]
-                for i, _ in enumerate(chunk):
-                    graphs[i].graph_y = labels[i]
+                # Assign labels
+                if self.graph_label_map:
+                    data.graph_y = self.graph_label_map[idx]
+                if self.node_label_map:
+                    data.graph_y = self.node_label_map[idx]
 
-            data_list = graphs
+                if self.pre_filter is not None and not self.pre_filter(data):
+                    failed.append(name)
+                    continue
+                if self.pre_transform is not None:
+                    data = self.pre_transform(data)
+                torch.save(
+                    data, os.path.join(self.processed_dir, f"{name}.pt")
+                )
 
-            del graphs
-
-            if self.pre_filter is not None:
-                data_list = [g for g in data_list if self.pre_filter(g)]
-
-            if self.pre_transform is not None:
-                data_list = [self.pre_transform(data) for data in data_list]
-
-            for i, (pdb, chain) in enumerate(zip(pdbs, chain_selections)):
-                if self.chain_selection_map is None:
-                    torch.save(
-                        data_list[i],
-                        os.path.join(self.processed_dir, f"{pdb}.pt"),
-                    )
-                else:
-                    torch.save(
-                        data_list[i],
-                        os.path.join(self.processed_dir, f"{pdb}_{chain}.pt"),
-                    )
+        if failed:
+            log.warning(
+                f"Left {len(failed)} examples out of the dataset because "
+                f"graph construction failed or pre_filter rejected them: "
+                f"{failed}. See {self._failed_examples_path}."
+            )
+        with open(self._failed_examples_path, "w") as f:
+            f.writelines(f"{name}\n" for name in failed)
 
     def get(self, idx: int):
         """
@@ -677,17 +705,8 @@ class ProteinGraphDataset(Dataset):
         :type idx: int
         :return: PyTorch Geometric Data object.
         """
-        if self.chain_selection_map is not None:
-            return torch.load(
-                os.path.join(
-                    self.processed_dir,
-                    f"{self.structures[idx]}_\
-                        {self.chain_selection_map[idx]}.pt",
-                ),
-                weights_only=False,
-            )
         return torch.load(
-            os.path.join(self.processed_dir, f"{self.structures[idx]}.pt"),
+            os.path.join(self.processed_dir, self._file_names[idx]),
             weights_only=False,
         )
 
