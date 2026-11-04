@@ -33,6 +33,7 @@ from graphein.protein.resi_atoms import (
     HYDROPHOBIC_RESIS,
     IONIC_RESIS,
     NEG_AA,
+    NON_STANDARD_RESIS_PARENT,
     PI_RESIS,
     POS_AA,
     RESI_THREE_TO_1,
@@ -254,6 +255,69 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
     return add_sequence_distance_edges(G, d=1, name="peptide_bond")
 
 
+def assign_atoms_to_nodes(G: nx.Graph, df: pd.DataFrame) -> pd.DataFrame:
+    """Assign the atoms in an atomic dataframe to the nodes of a graph.
+
+    Atoms are matched to nodes by chain, residue name and number and insertion
+    code (and atom name and alt_loc for atom graphs) rather than by
+    ``node_id``, which is ignored if present: residue node IDs carry the CA's
+    alt_loc, which the residue's other atoms may not share, and without
+    insertions inserted residues share their parent's node ID.
+
+    On residue graphs, a node whose CA has an alt_loc (e.g. ``A:LYS:16:A``)
+    gets the residue's atoms of that conformer and those without an alt_loc.
+    A node without an alt_loc gets one conformer of each atom, chosen by the
+    graph's ``config.alt_locs`` (see
+    :func:`~graphein.protein.graphs.remove_alt_locs`), or every conformer if
+    it is ``"include"``.
+
+    Missing ``insertion`` and ``alt_loc`` columns are treated as blank, and a
+    missing ``occupancy`` column as equal occupancies.
+
+    :param G: Protein graph.
+    :type G: nx.Graph
+    :param df: Atomic dataframe, e.g. ``G.graph["raw_pdb_df"]``.
+    :type df: pd.DataFrame
+    :return: The rows of ``df`` that belong to a node of ``G``, in their
+        original order, with the node's ID in ``node_id``. Atoms shared by
+        several nodes appear once per node.
+    :rtype: pd.DataFrame
+    """
+    nodes = G.graph["pdb_df"]
+    nodes = nodes.loc[nodes["node_id"].isin(list(G.nodes()))]
+    nodes = nodes.fillna({"insertion": "", "alt_loc": ""})
+    df = df.drop(columns="node_id", errors="ignore").reset_index(drop=True)
+    for col in ("insertion", "alt_loc"):
+        df[col] = df[col].fillna("") if col in df else ""
+    if "occupancy" not in df:
+        df["occupancy"] = 1.0
+
+    key = ["chain_id", "residue_name", "residue_number", "insertion"]
+    if G.graph.get("node_type") == "atom":
+        key += ["atom_name", "alt_loc"]
+        return df.merge(nodes[key + ["node_id"]], on=key)
+
+    nodes = nodes[key + ["alt_loc", "node_id"]].rename(
+        columns={"alt_loc": "node_alt_loc"}
+    )
+    df = df.merge(nodes, on=key)
+    has_conformer = df["node_alt_loc"] != ""
+    keep = has_conformer & (
+        (df["alt_loc"] == "") | (df["alt_loc"] == df["node_alt_loc"])
+    )
+    alt_locs = getattr(G.graph.get("config"), "alt_locs", "max_occupancy")
+    if alt_locs == "include":
+        keep |= ~has_conformer
+    else:
+        # Avoid a circular import (graphs imports this module)
+        from graphein.protein.graphs import remove_alt_locs
+
+        shared = df.loc[~has_conformer]
+        shared = remove_alt_locs(shared.assign(row=shared.index), alt_locs)
+        keep[shared["row"].to_numpy()] = True
+    return df.loc[keep].drop(columns="node_alt_loc").reset_index(drop=True)
+
+
 def add_hydrophobic_interactions(
     G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
 ):
@@ -276,9 +340,7 @@ def add_hydrophobic_interactions(
     hydrophobics_df = filter_dataframe(
         rgroup_df, "residue_name", HYDROPHOBIC_RESIS, True
     )
-    hydrophobics_df = filter_dataframe(
-        hydrophobics_df, "node_id", list(G.nodes()), True
-    )
+    hydrophobics_df = assign_atoms_to_nodes(G, hydrophobics_df)
     if hydrophobics_df.shape[0] > 0:
         distmat = compute_distmat(hydrophobics_df)
         interacting_atoms = get_interacting_atoms(5, distmat)
@@ -321,9 +383,7 @@ def add_disulfide_interactions(
         disulfide_df, "atom_name", DISULFIDE_ATOMS, True
     )
     # Ensure only residues in the graph are kept
-    disulfide_df = filter_dataframe(
-        disulfide_df, "node_id", list(G.nodes), True
-    )
+    disulfide_df = assign_atoms_to_nodes(G, disulfide_df)
     if disulfide_df.shape[0] > 0:
         distmat = compute_distmat(disulfide_df)
         interacting_atoms = get_interacting_atoms(2.2, distmat)
@@ -349,35 +409,38 @@ NO_AMIDE_HYDROGEN_RESIS: List[str] = ["3HP", "4HP", "BMT", "MLE", "MVA", "SAR"]
 donor, besides those :const:`~graphein.protein.resi_atoms.RESI_THREE_TO_1`
 maps to proline: hydroxyprolines mapped to ``X`` and N-methylated residues."""
 
+MODIFIED_SIDE_CHAIN_RESIS: List[str] = [
+    "5HP",
+    "BMT",
+    "CGU",
+    "KCX",
+    "LLP",
+    "PCA",
+    "PTR",
+    "PYL",
+    "SEP",
+    "STY",
+    "TPO",
+    "TYS",
+]
+"""Residues in :const:`~graphein.protein.resi_atoms.NON_STANDARD_RESIS_PARENT`
+whose side chain hydrogen bond donors and acceptors differ from those of their
+parent residue (e.g. phosphorylated ``SEP``, ``TPO`` and ``PTR``)."""
+
 HBOND_RESIDUE_VARIANTS: Dict[str, str] = {
-    "ASH": "ASP",
-    "DAR": "ARG",
-    "DAS": "ASP",
-    "DGL": "GLU",
-    "DGN": "GLN",
-    "DHI": "HIS",
-    "DLY": "LYS",
-    "DSG": "ASN",
-    "DSN": "SER",
-    "DSP": "ASP",
-    "DTH": "THR",
-    "DTR": "TRP",
-    "DTY": "TYR",
-    "GLH": "GLU",
-    "HID": "HIS",
-    "HIE": "HIS",
-    "HIP": "HIS",
-    "HSD": "HIS",
-    "HSE": "HIS",
-    "HSP": "HIS",
-    "LYN": "LYS",
+    res: parent
+    for res, parent in NON_STANDARD_RESIS_PARENT.items()
+    if parent in HYDROGEN_BOND_DONORS.keys() | HYDROGEN_BOND_ACCEPTORS.keys()
+    and res not in MODIFIED_SIDE_CHAIN_RESIS
 }
 """Residue variants (D-amino acids and Amber/CHARMM protonation states) with
 the same side chain hydrogen bond donors and acceptors as their parent
-residue. Protonation states are approximated by the parent residue (e.g. the
-protonated ``OD2`` of ``ASH`` is an acceptor, not a donor). Residues with
-modified side chains (e.g. phosphorylated ``SEP``, ``TPO`` and ``PTR``) are
-deliberately not included."""
+residue: the entries of
+:const:`~graphein.protein.resi_atoms.NON_STANDARD_RESIS_PARENT` with a parent
+that has side chain donors or acceptors, except
+:const:`MODIFIED_SIDE_CHAIN_RESIS`. Protonation states are approximated by the
+parent residue (e.g. the protonated ``OD2`` of ``ASH`` is an acceptor, not a
+donor)."""
 
 
 def add_hydrogen_bond_interactions(
@@ -420,12 +483,8 @@ def add_hydrogen_bond_interactions(
         (default), ``G.graph["raw_pdb_df"]`` is used. Backbone hydrogen bonds
         are only found if this dataframe contains backbone atoms (unlike
         ``G.graph["rgroup_df"]``), and a warning is logged if they are
-        requested but there are none. Atoms are assigned to nodes by chain,
-        residue name and number and insertion code (and atom name and alt_loc
-        for atom graphs), and a warning is logged if none match; any
-        ``node_id`` column is ignored. Missing
-        ``insertion`` and ``alt_loc`` columns are treated as blank, and a
-        missing ``occupancy`` column as equal occupancies.
+        requested but there are none. Atoms are assigned to nodes with
+        :func:`assign_atoms_to_nodes`, and a warning is logged if none match.
     :type rgroup_df: Optional[pd.DataFrame]
     :param distance_threshold: Maximum donor-acceptor distance in Angstroms.
         Defaults to ``3.5``.
@@ -451,32 +510,11 @@ def add_hydrogen_bond_interactions(
     if rgroup_df is None:
         rgroup_df = G.graph["raw_pdb_df"]
 
-    # Assign atoms to nodes by key rather than node_id: residue node IDs carry
-    # the CA's alt_loc, which the residue's other atoms may not share, and
-    # without insertions inserted residues share their parent's node ID.
-    nodes = G.graph["pdb_df"]
-    nodes = nodes.loc[nodes["node_id"].isin(list(G.nodes()))]
-    key = ["chain_id", "residue_name", "residue_number", "insertion"]
-    df = rgroup_df.drop(columns="node_id", errors="ignore")
-    for col in ("insertion", "alt_loc"):
-        df[col] = df[col].fillna("") if col in df else ""
-    if "occupancy" not in df:
-        df["occupancy"] = 1.0
-    if G.graph.get("node_type") == "atom":
-        key += ["atom_name", "alt_loc"]
-    else:
-        # Avoid a circular import (graphs imports this module)
-        from graphein.protein.graphs import remove_alt_locs
-
-        alt_locs = getattr(G.graph.get("config"), "alt_locs", "max_occupancy")
-        if alt_locs != "include":
-            df = remove_alt_locs(df, keep=alt_locs)
-    nodes = nodes[key + ["node_id"]].fillna({"insertion": "", "alt_loc": ""})
-    df = df.merge(nodes, on=key)
+    df = assign_atoms_to_nodes(G, rgroup_df)
     if df.empty:
         log.warning(
-            "No atoms in rgroup_df match a graph node by "
-            f"{', '.join(key)}, so no hydrogen bonds were added."
+            "No atoms in rgroup_df match a graph node, so no hydrogen bonds "
+            "were added."
         )
         return
 
@@ -541,8 +579,7 @@ def add_hydrogen_bond_interactions(
     )
 
     # Drop bb-bb pairs, and Ser OG / Thr OG1 (i) to N (i + 1), between
-    # residues joined by a peptide bond (C-N ~1.33A). Missing C or N
-    # coordinates give NaN, i.e. not bonded.
+    # residues joined by a peptide bond (C-N ~1.33A, in any conformer).
     atom = df["atom_name"].to_numpy()
 
     def _gamma_to_n(x, y):
@@ -551,22 +588,23 @@ def add_hydrogen_bond_interactions(
     gamma_ij, gamma_ji = _gamma_to_n(i, j), _gamma_to_n(j, i)
     bb = np.flatnonzero(is_hbond & ((n_backbone == 2) | gamma_ij | gamma_ji))
     if len(bb) > 0:
-
-        def _coords(atom_name):
-            mask = is_amino_acid & (merged["atom_name"] == atom_name)
-            return (
-                merged.loc[mask, coord_cols]
-                .groupby(all_residues[mask])
-                .first()
-            )
-
-        c_coords, n_coords = _coords("C"), _coords("N")
+        c = is_amino_acid & (merged["atom_name"] == "C")
+        n = is_amino_acid & (merged["atom_name"] == "N")
+        c_res, n_res = all_residues[c].to_numpy(), all_residues[n].to_numpy()
+        bonded = {
+            (c_res[a], n_res[b])
+            for a, b in cKDTree(merged.loc[c, coord_cols].to_numpy())
+            .sparse_distance_matrix(
+                cKDTree(merged.loc[n, coord_cols].to_numpy()),
+                2.0,
+                output_type="ndarray",
+            )[["i", "j"]]
+            .tolist()
+        }
         res_i, res_j = residue[i[bb]], residue[j[bb]]
 
         def _peptide_bonded(c_res, n_res):
-            c = c_coords.reindex(c_res).to_numpy()
-            n = n_coords.reindex(n_res).to_numpy()
-            return np.linalg.norm(c - n, axis=1) <= 2.0
+            return np.array([pair in bonded for pair in zip(c_res, n_res)])
 
         bonded_ij = _peptide_bonded(res_i, res_j)
         bonded_ji = _peptide_bonded(res_j, res_i)
@@ -601,7 +639,7 @@ def add_ionic_interactions(
     if rgroup_df is None:
         rgroup_df = G.graph["rgroup_df"]
     ionic_df = filter_dataframe(rgroup_df, "residue_name", IONIC_RESIS, True)
-    ionic_df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
+    ionic_df = assign_atoms_to_nodes(G, ionic_df)
     if ionic_df.shape[0] > 0:
         distmat = compute_distmat(ionic_df)
         interacting_atoms = get_interacting_atoms(6, distmat)
@@ -652,9 +690,7 @@ def add_aromatic_interactions(
     dfs = []
     for resi in AROMATIC_RESIS:
         resi_rings_df = get_ring_atoms(pdb_df, resi)
-        resi_rings_df = filter_dataframe(
-            resi_rings_df, "node_id", list(G.nodes()), True
-        )
+        resi_rings_df = assign_atoms_to_nodes(G, resi_rings_df)
         resi_centroid_df = get_ring_centroids(resi_rings_df)
         dfs.append(resi_centroid_df)
     aromatic_df = (
@@ -701,9 +737,7 @@ def add_aromatic_sulphur_interactions(
     aromatic_sulphur_df = filter_dataframe(
         rgroup_df, "residue_name", RESIDUES, True
     )
-    aromatic_sulphur_df = filter_dataframe(
-        aromatic_sulphur_df, "node_id", list(G.nodes()), True
-    )
+    aromatic_sulphur_df = assign_atoms_to_nodes(G, aromatic_sulphur_df)
 
     if aromatic_sulphur_df.shape[0] > 0:
         distmat = compute_distmat(aromatic_sulphur_df)
@@ -744,9 +778,7 @@ def add_cation_pi_interactions(
     cation_pi_df = filter_dataframe(
         rgroup_df, "residue_name", CATION_PI_RESIS, True
     )
-    cation_pi_df = filter_dataframe(
-        cation_pi_df, "node_id", list(G.nodes()), True
-    )
+    cation_pi_df = assign_atoms_to_nodes(G, cation_pi_df)
 
     if cation_pi_df.shape[0] > 0:
         distmat = compute_distmat(cation_pi_df)
@@ -788,7 +820,7 @@ def add_vdw_interactions(
     """
     df = g.graph["raw_pdb_df"]
     df = filter_dataframe(df, "atom_name", ["H"], boolean=False)
-    df = filter_dataframe(df, "node_id", list(g.nodes()), boolean=True)
+    df = assign_atoms_to_nodes(g, df)
     dist_mat = compute_distmat(df)
 
     radii = df["element_symbol"].map(VDW_RADII).values
@@ -857,9 +889,7 @@ def add_pi_stacking_interactions(
     # Compute centroids and normal for each ring
     for resi in PI_RESIS:
         resi_rings_df = get_ring_atoms(pdb_df, resi)
-        resi_rings_df = filter_dataframe(
-            resi_rings_df, "node_id", list(G.nodes()), True
-        )
+        resi_rings_df = assign_atoms_to_nodes(G, resi_rings_df)
         resi_centroid_df = get_ring_centroids(resi_rings_df)
         resi_normals = get_ring_normals(resi_rings_df)
         resi_centroid_df = pd.merge(
@@ -919,9 +949,7 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
     # Compute centroids and normal for each ring
     for resi in PI_RESIS:
         resi_rings_df = get_ring_atoms(pdb_df, resi)
-        resi_rings_df = filter_dataframe(
-            resi_rings_df, "node_id", list(G.nodes()), True
-        )
+        resi_rings_df = assign_atoms_to_nodes(G, resi_rings_df)
         resi_centroid_df = get_ring_centroids(resi_rings_df)
         resi_normals = get_ring_normals(resi_rings_df)
         resi_centroid_df = pd.merge(
@@ -995,8 +1023,8 @@ def add_backbone_carbonyl_carbonyl_interactions(
     :type threshold: float, optional
     """
     df = G.graph["raw_pdb_df"]
-    df = filter_dataframe(df, "node_id", list(G.nodes()), boolean=True)
     df = filter_dataframe(df, "atom_name", ["C", "O"], boolean=True)
+    df = assign_atoms_to_nodes(G, df)
     distmat = compute_distmat(df)
     interacting_atoms = get_interacting_atoms(threshold, distmat)
 
@@ -1009,10 +1037,15 @@ def add_backbone_carbonyl_carbonyl_interactions(
         interacting_atoms[1][diff_atoms],
     )
 
-    # Filter out O-C edges on the same residue
-    atom_1 = df.iloc[interacting_atoms[0]]["residue_id"]
-    atom_2 = df.iloc[interacting_atoms[1]]["residue_id"]
-    diff_atoms = atom_1.values != atom_2.values
+    # Filter out O-C edges on the same residue (in any conformer)
+    residue = (
+        df["chain_id"].astype(str)
+        + ":"
+        + df["residue_number"].astype(str)
+        + ":"
+        + df["insertion"]
+    ).to_numpy()
+    diff_atoms = residue[interacting_atoms[0]] != residue[interacting_atoms[1]]
     interacting_atoms = (
         interacting_atoms[0][diff_atoms],
         interacting_atoms[1][diff_atoms],
@@ -1049,6 +1082,7 @@ def add_salt_bridges(
     salt_bridge_df = filter_dataframe(
         salt_bridge_df, "atom_name", SALT_BRIDGE_ATOMS, boolean=True
     )
+    salt_bridge_df = assign_atoms_to_nodes(G, salt_bridge_df)
     if salt_bridge_df.shape[0] > 0:
         distmat = compute_distmat(salt_bridge_df)
         interacting_atoms = get_interacting_atoms(threshold, distmat)
