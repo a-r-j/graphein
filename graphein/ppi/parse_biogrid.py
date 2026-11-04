@@ -6,6 +6,7 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
+import io
 
 import pandas as pd
 import requests
@@ -153,7 +154,7 @@ def parse_BIOGRID(
         """
         params["start"] = start
         response = requests.post(request_url, data=params)
-        df = pd.read_json(response.text.strip()).transpose()
+        df = pd.read_json(io.StringIO(response.text.strip())).transpose()
 
         # Maximum number of results is limited to 10k. Paginate to
         # retrieve everything

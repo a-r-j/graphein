@@ -16,7 +16,7 @@ import networkx as nx
 import pandas as pd
 from loguru import logger as log
 
-from graphein.protein.utils import download_pdb
+from graphein.protein.utils import download_pdb, sequence_positions
 
 if TYPE_CHECKING:
     from graphein.protein.config import GetContactsConfig
@@ -35,6 +35,8 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     log.debug("Adding peptide bonds to graph")
+    pdb_df = G.graph["pdb_df"]
+    positions = dict(zip(pdb_df["node_id"], sequence_positions(pdb_df)))
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
         # Find chain residues
@@ -51,11 +53,10 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             cond_1 = (
                 residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
             )
-            # Asserts residue numbers are adjacent
+            # Asserts residues are adjacent in sequence
             cond_2 = (
                 abs(
-                    residue[1]["residue_number"]
-                    - chain_residues[i + 1][1]["residue_number"]
+                    positions[residue[0]] - positions[chain_residues[i + 1][0]]
                 )
                 == 1
             )
@@ -63,14 +64,11 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             # If this checks out, we add a peptide bond
             if cond_1 and cond_2:
                 # Adds "peptide_bond" between current residue and the next
-                if G.has_edge(i, i + 1):
-                    G.edges[i, i + 1]["kind"].add("peptide_bond")
+                u, v = residue[0], chain_residues[i + 1][0]
+                if G.has_edge(u, v):
+                    G.edges[u, v]["kind"].add("peptide_bond")
                 else:
-                    G.add_edge(
-                        residue[0],
-                        chain_residues[i + 1][0],
-                        kind={"peptide_bond"},
-                    )
+                    G.add_edge(u, v, kind={"peptide_bond"})
             else:
                 continue
     return G

@@ -13,7 +13,7 @@ from collections.abc import Callable, Generator
 from pathlib import Path
 
 import networkx as nx
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig

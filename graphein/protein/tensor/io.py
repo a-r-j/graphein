@@ -413,8 +413,8 @@ def to_dataframe(
 
     atom_number = np.arange(1, len(res_nums) + 1)
     numbering_map = {v: k for k, v in ATOM_NUMBERING.items()}
-    atom_type = nz[:, 1]
-    atom_type = [numbering_map[a.item()] for a in atom_type]
+    atom_indices = nz[:, 1].tolist()
+    atom_type = [numbering_map[a] for a in atom_indices]
 
     if residue_types is None:
         residue_types = infer_residue_types(
@@ -423,9 +423,9 @@ def to_dataframe(
     if isinstance(residue_types, torch.Tensor):
         residue_types = [
             STANDARD_AMINO_ACID_MAPPING_1_TO_3[STANDARD_AMINO_ACIDS[a]]
-            for a in residue_types
+            for a in residue_types.tolist()
         ]
-    residue_types = [residue_types[a - 1] for a in res_nums]
+    residue_types = [residue_types[a - 1] for a in res_nums.tolist()]
     element_symbols = [ELEMENT_SYMBOL_MAP[a] for a in atom_type]
 
     chains = ["A"] * len(res_nums) if chains is None else chains[res_nums - 1]
@@ -461,7 +461,7 @@ def to_dataframe(
     blank_4 = [""] * len(res_nums)
 
     # NB brittle, bad assumption; may break
-    record_names = ["ATOM" if i < 37 else "HETATM" for i in nz[:, 1]]
+    record_names = ["ATOM" if i < 37 else "HETATM" for i in atom_indices]
     coords = get_full_atom_coords(x)[0]
 
     out = {

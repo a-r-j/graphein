@@ -15,7 +15,7 @@ from typing import Union
 
 import numpy as np
 from loguru import logger as log
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from graphein.protein.utils import (  # download_pdb,
     download_alphafold_structure,

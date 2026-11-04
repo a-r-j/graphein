@@ -5,7 +5,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class STRINGConfig(BaseModel):
@@ -157,5 +157,4 @@ class PPIGraphConfig(BaseModel):
     string_config: STRINGConfig | None = None
     biogrid_config: BioGridConfig | None = None
 
-    class Config:
-        arbitrary_types_allowed: bool = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)

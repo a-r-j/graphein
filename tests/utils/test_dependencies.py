@@ -2,6 +2,7 @@
 
 import ast
 import re
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -9,16 +10,14 @@ import pytest
 from graphein.utils.dependencies import import_message
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-EXTRAS_FILE = ROOT / ".requirements" / "extras.in"
 
 
 def _extras_packages() -> set:
     """Package names installed by ``pip install graphein[extras]``."""
-    lines = EXTRAS_FILE.read_text().splitlines()
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
     return {
-        re.split(r"[<>=!~\[ ;]", line.strip())[0].lower()
-        for line in lines
-        if line.strip() and not line.startswith("#")
+        re.split(r"[<>=!~\[ ;]", req)[0].lower()
+        for req in pyproject["project"]["optional-dependencies"]["extras"]
     }
 
 
@@ -83,5 +82,5 @@ def test_import_message_extras_flag_matches_extras_requirements(
     assert extras == in_extras, (
         f"{path}:{line}: import_message for {package!r} has "
         f"extras={extras}, but {package!r} is "
-        f"{'' if in_extras else 'not '}in {EXTRAS_FILE.name}"
+        f"{'' if in_extras else 'not '}in the pyproject.toml extras"
     )

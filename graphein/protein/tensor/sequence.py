@@ -63,17 +63,6 @@ def residue_ids(df: pd.DataFrame, insertions: bool = True) -> pd.Series:
     return df["residue_id"]
 
 
-def _present_atom_indices(
-    x: torch.Tensor, fill_value: float
-) -> tuple[int, ...]:
-    """Returns the indices of the filled (non-``fill_value``) atoms in a
-    residue (``Num Atoms x 3``), excluding ``OXT``.
-    """
-    oxt_index = ATOM_NUMBERING_MODIFIED["OXT"]
-    present = (x != fill_value).any(dim=-1).nonzero().flatten().tolist()
-    return tuple(i for i in present if i != oxt_index)
-
-
 def get_sequence(
     df: pd.DataFrame,
     chains: str | list[str] = "all",
@@ -224,6 +213,25 @@ def get_atom_indices(
     return index_map
 
 
+def _present_atom_indices(
+    x: AtomTensor, fill_value: float = 1e-5
+) -> list[tuple[int, ...]]:
+    """Returns the indices of the atoms present in each residue, excluding OXT.
+
+    An atom is present if any of its coordinates differs from ``fill_value``.
+    """
+    present = (x != fill_value).any(dim=2)
+    oxt_index = ATOM_NUMBERING_MODIFIED["OXT"]
+    return [
+        tuple(
+            i
+            for i, is_present in enumerate(row)
+            if is_present and i != oxt_index
+        )
+        for row in present.tolist()
+    ]
+
+
 def infer_residue_types(
     x: AtomTensor, fill_value: float = 1e-5, return_sequence: bool = True
 ) -> str | list[str]:
@@ -247,9 +255,9 @@ def infer_residue_types(
     :rtype: Union[str, List[str]]
     """
     rmap: dict[tuple[int, ...], str] = get_atom_indices(invert=True)
-
     seq = [
-        rmap.get(_present_atom_indices(res, fill_value), "UNK") for res in x
+        rmap.get(indices, "UNK")
+        for indices in _present_atom_indices(x, fill_value)
     ]
 
     if return_sequence:

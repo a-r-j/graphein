@@ -227,9 +227,11 @@ def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
 
     centroids = calculate_centroid_positions(df)
     df = df.loc[df["atom_name"] == "CA"].reset_index(drop=True)
-    df["x_coord"] = centroids["x_coord"]
-    df["y_coord"] = centroids["y_coord"]
-    df["z_coord"] = centroids["z_coord"]
+    # Match centroids to residues by key: their row order differs (groupby
+    # sorts, df is in file order)
+    keys = ["chain_id", "residue_number", "residue_name", "insertion"]
+    coords = ["x_coord", "y_coord", "z_coord"]
+    df[coords] = df[keys].merge(centroids, on=keys, how="left")[coords]
 
     return df
 
@@ -653,7 +655,8 @@ def calculate_centroid_positions(
     """
     centroids = (
         atoms.groupby(
-            ["residue_number", "chain_id", "residue_name", "insertion"]
+            ["residue_number", "chain_id", "residue_name", "insertion"],
+            dropna=False,
         )
         .mean(numeric_only=True)[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
@@ -1081,7 +1084,7 @@ def compute_chain_graph(
     # Add edges
     for u, v, d in g.edges(data=True):
         h.add_edge(
-            g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=d["kind"]
+            g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=set(d["kind"])
         )
     # Remove self-loops if necessary. Checks for equality between nodes in a
     # given edge.
@@ -1121,7 +1124,7 @@ def compute_weighted_graph_from_multigraph(g: nx.MultiGraph) -> nx.Graph:
                 except KeyError:
                     H[u][v][kind] = 1
         else:
-            H.add_edge(u, v, weight=len(d["kind"]), kind=d["kind"])
+            H.add_edge(u, v, weight=len(d["kind"]), kind=set(d["kind"]))
             for kind in list(d["kind"]):
                 H[u][v][kind] = 1
     return H
@@ -1220,7 +1223,7 @@ def compute_secondary_structure_graph(
     for u, v, d in g.edges(data=True):
         try:
             h.add_edge(
-                ss_list[u], ss_list[v], kind=d["kind"], source=f"{u}_{v}"
+                ss_list[u], ss_list[v], kind=set(d["kind"]), source=f"{u}_{v}"
             )
         except KeyError as e:
             log.debug(
