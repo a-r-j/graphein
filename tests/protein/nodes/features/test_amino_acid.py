@@ -89,7 +89,7 @@ def test_hydrogen_bond_acceptor():
     g = construct_graph(pdb_code="4hhb", config=config)
 
     for _, d in g.nodes(data=True):
-        assert "hbond_acceptors" in d.keys()
+        assert "hbond_acceptors" in d
         assert isinstance(d["hbond_acceptors"], pd.Series)
 
     config = ProteinGraphConfig(
@@ -100,7 +100,7 @@ def test_hydrogen_bond_acceptor():
     g = construct_graph(pdb_code="4hhb", config=config)
 
     for _, d in g.nodes(data=True):
-        assert "hbond_acceptors" in d.keys()
+        assert "hbond_acceptors" in d
         assert isinstance(d["hbond_acceptors"], np.ndarray)
 
     config = ProteinGraphConfig(
@@ -112,7 +112,7 @@ def test_hydrogen_bond_acceptor():
     )
     g = construct_graph(pdb_code="4hhb", config=config)
     for _, d in g.nodes(data=True):
-        assert "hbond_acceptors" in d.keys()
+        assert "hbond_acceptors" in d
         assert isinstance(d["hbond_acceptors"], np.ndarray)
         assert d["hbond_acceptors"] < 2
 
@@ -122,7 +122,7 @@ def test_hydrogen_bond_acceptor():
     g = construct_graph(pdb_code="4hhb", config=config)
 
     for _, d in g.nodes(data=True):
-        assert "hbond_acceptors" in d.keys()
+        assert "hbond_acceptors" in d
         assert isinstance(d["hbond_acceptors"], pd.Series)
 
     config = ProteinGraphConfig(
@@ -134,7 +134,7 @@ def test_hydrogen_bond_acceptor():
     g = construct_graph(pdb_code="4hhb", config=config)
 
     for _, d in g.nodes(data=True):
-        assert "hbond_acceptors" in d.keys()
+        assert "hbond_acceptors" in d
         assert isinstance(d["hbond_acceptors"], np.ndarray)
 
     config = ProteinGraphConfig(
@@ -147,7 +147,7 @@ def test_hydrogen_bond_acceptor():
     )
     g = construct_graph(pdb_code="4hhb", config=config)
     for _, d in g.nodes(data=True):
-        assert "hbond_acceptors" in d.keys()
+        assert "hbond_acceptors" in d
         assert isinstance(d["hbond_acceptors"], np.ndarray)
         assert d["hbond_acceptors"] < 2
 
@@ -157,7 +157,7 @@ def test_hydrogen_bond_donor():
     g = construct_graph(pdb_code="4hhb", config=config)
 
     for _, d in g.nodes(data=True):
-        assert "hbond_donors" in d.keys()
+        assert "hbond_donors" in d
         assert isinstance(d["hbond_donors"], pd.Series)
 
     config = ProteinGraphConfig(
@@ -168,7 +168,7 @@ def test_hydrogen_bond_donor():
     g = construct_graph(pdb_code="4hhb", config=config)
 
     for _, d in g.nodes(data=True):
-        assert "hbond_donors" in d.keys()
+        assert "hbond_donors" in d
         assert isinstance(d["hbond_donors"], np.ndarray)
 
     config = ProteinGraphConfig(
@@ -178,7 +178,7 @@ def test_hydrogen_bond_donor():
     )
     g = construct_graph(pdb_code="4hhb", config=config)
     for _, d in g.nodes(data=True):
-        assert "hbond_donors" in d.keys()
+        assert "hbond_donors" in d
         assert isinstance(d["hbond_donors"], np.ndarray)
         assert d["hbond_donors"] < 2
 
@@ -189,7 +189,7 @@ def test_hydrogen_bond_donor():
     g = construct_graph(pdb_code="4hhb", config=config)
 
     for _, d in g.nodes(data=True):
-        assert "hbond_donors" in d.keys()
+        assert "hbond_donors" in d
         assert isinstance(d["hbond_donors"], pd.Series)
 
     config = ProteinGraphConfig(
@@ -201,7 +201,7 @@ def test_hydrogen_bond_donor():
     g = construct_graph(pdb_code="4hhb", config=config)
 
     for _, d in g.nodes(data=True):
-        assert "hbond_donors" in d.keys()
+        assert "hbond_donors" in d
         assert isinstance(d["hbond_donors"], np.ndarray)
 
     config = ProteinGraphConfig(
@@ -212,7 +212,7 @@ def test_hydrogen_bond_donor():
     )
     g = construct_graph(pdb_code="4hhb", config=config)
     for _, d in g.nodes(data=True):
-        assert "hbond_donors" in d.keys()
+        assert "hbond_donors" in d
         assert isinstance(d["hbond_donors"], np.ndarray)
         assert d["hbond_donors"] < 2
 

@@ -387,7 +387,7 @@ def parse_aggregation_type(
     return func
 
 
-_string_types = (type(b""), type(""))
+_string_types = (bytes, str)
 
 
 def deprecated(reason):

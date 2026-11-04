@@ -65,9 +65,7 @@ def assign_bond_states_to_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df = df.join(ss, on=["residue_name", "atom_name"])
 
     # Fill the NaNs with the standard states
-    df = df.fillna(value={"atom_bond_state": naive_bond_states})
-
-    return df
+    return df.fillna(value={"atom_bond_state": naive_bond_states})
 
 
 def assign_covalent_radii_to_dataframe(df: pd.DataFrame) -> pd.DataFrame:

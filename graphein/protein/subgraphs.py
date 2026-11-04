@@ -376,9 +376,8 @@ def extract_subgraph_by_bond_type(
             if not inverse:
                 if bond not in bond_types:
                     d["kind"].discard(bond)
-            elif inverse:
-                if bond in bond_types:
-                    d["kind"].discard(bond)
+            elif inverse and bond in bond_types:
+                d["kind"].discard(bond)
 
     return extract_subgraph_from_node_list(
         g,

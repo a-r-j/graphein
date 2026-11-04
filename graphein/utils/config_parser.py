@@ -92,5 +92,4 @@ def parse_config(path: Path) -> BaseModel:
     :type path: pathlib.Path
     """
     with open(path, "rb") as f:
-        yml_config = yaml.load(f, Loader=get_loader())
-    return yml_config
+        return yaml.load(f, Loader=get_loader())

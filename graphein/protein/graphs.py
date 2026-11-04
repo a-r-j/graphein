@@ -288,8 +288,7 @@ def remove_alt_locs(
     # Unsort
     if keep in ["max_occupancy", "min_occupancy"]:
         df = df.sort_index()
-    df = df.reset_index(drop=True)
-    return df
+    return df.reset_index(drop=True)
 
 
 def remove_insertions(
@@ -451,9 +450,7 @@ def process_dataframe(
 
     # Sort dataframe to place HETATMs and reset index
     protein_df = sort_dataframe(protein_df)
-    protein_df = protein_df.reset_index(drop=True)
-
-    return protein_df
+    return protein_df.reset_index(drop=True)
 
 
 def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
