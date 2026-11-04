@@ -81,17 +81,43 @@ def compute_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
     Rows are protein residues with a complete backbone (N, CA, C, O) in file
     order: ``ATOM`` residues, plus ``HETATM`` residues (e.g. ``MSE``)
     peptide-bonded into a chain. Hydrogens are ignored and, where atoms have
-    alternate locations, the highest-occupancy one is used.
+    alternate locations, the highest-occupancy one is used. Where several
+    residues share a chain, number and insertion code, the one with the
+    highest-occupancy CA is used.
 
-    :param df: Atomic dataframe, e.g. ``G.graph["raw_pdb_df"]``.
+    :param df: Atomic dataframe in file order, e.g. from
+        :func:`~graphein.protein.graphs.read_pdb_to_dataframe`, or
+        ``G.graph["raw_pdb_df"]``. If the index is unique, rows are taken in
+        index order, so a dataframe sorted with
+        :func:`~graphein.protein.graphs.sort_dataframe` (which keeps the
+        index) is put back in file order.
     :type df: pd.DataFrame
     :return: DataFrame with columns :const:`DSSP_COLS`.
     :rtype: pd.DataFrame
     """
-    df = df.loc[
-        df["record_name"].isin(["ATOM", "HETATM"])
-        & ~df["element_symbol"].isin(["H", "D", "T"])
-    ]
+    # File order. construct_graph sorts raw_pdb_df by chain and residue
+    # number but keeps its index, so sorting by the index undoes that.
+    if df.index.is_unique:
+        df = df.sort_index(kind="stable")
+    # Hydrogens, also where the element column is blank (e.g. MD output).
+    element = df["element_symbol"].fillna("").astype(str).str.strip()
+    name = df["atom_name"].astype(str).str.lstrip("0123456789")
+    hydrogen = element.str.upper().isin(["H", "D", "T"]) | (
+        element.eq("") & name.str.startswith(("H", "D"))
+    )
+    df = df.loc[df["record_name"].isin(["ATOM", "HETATM"]) & ~hydrogen]
+    df = df.reset_index(drop=True)
+
+    # One residue per (chain, number, insertion): the one with the
+    # highest-occupancy CA. Waters or ligands sharing its number, and other
+    # residues at the same position (microheterogeneity), are left out.
+    keys = ["chain_id", "residue_number", "insertion"]
+    res = df.groupby(keys, sort=False, dropna=False).ngroup().to_numpy()
+    ca_occupancy = df["occupancy"].where(df["atom_name"].eq("CA"), -np.inf)
+    best = ca_occupancy.fillna(-np.inf).groupby(res).idxmax().to_numpy()
+    resname = df["residue_name"].to_numpy()
+    df = df[resname == resname[best][res]]
+
     # One conformer per atom (highest occupancy), then file order. Row
     # position, not atom_number: serials wrap or restart per chain.
     df = (
@@ -139,12 +165,15 @@ def compute_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
     bb = x[:, :4]
     L = len(bb)
     aa = residues["residue_name"].to_numpy()
+    chain = residues["chain_id"].to_numpy()
+    # As mkdssp, a change of chain is a break even without a C-N gap.
+    breaks = dssp_core._dssp_breaks(bb) | (chain[1:] != chain[:-1])
     donor_mask = aa != "PRO"  # proline N has no H to donate
     energies = dssp_core._dssp_energies(bb, np, donor_mask)
-    ss = dssp_core._assign8(bb, np, donor_mask, energies)
+    ss = dssp_core._assign8(bb, np, donor_mask, energies, breaks)
     acc = dssp_core._accessibility(x, present).astype(np.float64)
-    number = dssp_core._dssp_numbers(bb)
-    phi, psi = dssp_core._dssp_phi_psi(bb)
+    number = dssp_core._dssp_numbers(bb, breaks)
+    phi, psi = dssp_core._dssp_phi_psi(bb, breaks)
     partners = dssp_core._dssp_partners(*energies, L)
 
     def one_dp(v):  # as printed by mkdssp and parsed back by Biopython
@@ -182,6 +211,9 @@ def add_dssp_df(
 
     :param G: Input protein graph
     :param G: nx.Graph
+    Rows are indexed by node id; residues without a node (e.g. unselected
+    chains) are left out.
+
     :param dssp_config: Deprecated and ignored.
     :type dssp_config: DSSPConfig, optional
     :return: Protein graph with DSSP dataframe added
@@ -191,29 +223,28 @@ def add_dssp_df(
         warnings.warn(
             "DSSPConfig is deprecated and ignored: DSSP is now computed "
             "natively, without mkdssp.",
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=2,
         )
     config = G.graph["config"]
     dssp_dict = compute_dssp_df(G.graph["raw_pdb_df"])
 
-    # Construct node IDs
-    dssp_dict["node_id"] = (
-        dssp_dict["chain"]
-        + ":"
-        + dssp_dict["aa"]
-        + ":"
-        + dssp_dict["resnum"].astype(str)
+    # Match residues to nodes by chain, number and insertion code. Node ids
+    # can carry an alt_loc label, and without insertions only the parent
+    # residue (e.g. 52, not 52A) is a node.
+    nodes = G.graph["pdb_df"].drop_duplicates("node_id")
+    nodes = pd.DataFrame(
+        {
+            "chain": nodes["chain_id"],
+            "resnum": nodes["residue_number"],
+            "_icode": nodes["insertion"].fillna("").astype(str).str.strip(),
+            "node_id": nodes["node_id"],
+        }
     )
-    if config.insertions:
-        dssp_dict["node_id"] = (
-            dssp_dict["node_id"] + ":" + dssp_dict["icode"].astype(str)
-        )
-        # Replace trailing : for non insertions
-        dssp_dict["node_id"] = dssp_dict["node_id"].str.replace(
-            r":\s*$", "", regex=True
-        )
-
+    dssp_dict = nodes.merge(
+        dssp_dict.assign(_icode=dssp_dict["icode"].str.strip()),
+        on=["chain", "resnum", "_icode"],
+    )[[*DSSP_COLS, "node_id"]]
     dssp_dict.set_index("node_id", inplace=True)
 
     if config.verbose:

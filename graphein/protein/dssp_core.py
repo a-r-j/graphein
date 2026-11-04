@@ -275,21 +275,32 @@ def _dssp_energies(x, xp, donor_mask):
     pairs with CA-CA <= 9 Angstrom are evaluated; and energies are rounded to
     0.001 kcal/mol.
     """
-    L = x.shape[0]
     n, ca, c, o = (x[:, k] for k in range(4))
     h = n * 1
     h[1:] = h[1:] + _unit(c[:-1] - o[:-1], xp)
-    near_ca = _pdist2(ca, ca) <= _DSSP_MAX_CA**2
 
-    # Donor/acceptor pairs mkdssp evaluates; it skips donor == acceptor + 1.
-    pairs = near_ca | False  # copy
-    pairs[range(L), range(L)] = False
-    pairs[range(1, L), range(L - 1)] = False
-    if donor_mask is not None:
-        pairs &= donor_mask[:, None]
-    don, acc = (
-        np.nonzero(pairs) if xp is np else torch.nonzero(pairs, as_tuple=True)
+    # CA pairs within 9 Angstrom from a KD-tree (O(L) memory), then the
+    # exact cutoff with the distance summed per component as mkdssp.
+    ca_np = _to_np(ca)
+    a, b = (
+        cKDTree(ca_np)
+        .query_pairs(_DSSP_MAX_CA + 1e-3, output_type="ndarray")
+        .reshape(-1, 2)
+        .T
     )
+    d = ca_np[a] - ca_np[b]
+    near = d[:, 0] * d[:, 0] + d[:, 1] * d[:, 1] + d[:, 2] * d[:, 2]
+    near = near <= _DSSP_MAX_CA**2
+    don = np.concatenate([a[near], b[near]])
+    acc = np.concatenate([b[near], a[near]])
+    # Donor/acceptor pairs mkdssp evaluates; it skips donor == acceptor + 1.
+    keep = don != acc + 1
+    if donor_mask is not None:
+        keep &= _to_np(donor_mask)[don]
+    don, acc = don[keep], acc[keep]
+    if xp is not np:
+        don = torch.as_tensor(don, device=x.device)
+        acc = torch.as_tensor(acc, device=x.device)
 
     def dist(a, b):  # float32 like mkdssp, then promoted to float64
         d = a[don] - b[acc]
@@ -354,9 +365,14 @@ def _dssp_breaks(x: np.ndarray) -> np.ndarray:
     return d[:, 0] ** 2 + d[:, 1] ** 2 + d[:, 2] ** 2 > _DSSP_MAX_PEPTIDE**2
 
 
-def _dssp_numbers(x: np.ndarray) -> np.ndarray:
-    """mkdssp residue numbers: 1-based, skipping one at each chain break."""
-    return np.arange(1, len(x) + 1) + np.r_[0, np.cumsum(_dssp_breaks(x))]
+def _dssp_numbers(
+    x: np.ndarray, breaks: Optional[np.ndarray] = None
+) -> np.ndarray:
+    """mkdssp residue numbers: 1-based, skipping one at each chain break
+    (``breaks``, default :func:`_dssp_breaks`)."""
+    if breaks is None:
+        breaks = _dssp_breaks(x)
+    return np.arange(1, len(x) + 1) + np.r_[0, np.cumsum(breaks)]
 
 
 def _dihedral(p1, p2, p3, p4):
@@ -386,19 +402,19 @@ def _dihedral(p1, p2, p3, p4):
     return np.where(ok, angle, np.float32(360))
 
 
-def _dssp_phi_psi(x: np.ndarray):
-    """mkdssp phi and psi (degrees, 360 where undefined) of a float32
-    ``(L, 4, 3)`` backbone."""
+def _dssp_phi_psi(x: np.ndarray, breaks: Optional[np.ndarray] = None):
+    """mkdssp phi and psi (degrees, 360 where undefined, e.g. across chain
+    ``breaks``) of a float32 ``(L, 4, 3)`` backbone."""
     phi = np.full(len(x), np.float32(360))
     psi = np.full(len(x), np.float32(360))
-    ok = ~_dssp_breaks(x)
+    ok = ~(_dssp_breaks(x) if breaks is None else breaks)
     n, ca, c = x[:, 0], x[:, 1], x[:, 2]
     phi[1:] = np.where(ok, _dihedral(c[:-1], n[1:], ca[1:], c[1:]), 360)
     psi[:-1] = np.where(ok, _dihedral(n[:-1], ca[:-1], c[:-1], n[1:]), 360)
     return phi, psi
 
 
-def _assign8(x, xp, donor_mask, energies=None):
+def _assign8(x, xp, donor_mask, energies=None, breaks=None):
     # Everything after the H-bonds is O(L) (at most 2 bonds per donor), so
     # it runs in NumPy on the H-bond edge list rather than dense maps.
     L = x.shape[0]
@@ -412,8 +428,11 @@ def _assign8(x, xp, donor_mask, energies=None):
         valid = (a >= 0) & (a < L) & (d >= 0) & (d < L)
         return valid & np.isin(a * L + d, keys)
 
-    # Chain breaks: C(i-1)-N(i) > 2.5 Angstrom. seg[i] is i's segment id.
-    seg = np.concatenate([[0], np.cumsum(_dssp_breaks(x))])
+    # Chain breaks: C(i-1)-N(i) > 2.5 Angstrom unless given (e.g. also at
+    # chain changes). seg[i] is i's segment id.
+    if breaks is None:
+        breaks = _dssp_breaks(x)
+    seg = np.concatenate([[0], np.cumsum(breaks)])
 
     def nobreak(a, b):
         return seg[a] == seg[b]

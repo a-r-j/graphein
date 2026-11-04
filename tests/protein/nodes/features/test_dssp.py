@@ -5,6 +5,7 @@ import pathlib
 # test
 import networkx as nx
 import numpy as np
+import pandas as pd
 import pytest
 from Bio.PDB.DSSP import residue_max_acc
 
@@ -15,8 +16,13 @@ from graphein.protein.features.nodes import rsa, secondary_structure
 from graphein.protein.features.nodes.dssp import (
     DSSP_COLS,
     compute_dssp_df,
+    phi,
 )
-from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
+from graphein.protein.graphs import (
+    construct_graph,
+    read_pdb_to_dataframe,
+    sort_dataframe,
+)
 from graphein.protein.subgraphs import extract_surface_subgraph
 from graphein.protein.utils import ProteinGraphConfigurationError
 
@@ -170,7 +176,7 @@ def test_deprecated_dssp_config_still_works():
         dssp_config=DSSPConfig(),
         graph_metadata_functions=[secondary_structure],
     )
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(FutureWarning):
         g = construct_graph(
             config=config, path=str(pdb_path.parent / "1lds.pdb")
         )
@@ -212,3 +218,134 @@ def test_dssp_core_degenerate_inputs():
     assert dssp_core.assign_dssp_np(x).shape == (1, 3)
     acc = dssp_core._accessibility(np.zeros((2, 5, 3)), np.zeros((2, 5), bool))
     assert acc.tolist() == [0, 0]
+
+
+def _1lds_df():
+    return read_pdb_to_dataframe(path=str(pdb_path.parent / "1lds.pdb"))
+
+
+def test_dssp_features_reach_nodes_with_alt_loc_labels():
+    # Node ids carry the kept atom's alt_loc label (A:MET:32:A).
+    df = _4hhb_df()
+    met = (df["chain_id"] == "A") & (df["residue_number"] == 32)
+    df.loc[met, "alt_loc"] = "A"
+    config = ProteinGraphConfig(
+        graph_metadata_functions=[rsa, secondary_structure]
+    )
+    g = construct_graph(config=config, df=df, name="4hhb")
+    assert "A:MET:32:A" in g
+    assert all("ss" in d and "rsa" in d for _, d in g.nodes(data=True))
+
+
+def test_compute_dssp_df_restores_file_order():
+    # construct_graph sorts raw_pdb_df by chain and residue number, which
+    # reorders chains L, H, A to A, H, L.
+    df = read_pdb_to_dataframe(path=str(pdb_path))
+    ref = compute_dssp_df(df)
+    assert ref["chain"].unique().tolist() == ["L", "H", "A"]
+    assert compute_dssp_df(sort_dataframe(df)).equals(ref)
+
+
+def test_compute_dssp_df_non_monotonic_numbering():
+    # e.g. a T4 lysozyme insertion numbered 1001+ inside a GPCR loop.
+    ref = compute_dssp_df(_1lds_df())
+    df = _1lds_df()
+    df.loc[df["residue_number"].between(40, 49), "residue_number"] += 1000
+    out = compute_dssp_df(sort_dataframe(df))
+    for col in ("ss", "dssp_index", "phi", "psi", "NH_O_1_relidx"):
+        assert out[col].tolist() == ref[col].tolist(), col
+
+
+def test_compute_dssp_df_keeps_modified_residues_from_mmcif(tmp_path):
+    # mmCIF HETATM records (here an MSE) must stay in place in the chain.
+    cif = pdb_path.parent / "4hhb.cif"
+    lines = []
+    for line in cif.read_text().splitlines():
+        f = line.split()
+        if f[:1] == ["ATOM"] and f[5:7] == ["MET", "A"] and f[8] == "32":
+            line = line.replace("ATOM  ", "HETATM", 1).replace(
+                " MET ", " MSE "
+            )
+        lines.append(line)
+    mse = tmp_path / "4hhb_mse.cif"
+    mse.write_text("\n".join(lines) + "\n")
+    ref = compute_dssp_df(read_pdb_to_dataframe(path=str(cif)))
+    out = compute_dssp_df(read_pdb_to_dataframe(path=str(mse)))
+    assert out.query("chain == 'A' and resnum == 32")["aa"].item() == "MSE"
+    assert out.drop(columns="aa").equals(ref.drop(columns="aa"))
+
+
+def test_chain_id_change_is_a_chain_break():
+    df = _1lds_df()
+    df.loc[df["residue_number"] >= 50, "chain_id"] = "B"
+    out = compute_dssp_df(df)
+    i = out.index[out["chain"] == "B"][0]
+    assert out.at[i, "dssp_index"] == out.at[i - 1, "dssp_index"] + 2
+    assert out.at[i, "phi"] == 360.0
+    assert out.at[i - 1, "psi"] == 360.0
+
+
+def test_compute_dssp_df_ignores_other_residues_with_same_number():
+    # A water numbered like a protein residue must not join it, even when
+    # its O has a higher occupancy than the carbonyl O.
+    df = _4hhb_df()
+    o = (
+        (df["chain_id"] == "A")
+        & (df["residue_number"] == 32)
+        & (df["atom_name"] == "O")
+    )
+    df.loc[o, "occupancy"] = 0.5
+    ref = compute_dssp_df(df)
+    water = df[o].assign(
+        residue_name="HOH",
+        record_name="HETATM",
+        occupancy=1.0,
+        x_coord=100.0,
+        y_coord=100.0,
+        z_coord=100.0,
+    )
+    out = compute_dssp_df(pd.concat([df, water], ignore_index=True))
+    assert out.equals(ref)
+
+
+def test_insertions_false_keeps_parent_residue_features():
+    # H 52 (TRP) and 52A (TYR); without insertions only 52 is a node.
+    config = ProteinGraphConfig(
+        insertions=False, graph_metadata_functions=[phi]
+    )
+    g = construct_graph(config=config, path=pdb_path)
+    ref = compute_dssp_df(read_pdb_to_dataframe(path=str(pdb_path)))
+    h52 = ref.query("chain == 'H' and resnum == 52").set_index("icode")
+    assert h52.at[" ", "phi"] != h52.at["A", "phi"]
+    assert g.nodes["H:TRP:52"]["phi"] == h52.at[" ", "phi"]
+
+
+def test_compute_dssp_df_ignores_hydrogens_without_element():
+    # e.g. MD output with a blank element column
+    df = _4hhb_df()
+    ref = compute_dssp_df(df)
+    cb = df[df["atom_name"] == "CB"]
+    hs = [
+        cb.assign(atom_name="HB2", element_symbol="", x_coord=cb.x_coord + 1),
+        cb.assign(
+            atom_name="1HB", element_symbol=np.nan, y_coord=cb.y_coord + 1
+        ),
+    ]
+    out = compute_dssp_df(pd.concat([df, *hs], ignore_index=True))
+    assert out.equals(ref)
+
+
+def test_dssp_energies_avoid_dense_distance_matrix(monkeypatch):
+    # An L x L matrix runs out of memory on large assemblies.
+    def dense(*args):
+        raise AssertionError("dense pairwise distances")
+
+    monkeypatch.setattr(dssp_core, "_pdist2", dense)
+    ref = compute_dssp_df(_1lds_df())
+    assert (
+        ref.drop(columns="aa")
+        .iloc[[0, 8, 22, 60, 96]]
+        .apply(tuple, axis=1)
+        .tolist()
+        == MKDSSP_1LDS_ROWS
+    )

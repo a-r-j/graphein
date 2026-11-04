@@ -45,6 +45,7 @@ from graphein.protein.graphs import (
     construct_graph,
     construct_graphs_mp,
     read_pdb_to_dataframe,
+    remove_alt_locs,
 )
 from graphein.protein.meshes import parse_pymol_commands
 
@@ -675,3 +676,53 @@ def test_construct_graph_does_not_mutate_config():
     )
     assert g.graph["marked"]
     assert config.graph_metadata_functions is None
+
+
+def test_insertions_false_keeps_parent_residue():
+    # H 52 (TRP) and 52A (TYR): remove_alt_locs left the frame sorted by
+    # occupancy, so remove_insertions could drop 52 as 52A's duplicate.
+    path = Path(__file__).parent / "test_data" / "input_pdb_cryst1.pdb"
+    g = construct_graph(
+        config=ProteinGraphConfig(insertions=False), path=path, verbose=False
+    )
+    assert "H:TRP:52" in g
+    assert not any(n.startswith("H:TYR:52") for n in g)
+
+
+def test_remove_alt_locs_keeps_order_and_first_of_ties():
+    df = pd.DataFrame(
+        {
+            "chain_id": "A",
+            "residue_number": [1, 1, 2, 2, 3],
+            "atom_name": "CA",
+            "insertion": "",
+            "alt_loc": ["", "", "A", "B", ""],
+            "occupancy": [1.0, 1.0, 0.5, 0.5, 0.2],
+        }
+    )
+    df.loc[0, "insertion"] = "A"  # 1A, then 1
+    out = remove_alt_locs(df)
+    assert out["residue_number"].tolist() == [1, 1, 2, 3]
+    assert out["alt_loc"].tolist() == ["", "", "A", ""]
+    out = remove_alt_locs(df, keep="min_occupancy")
+    assert out["alt_loc"].tolist() == ["", "", "A", ""]
+
+
+def test_read_mmcif_keeps_file_order(tmp_path):
+    # HETATM records (here MET A 32 as MSE) stay where they are in the
+    # file, as for PDB files, rather than after every ATOM record.
+    lines = []
+    for line in CIF_DATA_PATH.read_text().splitlines():
+        f = line.split()
+        if f[:1] == ["ATOM"] and f[5:7] == ["MET", "A"] and f[8] == "32":
+            line = line.replace("ATOM  ", "HETATM", 1).replace(
+                " MET ", " MSE "
+            )
+        lines.append(line)
+    cif = tmp_path / "4hhb_mse.cif"
+    cif.write_text("\n".join(lines) + "\n")
+    df = read_pdb_to_dataframe(path=str(cif))
+    assert df["atom_number"].is_monotonic_increasing
+    assert df.index.equals(pd.RangeIndex(len(df)))
+    chain_a = df[df["chain_id"] == "A"]["residue_number"].drop_duplicates()
+    assert chain_a.tolist()[30:33] == [31, 32, 33]
