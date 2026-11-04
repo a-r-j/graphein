@@ -72,3 +72,16 @@ def test_get_full_atom_coords():
     assert coords.tolist() == [[1, 2, 3], [4, 5, 6]]
     assert residue_index.tolist() == [0, 0]
     assert atom_type.tolist() == [0, 1]
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_get_full_atom_coords_coordinate_equal_to_fill():
+    # A single coordinate equal to the fill value used to break the reshape
+    atom_tensor = torch.full((2, 37, 3), 1e-5)
+    atom_tensor[:, :2] = torch.rand(2, 2, 3) + 1
+    atom_tensor[0, 1, 2] = 1e-5
+    coords, residue_index, atom_type = get_full_atom_coords(atom_tensor)
+    assert coords.shape == (4, 3)
+    assert torch.equal(coords[1], atom_tensor[0, 1])
+    assert residue_index.tolist() == [0, 0, 1, 1]
+    assert atom_type.tolist() == [0, 1, 0, 1]

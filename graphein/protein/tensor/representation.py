@@ -45,12 +45,8 @@ def get_full_atom_coords(
     """
     # Get number of atoms per residue
     filled = atom_tensor[:, :, 0] != fill_value
-    nz = filled.nonzero()
-    residue_index = nz[:, 0]
-    atom_type = nz[:, 1]
-    coords = atom_tensor.reshape(-1, 3)
-    coords = coords[coords != fill_value].reshape(-1, 3)
-    return coords, residue_index, atom_type
+    residue_index, atom_type = filled.nonzero(as_tuple=True)
+    return atom_tensor[filled], residue_index, atom_type
 
 
 def get_c_alpha(x: AtomTensor, index: int = 1) -> CoordTensor:

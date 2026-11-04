@@ -53,9 +53,7 @@ def compute_edges(
     :rtype: EdgeTensor
     """
 
-    edge_type = edge_type.lower()
-    etype = edge_type.split("_")[0]
-    val = edge_type.split("_")[1]
+    etype, val = edge_type.lower().split("_")
 
     if etype == "knn":
         return knn_edges(x=x, k=int(val), batch=batch, **kwargs)
@@ -78,16 +76,16 @@ def radius_edges(
     .. code-block:: python
 
             import torch
-            import graphein.protein.tensor
+            import graphein.protein.tensor as gpt
 
             x = torch.Tensor([[-1, -1], [-1, 1], [1, -1], [1, 1]])
             batch = torch.tensor([0, 0, 0, 0])
-            edge_index = gpt.radius_graph(x, r=1.5, batch=batch, loop=False)
+            edge_index = gpt.edges.radius_edges(x, radius=1.5, batch=batch, loop=False)
 
     Args:
         x (Tensor): Node feature matrix
             :math:`\mathbf{X} \in \mathbb{R}^{N \times F}`.
-        r (float): The radius.
+        radius (float): The radius.
         batch (LongTensor, optional): Batch vector
             :math:`\mathbf{b} \in {\{ 0, \ldots, B-1\}}^N`, which assigns each
             node to a specific example. (default: :obj:`None`)
@@ -131,7 +129,7 @@ def knn_edges(
 
         x = torch.Tensor([[-1, -1], [-1, 1], [1, -1], [1, 1]])
         batch = torch.tensor([0, 0, 0, 0])
-        edge_index = gpt.knn_graph(x, k=2, batch=batch, loop=False)
+        edge_index = gpt.edges.knn_edges(x, k=2, batch=batch, loop=False)
 
     Args:
         x (Tensor): Node feature matrix
@@ -145,9 +143,6 @@ def knn_edges(
         flow (string, optional): The flow direction when using in combination
             with message passing (:obj:`"source_to_target"` or
             :obj:`"target_to_source"`). (default: :obj:`"source_to_target"`)
-        cosine (boolean, optional): If :obj:`True`, will use the cosine
-            distance instead of euclidean distance to find nearest neighbors.
-            (default: :obj:`False`)
         num_workers (int): Number of workers to use for computation. Has no
             effect in case :obj:`batch` is not :obj:`None`, or the input lies
             on the GPU. (default: :obj:`1`)

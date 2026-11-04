@@ -70,7 +70,7 @@ def has_complete_backbone(
 
     """
     indices = torch.tensor(backbone_indices)
-    return torch.sum(x[:, indices] == fill_value) == 0
+    return not (x[:, indices] == fill_value).any()
 
 
 def has_complete_residue(
