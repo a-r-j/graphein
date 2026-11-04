@@ -17,9 +17,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import graphein
 import graphein.protein as gp
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
+    HBOND_TYPES,
     INFINITE_DIST,
     add_aromatic_sulphur_interactions,
     add_cation_pi_interactions,
@@ -180,10 +182,16 @@ def test_add_hydrogen_bond_interactions_atom_graph():
         )
         assert _residue(u) != _residue(v)
         assert np.linalg.norm(a["coords"] - b["coords"]) <= 3.5
-        # No pairs with a backbone atom between peptide-bonded residues, e.g.
-        # Ser OG(i)-N(i+1), which are ~3A apart from covalent geometry alone.
-        if {a["atom_type"], b["atom_type"]} & {"N", "O", "OXT"}:
+        # Covalent geometry alone puts these ~2.3A (N-O across a peptide
+        # bond) and ~3A (Ser OG(i)-N(i+1)) apart, so they are excluded.
+        if {a["atom_type"], b["atom_type"]} <= {"N", "O", "OXT"}:
             assert not _peptide_bonded(g, _residue(u), _residue(v))
+        for x, y in ((u, v), (v, u)):
+            if (
+                g.nodes[x]["atom_type"] in {"OG", "OG1"}
+                and g.nodes[y]["atom_type"] == "N"
+            ):
+                assert not _peptide_bonded(g, _residue(x), _residue(y))
 
     # Backbone-backbone hydrogen bonds should be found (e.g. alpha helices).
     assert any(
@@ -219,7 +227,7 @@ def test_add_hydrogen_bond_interactions_types(hbond_types):
         n_backbone = sum(
             g.nodes[n]["atom_type"] in {"N", "O", "OXT"} for n in (u, v)
         )
-        assert ["sc-sc", "bb-sc", "bb-bb"][n_backbone] in hbond_types
+        assert HBOND_TYPES[n_backbone] in hbond_types
 
 
 def test_add_hydrogen_bond_interactions_invalid_type():
@@ -304,6 +312,64 @@ def test_add_hydrogen_bond_interactions_removed_insertions():
     n_node = _residue(n)
     assert r_node in g and n_node in g
     assert not g.has_edge(r_node, n_node)
+
+
+def test_add_hydrogen_bond_interactions_side_chain_to_next_residue():
+    """Side chain hbonds to the next residue's backbone N are kept.
+
+    Asp OD1 47 and N 48 of chain A are 3.2A apart (an Asx motif).
+    """
+    g = _hbond_graph("atom")
+    assert g.has_edge("A:ASP:47:OD1", "A:LEU:48:N")
+
+
+@pytest.mark.parametrize(
+    "res_name,variant",
+    [("SER", "SEP"), ("THR", "TPO"), ("TYR", "PTR"), ("TYR", "TPQ")],
+)
+def test_add_hydrogen_bond_interactions_modified_side_chains(
+    res_name, variant
+):
+    """Modified side chains don't donate as their parent residue would.
+
+    Phosphorylated SEP, TPO and PTR have no hydroxyl hydrogen, and TPQ's
+    parent is PHE, which has no side chain donors or acceptors.
+    """
+    g = _hbond_graph("atom", hbond_types=["sc-sc"])
+    edge = next(
+        (
+            (u, v)
+            for x, y in get_edges_by_bond_type(g, "hbond")
+            for u, v in ((x, y), (y, x))
+            if g.nodes[u]["residue_name"] == res_name
+            and not _is_donor(g.nodes[v])
+        ),
+        None,
+    )
+    if edge is None:
+        pytest.skip(f"No {res_name} donor side chain hbond in 4hhb")
+    u, v = edge
+    chain, _, res_num = _residue(u).split(":")[:3]
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    mask = (df["chain_id"] == chain) & (df["residue_number"] == int(res_num))
+    df.loc[mask, "residue_name"] = variant
+
+    g = _hbond_graph("atom", df=df, hbond_types=["sc-sc"])
+    u_new = u.replace(f":{res_name}:", f":{variant}:", 1)
+    assert u_new in g
+    assert not g.has_edge(u_new, v)
+
+
+def test_add_hydrogen_bond_interactions_no_backbone_warns(caplog):
+    """Asking for backbone hbonds without backbone atoms logs a warning."""
+    g = _hbond_graph("CA", hbond_types=["sc-sc"])
+    graphein.verbose(True)
+    try:
+        add_hydrogen_bond_interactions(g, rgroup_df=g.graph["rgroup_df"])
+    finally:
+        graphein.verbose(False)
+    assert "backbone" in caplog.text
 
 
 @pytest.mark.parametrize(

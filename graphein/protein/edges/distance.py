@@ -41,7 +41,6 @@ from graphein.protein.resi_atoms import (
     SALT_BRIDGE_ATOMS,
     SALT_BRIDGE_CATIONS,
     SALT_BRIDGE_RESIDUES,
-    STANDARD_AMINO_ACID_MAPPING_1_TO_3,
     SULPHUR_RESIS,
     VDW_RADII,
 )
@@ -333,9 +332,30 @@ def add_disulfide_interactions(
         )
 
 
-HBOND_TYPES: List[str] = ["bb-bb", "bb-sc", "sc-sc"]
+HBOND_TYPES: List[str] = ["sc-sc", "bb-sc", "bb-bb"]
 """Hydrogen bond types by the location (backbone or side chain) of the donor
-and acceptor atoms."""
+and acceptor atoms, indexed by the number of backbone atoms in the pair."""
+
+HBOND_RESIDUE_VARIANTS: Dict[str, str] = {
+    "DAR": "ARG",
+    "DGL": "GLU",
+    "DGN": "GLN",
+    "DHI": "HIS",
+    "DLY": "LYS",
+    "DSG": "ASN",
+    "DSN": "SER",
+    "DSP": "ASP",
+    "DTH": "THR",
+    "DTR": "TRP",
+    "DTY": "TYR",
+    "HID": "HIS",
+    "HIE": "HIS",
+    "HIP": "HIS",
+}
+"""Residue variants (D-amino acids and histidine protonation states) with the
+same side chain hydrogen bond donors and acceptors as their parent residue.
+Residues with modified side chains (e.g. phosphorylated ``SEP``, ``TPO`` and
+``PTR``) are deliberately not included."""
 
 
 def add_hydrogen_bond_interactions(
@@ -355,16 +375,17 @@ def add_hydrogen_bond_interactions(
     amide nitrogens (``N``, except in proline and its variants) are donors and
     backbone oxygens (``O`` and ``OXT``) are acceptors.
 
-    Side chain atoms of residue variants (e.g. ``HIE``, ``DSN``) are matched
-    to those of their parent residue via
-    :const:`~graphein.protein.resi_atoms.RESI_THREE_TO_1`. Atoms of other
-    residues (e.g. ligands) are not considered.
+    Side chain atoms of the residue variants in :const:`HBOND_RESIDUE_VARIANTS`
+    (e.g. ``HIE``, ``DSN``) are matched to those of their parent residue.
+    Side chain atoms of other residues (e.g. ligands, or modified residues
+    such as ``SEP``) are not considered.
 
-    Atoms in the same residue are never paired. Pairs involving a backbone
-    atom are also ignored between residues joined by a peptide bond, as
-    their geometry alone puts e.g. the ``N`` and ``O`` atoms either side of a
-    peptide bond ~2.3 Angstroms apart, and a Ser ``OG`` ~3 Angstroms from the
-    next residue's ``N``. Peptide bonds are identified from the backbone ``C``
+    Atoms in the same residue are never paired. Covalent geometry alone puts
+    the backbone ``N`` and ``O`` atoms either side of a peptide bond ~2.3
+    Angstroms apart, and a Ser ``OG`` or Thr ``OG1`` ~3 Angstroms from the next
+    residue's ``N``, so these pairs are ignored between residues joined by a
+    peptide bond. Other side chain hydrogen bonds to a neighbouring residue's
+    backbone (e.g. Asx motifs) are kept. Peptide bonds are identified from the backbone ``C``
     and ``N`` coordinates, so insertion codes and gaps in residue numbering
     are handled.
 
@@ -374,7 +395,9 @@ def add_hydrogen_bond_interactions(
     :type G: nx.Graph
     :param rgroup_df: Atomic dataframe to find interactions in. If ``None``
         (default), ``G.graph["raw_pdb_df"]`` is used. Backbone hydrogen bonds
-        are only found if this dataframe contains backbone atoms. Atoms are
+        are only found if this dataframe contains backbone atoms (unlike
+        ``G.graph["rgroup_df"]``), and a warning is logged if they are
+        requested but there are none. Atoms are
         assigned to nodes by chain, residue number and insertion code (and
         atom name and alt_loc for atom graphs).
     :type rgroup_df: Optional[pd.DataFrame]
@@ -422,11 +445,7 @@ def add_hydrogen_bond_interactions(
     df = df.assign(insertion=df["insertion"].fillna("")).merge(nodes, on=key)
 
     # Map residue variants (e.g. HIE, DSN) to their parent residue
-    parent = (
-        df["residue_name"]
-        .map(RESI_THREE_TO_1)
-        .map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
-    )
+    parent = df["residue_name"].replace(HBOND_RESIDUE_VARIANTS)
     res_atom = parent + ":" + df["atom_name"]
     sc_donors = [
         f"{res}:{atom}"
@@ -440,12 +459,19 @@ def add_hydrogen_bond_interactions(
     ]
     is_amino_acid = df["residue_name"].isin(list(RESI_THREE_TO_1))
     # Proline variants (e.g. HYP, DPR) also lack a backbone amide hydrogen
-    is_proline = parent == "PRO"
+    is_proline = df["residue_name"].map(RESI_THREE_TO_1) == "P"
     bb_donor = is_amino_acid & (df["atom_name"] == "N") & ~is_proline
     bb_acceptor = is_amino_acid & df["atom_name"].isin(["O", "OXT"])
     donor = (bb_donor | res_atom.isin(sc_donors)).to_numpy()
     acceptor = (bb_acceptor | res_atom.isin(sc_acceptors)).to_numpy()
     backbone = (bb_donor | bb_acceptor).to_numpy()
+    # e.g. G.graph["rgroup_df"], which keeps only the terminal OXT
+    if not bb_donor.any() and hbond_types - {"sc-sc"}:
+        log.warning(
+            "No backbone N atoms to find backbone hydrogen bonds with. Pass "
+            "a dataframe with backbone atoms (e.g. G.graph['raw_pdb_df'], the "
+            "default) as rgroup_df, or hbond_types=['sc-sc']."
+        )
 
     all_residues = (
         df["chain_id"].astype(str)
@@ -468,16 +494,28 @@ def add_hydrogen_bond_interactions(
     )
 
     n_backbone = backbone[i].astype(int) + backbone[j].astype(int)
-    allowed = [["sc-sc", "bb-sc", "bb-bb"].index(t) for t in hbond_types]
+    allowed = [HBOND_TYPES.index(t) for t in hbond_types]
     is_hbond = (
         ((donor[i] & acceptor[j]) | (donor[j] & acceptor[i]))
         & (residue[i] != residue[j])
         & np.isin(n_backbone, allowed)
     )
 
-    # Drop pairs with a backbone atom between residues joined by a peptide
-    # bond (C-N ~1.33A). Missing C or N coordinates give NaN, i.e. not bonded.
-    bb = np.flatnonzero(is_hbond & (n_backbone > 0))
+    # Drop bb-bb pairs, and Ser OG / Thr OG1 (i) to N (i + 1), between
+    # residues joined by a peptide bond (C-N ~1.33A). Missing C or N
+    # coordinates give NaN, i.e. not bonded.
+    atom = df["atom_name"].to_numpy()
+
+    def _gamma_to_n(x, y):
+        return (
+            np.isin(atom[x], ["OG", "OG1"])
+            & ~backbone[x]
+            & (atom[y] == "N")
+            & backbone[y]
+        )
+
+    gamma_ij, gamma_ji = _gamma_to_n(i, j), _gamma_to_n(j, i)
+    bb = np.flatnonzero(is_hbond & ((n_backbone == 2) | gamma_ij | gamma_ji))
     if len(bb) > 0:
 
         def _coords(atom_name):
@@ -496,8 +534,15 @@ def add_hydrogen_bond_interactions(
             n = n_coords.reindex(n_res).to_numpy()
             return np.linalg.norm(c - n, axis=1) <= 2.0
 
-        bonded = _peptide_bonded(res_i, res_j) | _peptide_bonded(res_j, res_i)
-        is_hbond[bb[bonded]] = False
+        bonded_ij = _peptide_bonded(res_i, res_j)
+        bonded_ji = _peptide_bonded(res_j, res_i)
+        bb_bb = n_backbone[bb] == 2
+        drop = (
+            (bb_bb & (bonded_ij | bonded_ji))
+            | (gamma_ij[bb] & bonded_ij)
+            | (gamma_ji[bb] & bonded_ji)
+        )
+        is_hbond[bb[drop]] = False
     add_interacting_resis(G, (i[is_hbond], j[is_hbond]), df, ["hbond"])
 
 
