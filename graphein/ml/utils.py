@@ -6,14 +6,14 @@
 
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Any, List
+from typing import Any
 
 import networkx as nx
 
 
 def add_labels_to_graph(
-    graphs: List[nx.Graph], labels: List[Any], name: str
-) -> List[nx.Graph]:
+    graphs: list[nx.Graph], labels: list[Any], name: str
+) -> list[nx.Graph]:
     """Adds labels to a graph.
 
     :param graphs: A list of graphs to add labels to.

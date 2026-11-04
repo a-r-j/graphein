@@ -11,7 +11,6 @@ from functools import partial
 
 import numpy as np
 import pytest
-from loguru import logger
 
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.features.nodes.geometry import (
@@ -154,7 +153,6 @@ def test_add_virtual_beta_carbon_vector():
     )
     g = construct_graph(pdb_code="1lds", config=config)
 
-    raw_pdb = g.graph["raw_pdb_df"]
     for n, d in g.nodes(data=True):
         # Check that the node has the correct attributes
         assert "virtual_c_beta_vector" in d.keys()

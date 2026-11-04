@@ -12,7 +12,7 @@ import graphein.protein as gp
 from graphein.ml import GraphFormatConvertor
 
 try:
-    import torch_geometric
+    import torch_geometric  # noqa: F401
 
     PYG_AVAIL = True
 except ImportError:
@@ -118,3 +118,81 @@ def test_protein_graph_dataset():
     # Clean up
     shutil.rmtree(ROOT_DIR / "raw")
     shutil.rmtree(ROOT_DIR / "processed")
+
+
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
+def test_dataset_does_not_mutate_config(tmp_path):
+    config = gp.ProteinGraphConfig()
+    pdb_path = str(ROOT_DIR.parent / "protein" / "test_data" / "4hhb.pdb")
+    ds = ProteinGraphDataset(
+        root=tmp_path, paths=[pdb_path], graphein_config=config
+    )
+    assert config.pdb_dir is None
+    assert ds.config.pdb_dir == Path(ds.raw_dir)
+    # Datasets built with the default config don't share one instance
+    assert ProteinGraphDataset(root=tmp_path, paths=[pdb_path]).config is not (
+        ProteinGraphDataset(root=tmp_path, paths=[pdb_path]).config
+    )
+
+
+def _structures_with_a_bad_file(tmp_path):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    test_data = ROOT_DIR.parent / "protein" / "test_data"
+    shutil.copy(test_data / "4hhb.pdb", raw / "4hhb.pdb")
+    (raw / "bad.pdb").write_text("not a pdb file\n")
+    shutil.copy(
+        test_data / "input_pdb_cryst1.pdb", raw / "input_pdb_cryst1.pdb"
+    )
+    return [str(raw / f"{s}.pdb") for s in ("4hhb", "bad", "input_pdb_cryst1")]
+
+
+@pytest.mark.skipif(not PYG_DATASETS_AVAIL, reason="PyG not installed")
+def test_protein_graph_dataset_skips_failed_graphs(tmp_path, monkeypatch):
+    import torch
+
+    labels = [torch.tensor([0]), torch.tensor([1]), torch.tensor([2])]
+    kwargs = dict(
+        root=str(tmp_path / "ds"),
+        paths=_structures_with_a_bad_file(tmp_path),
+        graph_labels=labels,
+        num_cores=1,
+    )
+    ds = ProteinGraphDataset(**kwargs)
+
+    assert ds.failed_examples == ["bad"]
+    assert len(ds) == 2
+    assert [d.name for d in ds] == ["4hhb", "input_pdb_cryst1"]
+    assert [int(d.graph_y) for d in ds] == [0, 2]
+
+    # Reloading uses the processed files instead of processing again.
+    monkeypatch.setattr(
+        ProteinGraphDataset, "process", lambda self: pytest.fail("reprocessed")
+    )
+    ds = ProteinGraphDataset(**kwargs)
+    assert ds.failed_examples == ["bad"]
+    assert [d.name for d in ds] == ["4hhb", "input_pdb_cryst1"]
+
+
+@pytest.mark.skipif(not PYG_DATASETS_AVAIL, reason="PyG not installed")
+def test_protein_graph_dataset_pre_filter_keeps_names(tmp_path):
+    ds = ProteinGraphDataset(
+        root=str(tmp_path / "ds"),
+        paths=_structures_with_a_bad_file(tmp_path),
+        pre_filter=lambda d: d.name != "4hhb",
+        num_cores=1,
+    )
+    assert ds.failed_examples == ["4hhb", "bad"]
+    assert [d.name for d in ds] == ["input_pdb_cryst1"]
+
+
+@pytest.mark.skipif(not PYG_DATASETS_AVAIL, reason="PyG not installed")
+def test_in_memory_dataset_skips_failed_graphs(tmp_path):
+    ds = InMemoryProteinGraphDataset(
+        root=str(tmp_path / "ds"),
+        name="failures",
+        paths=_structures_with_a_bad_file(tmp_path),
+        num_cores=1,
+    )
+    assert len(ds) == 2
+    assert [d.name for d in ds] == ["4hhb", "input_pdb_cryst1"]

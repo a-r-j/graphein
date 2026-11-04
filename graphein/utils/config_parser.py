@@ -1,8 +1,8 @@
 """Yaml parser for config objects"""
 
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import Callable, Union
 
 import yaml
 from pydantic import BaseModel
@@ -35,7 +35,7 @@ def config_constructor(
 def function_constructor(
     loader: yaml.FullLoader,
     tag_suffix: str,
-    node: Union[yaml.nodes.MappingNode, yaml.nodes.ScalarNode],
+    node: yaml.nodes.MappingNode | yaml.nodes.ScalarNode,
 ) -> Callable:
     """Construct a Callable. If function parameters are given, this returns a partial function.
 

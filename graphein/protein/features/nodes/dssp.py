@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any
 
 import networkx as nx
 import numpy as np
@@ -24,6 +24,7 @@ from graphein.protein.resi_atoms import (
 
 if TYPE_CHECKING:
     from graphein.protein.config import DSSPConfig
+
 
 DSSP_COLS = [
     "chain",
@@ -50,7 +51,7 @@ DSSP_SS = ["H", "B", "E", "G", "I", "T", "S"]
 """Secondary structure types detected by ``DSSP``"""
 
 
-def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
+def parse_dssp_df(dssp: dict[str, Any]) -> pd.DataFrame:
     """
     Parse ``DSSP`` output (as read by Biopython's
     ``Bio.PDB.DSSP.dssp_dict_from_pdb_file``) to DataFrame.
@@ -171,7 +172,7 @@ def compute_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
 
 def add_dssp_df(
     G: nx.Graph,
-    dssp_config: Optional[DSSPConfig] = None,
+    dssp_config: DSSPConfig | None = None,
 ) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein graph.
@@ -276,8 +277,7 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
             cannot be added to atom granularity graph"
         )
 
-    else:
-        nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
+    nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
 
     if config.verbose:
         logger.debug("Added " + feature + " features to graph nodes")

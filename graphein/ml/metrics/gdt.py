@@ -1,5 +1,3 @@
-from typing import Union
-
 import torch
 from torch_geometric.utils import unbatch
 from torchmetrics import Metric
@@ -8,8 +6,8 @@ from ...protein.tensor.types import AtomTensor, CoordTensor
 
 
 def gdt(
-    y: Union[CoordTensor, AtomTensor],
-    y_hat: Union[CoordTensor, AtomTensor],
+    y: CoordTensor | AtomTensor,
+    y_hat: CoordTensor | AtomTensor,
     ca_only: bool = True,
     cutoff: float = 4,
     ts: bool = True,
