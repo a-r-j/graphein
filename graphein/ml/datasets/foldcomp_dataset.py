@@ -23,7 +23,7 @@ from sklearn.model_selection import train_test_split
 from torch_geometric import transforms as T
 from torch_geometric.data import Data, Dataset
 from torch_geometric.loader import DataLoader
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from graphein.protein.resi_atoms import (
     ATOM_NUMBERING,
@@ -41,13 +41,16 @@ except ImportError:
     )
     log.warning(message)
 
+LIGHTNING_MESSAGE = import_message(
+    "graphein.ml.datasets.foldcomp", "lightning", "conda-forge", True
+)
 try:
-    import lightning as L
+    from lightning import LightningDataModule
 except ImportError:
-    message = import_message(
-        "graphein.ml.datasets.foldcomp", "lightning", "conda-forge", True
-    )
-    log.warning(message)
+    log.warning(LIGHTNING_MESSAGE)
+    # Lets the module import without lightning; only
+    # FoldCompLightningDataModule needs it, and raises when created.
+    LightningDataModule = object
 
 try:
     import nest_asyncio
@@ -345,7 +348,7 @@ class FoldCompDataset(Dataset):
         return self.fc_to_pyg(data, name)
 
 
-class FoldCompLightningDataModule(L.LightningDataModule):
+class FoldCompLightningDataModule(LightningDataModule):
     def __init__(
         self,
         data_dir,
@@ -392,6 +395,8 @@ class FoldCompLightningDataModule(L.LightningDataModule):
             ``True``
         :type pin_memory: bool, optional
         """
+        if LightningDataModule is object:
+            raise ImportError(LIGHTNING_MESSAGE)
         super().__init__()
         self.data_dir = data_dir
         self.database = database

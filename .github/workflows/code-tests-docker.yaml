@@ -51,7 +51,7 @@ jobs:
 
       - name: Install Graphein (Docker)
         run: |
-          docker exec $(docker ps -q) bash -c 'pip install -e .'
+          docker exec $(docker ps -q) bash -c 'pip install -e ".[dev,extras]"'
 
       - name: Run tests (Docker)
         run: |

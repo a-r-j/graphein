@@ -8,7 +8,7 @@
 from collections.abc import Callable
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TRRUSTConfig(BaseModel):
@@ -57,5 +57,4 @@ class GRNGraphConfig(BaseModel):
     trrust_config: TRRUSTConfig | None = TRRUSTConfig()
     regnetwork_config: RegNetworkConfig | None = RegNetworkConfig()
 
-    class Config:
-        arbitrary_types_allowed: bool = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)

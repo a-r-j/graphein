@@ -15,7 +15,7 @@ from typing import Union
 
 import numpy as np
 from loguru import logger as log
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from graphein.protein.utils import (  # download_pdb,
     download_alphafold_structure,
@@ -404,7 +404,6 @@ class ProteinDataset(Dataset):
             file_names: list[str] = [
                 f if f.endswith(".pdb") else f"{f}.pdb" for f in file_names
             ]
-            print(file_names)
             graphs = to_protein_mp(
                 paths=file_names,
                 # config=self.config,

@@ -7,6 +7,8 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+import io
+
 import pandas as pd
 import requests
 
@@ -87,7 +89,7 @@ def parse_STRING(
 
     # Call STRING
     response = requests.post(request_url, data=params)
-    return pd.read_json(response.text.strip())
+    return pd.read_json(io.StringIO(response.text.strip()))
 
 
 def filter_STRING(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
