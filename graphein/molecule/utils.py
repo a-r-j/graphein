@@ -469,7 +469,7 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> tuple[list]:
             for c1, c2 in itertools.combinations(cnei, 2):
                 inter = set(cliques[c1]) & set(cliques[c2])
                 edges[(c1, c2)] = max(edges[(c1, c2)], len(inter))
-    edges = [u + (MST_MAX_WEIGHT - v,) for u, v in edges.items()]
+    edges = [(*u, MST_MAX_WEIGHT - v) for u, v in edges.items()]
     if not edges:
         return cliques, edges
 

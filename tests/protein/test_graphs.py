@@ -72,13 +72,13 @@ def net():
     return generate_graph()
 
 
-@pytest.fixture()
+@pytest.fixture
 def pdb_df():
     """Generate pdb_df from 4HHB.pdb."""
     return read_pdb_to_dataframe(PDB_DATA_PATH)
 
 
-@pytest.fixture()
+@pytest.fixture
 def cif_to_pdb_df():
     """Generate pdb_df from 4HHB.cif."""
     return read_pdb_to_dataframe(CIF_DATA_PATH)
@@ -207,14 +207,14 @@ def test_chain_selection():
     # Check default construction contains all chains
     assert G.graph["chain_ids"] == ["A", "B", "C", "D"]
     # Check nodes contain residues from chains
-    for n, d in G.nodes(data=True):
+    for _, d in G.nodes(data=True):
         assert d["chain_id"] in ["A", "B", "C", "D"]
 
     # Check graph contains only chain selection
     G = construct_graph(path=str(file_path), chain_selection=["A", "D"])
     assert G.graph["chain_ids"] == ["A", "D"]
     # Check nodes only contain residues from chain selection
-    for n, d in G.nodes(data=True):
+    for _, d in G.nodes(data=True):
         assert d["chain_id"] in ["A", "D"]
 
 
@@ -298,7 +298,7 @@ def test_distance_edges():
     )
     assert G2 is not None
     # Check that the distance values of each edge are less than the threshold
-    for u, v, d in G2.edges(data=True):
+    for _, _, d in G2.edges(data=True):
         assert d["distance"] < threshold_distance
 
 
@@ -605,13 +605,13 @@ def test_df_processing():
     g2 = construct_graph(config=config2, pdb_code="3eiy")
     g3 = construct_graph(config=config2, pdb_code="4cvi")
 
-    for n, d in g1.nodes(data=True):
+    for _, d in g1.nodes(data=True):
         assert int(d["residue_number"]) % 2 == 0, (
             "Only even residues should be present"
         )
 
     assert len(g1) != len(g2), "Graphs should not be equal"
-    for n, d in g3.nodes(data=True):
+    for _, d in g3.nodes(data=True):
         assert d["element_symbol"] not in [
             "H",
             "D",

@@ -31,7 +31,7 @@ def test_add_beta_carbon_vector(caplog):
     g = construct_graph(pdb_code="1lds", config=config)
 
     raw_pdb = g.graph["raw_pdb_df"]
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         # Check that the node has the correct attributes
         assert "c_beta_vector" in d
         # Check the vector is of the correct dimensionality
@@ -74,11 +74,11 @@ def test_add_beta_carbon_vector(caplog):
             )
     # Test altloc handling
     g = construct_graph(config=config, pdb_code="6rew")
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         assert d["c_beta_vector"].shape == (3,)
 
     g = construct_graph(config=config, pdb_code="7w9w")
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         assert d["c_beta_vector"].shape == (3,)
 
     # Test handling of missing beta-carbons
@@ -101,7 +101,7 @@ def test_add_sidechain_vector():
     )
     g = construct_graph(pdb_code="1lds", config=config)
 
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         # Check that the node has the correct attributes
         assert "sidechain_vector" in d
         # Check the vector is of the correct dimensionality
@@ -153,7 +153,7 @@ def test_add_virtual_beta_carbon_vector():
     )
     g = construct_graph(pdb_code="1lds", config=config)
 
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         # Check that the node has the correct attributes
         assert "virtual_c_beta_vector" in d
         # Check the vector is of the correct dimensionality
@@ -180,7 +180,7 @@ def test_add_virtual_beta_carbon_vector():
     )
     g = construct_graph(pdb_code="1lds", config=config)
 
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         # check glycines are not zero
         if d["residue_name"] == "GLY":
             np.testing.assert_array_compare(
@@ -191,11 +191,11 @@ def test_add_virtual_beta_carbon_vector():
 
     # Test altloc handling
     g = construct_graph(config=config, pdb_code="6rew")
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         assert d["virtual_c_beta_vector"].shape == (3,)
 
     g = construct_graph(config=config, pdb_code="7w9w")
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         assert d["virtual_c_beta_vector"].shape == (3,)
 
 

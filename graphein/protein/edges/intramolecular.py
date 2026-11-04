@@ -274,7 +274,7 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     # Select specific interaction type
     interactions = contacts[contacts["interaction_type"] == interaction_type]
 
-    for res1, res2, interaction_type in interactions.itertuples(index=False):
+    for res1, res2, _ in interactions.itertuples(index=False):
         # Check residues are actually in graph
         if not (G.has_node(res1) and G.has_node(res2)):
             continue

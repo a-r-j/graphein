@@ -206,7 +206,7 @@ def protein_to_pyg(
         df = df.loc[
             df.residue_name.isin(STANDARD_AMINO_ACID_MAPPING_1_TO_3.values())
         ]
-    df = pd.concat([df] + hets)
+    df = pd.concat([df, *hets])
     df = sort_dataframe(df)
 
     df = df.drop(columns="residue_id", errors="ignore")

@@ -758,9 +758,8 @@ class Protein(Data):
             if isinstance(attr_self, torch.Tensor):
                 if not is_tensor_equal(attr_self, attr_other):
                     return False
-            else:
-                if attr_self != attr_other:
-                    return False
+            elif attr_self != attr_other:
+                return False
         return True
 
     # Plotting
@@ -1243,9 +1242,8 @@ class ProteinBatch(Batch):
             if isinstance(attr_self, torch.Tensor):
                 if not is_tensor_equal(attr_self, attr_other):
                     return False
-            else:
-                if attr_self != attr_other:
-                    return False
+            elif attr_self != attr_other:
+                return False
         return True
 
     def plot_structure(

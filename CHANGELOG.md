@@ -35,6 +35,7 @@
 * Allow NumPy 2 (`numpy<3`, was `numpy<2`). The `<2` pin blocked installing graphein next to packages that need NumPy 2; graphein no longer uses any API NumPy 2 removed. [#475](https://github.com/a-r-j/graphein/pull/475)
 * Drop support for Python 3.10, which has reached end of life. Minimum supported version is now Python 3.11.
 * Mechanical readability cleanups across `graphein` and `tests`: return values directly instead of assigning them first, `x in d` instead of `x in d.keys()`, `X | None` and builtin generics instead of `typing` aliases, `OSError` instead of `IOError`, `functools.cache`, f-strings instead of `%`-formatting, and comprehensions or `dict.update` instead of manual loops. Behaviour is unchanged. [#519](https://github.com/a-r-j/graphein/pull/519)
+* More readability cleanups: `elif` instead of `else: if`, unpacking instead of list and tuple concatenation, `min()` instead of a clamping `if`, f-strings instead of `"/".join` for API URLs, `_` for unused loop variables, clearer names where a loop variable shadowed a function argument, and tuple-style `pytest.mark.parametrize` names. Behaviour is unchanged. [#PR](https://github.com/a-r-j/graphein/pull/PR)
 * Use `tqdm.auto` in `graphein.protein.tensor.dataset`, the remaining module still importing plain `tqdm`, so its progress bars render as widgets in Jupyter instead of printing a new line per update. [#422](https://github.com/a-r-j/graphein/pull/422)
 
 ### 1.7.8 - 24/01/2026

@@ -87,9 +87,7 @@ def plotly_ppi_graph(
     """
     if edge_colours is None:
         edge_colours = px.colors.qualitative.T10
-    edge_colours = [
-        f"rgba{tuple(list(to_rgb(c)) + [edge_opacity])}" for c in edge_colours
-    ]
+    edge_colours = [f"rgba{(*to_rgb(c), edge_opacity)}" for c in edge_colours]
 
     # Set positions
     nx.set_node_attributes(g, layout(g), "pos")
@@ -97,7 +95,7 @@ def plotly_ppi_graph(
     # Get node and edge traces
     node_trace = get_node_trace(g, node_size_multiplier, node_colourscale)
     edge_trace = get_edge_trace(g, edge_colours)
-    traces = [node_trace] + edge_trace
+    traces = [node_trace, *edge_trace]
 
     # Get node labels if using them.
     if show_labels:

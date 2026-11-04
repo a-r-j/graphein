@@ -212,11 +212,10 @@ def hydrogen_bond_donor(
             features = HYDROGEN_BOND_DONORS[res][atom]
         except KeyError:
             features = 0
-    else:  # Residue graph
-        if res not in HYDROGEN_BOND_DONORS:
-            features = 0
-        else:
-            features = sum(HYDROGEN_BOND_DONORS[res].values())
+    elif res not in HYDROGEN_BOND_DONORS:  # Residue graph
+        features = 0
+    else:
+        features = sum(HYDROGEN_BOND_DONORS[res].values())
 
     if return_array:
         features = np.array(features).astype(int)
@@ -257,11 +256,10 @@ def hydrogen_bond_acceptor(
             features = HYDROGEN_BOND_ACCEPTORS[res][atom]
         except KeyError:
             features = 0
-    else:  # Residue graph
-        if res not in HYDROGEN_BOND_ACCEPTORS:
-            features = 0
-        else:
-            features = sum(HYDROGEN_BOND_ACCEPTORS[res].values())
+    elif res not in HYDROGEN_BOND_ACCEPTORS:  # Residue graph
+        features = 0
+    else:
+        features = sum(HYDROGEN_BOND_ACCEPTORS[res].values())
 
     if return_array:
         features = np.array(features).astype(int)

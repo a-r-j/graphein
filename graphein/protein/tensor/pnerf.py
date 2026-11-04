@@ -234,7 +234,7 @@ def point_to_coordinate(
                 1, 2, 3, 0
             )
         else:  # single fragment, reconstructed entirely at once.
-            s = point.shape + (3,)
+            s = (*point.shape, 3)
             m = torch.stack([bc, torch.linalg.cross(n, bc), n]).permute(
                 1, 2, 0
             )

@@ -417,7 +417,7 @@ def process_dataframe(
 
     if keep_hets:
         hetatms_to_keep = filter_hetatms(hetatms, keep_hets)
-        atoms = pd.concat([atoms] + hetatms_to_keep)
+        atoms = pd.concat([atoms, *hetatms_to_keep])
 
     # Deprotonate structure by removing H atoms
     if deprotonate:

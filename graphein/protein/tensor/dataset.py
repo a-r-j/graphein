@@ -162,13 +162,12 @@ class ProteinDataset(Dataset):
                 self.structures = uniprot_ids
         # Use local saved pdb_files instead of download or move them to
         # self.root/raw dir
-        else:
-            if isinstance(self.paths, list):
-                self.structures = [
-                    os.path.splitext(os.path.split(path)[-1])[0]
-                    for path in self.paths
-                ]
-                self.path, _ = os.path.split(self.paths[0])
+        elif isinstance(self.paths, list):
+            self.structures = [
+                os.path.splitext(os.path.split(path)[-1])[0]
+                for path in self.paths
+            ]
+            self.path, _ = os.path.split(self.paths[0])
 
         # Labels & chains
         self.chain_selections = chain_selections

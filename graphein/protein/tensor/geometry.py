@@ -206,7 +206,7 @@ def matrix_to_quaternion(matrix: RotationMatrixTensor) -> QuaternionTensor:
 
     batch_dim = matrix.shape[:-2]
     m00, m01, m02, m10, m11, m12, m20, m21, m22 = torch.unbind(
-        matrix.reshape(batch_dim + (9,)), dim=-1
+        matrix.reshape((*batch_dim, 9)), dim=-1
     )
 
     q_abs = _sqrt_positive_part(
@@ -258,7 +258,7 @@ def matrix_to_quaternion(matrix: RotationMatrixTensor) -> QuaternionTensor:
 
     return quat_candidates[
         F.one_hot(q_abs.argmax(dim=-1), num_classes=4) > 0.5, :
-    ].reshape(batch_dim + (4,))
+    ].reshape((*batch_dim, 4))
 
 
 def quaternion_to_matrix(
@@ -292,7 +292,7 @@ def quaternion_to_matrix(
         ),
         -1,
     )
-    return o.reshape(quaternions.shape[:-1] + (3, 3))
+    return o.reshape((*quaternions.shape[:-1], 3, 3))
 
 
 def idealize_backbone(

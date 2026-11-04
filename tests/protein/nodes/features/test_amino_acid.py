@@ -63,7 +63,7 @@ def test_amino_acid_one_hot_example():
     config = ProteinGraphConfig(node_metadata_functions=[amino_acid_one_hot])
     g = construct_graph(pdb_code="4hhb", config=config)
 
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         assert sum(d["amino_acid_one_hot"]) == 1
 
     # Test pd.Series
@@ -74,7 +74,7 @@ def test_amino_acid_one_hot_example():
     )
     g = construct_graph(pdb_code="4hhb", config=config)
 
-    for n, d in g.nodes(data=True):
+    for _, d in g.nodes(data=True):
         assert sum(d["amino_acid_one_hot"]) == 1
         assert (
             d["amino_acid_one_hot"].idxmax()

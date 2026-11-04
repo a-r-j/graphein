@@ -109,7 +109,7 @@ def parse_BIOGRID(
     # Prepare call to BIOGRID API
     biogrid_api_url = "https://webservice.thebiogrid.org"
     method = "interactions"
-    request_url = "/".join([biogrid_api_url, method])
+    request_url = f"{biogrid_api_url}/{method}"
     if isinstance(ncbi_taxon_id, list):
         ncbi_taxon_id = "|".join(str(t) for t in ncbi_taxon_id)
     params = {  # Default parameters

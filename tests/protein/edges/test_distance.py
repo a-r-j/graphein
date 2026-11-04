@@ -72,7 +72,7 @@ def net():
     return generate_graph()
 
 
-@pytest.fixture()
+@pytest.fixture
 def pdb_df():
     """Generate pdb_df from 2VIU.pdb."""
     return read_pdb_to_dataframe(DATA_PATH)
@@ -318,7 +318,7 @@ def test_add_hydrogen_bond_interactions_side_chain_to_next_residue():
 
 
 @pytest.mark.parametrize(
-    "res_name,variant",
+    ("res_name", "variant"),
     [("SER", "SEP"), ("THR", "TPO"), ("TYR", "PTR"), ("TYR", "TPQ")],
 )
 def test_add_hydrogen_bond_interactions_modified_side_chains(
@@ -380,7 +380,7 @@ def test_add_hydrogen_bond_interactions_empty_types():
 
 
 @pytest.mark.parametrize(
-    "granularity,columns",
+    ("granularity", "columns"),
     [("CA", ["insertion", "occupancy"]), ("atom", ["alt_loc"])],
 )
 def test_add_hydrogen_bond_interactions_missing_columns(granularity, columns):
@@ -411,7 +411,7 @@ def test_add_hydrogen_bond_interactions_md_residue_names(variant):
 
 
 @pytest.mark.parametrize(
-    "res_name,variant",
+    ("res_name", "variant"),
     [
         ("SER", "DSN"),
         ("THR", "DTH"),
@@ -710,7 +710,7 @@ def test_vdw_interactions():
             edge_construction_functions=[add_vdw_interactions]
         ),
     )
-    for u, v, d in g.edges(data=True):
+    for _, _, d in g.edges(data=True):
         assert "vdw" in d["kind"], "Edge not vdw"
 
     # Test distances on atom graphs
@@ -745,7 +745,7 @@ def test_vdw_clashes():
             edge_construction_functions=[add_vdw_clashes]
         ),
     )
-    for u, v, d in g.edges(data=True):
+    for _, _, d in g.edges(data=True):
         assert "vdw_clash" in d["kind"], "Edge not vdw_clash"
 
     # Test distances on atom graphs
@@ -975,7 +975,7 @@ def test_sequence_distance_edges_across_insertion_codes():
 # keep separations >= it. So a separation of 1 is excluded at 1 / 2 and
 # included at 0 / 1 respectively.
 @pytest.mark.parametrize(
-    "edge_fn,excluded_at,included_at",
+    ("edge_fn", "excluded_at", "included_at"),
     [
         (partial(add_k_nn_edges, k=5), 1, 0),
         (partial(add_distance_threshold, threshold=5.0), 2, 1),

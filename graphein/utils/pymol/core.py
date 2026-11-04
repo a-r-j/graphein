@@ -43,7 +43,7 @@ class MolViewer:
 
         assert isinstance(args, (list, tuple))
 
-        self._process = subprocess.Popen([exe, "-R"] + list(args))
+        self._process = subprocess.Popen([exe, "-R", *args])
 
         self._server = Server(uri=f"http://{self.host}:{self.port}/RPC2")
 

@@ -440,11 +440,11 @@ def process_blast_results(
                         np.array(res[1:], dtype=np.float64),
                     )
                 )
-        if filter_best_match_for_same_subject and list(res)[0] == last_subj:
+        if filter_best_match_for_same_subject and res[0] == last_subj:
             continue
         if add_identity_on_shortest:
             den = 1.0 * min([res[-1], len_of_query])
-            new_results.append(res + [100.0 * res[-2] / den])
+            new_results.append([*res, 100.0 * res[-2] / den])
         else:
             new_results.append(res)
         last_subj = res[0]

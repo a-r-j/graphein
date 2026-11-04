@@ -52,7 +52,6 @@ Output (can customize name using corresponding CLI arguments):
 
 import argparse
 import time
-from typing import Optional
 
 from loguru import logger
 from rcsbapi.config import config
@@ -90,7 +89,7 @@ def fetch_all_chem_comp_ids(chem_comp_types_to_include: list):
     query = Query(
         input_type="entries",  # Query all structure entries
         input_ids=ALL_STRUCTURES,  # Constant representing all known structures
-        return_data_list=["rcsb_id"] + chem_comp_types_to_include,
+        return_data_list=["rcsb_id", *chem_comp_types_to_include],
     )
 
     # Execute the query with a progress bar
@@ -133,7 +132,7 @@ def _iter_entry_chem_comp_ids(entry: dict):
 
 def process_chem_comp_results_and_write_to_file(
     entry_chem_comp_results: dict,
-    pdb_to_cc_output_file: Optional[str],
+    pdb_to_cc_output_file: str | None,
     cc_to_pdb_output_file: str,
     cc_extras_output_file: str,
     generate_cc_extra_file: bool,
@@ -231,15 +230,12 @@ def generate_cc_extra_data(chem_comp_to_pdb_map):
         cc_extra_tup = (cc_id, cc_occurrence_count, cc_name, cc_formula)
         cc_extra_tuples.append(cc_extra_tup)
 
-    cc_extra_tuples_sorted = sorted(
-        cc_extra_tuples, key=lambda x: x[1], reverse=True
-    )
-    return cc_extra_tuples_sorted
+    return sorted(cc_extra_tuples, key=lambda x: x[1], reverse=True)
 
 
 def generate_pdb_ligand_mappings(
     chem_comp_types=None,
-    pdb_to_cc_output_file: Optional[str] = "pdb-to-cc.tsv",
+    pdb_to_cc_output_file: str | None = "pdb-to-cc.tsv",
     cc_to_pdb_output_file: str = "cc-to-pdb.tsv",
     cc_extras_output_file: str = "cc-counts-extra.tsv",
     max_concurrent_api_requests: int = 10,
