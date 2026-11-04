@@ -1,5 +1,6 @@
 """Utilities for reconstructing protein structures."""
 
+from collections import defaultdict
 from functools import lru_cache
 
 import numpy as np
@@ -162,7 +163,7 @@ def build_sidechain(
         torsion_angles = torsion_to_rad(torsion_angles)
     # Initialise new atom tensor [L x 37 x 3] and fill it with backbone atoms.
     # pos = torch.ones_like(x.atom_tensor) * 1e-5
-    pos = torch.ones((bb.shape[0], 37, 3), device=bb.device) * 1e-5
+    pos = torch.full((bb.shape[0], 37, 3), 1e-5, device=bb.device)
 
     if bb.shape[1] == 5:
         pos[:, :5, :] = bb
@@ -171,43 +172,31 @@ def build_sidechain(
         pos[:, :4, :] = bb
         cb_skip = False
 
-    # Get the residues in the batch (list of 3-letter AA codes)
-    # batch_seq = list(chain.from_iterable(x.node_id))
-    # nodes = [n.split(":")[1] for n in batch_seq]
-
-    # Iterate over residues
-    # for i, res in enumerate(nodes):
+    # Residues of the same type are built together, one atom at a time
+    groups = defaultdict(list)
     for i, res in enumerate(residue_types):
-        start = i == 0
-        next_res = pos[i, :] if i == len(residue_types) - 1 else None
+        groups[res].append(i)
 
-        build_vals = _get_build_params(res)
+    for res, members in groups.items():
+        rows = torch.tensor(members, device=bb.device)
         last_torsion = None
-        # Iterate over atoms
-        for j, (bond, pbond, angle, torsion, atom_name) in enumerate(
-            build_vals
+        for j, (bond, pbond, angle, torsion, atom_name, idxs) in enumerate(
+            _get_build_params(res)
         ):
             # Skip CB as we place it in BB construction
             if atom_name[-1] == "CB" and cb_skip:
                 continue
-            if start and next_res is not None:
-                a, b, c = pos[i + 1, 0], pos[i, 1], pos[i, 2]  # N+, CA, C
-            elif start:
-                a, b, c = pos[i - 1, 2], pos[i, 0], pos[i, 1]  # C-, N, CA
-            else:
-                idxs = [ATOM_NUMBERING[atom] for atom in atom_name[:-1]]
-                a, b, c = (
-                    pos[i, idxs[0]],
-                    pos[i, idxs[1]],
-                    pos[i, idxs[2]],
-                )  # N, CA, C
+            abc = pos[rows][:, list(idxs[:3])]
+            if members[0] == 0:
+                # The first residue is built from C-, N, CA
+                abc[0] = pos[[-1, 0, 0], [2, 0, 1]]
 
             # Select correct torsion angle
             if isinstance(torsion, str) and torsion == "p":
                 if j == 5 and res == "ARG":
                     torsion = torch.tensor(0.0)
                 else:
-                    torsion = torsion_angles[i, j - 1]
+                    torsion = torsion_angles[rows, j - 1]
             elif (
                 isinstance(torsion, str)
                 and torsion == "i"
@@ -215,10 +204,9 @@ def build_sidechain(
             ):
                 torsion = last_torsion - np.pi
 
-            # Get coordinates of new point
-            new_pt = sn_nerf(a, b, c, bond, angle, torsion, pbond)
-            # Assign new point to atom tensor
-            pos[i, ATOM_NUMBERING[atom_name[-1]]] = new_pt
+            pos[rows, idxs[3]] = sn_nerf(
+                *abc.unbind(1), bond, angle, torsion, pbond
+            )
             last_torsion = torsion
 
     return pos
@@ -234,6 +222,7 @@ def _get_build_params(
         torch.Tensor,
         torch.Tensor | str,
         list[str],
+        tuple[int, ...],
     ],
     ...,
 ]:
@@ -246,7 +235,7 @@ def _get_build_params(
     :param res: Residue name (3-letter code)
     :type res: str
     :return: Iterable of sidechain construction params
-    :rtype: Iterable[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, Union[torch.Tensor, str], List[str]]]
+    :rtype: Iterable[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, Union[torch.Tensor, str], List[str], Tuple[int, ...]]]
     """
     build_params = SC_BUILD_INFO[res]
     bond_vals = [
@@ -266,7 +255,15 @@ def _get_build_params(
         for t in build_params["torsion-vals"]
     ]
     atom_names = [t.split("-") for t in build_params["torsion-names"]]
+    atom_indices = [tuple(ATOM_NUMBERING[a] for a in n) for n in atom_names]
 
     return tuple(
-        zip(bond_vals, pbond_vals, angle_vals, torsion_vals, atom_names)
+        zip(
+            bond_vals,
+            pbond_vals,
+            angle_vals,
+            torsion_vals,
+            atom_names,
+            atom_indices,
+        )
     )

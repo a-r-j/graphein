@@ -158,7 +158,8 @@ def kabsch(
 
     # Covariance matrix
     H = AA.mT @ BB if residue_wise else AA.T @ BB
-    U, _, V = torch.svd(H)
+    U, _, Vh = torch.linalg.svd(H)
+    V = Vh.mT
 
     if not allow_reflections:
         # Flip the last singular vector of V where needed so R is a proper
@@ -322,25 +323,17 @@ def idealize_backbone(
     x_constant = x.detach().clone()
     x.requires_grad = True
 
-    def mse(x, y):
-        return torch.mean((x - y) ** 2)
+    ideal_lengths = torch.tensor(IDEAL_BB_BOND_LENGTHS, device=x.device)
+    ideal_angles = torch.tensor(IDEAL_BB_BOND_ANGLES, device=x.device)
 
     def ideal_loss(x, x_constant) -> torch.Tensor:
         bl = get_backbone_bond_lengths(x)
         ba = get_backbone_bond_angles(x)
 
-        loss_ideal = torch.sum(
-            torch.norm(
-                torch.tensor(IDEAL_BB_BOND_LENGTHS, device=bl.device) - bl,
-                dim=-1,
-            )
-        ) + torch.sum(
-            torch.norm(
-                torch.tensor(IDEAL_BB_BOND_ANGLES, device=ba.device) - ba
-            ),
-            dim=-1,
+        loss_ideal = torch.norm(ideal_lengths - bl, dim=-1).sum() + torch.norm(
+            ideal_angles - ba
         )
-        loss_ms = mse(x[:, :4, :], x_constant[:, :4, :])
+        loss_ms = F.mse_loss(x[:, :4, :], x_constant[:, :4, :])
 
         return loss_ideal + loss_ms
 

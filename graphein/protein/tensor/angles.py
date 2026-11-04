@@ -11,18 +11,8 @@ from loguru import logger as log
 
 from graphein.utils.dependencies import import_message
 
-from ..resi_atoms import ATOM_NUMBERING, CHI_ANGLES_ATOMS
+from ..resi_atoms import ATOM_NUMBERING_MODIFIED, CHI_ANGLES_ATOMS
 from .types import AtomTensor, CoordTensor, DihedralTensor, TorsionTensor
-
-try:
-    from einops import rearrange
-except ImportError:
-    message = import_message(
-        "graphein.protein.tensor.angles",
-        "einops",
-        pip_install=True,
-        extras=True,
-    )
 
 try:
     from torch_geometric.utils import to_dense_batch
@@ -45,6 +35,12 @@ except ImportError:
         pip_install=True,
     )
     log.warning(message)
+
+# Atom indices of each chi angle's four atoms, per residue type
+_CHI_ATOM_INDICES = {
+    res: [[ATOM_NUMBERING_MODIFIED[a] for a in group] for group in groups]
+    for res, groups in CHI_ANGLES_ATOMS.items()
+}
 
 
 def _extract_torsion_coords(
@@ -74,7 +70,7 @@ def _extract_torsion_coords(
     # Iterate over residues and grab indices of the atoms for each Chi angle
     for i, res in enumerate(res_types):
         try:
-            angle_groups = CHI_ANGLES_ATOMS[res]
+            angle_groups = _CHI_ATOM_INDICES[res]
         except KeyError:
             log.warning(
                 f"Can't determine chi angle groups for non-standard residue: {res}. These will be set to 0"
@@ -83,18 +79,14 @@ def _extract_torsion_coords(
         if (not selenium and res == "SEC") or res == "PYL":
             angle_groups = []
 
-        for angle_coord_set in angle_groups:
-            res_atoms.append([ATOM_NUMBERING[a] for a in angle_coord_set])
-            idxs.append(i)
+        res_atoms.extend(angle_groups)
+        idxs.extend([i] * len(angle_groups))
 
-    idxs = torch.tensor(idxs, device=coords.device).long()
-    res_atoms = torch.tensor(res_atoms, device=coords.device).long()
+    idxs = torch.tensor(idxs, dtype=torch.long, device=coords.device)
+    res_atoms = torch.tensor(res_atoms, dtype=torch.long, device=coords.device)
 
     # Select the coordinates for each chi angle
-    coords = torch.take_along_dim(
-        coords[idxs, :, :], dim=1, indices=res_atoms.unsqueeze(-1)
-    )
-    return idxs, coords
+    return idxs, coords[idxs.unsqueeze(-1), res_atoms.view(-1, 4)]
 
 
 def sidechain_torsion(
@@ -147,10 +139,8 @@ def sidechain_torsion(
 
     # Interleave sin and cos transformed tensors
     if embed:
-        angles = rearrange(
-            [torch.cos(angles), torch.sin(angles)], "t h w-> h (w t)"
-        )
-        mask = rearrange([mask, mask], "t h w -> h (w t)")
+        angles = angle_to_unit_circle(angles)
+        mask = mask.repeat_interleave(2, dim=1)
 
     # Pad if last residues are a run of ALA, GLY or UNK
     # If we have selenocysteine but no Se atoms, SEC is padded too
@@ -419,9 +409,7 @@ def angle_to_unit_circle(x: torch.Tensor) -> torch.Tensor:
     """
     if x.ndim == 1:
         x = x.unsqueeze(0)
-    cosines = torch.cos(x)
-    sines = torch.sin(x)
-    return rearrange([cosines, sines], "t h w -> h (w t)")
+    return torch.stack([torch.cos(x), torch.sin(x)], dim=-1).flatten(-2)
 
 
 def _dihedral_angle(
@@ -520,11 +508,8 @@ def dihedrals_to_rad(
     :return: Dihedral tensor of shape ``(L, 3)`` or a tuple of tensors
     :rtype: Union[DihedralTensor, Tuple[torch.Tensor, torch.Tensor, torch.Tensor]]
     """
-    phi = torch.atan2(x_dihedrals[:, 1], x_dihedrals[:, 0])
-    psi = torch.atan2(x_dihedrals[:, 3], x_dihedrals[:, 2])
-    omg = torch.atan2(x_dihedrals[:, 5], x_dihedrals[:, 4])
-
-    return torch.stack([phi, psi, omg], dim=1) if concat else (phi, psi, omg)
+    angles = torch.atan2(x_dihedrals[:, 1::2], x_dihedrals[:, 0::2])
+    return angles if concat else angles.unbind(1)
 
 
 def torsion_to_rad(
@@ -549,12 +534,5 @@ def torsion_to_rad(
     :rtype: Union[graphein.protein.tensor.types.TorsionTensor,
         Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
     """
-    chi1 = torch.atan2(x_torsion[:, 1], x_torsion[:, 0])
-    chi2 = torch.atan2(x_torsion[:, 3], x_torsion[:, 2])
-    chi3 = torch.atan2(x_torsion[:, 5], x_torsion[:, 4])
-    chi4 = torch.atan2(x_torsion[:, 7], x_torsion[:, 6])
-
-    if concat:
-        return torch.stack([chi1, chi2, chi3, chi4], dim=1)
-
-    return chi1, chi2, chi3, chi4
+    angles = torch.atan2(x_torsion[:, 1::2], x_torsion[:, 0::2])
+    return angles if concat else angles.unbind(1)
