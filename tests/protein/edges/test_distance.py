@@ -11,17 +11,17 @@ from functools import partial
 # Code Repository: https://github.com/a-r-j/graphein
 from pathlib import Path
 from typing import Optional, Tuple
+from unittest.mock import MagicMock
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 import pytest
 
-import graphein
 import graphein.protein as gp
 from graphein.protein.config import ProteinGraphConfig
+from graphein.protein.edges import distance
 from graphein.protein.edges.distance import (
-    HBOND_TYPES,
     INFINITE_DIST,
     add_aromatic_sulphur_interactions,
     add_cation_pi_interactions,
@@ -227,7 +227,7 @@ def test_add_hydrogen_bond_interactions_types(hbond_types):
         n_backbone = sum(
             g.nodes[n]["atom_type"] in {"N", "O", "OXT"} for n in (u, v)
         )
-        assert HBOND_TYPES[n_backbone] in hbond_types
+        assert {0: "sc-sc", 1: "bb-sc", 2: "bb-bb"}[n_backbone] in hbond_types
 
 
 def test_add_hydrogen_bond_interactions_invalid_type():
@@ -361,19 +361,62 @@ def test_add_hydrogen_bond_interactions_modified_side_chains(
     assert not g.has_edge(u_new, v)
 
 
-def test_add_hydrogen_bond_interactions_no_backbone_warns(caplog):
+def test_add_hydrogen_bond_interactions_no_backbone_warns(monkeypatch):
     """Asking for backbone hbonds without backbone atoms logs a warning."""
     g = _hbond_graph("CA", hbond_types=["sc-sc"])
-    graphein.verbose(True)
-    try:
-        add_hydrogen_bond_interactions(g, rgroup_df=g.graph["rgroup_df"])
-    finally:
-        graphein.verbose(False)
-    assert "backbone" in caplog.text
+    log = MagicMock()
+    monkeypatch.setattr(distance, "log", log)
+    add_hydrogen_bond_interactions(g, rgroup_df=g.graph["rgroup_df"])
+    assert "backbone" in log.warning.call_args.args[0]
+
+
+def test_add_hydrogen_bond_interactions_empty_types():
+    with pytest.raises(ValueError):
+        _hbond_graph("atom", hbond_types=[])
 
 
 @pytest.mark.parametrize(
-    "res_name,variant", [("SER", "DSN"), ("THR", "DTH"), ("HIS", "HIE")]
+    "granularity,columns", [("CA", ["insertion"]), ("atom", ["alt_loc"])]
+)
+def test_add_hydrogen_bond_interactions_missing_columns(granularity, columns):
+    """Dataframes without insertion / alt_loc columns are treated as blank."""
+    g = _hbond_graph(granularity)
+    expected = set(get_edges_by_bond_type(g, "hbond"))
+    g.remove_edges_from(list(g.edges()))
+    add_hydrogen_bond_interactions(
+        g, rgroup_df=g.graph["raw_pdb_df"].drop(columns=columns)
+    )
+    assert set(get_edges_by_bond_type(g, "hbond")) == expected
+
+
+@pytest.mark.parametrize("variant", ["HSD", "HSE", "HSP", "ASH", "GLH", "LYN"])
+def test_add_hydrogen_bond_interactions_md_residue_names(variant):
+    """Backbone hbonds of residues with MD (CHARMM/Amber) names are found."""
+    o, n = _helical_backbone_hbond(_hbond_graph("atom"))
+    chain, res_name, res_num, _ = n.split(":")
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    mask = (df["chain_id"] == chain) & (df["residue_number"] == int(res_num))
+    df.loc[mask, "residue_name"] = variant
+
+    g = _hbond_graph("atom", df=df)
+    n_new = f"{chain}:{variant}:{res_num}:N"
+    assert n_new in g
+    assert g.has_edge(o, n_new)
+
+
+@pytest.mark.parametrize(
+    "res_name,variant",
+    [
+        ("SER", "DSN"),
+        ("THR", "DTH"),
+        ("HIS", "HIE"),
+        ("HIS", "HSD"),
+        ("ASP", "ASH"),
+        ("ASP", "DAS"),
+        ("GLU", "GLH"),
+        ("LYS", "LYN"),
+    ],
 )
 def test_add_hydrogen_bond_interactions_residue_variants(res_name, variant):
     """Side chain donors/acceptors of residue variants are used."""

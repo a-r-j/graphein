@@ -332,12 +332,22 @@ def add_disulfide_interactions(
         )
 
 
-HBOND_TYPES: List[str] = ["sc-sc", "bb-sc", "bb-bb"]
+HBOND_TYPE_BACKBONE_ATOMS: Dict[str, int] = {
+    "sc-sc": 0,
+    "bb-sc": 1,
+    "bb-bb": 2,
+}
+"""Number of backbone atoms in the donor-acceptor pair of each hydrogen bond
+type."""
+
+HBOND_TYPES: List[str] = list(HBOND_TYPE_BACKBONE_ATOMS)
 """Hydrogen bond types by the location (backbone or side chain) of the donor
-and acceptor atoms, indexed by the number of backbone atoms in the pair."""
+and acceptor atoms."""
 
 HBOND_RESIDUE_VARIANTS: Dict[str, str] = {
+    "ASH": "ASP",
     "DAR": "ARG",
+    "DAS": "ASP",
     "DGL": "GLU",
     "DGN": "GLN",
     "DHI": "HIS",
@@ -348,14 +358,21 @@ HBOND_RESIDUE_VARIANTS: Dict[str, str] = {
     "DTH": "THR",
     "DTR": "TRP",
     "DTY": "TYR",
+    "GLH": "GLU",
     "HID": "HIS",
     "HIE": "HIS",
     "HIP": "HIS",
+    "HSD": "HIS",
+    "HSE": "HIS",
+    "HSP": "HIS",
+    "LYN": "LYS",
 }
-"""Residue variants (D-amino acids and histidine protonation states) with the
-same side chain hydrogen bond donors and acceptors as their parent residue.
-Residues with modified side chains (e.g. phosphorylated ``SEP``, ``TPO`` and
-``PTR``) are deliberately not included."""
+"""Residue variants (D-amino acids and Amber/CHARMM protonation states) with
+the same side chain hydrogen bond donors and acceptors as their parent
+residue. Protonation states are approximated by the parent residue (e.g. the
+protonated ``OD2`` of ``ASH`` is an acceptor, not a donor). Residues with
+modified side chains (e.g. phosphorylated ``SEP``, ``TPO`` and ``PTR``) are
+deliberately not included."""
 
 
 def add_hydrogen_bond_interactions(
@@ -385,9 +402,9 @@ def add_hydrogen_bond_interactions(
     Angstroms apart, and a Ser ``OG`` or Thr ``OG1`` ~3 Angstroms from the next
     residue's ``N``, so these pairs are ignored between residues joined by a
     peptide bond. Other side chain hydrogen bonds to a neighbouring residue's
-    backbone (e.g. Asx motifs) are kept. Peptide bonds are identified from the backbone ``C``
-    and ``N`` coordinates, so insertion codes and gaps in residue numbering
-    are handled.
+    backbone (e.g. Asx motifs) are kept. Peptide bonds are identified from
+    the backbone ``C`` and ``N`` coordinates, so insertion codes and gaps in
+    residue numbering are handled.
 
     Hydrogen positions are not used, so this is a geometric approximation.
 
@@ -415,6 +432,8 @@ def add_hydrogen_bond_interactions(
     if isinstance(hbond_types, str):
         hbond_types = [hbond_types]
     hbond_types = set(hbond_types)
+    if not hbond_types:
+        raise ValueError(f"hbond_types is empty. Must be in {HBOND_TYPES}.")
     if not hbond_types.issubset(HBOND_TYPES):
         raise ValueError(
             f"Unknown hbond_types: {hbond_types - set(HBOND_TYPES)}. "
@@ -430,6 +449,8 @@ def add_hydrogen_bond_interactions(
     nodes = nodes.loc[nodes["node_id"].isin(list(G.nodes()))]
     key = ["chain_id", "residue_number", "insertion"]
     df = rgroup_df.drop(columns="node_id", errors="ignore")
+    for col in ("insertion", "alt_loc"):
+        df[col] = df[col].fillna("") if col in df else ""
     if G.graph.get("node_type") == "atom":
         key += ["atom_name", "alt_loc"]
     else:
@@ -439,10 +460,8 @@ def add_hydrogen_bond_interactions(
         alt_locs = getattr(G.graph.get("config"), "alt_locs", "max_occupancy")
         if alt_locs != "include":
             df = remove_alt_locs(df, keep=alt_locs)
-    nodes = nodes[key + ["node_id"]].assign(
-        insertion=nodes["insertion"].fillna("")
-    )
-    df = df.assign(insertion=df["insertion"].fillna("")).merge(nodes, on=key)
+    nodes = nodes[key + ["node_id"]].fillna({"insertion": "", "alt_loc": ""})
+    df = df.merge(nodes, on=key)
 
     # Map residue variants (e.g. HIE, DSN) to their parent residue
     parent = df["residue_name"].replace(HBOND_RESIDUE_VARIANTS)
@@ -494,7 +513,7 @@ def add_hydrogen_bond_interactions(
     )
 
     n_backbone = backbone[i].astype(int) + backbone[j].astype(int)
-    allowed = [HBOND_TYPES.index(t) for t in hbond_types]
+    allowed = [HBOND_TYPE_BACKBONE_ATOMS[t] for t in hbond_types]
     is_hbond = (
         ((donor[i] & acceptor[j]) | (donor[j] & acceptor[i]))
         & (residue[i] != residue[j])
