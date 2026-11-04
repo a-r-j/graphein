@@ -8,7 +8,6 @@ import networkx as nx
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from loguru import logger as log
 
 
 def add_atom_bonds(G: nx.Graph) -> nx.Graph:

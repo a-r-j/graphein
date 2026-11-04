@@ -23,7 +23,7 @@ PROTEIN_LIST = [
 @pytest.mark.skip("not a test")
 def hgnc_available():
     try:
-        a = bioservices.HGNC()
+        bioservices.HGNC()
         return True
     except TypeError:
         return False

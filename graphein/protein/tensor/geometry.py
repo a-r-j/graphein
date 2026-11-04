@@ -1,20 +1,15 @@
 """Utilities for manipulating protein geometry."""
 
-import copy
-
 # Graphein
 # Author: Arian Jamasb <arian@jamasb.io>
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import List, Tuple, Union
-
 from loguru import logger as log
 
 from graphein.utils.dependencies import import_message
 
 from ..resi_atoms import (
-    CHI_ANGLES_ATOMS,
     IDEAL_BB_BOND_ANGLES,
     IDEAL_BB_BOND_LENGTHS,
 )
@@ -42,20 +37,9 @@ except ImportError:
     )
     log.warning(message)
 
-try:
-    from torch_geometric.data import Batch
-except ImportError:
-    message = import_message(
-        "graphein.protein.tensor.geometry",
-        package="torch_geometric",
-        conda_channel="pyg",
-        pip_install=True,
-    )
-    log.warning(message)
-
 
 def get_center(
-    x: Union[AtomTensor, CoordTensor],
+    x: AtomTensor | CoordTensor,
     ca_only: bool = True,
     fill_value: float = 1e-5,
 ) -> CoordTensor:
@@ -77,9 +61,9 @@ def get_center(
     :param x: Point Cloud to Center. Torch tensor of shape ``(Length , 3)`` or
         ``(Length, num atoms, 3)``.
     :param ca_only: If ``True``, only the C-alpha atoms will be used to compute
-        the center. Only relevant with AtomTensor inputs. Default is ``False``.
+        the center. Only relevant with AtomTensor inputs. Default is ``True``.
     :type ca_only: bool
-    :param fill_value: Value used to denote missing atoms. Default is )``1e-5)``.
+    :param fill_value: Value used to denote missing atoms. Default is ``1e-5``.
     :type fill_value: float
     :return: Torch tensor of shape ``(N,D)`` -- Center of Point Cloud
     :rtype: Union[graphein.protein.tensor.types.AtomTensor, graphein.protein.tensor.types.CoordTensor]
@@ -94,8 +78,8 @@ def get_center(
 
 
 def center_protein(
-    x: Union[AtomTensor, CoordTensor], ca_only: bool = True, fill_value=1e-5
-) -> Union[AtomTensor, CoordTensor]:
+    x: AtomTensor | CoordTensor, ca_only: bool = True, fill_value=1e-5
+) -> AtomTensor | CoordTensor:
     """
     Centers a protein in the coordinate system at the origin.
 
@@ -106,7 +90,7 @@ def center_protein(
     :param x: Point Cloud to Center. Torch tensor of shape ``(Length , 3)`` or
         ``(Length, num atoms, 3)``.
     :param ca_only: If ``True``, only the C-alpha atoms will be used to compute
-        the center. Only relevant with AtomTensor inputs. Default is ``False``.
+        the center. Only relevant with AtomTensor inputs. Default is ``True``.
     :type ca_only: bool
     :param fill_value: Value used to denote missing atoms. Default is ``1e-5``.
     :type fill_value: float
@@ -115,9 +99,7 @@ def center_protein(
     """
     center = get_center(x, ca_only=ca_only, fill_value=fill_value)
     # Mask missing atoms
-    fill_mask = torch.where(
-        x == fill_value, torch.tensor(1.0), torch.tensor(0.0)
-    ).bool()
+    fill_mask = x == fill_value
     centered = x - center
     # Restore fill values
     centered[fill_mask] = fill_value
@@ -125,18 +107,18 @@ def center_protein(
 
 
 def kabsch(
-    A: Union[AtomTensor, CoordTensor],
-    B: Union[AtomTensor, CoordTensor],
+    A: AtomTensor | CoordTensor,
+    B: AtomTensor | CoordTensor,
     ca_only: bool = True,
     residue_wise: bool = False,
     fill_value: float = 1e-5,
     return_transformed: bool = True,
     allow_reflections: bool = False,
-) -> Union[
-    CoordTensor,
-    Tuple[BackboneFrameTensor, torch.Tensor],
-    Tuple[RotationMatrix, torch.Tensor],
-]:
+) -> (
+    CoordTensor
+    | tuple[BackboneFrameTensor, torch.Tensor]
+    | tuple[RotationMatrix, torch.Tensor]
+):
     """
     Computes registration between two (2D or 3D) point clouds with known
     correspondences using Kabsch algorithm.
@@ -176,28 +158,27 @@ def kabsch(
 
     # Covariance matrix
     H = AA.mT @ BB if residue_wise else AA.T @ BB
-    U, _, Vt = torch.svd(H)
+    U, _, V = torch.svd(H)
 
     if not allow_reflections:
+        # Flip the last singular vector of V where needed so R is a proper
+        # rotation (det(R) = 1) rather than a reflection
         with torch.no_grad():
-            if residue_wise:
-                sign_flip = torch.det(U) * torch.det(Vt.mH) < 0
-            else:
-                det = torch.det(U) * torch.det(Vt.T)
-                if det < 0.0:
-                    pass  # TODO: reflection is not corrected here
-                    # Vt[-1, -1] *= -1
-        if residue_wise:
-            Vt_ = Vt.clone()
-            Vt_[sign_flip, -1, :] *= -1
+            flip = torch.det(U) * torch.det(V) < 0
+        V = torch.cat(
+            [
+                V[..., :-1],
+                torch.where(flip[..., None, None], -V[..., -1:], V[..., -1:]),
+            ],
+            dim=-1,
+        )
 
-    R = Vt_ @ U.mT if residue_wise else Vt @ U.T
+    R = V @ U.mT
 
     t = centroid_B if residue_wise else centroid_B - R @ centroid_A
     if residue_wise:
         return (R @ AA.mT).mT + t if return_transformed else (R, t)
-    else:
-        return R.mm(A.T).T + t.T if return_transformed else (R, t)
+    return R.mm(A.T).T + t.T if return_transformed else (R, t)
 
 
 # @torch.jit.script
@@ -315,7 +296,7 @@ def quaternion_to_matrix(
 
 
 def idealize_backbone(
-    x: Union[AtomTensor, BackboneTensor],
+    x: AtomTensor | BackboneTensor,
     lr: float = 1e-3,
     n_iter: int = 100,
     inplace: bool = False,
@@ -337,8 +318,8 @@ def idealize_backbone(
     :rtype: BackboneTensor
     """
     if not inplace:
-        x = copy.deepcopy(x)
-    x_constant = x
+        x = x.detach().clone()
+    x_constant = x.detach().clone()
     x.requires_grad = True
 
     def mse(x, y):
@@ -374,11 +355,11 @@ def idealize_backbone(
 
 
 def apply_structural_noise(
-    x: Union[AtomTensor, CoordTensor],
+    x: AtomTensor | CoordTensor,
     magnitude: float = 0.1,
     gaussian: bool = True,
     return_transformed: bool = True,
-) -> Union[AtomTensor, CoordTensor]:
+) -> AtomTensor | CoordTensor:
     """
     Generates random noise and adds it to the input tensor.
 
@@ -392,7 +373,7 @@ def apply_structural_noise(
     :return: Noised tensor or noise tensor
     """
     if gaussian:
-        noise = torch.randn_like(x, device=x.device) * magnitude
+        noise = torch.randn_like(x) * magnitude
     else:
-        noise = (torch.rand_like(x, device=x.device) - 0.5) * 2 * magnitude
+        noise = (torch.rand_like(x) - 0.5) * 2 * magnitude
     return x + noise if return_transformed else noise

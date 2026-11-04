@@ -9,17 +9,11 @@
 import asyncio
 import os
 import random
-import shutil
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import (
     Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
     Literal,
-    Optional,
-    Union,
 )
 
 import numpy as np
@@ -73,7 +67,7 @@ except ImportError:
     message += "\nYou can safely ignore this message if you are not working in a Jupyter Notebook."
     log.warning(message)
 
-FOLDCOMP_DATABASE_TYPES: List[str] = [
+FOLDCOMP_DATABASE_TYPES: list[str] = [
     "afdb_swissprot_v4",  # AlphaFoldDB Swiss-Prot
     "afdb_uniprot_v4",  # AlphaFoldDB Uniprot
     "afdb_rep_v4",  # AlphaFoldDB Cluster Representatives
@@ -88,7 +82,7 @@ https://github.com/steineggerlab/foldcomp
 """
 
 
-GraphTransform = Callable[[Union[Data, Protein]], Union[Data, Protein]]
+GraphTransform = Callable[[Data | Protein], Data | Protein]
 
 
 ATOM_MAP = {
@@ -156,11 +150,11 @@ class FoldCompDataset(Dataset):
             "esmatlas_v2023_02",
             "highquality_clust30",
         ],
-        ids: Optional[List[str]] = None,
-        exclude_ids: Optional[List[str]] = None,
+        ids: list[str] | None = None,
+        exclude_ids: list[str] | None = None,
         fraction: float = 1.0,
         use_graphein: bool = True,
-        transform: Optional[T.BaseTransform] = None,
+        transform: T.BaseTransform | None = None,
     ):
         """Dataset class for FoldComp databases.
 
@@ -212,7 +206,7 @@ class FoldCompDataset(Dataset):
         )
 
     @property
-    def raw_file_names(self) -> List[str]:
+    def raw_file_names(self) -> list[str]:
         """Return a list of raw file names expected to be found in the database.
 
         Returns empty string as we don't expect any raw files.
@@ -256,7 +250,7 @@ class FoldCompDataset(Dataset):
         LOOKUP_FILE = Path(self.root) / f"{self.database}.lookup"
         if not os.path.exists(LOOKUP_FILE):
             self.download()
-        with open(LOOKUP_FILE, "r") as f:
+        with open(LOOKUP_FILE) as f:
             accessions = f.readlines()
         # Extract accessions
         accessions = [x.strip().split("\t")[1] for x in tqdm(accessions)]
@@ -297,7 +291,7 @@ class FoldCompDataset(Dataset):
             )  # type: ignore
 
     @staticmethod
-    def fc_to_pyg(data: Dict[str, Any], name: Optional[str] = None) -> Protein:
+    def fc_to_pyg(data: dict[str, Any], name: str | None = None) -> Protein:
         # Map sequence to 3-letter codes
         res = [STANDARD_AMINO_ACID_MAPPING_1_TO_3[r] for r in data["residues"]]
         residue_type = torch.tensor(
@@ -343,7 +337,7 @@ class FoldCompDataset(Dataset):
         """Returns length of the dataset"""
         return len(self.protein_to_idx)
 
-    def get(self, idx) -> Union[Data, Protein]:
+    def get(self, idx) -> Data | Protein:
         """Retrieves a protein from the dataset. Can idx on either the protein
         ID or its index."""
         if isinstance(idx, str):
@@ -361,10 +355,10 @@ class FoldCompLightningDataModule(LightningDataModule):
         database: str,
         batch_size: int,
         use_graphein: bool = True,
-        train_split: Optional[Union[List[str], float]] = None,
-        val_split: Optional[Union[List[str], float]] = None,
-        test_split: Optional[Union[List[str], float]] = None,
-        transform: Optional[Iterable[Callable]] = None,
+        train_split: list[str] | float | None = None,
+        val_split: list[str] | float | None = None,
+        test_split: list[str] | float | None = None,
+        transform: Iterable[Callable] | None = None,
         num_workers: int = 4,
         pin_memory: bool = True,
     ) -> None:
@@ -436,7 +430,7 @@ class FoldCompLightningDataModule(LightningDataModule):
         except Exception:
             return T.Compose(transforms)
 
-    def setup(self, stage: Optional[str] = None):
+    def setup(self, stage: str | None = None):
         if stage == "fit" or stage is None:
             self.train_dataset()
         elif stage == "validate":

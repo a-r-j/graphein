@@ -13,7 +13,8 @@ import platform
 import subprocess
 import sys
 import warnings
-from typing import Any, Callable, Iterable, List
+from collections.abc import Callable, Iterable
+from typing import Any
 
 import networkx as nx
 import numpy as np
@@ -24,12 +25,12 @@ from Bio.Data.IUPACData import protein_letters_3to1
 try:
     from typing import Literal
 except ImportError:
-    from typing_extensions import Literal
+    from typing import Literal
 
 
 def onek_encoding_unk(
-    x: Iterable[Any], allowable_set: List[Any]
-) -> List[bool]:
+    x: Iterable[Any], allowable_set: list[Any]
+) -> list[bool]:
     """
     Function for perfroming one hot encoding
 
@@ -45,7 +46,7 @@ def onek_encoding_unk(
     return [x == s for s in allowable_set]
 
 
-def filter_dataframe(df: pd.DataFrame, funcs: List[Callable]) -> pd.DataFrame:
+def filter_dataframe(df: pd.DataFrame, funcs: list[Callable]) -> pd.DataFrame:
     """
     Applies transformation functions to a dataframe. Each function in ``funcs`` must accept a ``pd.DataFrame`` and return a ``pd.DataFrame``.
 
@@ -62,7 +63,7 @@ def filter_dataframe(df: pd.DataFrame, funcs: List[Callable]) -> pd.DataFrame:
     return df
 
 
-def annotate_graph_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
+def annotate_graph_metadata(G: nx.Graph, funcs: list[Callable]) -> nx.Graph:
     """
     Annotates graph with graph-level metadata
 
@@ -78,7 +79,7 @@ def annotate_graph_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     return G
 
 
-def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
+def annotate_edge_metadata(G: nx.Graph, funcs: list[Callable]) -> nx.Graph:
     """
     Annotates Graph edges with edge metadata. Each function in ``funcs`` must take the three arguments ``u``, ``v`` and ``d``, where ``u`` and ``v`` are the nodes of the edge, and ``d`` is the edge data dictionary.
 
@@ -97,7 +98,7 @@ def annotate_edge_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     return G
 
 
-def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
+def annotate_node_metadata(G: nx.Graph, funcs: list[Callable]) -> nx.Graph:
     """
     Annotates nodes with metadata. Each function in ``funcs`` must take two arguments ``n`` and ``d``, where ``n`` is the node and ``d`` is the node data dictionary. Some functions, like esm residue embeddings, should be used as graph metadata functions as they require access to the whole sequence.
 
@@ -123,7 +124,7 @@ def annotate_node_metadata(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     return G
 
 
-def annotate_node_features(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
+def annotate_node_features(G: nx.Graph, funcs: list[Callable]) -> nx.Graph:
     """
     Annotates nodes with features data. Note: passes whole graph to function.
 
@@ -139,7 +140,7 @@ def annotate_node_features(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
     return G
 
 
-def compute_edges(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
+def compute_edges(G: nx.Graph, funcs: list[Callable]) -> nx.Graph:
     """
     Computes edges for an Graph from a list of edge construction functions. Each func in ``funcs`` must take an ``nx.Graph`` and return an ``nx.Graph``.
 
@@ -157,7 +158,7 @@ def compute_edges(G: nx.Graph, funcs: List[Callable]) -> nx.Graph:
 
 def generate_feature_dataframe(
     G: nx.Graph,
-    funcs: List[Callable],
+    funcs: list[Callable],
     return_array=False,
 ) -> pd.DataFrame:
     """
@@ -292,7 +293,7 @@ def format_adjacency(G: nx.Graph, adj: np.ndarray, name: str) -> xr.DataArray:
 
 
 def generate_adjacency_tensor(
-    G: nx.Graph, funcs: List[Callable], return_array=False
+    G: nx.Graph, funcs: list[Callable], return_array=False
 ) -> xr.DataArray:
     """
     Generate adjacency tensor for a graph.
@@ -419,7 +420,7 @@ def deprecated(reason):
 
         return decorator
 
-    elif inspect.isclass(reason) or inspect.isfunction(reason):
+    if inspect.isclass(reason) or inspect.isfunction(reason):
         func2 = reason
 
         if inspect.isclass(func2):
@@ -440,5 +441,4 @@ def deprecated(reason):
 
         return new_func2
 
-    else:
-        raise TypeError(repr(type(reason)))
+    raise TypeError(repr(type(reason)))

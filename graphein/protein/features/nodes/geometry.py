@@ -6,8 +6,6 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Dict, List
-
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -15,7 +13,7 @@ from loguru import logger as log
 
 from graphein.protein.utils import compute_rgroup_dataframe, filter_dataframe
 
-VECTOR_FEATURE_NAMES: List[str] = [
+VECTOR_FEATURE_NAMES: list[str] = [
     "sidechain_vector",
     "c_beta_vector",
     "sequence_neighbour_vector_n_to_c",
@@ -25,7 +23,7 @@ VECTOR_FEATURE_NAMES: List[str] = [
 """Names of all vector features from the module."""
 
 
-def _coords_by_node(df: pd.DataFrame) -> Dict[str, np.ndarray]:
+def _coords_by_node(df: pd.DataFrame) -> dict[str, np.ndarray]:
     """Map ``node_id`` to coordinates, keeping the first row per node."""
     df = df.drop_duplicates("node_id")
     return dict(

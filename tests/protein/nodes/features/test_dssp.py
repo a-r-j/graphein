@@ -70,8 +70,8 @@ def test_extract_surface_subgraph_insertion_node(dssp_graph):
     try:
         # without the modification, the following line will raise
         # ProteinGraphConfigurationError RSA not defined for all nodes (H:TYR:52:A).
-        s_g = extract_surface_subgraph(dssp_graph, RSA_THRESHOLD)
+        extract_surface_subgraph(dssp_graph, RSA_THRESHOLD)
     except ProteinGraphConfigurationError as e:
         pytest.fail(
-            "extract_surface_subgraph raised ProteinGraphConfigurationError:\n{e}"
+            f"extract_surface_subgraph raised ProteinGraphConfigurationError:\n{e}"
         )

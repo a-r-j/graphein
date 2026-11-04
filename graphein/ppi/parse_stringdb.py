@@ -8,16 +8,14 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 import io
-from typing import Dict, List, Union
 
 import pandas as pd
 import requests
-from loguru import logger as log
 
 
 def params_STRING(
-    params: Dict[str, Union[str, int, List[str], List[int]]], **kwargs
-) -> Dict[str, Union[str, int]]:
+    params: dict[str, str | int | list[str] | list[int]], **kwargs
+) -> dict[str, str | int]:
     """
     Updates default parameters with user parameters for the method "network"
     of the STRING API REST. See also https://string-db.org/help/api/
@@ -54,8 +52,8 @@ def params_STRING(
 
 
 def parse_STRING(
-    protein_list: List[str],
-    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    protein_list: list[str],
+    ncbi_taxon_id: int | str | list[int] | list[str],
     **kwargs,
 ) -> pd.DataFrame:
     """
@@ -151,8 +149,8 @@ def standardise_STRING(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def STRING_df(
-    protein_list: List[str],
-    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    protein_list: list[str],
+    ncbi_taxon_id: int | str | list[int] | list[str],
     **kwargs,
 ) -> pd.DataFrame:
     """
