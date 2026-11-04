@@ -10,19 +10,24 @@ from functools import partial
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from pathlib import Path
+from typing import Optional, Tuple
+from unittest.mock import MagicMock
 
 import networkx as nx
+import numpy as np
 import pandas as pd
 import pytest
 
 import graphein.protein as gp
 from graphein.protein.config import ProteinGraphConfig
+from graphein.protein.edges import distance
 from graphein.protein.edges.distance import (
     INFINITE_DIST,
     add_aromatic_sulphur_interactions,
     add_cation_pi_interactions,
     add_distance_threshold,
     add_distance_window,
+    add_hydrogen_bond_interactions,
     add_k_nn_edges,
     add_peptide_bonds,
     add_salt_bridges,
@@ -39,10 +44,13 @@ from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 from graphein.protein.resi_atoms import (
     AROMATIC_RESIS,
     CATION_RESIS,
+    HYDROGEN_BOND_ACCEPTORS,
+    HYDROGEN_BOND_DONORS,
     HYDROPHOBIC_RESIS,
     NEG_AA,
     PI_RESIS,
     POS_AA,
+    RESI_THREE_TO_1,
     SALT_BRIDGE_ANIONS,
     SALT_BRIDGE_CATIONS,
     SULPHUR_RESIS,
@@ -107,10 +115,440 @@ def test_delaunay_triangulation(net):
     pass
 
 
-@pytest.mark.skip(reason="Implementation needs to be checked.")
-def test_add_hydrogen_bond_interactions(net):
-    """Test that the addition of hydrogen bond interactions works correctly."""
-    pass
+def _hbond_graph(
+    granularity: str,
+    df: Optional[pd.DataFrame] = None,
+    config_kwargs: Optional[dict] = None,
+    **kwargs,
+) -> nx.Graph:
+    config = ProteinGraphConfig(
+        granularity=granularity,
+        **(config_kwargs or {}),
+        edge_construction_functions=[
+            partial(add_hydrogen_bond_interactions, **kwargs)
+        ],
+    )
+    if df is not None:
+        return construct_graph(config=config, df=df, name="4hhb")
+    return construct_graph(config=config, path=str(DATA_PATH))
+
+
+def _is_donor(node: dict) -> bool:
+    res, atom = node["residue_name"], node["atom_type"]
+    if atom == "N":
+        return RESI_THREE_TO_1.get(res) != "P"
+    return atom in HYDROGEN_BOND_DONORS.get(res, {})
+
+
+def _is_acceptor(node: dict) -> bool:
+    res, atom = node["residue_name"], node["atom_type"]
+    return atom in {"O", "OXT"} or atom in HYDROGEN_BOND_ACCEPTORS.get(res, {})
+
+
+def _residue(node_id: str) -> str:
+    """Residue ID of an atom node ID (i.e. drop the trailing atom name)."""
+    return node_id.rsplit(":", 1)[0]
+
+
+def _peptide_bonded(g: nx.Graph, res_1: str, res_2: str) -> bool:
+    """Whether the C of one residue is bonded (<= 2A) to the N of the other."""
+    for c_res, n_res in ((res_1, res_2), (res_2, res_1)):
+        c, n = f"{c_res}:C", f"{n_res}:N"
+        if c in g and n in g:
+            if (
+                np.linalg.norm(g.nodes[c]["coords"] - g.nodes[n]["coords"])
+                <= 2
+            ):
+                return True
+    return False
+
+
+def test_add_hydrogen_bond_interactions_atom_graph():
+    """Each atomic hbond edge links a donor and acceptor in different residues.
+
+    Regression test for #437: previously only exact matches on truncated atom
+    names were used and backbone atoms were never considered.
+    """
+    g = _hbond_graph("atom")
+    edges = get_edges_by_bond_type(g, "hbond")
+    assert len(edges) > 0
+
+    for u, v in edges:
+        a, b = g.nodes[u], g.nodes[v]
+        assert (_is_donor(a) and _is_acceptor(b)) or (
+            _is_donor(b) and _is_acceptor(a)
+        )
+        assert _residue(u) != _residue(v)
+        assert np.linalg.norm(a["coords"] - b["coords"]) <= 3.5
+        # Covalent geometry alone puts these ~2.3A (N-O across a peptide
+        # bond) and ~3A (Ser OG(i)-N(i+1)) apart, so they are excluded.
+        if {a["atom_type"], b["atom_type"]} <= {"N", "O", "OXT"}:
+            assert not _peptide_bonded(g, _residue(u), _residue(v))
+        for x, y in ((u, v), (v, u)):
+            if (
+                g.nodes[x]["atom_type"] in {"OG", "OG1"}
+                and g.nodes[y]["atom_type"] == "N"
+            ):
+                assert not _peptide_bonded(g, _residue(x), _residue(y))
+
+    # Backbone-backbone hydrogen bonds should be found (e.g. alpha helices).
+    assert any(
+        g.nodes[u]["atom_type"] in {"N", "O"}
+        and g.nodes[v]["atom_type"] in {"N", "O"}
+        for u, v in edges
+    )
+
+
+def test_add_hydrogen_bond_interactions_residue_graph():
+    """Residue-level hbonds are the atomic hbonds mapped onto residues."""
+    atom_edges = {
+        frozenset((_residue(u), _residue(v)))
+        for u, v in get_edges_by_bond_type(_hbond_graph("atom"), "hbond")
+    }
+    residue_edges = {
+        frozenset(e)
+        for e in get_edges_by_bond_type(_hbond_graph("CA"), "hbond")
+    }
+    assert len(residue_edges) > 0
+    assert residue_edges == atom_edges
+
+
+@pytest.mark.parametrize(
+    "hbond_types", [["bb-bb"], ["bb-sc"], ["sc-sc"], ["bb-sc", "sc-sc"]]
+)
+def test_add_hydrogen_bond_interactions_types(hbond_types):
+    """Only the requested backbone/side chain hydrogen bond types are added."""
+    g = _hbond_graph("atom", hbond_types=hbond_types)
+    edges = get_edges_by_bond_type(g, "hbond")
+    assert len(edges) > 0
+    for u, v in edges:
+        n_backbone = sum(
+            g.nodes[n]["atom_type"] in {"N", "O", "OXT"} for n in (u, v)
+        )
+        assert {0: "sc-sc", 1: "bb-sc", 2: "bb-bb"}[n_backbone] in hbond_types
+
+
+def test_add_hydrogen_bond_interactions_invalid_type():
+    with pytest.raises(ValueError):
+        _hbond_graph("atom", hbond_types=["bb-xx"])
+
+
+def test_add_hydrogen_bond_interactions_single_type_string():
+    """A single type can be passed as a string rather than a list."""
+    edges = [
+        set(
+            get_edges_by_bond_type(
+                _hbond_graph("atom", hbond_types=t), "hbond"
+            )
+        )
+        for t in ("bb-bb", ["bb-bb"])
+    ]
+    assert edges[0] and edges[0] == edges[1]
+
+
+def test_add_hydrogen_bond_interactions_partial_alt_loc():
+    """Atoms of a residue whose CA has an alt_loc are still used.
+
+    Residue node IDs include the CA's alt_loc (``A:LEU:5:A``) but the
+    residue's other atoms may have none, so matching atoms to nodes by node ID
+    dropped them.
+    """
+    o, n = _helical_backbone_hbond(_hbond_graph("atom"))
+    chain, _, res_num, _ = o.split(":")
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    ca = (
+        (df["chain_id"] == chain)
+        & (df["residue_number"] == int(res_num))
+        & (df["atom_name"] == "CA")
+    )
+    df.loc[ca, "alt_loc"] = "A"
+
+    g = _hbond_graph("CA", df=df)
+    o_node, n_node = f"{_residue(o)}:A", _residue(n)
+    assert o_node in g
+    assert g.has_edge(o_node, n_node)
+    assert "hbond" in g.edges[o_node, n_node]["kind"]
+
+
+def test_add_hydrogen_bond_interactions_removed_insertions():
+    """With ``insertions=False``, removed inserted residues add no hbonds.
+
+    Moves the ``O(i)`` residue of a helical hbond to insertion ``rA`` of a
+    distant residue ``r`` (renamed to match ``r``, numbered after it). ``rA``
+    is removed from the graph but shared ``r``'s node ID, so its hbond was
+    given to ``r``.
+    """
+    o, n = _helical_backbone_hbond(_hbond_graph("atom"))
+    chain, _, res_num, _ = o.split(":")
+    n_coords = _hbond_graph("atom").nodes[n]["coords"]
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    ca = df.loc[(df["chain_id"] == chain) & (df["atom_name"] == "CA")]
+    dist = np.linalg.norm(
+        ca[["x_coord", "y_coord", "z_coord"]].to_numpy() - n_coords, axis=1
+    )
+    r = ca[dist > 15].iloc[0]
+    r_atoms = (df["chain_id"] == chain) & (
+        df["residue_number"] == r["residue_number"]
+    )
+    mask = (df["chain_id"] == chain) & (df["residue_number"] == int(res_num))
+    # Inserted residues follow their parent in the file
+    df.loc[mask, "atom_number"] = df.loc[r_atoms, "atom_number"].max() + 1
+    df.loc[mask, "residue_number"] = r["residue_number"]
+    df.loc[mask, "residue_name"] = r["residue_name"]
+    df.loc[mask, "insertion"] = "A"
+
+    # alt_locs="include": remove_alt_locs leaves rows sorted by occupancy, so
+    # remove_insertions may then keep ``rA`` over ``r``.
+    g = _hbond_graph(
+        "CA",
+        df=df,
+        config_kwargs={"insertions": False, "alt_locs": "include"},
+    )
+    r_node = f"{chain}:{r['residue_name']}:{r['residue_number']}"
+    n_node = _residue(n)
+    assert r_node in g and n_node in g
+    assert not g.has_edge(r_node, n_node)
+
+
+def test_add_hydrogen_bond_interactions_side_chain_to_next_residue():
+    """Side chain hbonds to the next residue's backbone N are kept.
+
+    Asp OD1 47 and N 48 of chain A are 3.2A apart (an Asx motif).
+    """
+    g = _hbond_graph("atom")
+    assert g.has_edge("A:ASP:47:OD1", "A:LEU:48:N")
+
+
+@pytest.mark.parametrize(
+    "res_name,variant",
+    [("SER", "SEP"), ("THR", "TPO"), ("TYR", "PTR"), ("TYR", "TPQ")],
+)
+def test_add_hydrogen_bond_interactions_modified_side_chains(
+    res_name, variant
+):
+    """Modified side chains don't donate as their parent residue would.
+
+    Phosphorylated SEP, TPO and PTR have no hydroxyl hydrogen, and TPQ's
+    parent is PHE, which has no side chain donors or acceptors.
+    """
+    g = _hbond_graph("atom", hbond_types=["sc-sc"])
+    edge = next(
+        (
+            (u, v)
+            for x, y in get_edges_by_bond_type(g, "hbond")
+            for u, v in ((x, y), (y, x))
+            if g.nodes[u]["residue_name"] == res_name
+            and not _is_donor(g.nodes[v])
+        ),
+        None,
+    )
+    if edge is None:
+        pytest.skip(f"No {res_name} donor side chain hbond in 4hhb")
+    u, v = edge
+    chain, _, res_num = _residue(u).split(":")[:3]
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    mask = (df["chain_id"] == chain) & (df["residue_number"] == int(res_num))
+    df.loc[mask, "residue_name"] = variant
+
+    g = _hbond_graph("atom", df=df, hbond_types=["sc-sc"])
+    u_new = u.replace(f":{res_name}:", f":{variant}:", 1)
+    assert u_new in g
+    assert not g.has_edge(u_new, v)
+
+
+def test_add_hydrogen_bond_interactions_no_backbone_warns(monkeypatch):
+    """Asking for backbone hbonds without backbone atoms logs a warning."""
+    g = _hbond_graph("CA", hbond_types=["sc-sc"])
+    log = MagicMock()
+    monkeypatch.setattr(distance, "log", log)
+    add_hydrogen_bond_interactions(g, rgroup_df=g.graph["rgroup_df"])
+    assert "backbone" in log.warning.call_args.args[0]
+
+
+def test_add_hydrogen_bond_interactions_no_matching_atoms_warns(monkeypatch):
+    """A dataframe whose atoms match no graph node logs a warning."""
+    g = _hbond_graph("CA")
+    df = g.graph["raw_pdb_df"].assign(chain_id="Z")
+    log = MagicMock()
+    monkeypatch.setattr(distance, "log", log)
+    add_hydrogen_bond_interactions(g, rgroup_df=df)
+    assert "No atoms" in log.warning.call_args.args[0]
+
+
+def test_add_hydrogen_bond_interactions_empty_types():
+    with pytest.raises(ValueError):
+        _hbond_graph("atom", hbond_types=[])
+
+
+@pytest.mark.parametrize(
+    "granularity,columns",
+    [("CA", ["insertion", "occupancy"]), ("atom", ["alt_loc"])],
+)
+def test_add_hydrogen_bond_interactions_missing_columns(granularity, columns):
+    """Dataframes without insertion / alt_loc columns are treated as blank."""
+    g = _hbond_graph(granularity)
+    expected = set(get_edges_by_bond_type(g, "hbond"))
+    g.remove_edges_from(list(g.edges()))
+    add_hydrogen_bond_interactions(
+        g, rgroup_df=g.graph["raw_pdb_df"].drop(columns=columns)
+    )
+    assert set(get_edges_by_bond_type(g, "hbond")) == expected
+
+
+@pytest.mark.parametrize("variant", ["HSD", "HSE", "HSP", "ASH", "GLH", "LYN"])
+def test_add_hydrogen_bond_interactions_md_residue_names(variant):
+    """Backbone hbonds of residues with MD (CHARMM/Amber) names are found."""
+    o, n = _helical_backbone_hbond(_hbond_graph("atom"))
+    chain, res_name, res_num, _ = n.split(":")
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    mask = (df["chain_id"] == chain) & (df["residue_number"] == int(res_num))
+    df.loc[mask, "residue_name"] = variant
+
+    g = _hbond_graph("atom", df=df)
+    n_new = f"{chain}:{variant}:{res_num}:N"
+    assert n_new in g
+    assert g.has_edge(o, n_new)
+
+
+@pytest.mark.parametrize(
+    "res_name,variant",
+    [
+        ("SER", "DSN"),
+        ("THR", "DTH"),
+        ("HIS", "HIE"),
+        ("HIS", "HSD"),
+        ("ASP", "ASH"),
+        ("ASP", "DAS"),
+        ("GLU", "GLH"),
+        ("LYS", "LYN"),
+    ],
+)
+def test_add_hydrogen_bond_interactions_residue_variants(res_name, variant):
+    """Side chain donors/acceptors of residue variants are used."""
+    g = _hbond_graph("atom", hbond_types=["sc-sc"])
+    edge = next(
+        (
+            (u, v)
+            for u, v in get_edges_by_bond_type(g, "hbond")
+            if g.nodes[u]["residue_name"] == res_name
+        ),
+        None,
+    )
+    if edge is None:
+        pytest.skip(f"No {res_name} side chain hbond in 4hhb")
+    u, v = edge
+    chain, _, res_num = _residue(u).split(":")[:3]
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    mask = (df["chain_id"] == chain) & (df["residue_number"] == int(res_num))
+    df.loc[mask, "residue_name"] = variant
+
+    g = _hbond_graph("atom", df=df, hbond_types=["sc-sc"])
+    u_new = u.replace(f":{res_name}:", f":{variant}:", 1)
+    assert u_new in g
+    assert g.has_edge(u_new, v)
+
+
+def _helical_backbone_hbond(g: nx.Graph) -> Tuple[str, str]:
+    """An ``O(i)``-``N(i+4)`` hbond edge in chain A as ``(O node, N node)``."""
+    for u, v in get_edges_by_bond_type(g, "hbond"):
+        if g.nodes[u]["atom_type"] == "N":
+            u, v = v, u
+        o, n = g.nodes[u], g.nodes[v]
+        if (
+            o["atom_type"] == "O"
+            and n["atom_type"] == "N"
+            and o["chain_id"] == n["chain_id"] == "A"
+            and n["residue_number"] - o["residue_number"] == 4
+        ):
+            return u, v
+    raise AssertionError("No O(i)-N(i+4) hydrogen bond found in chain A")
+
+
+def test_add_hydrogen_bond_interactions_insertion_codes():
+    """Residues numbered ``i, iA, iB, ...`` are not treated as adjacent.
+
+    Renumbers residues ``i..i+4`` of a helical ``O(i)``-``N(i+4)`` hbond to
+    ``i, iA, iB, iC, iD``; the hbond must still be found.
+    """
+    o, n = _helical_backbone_hbond(_hbond_graph("atom"))
+    start = int(o.split(":")[2])
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    for offset, insertion in enumerate(["", "A", "B", "C", "D"]):
+        mask = (df["chain_id"] == "A") & (
+            df["residue_number"] == start + offset
+        )
+        df.loc[mask, "residue_number"] = start
+        df.loc[mask, "insertion"] = insertion
+
+    g = _hbond_graph("atom", df=df)
+    # Residue i keeps its number and has no insertion code, so ``o`` is
+    # unchanged.
+    n_new = n.replace(f":{start + 4}:", f":{start}:D:")
+    assert o in g
+    assert n_new in g
+    assert g.has_edge(o, n_new)
+    assert "hbond" in g.edges[o, n_new]["kind"]
+
+
+def test_add_hydrogen_bond_interactions_same_number_hetatm():
+    """A kept water numbered like a protein residue gets none of its atoms.
+
+    Moves a water to the number of the ``O(i)`` residue of a helical hbond.
+    Atoms were matched to nodes without the residue name, so the residue's
+    ``O`` was also assigned to the water's ``O`` node.
+    """
+    o, n = _helical_backbone_hbond(_hbond_graph("atom"))
+    chain, _, res_num, _ = o.split(":")
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    water = df.index[(df["chain_id"] == chain) & (df["residue_name"] == "HOH")]
+    df.loc[water[0], "residue_number"] = int(res_num)
+
+    # alt_locs="include": otherwise graph construction keeps only one of
+    # the two O atoms with the same chain and residue number.
+    g = _hbond_graph(
+        "atom",
+        df=df,
+        config_kwargs={"keep_hets": ["HOH"], "alt_locs": "include"},
+    )
+    water_node = f"{chain}:HOH:{res_num}:O"
+    assert water_node in g
+    assert g.has_edge(o, n)
+    # Waters are not hydrogen bond donors or acceptors here
+    assert not any(
+        "hbond" in g.edges[water_node, nbr]["kind"]
+        for nbr in g.neighbors(water_node)
+    )
+
+
+@pytest.mark.parametrize(
+    "variant", ["HYP", "DPR", "3HP", "4HP", "SAR", "MLE", "MVA", "BMT"]
+)
+def test_add_hydrogen_bond_interactions_proline_variants(variant):
+    """Backbone N without an amide hydrogen is not a hydrogen bond donor.
+
+    Covers proline variants (including hydroxyprolines 3HP / 4HP, which
+    RESI_THREE_TO_1 maps to X) and N-methylated residues.
+    """
+    _, n = _helical_backbone_hbond(_hbond_graph("atom"))
+    chain, res_name, res_num, _ = n.split(":")
+
+    df = read_pdb_to_dataframe(DATA_PATH)
+    mask = (df["chain_id"] == chain) & (df["residue_number"] == int(res_num))
+    df.loc[mask, "residue_name"] = variant
+
+    g = _hbond_graph("atom", df=df)
+    n_new = f"{chain}:{variant}:{res_num}:N"
+    assert n_new in g
+    assert not any(
+        "hbond" in g.edges[n_new, nbr]["kind"] for nbr in g.neighbors(n_new)
+    )
 
 
 def test_add_aromatic_interactions(net):
