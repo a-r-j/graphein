@@ -342,8 +342,7 @@ def add_hydrophobic_interactions(
     )
     hydrophobics_df = assign_atoms_to_nodes(G, hydrophobics_df)
     if hydrophobics_df.shape[0] > 0:
-        distmat = compute_distmat(hydrophobics_df)
-        interacting_atoms = get_interacting_atoms(5, distmat)
+        interacting_atoms = get_interacting_atom_pairs(5, hydrophobics_df)
         add_interacting_resis(
             G, interacting_atoms, hydrophobics_df, ["hydrophobic"]
         )
@@ -385,8 +384,7 @@ def add_disulfide_interactions(
     # Ensure only residues in the graph are kept
     disulfide_df = assign_atoms_to_nodes(G, disulfide_df)
     if disulfide_df.shape[0] > 0:
-        distmat = compute_distmat(disulfide_df)
-        interacting_atoms = get_interacting_atoms(2.2, distmat)
+        interacting_atoms = get_interacting_atom_pairs(2.2, disulfide_df)
         add_interacting_resis(
             G, interacting_atoms, disulfide_df, ["disulfide"]
         )
@@ -641,8 +639,7 @@ def add_ionic_interactions(
     ionic_df = filter_dataframe(rgroup_df, "residue_name", IONIC_RESIS, True)
     ionic_df = assign_atoms_to_nodes(G, ionic_df)
     if ionic_df.shape[0] > 0:
-        distmat = compute_distmat(ionic_df)
-        interacting_atoms = get_interacting_atoms(6, distmat)
+        interacting_atoms = get_interacting_atom_pairs(6, ionic_df)
         add_interacting_resis(G, interacting_atoms, ionic_df, ["ionic"])
         # Check that the interacting residues are of opposite charges
         for r1, r2 in get_edges_by_bond_type(G, "ionic"):
@@ -740,8 +737,9 @@ def add_aromatic_sulphur_interactions(
     aromatic_sulphur_df = assign_atoms_to_nodes(G, aromatic_sulphur_df)
 
     if aromatic_sulphur_df.shape[0] > 0:
-        distmat = compute_distmat(aromatic_sulphur_df)
-        interacting_atoms = get_interacting_atoms(5.3, distmat)
+        interacting_atoms = get_interacting_atom_pairs(
+            5.3, aromatic_sulphur_df
+        )
         interacting_atoms = list(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
@@ -781,8 +779,7 @@ def add_cation_pi_interactions(
     cation_pi_df = assign_atoms_to_nodes(G, cation_pi_df)
 
     if cation_pi_df.shape[0] > 0:
-        distmat = compute_distmat(cation_pi_df)
-        interacting_atoms = get_interacting_atoms(6, distmat)
+        interacting_atoms = get_interacting_atom_pairs(6, cation_pi_df)
         interacting_atoms = list(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
@@ -821,14 +818,16 @@ def add_vdw_interactions(
     df = g.graph["raw_pdb_df"]
     df = filter_dataframe(df, "atom_name", ["H"], boolean=False)
     df = assign_atoms_to_nodes(g, df)
-    dist_mat = compute_distmat(df)
+    radii = df["element_symbol"].map(VDW_RADII).to_numpy()
+    coords = df[["x_coord", "y_coord", "z_coord"]].to_numpy()
 
-    radii = df["element_symbol"].map(VDW_RADII).values
-    radii = np.expand_dims(radii, axis=1)
-    radii = radii + radii.T
-
-    dist_mat = dist_mat - radii
-    interacting_atoms = get_interacting_atoms(threshold, dist_mat)
+    # No pair can be further apart than the two largest radii + threshold
+    i, j = get_interacting_atom_pairs(
+        threshold + 2 * np.nanmax(radii, initial=0), df
+    )
+    dists = np.linalg.norm(coords[i] - coords[j], axis=1)
+    keep = dists - (radii[i] + radii[j]) <= threshold
+    interacting_atoms = (i[keep], j[keep])
     add_interacting_resis(g, interacting_atoms, df, [name])
 
     if remove_intraresidue:
@@ -1025,8 +1024,7 @@ def add_backbone_carbonyl_carbonyl_interactions(
     df = G.graph["raw_pdb_df"]
     df = filter_dataframe(df, "atom_name", ["C", "O"], boolean=True)
     df = assign_atoms_to_nodes(G, df)
-    distmat = compute_distmat(df)
-    interacting_atoms = get_interacting_atoms(threshold, distmat)
+    interacting_atoms = get_interacting_atom_pairs(threshold, df)
 
     # Filter out O-O and C-C edges
     atom_1 = df.iloc[interacting_atoms[0]]["atom_name"]
@@ -1084,8 +1082,9 @@ def add_salt_bridges(
     )
     salt_bridge_df = assign_atoms_to_nodes(G, salt_bridge_df)
     if salt_bridge_df.shape[0] > 0:
-        distmat = compute_distmat(salt_bridge_df)
-        interacting_atoms = get_interacting_atoms(threshold, distmat)
+        interacting_atoms = get_interacting_atom_pairs(
+            threshold, salt_bridge_df
+        )
         add_interacting_resis(
             G, interacting_atoms, salt_bridge_df, ["salt_bridge"]
         )
@@ -1117,6 +1116,26 @@ def get_interacting_atoms(
     :type distmat: pd.DataFrame
     """
     return np.where(distmat <= angstroms)
+
+
+def get_interacting_atom_pairs(
+    angstroms: float, df: pd.DataFrame
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Find the pairs of atoms that are within a radius of one another.
+
+    Unlike :func:`get_interacting_atoms`, this uses a KD-tree rather than a
+    dense distance matrix, and gives each pair once (``i < j``).
+
+    :param angstroms: The radius in angstroms.
+    :type angstroms: float
+    :param df: Dataframe with columns ``["x_coord", "y_coord", "z_coord"]``.
+    :type df: pd.DataFrame
+    :return: Positional indices of the first and second atom of each pair.
+    :rtype: Tuple[np.ndarray, np.ndarray]
+    """
+    coords = df[["x_coord", "y_coord", "z_coord"]].to_numpy()
+    pairs = cKDTree(coords).query_pairs(angstroms, output_type="ndarray")
+    return pairs[:, 0], pairs[:, 1]
 
 
 def add_delaunay_triangulation(
@@ -1201,8 +1220,7 @@ def add_distance_threshold(
     pdb_df = filter_dataframe(
         G.graph["pdb_df"], "node_id", list(G.nodes()), True
     )
-    dist_mat = compute_distmat(pdb_df)
-    interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
+    interacting_nodes = get_interacting_atom_pairs(threshold, pdb_df)
     interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
 
     log.info(f"Found: {len(interacting_nodes)} distance edges")
@@ -1249,12 +1267,11 @@ def add_distance_window(
     pdb_df = filter_dataframe(
         G.graph["pdb_df"], "node_id", list(G.nodes()), True
     )
-    dist_mat = compute_distmat(pdb_df)
     # Nodes less than the minimum distance
-    less_than_min = get_interacting_atoms(min, distmat=dist_mat)
+    less_than_min = get_interacting_atom_pairs(min, pdb_df)
     less_than_min = list(zip(less_than_min[0], less_than_min[1]))
 
-    interacting_nodes = get_interacting_atoms(max, distmat=dist_mat)
+    interacting_nodes = get_interacting_atom_pairs(max, pdb_df)
     interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
     less_than_min = set(less_than_min)
     interacting_nodes = [
