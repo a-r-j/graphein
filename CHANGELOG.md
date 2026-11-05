@@ -3,6 +3,7 @@
 #### New Features
 
 * Add `add_bond_type_one_hot` edge feature for molecules. Fixes [#430](https://github.com/a-r-j/graphein/issues/430)
+* `graphein -c` previously required every user to write their own YAML config, because the package shipped no defaults. Built-in configs can now be referenced by name (`graphein -c default`), listed with `--list-configs`, and still overridden by an explicit file path; a packaged C-alpha + 10 Å distance-threshold config is included and can be built offline. Fixes [#123](https://github.com/a-r-j/graphein/issues/123)
 
 #### Breaking Changes
 

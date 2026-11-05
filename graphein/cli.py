@@ -6,6 +6,7 @@ import pickle
 import rich_click as click
 
 from graphein import __version__
+from graphein.configs import available_configs, resolve_config_path
 from graphein.protein.graphs import construct_graph
 from graphein.utils.config_parser import parse_config
 
@@ -15,10 +16,13 @@ from graphein.utils.config_parser import parse_config
 @click.option(
     "-c",
     "--config_path",
-    help="The name the of .yml input config",
-    type=click.Path(
-        exists=True, file_okay=True, dir_okay=False, path_type=pathlib.Path
-    ),
+    help="Built-in config name or path to a .yml config file",
+    type=str,
+)
+@click.option(
+    "--list-configs",
+    is_flag=True,
+    help="List built-in configs and exit",
 )
 @click.option(
     "-p",
@@ -36,9 +40,22 @@ from graphein.utils.config_parser import parse_config
         exists=True, file_okay=False, dir_okay=True, path_type=pathlib.Path
     ),
 )
-def main(config_path, path, output_path):
+def main(config_path, path, output_path, list_configs):
     """Build the graphs and save them in output dir."""
-    config = parse_config(path=config_path) if config_path else None
+    if list_configs:
+        click.echo("\n".join(available_configs()))
+        return
+
+    config = None
+    if config_path:
+        try:
+            config_file = resolve_config_path(config_path)
+        except ValueError as e:
+            raise click.BadParameter(
+                str(e), param_hint="-c/--config_path"
+            ) from e
+        config = parse_config(path=config_file)
+
     if path.is_file():
         paths = [path]
     elif path.is_dir():
