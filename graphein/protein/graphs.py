@@ -71,6 +71,15 @@ def subset_structure_to_rna(
     )
 
 
+def _concat_in_file_order(atomic_df) -> pd.DataFrame:
+    """Joins biopandas' ``ATOM`` and ``HETATM`` frames in file order (by atom
+    serial, which mmCIF and MMTF keep unique), so modified residues such as
+    ``MSE`` stay in place in their chain rather than after all ``ATOM``s."""
+    df = pd.concat([atomic_df.df["ATOM"], atomic_df.df["HETATM"]])
+    df = df.sort_values("atom_number", kind="stable")
+    return df.reset_index(drop=True)
+
+
 def read_pdb_to_dataframe(
     path: str | os.PathLike | None = None,
     pdb_code: str | None = None,
@@ -110,16 +119,12 @@ def read_pdb_to_dataframe(
         elif path.endswith((".mmtf", ".mmtf.gz")):
             atomic_df = PandasMmtf().read_mmtf(path)
             atomic_df = atomic_df.get_model(model_index)
-            atomic_df = pd.concat(
-                [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
-            )
+            atomic_df = _concat_in_file_order(atomic_df)
         elif path.endswith((".cif", ".cif.gz", ".mmcif", ".mmcif.gz")):
             atomic_df = PandasMmcif().read_mmcif(path)
             atomic_df = atomic_df.get_model(model_index)
             atomic_df = atomic_df.convert_to_pandas_pdb()
-            atomic_df = pd.concat(
-                [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
-            )
+            atomic_df = _concat_in_file_order(atomic_df)
         else:
             raise ValueError(
                 f"File {path} must be either .pdb(.gz), .mmtf(.gz), .(mm)cif(.gz) or .ent, not {path.split('.')[-1]}"
@@ -268,15 +273,13 @@ def remove_alt_locs(
     :return: Protein structure dataframe with alternative located atoms removed
     :rtype: pd.DataFrame
     """
-    # Sort accordingly
-    if keep == "max_occupancy":
-        df = df.sort_values("occupancy")
-        keep = "last"
-    elif keep == "min_occupancy":
-        df = df.sort_values("occupancy")
-        keep = "first"
-    elif keep == "exclude":
-        keep = False
+    # Sort accordingly (stable, so ties keep the first in file order)
+    sort = keep in ["max_occupancy", "min_occupancy"]
+    if sort:
+        df = df.sort_values(
+            "occupancy", ascending=keep == "min_occupancy", kind="stable"
+        )
+    keep = "first" if sort else False if keep == "exclude" else keep
 
     # Filter
     duplicates = df.duplicated(
@@ -286,8 +289,8 @@ def remove_alt_locs(
     df = df[~duplicates]
 
     # Unsort
-    if keep in ["max_occupancy", "min_occupancy"]:
-        df = df.sort_index()
+    if sort:
+        df = df.sort_index(kind="stable")
     return df.reset_index(drop=True)
 
 

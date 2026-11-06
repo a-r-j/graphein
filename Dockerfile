@@ -1,6 +1,6 @@
 FROM pytorch/pytorch:2.8.0-cuda12.8-cudnn9-runtime
 
-# Avoid apt prompts (e.g. libcifpp-data, pulled in by dssp) hanging the build
+# Avoid apt prompts hanging the build
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
@@ -13,10 +13,6 @@ RUN apt-get update && apt-get install -y iputils-ping && apt-get clean \
 
 # Install BLAST
 RUN apt-get update && apt-get install -y ncbi-blast+ && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install DSSP
-RUN apt-get update && apt-get install -y dssp && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 ENV CONDA_ALWAYS_YES=true
