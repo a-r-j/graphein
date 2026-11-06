@@ -1,6 +1,6 @@
 """Utilities for reconstructing protein structures."""
 
-from functools import lru_cache
+from functools import cache
 
 import numpy as np
 import torch
@@ -149,8 +149,7 @@ def dist_mat_to_coords(d: torch.Tensor, k: int = 3) -> CoordTensor:
     #        Mij + 1e-4 * Mij.mean() * torch.rand_like(Mij)
     #    )
     X = U * torch.sqrt(S)
-    X = X[:, :k]
-    return X
+    return X[:, :k]
 
 
 def build_sidechain(
@@ -224,7 +223,7 @@ def build_sidechain(
     return pos
 
 
-@lru_cache(maxsize=None)
+@cache
 def _get_build_params(
     res: str,
 ) -> tuple[

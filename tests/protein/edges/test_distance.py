@@ -10,7 +10,6 @@ from functools import partial
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from pathlib import Path
-from typing import Optional, Tuple
 from unittest.mock import MagicMock
 
 import networkx as nx
@@ -112,13 +111,12 @@ def test_delaunay_triangulation(net):
     I am including this test here that always passes because I don't know how
     best to test it. The code in pin.py uses scipy's delaunay triangulation.
     """
-    pass
 
 
 def _hbond_graph(
     granularity: str,
-    df: Optional[pd.DataFrame] = None,
-    config_kwargs: Optional[dict] = None,
+    df: pd.DataFrame | None = None,
+    config_kwargs: dict | None = None,
     **kwargs,
 ) -> nx.Graph:
     config = ProteinGraphConfig(
@@ -155,10 +153,8 @@ def _peptide_bonded(g: nx.Graph, res_1: str, res_2: str) -> bool:
     for c_res, n_res in ((res_1, res_2), (res_2, res_1)):
         c, n = f"{c_res}:C", f"{n_res}:N"
         if c in g and n in g:
-            if (
-                np.linalg.norm(g.nodes[c]["coords"] - g.nodes[n]["coords"])
-                <= 2
-            ):
+            dist = np.linalg.norm(g.nodes[c]["coords"] - g.nodes[n]["coords"])
+            if dist <= 2:
                 return True
     return False
 
@@ -453,7 +449,7 @@ def test_add_hydrogen_bond_interactions_residue_variants(res_name, variant):
     assert g.has_edge(u_new, v)
 
 
-def _helical_backbone_hbond(g: nx.Graph) -> Tuple[str, str]:
+def _helical_backbone_hbond(g: nx.Graph) -> tuple[str, str]:
     """An ``O(i)``-``N(i+4)`` hbond edge in chain A as ``(O node, N node)``."""
     for u, v in get_edges_by_bond_type(g, "hbond"):
         if g.nodes[u]["atom_type"] == "N":

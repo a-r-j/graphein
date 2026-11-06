@@ -11,7 +11,7 @@ import os
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel, validator
@@ -114,12 +114,12 @@ GraphAtoms = Literal[
 GranularityOpts = Literal["atom", "centroids"]
 """Allowable granularity options for nodes in the graph."""
 
-AltLocsOpts = Union[
-    bool,
-    Literal[
+AltLocsOpts = (
+    bool
+    | Literal[
         "max_occupancy", "min_occupancy", "first", "last", "exclude", "include"
-    ],
-]
+    ]
+)
 """Allowable altlocs options for alternative locations handling."""
 
 

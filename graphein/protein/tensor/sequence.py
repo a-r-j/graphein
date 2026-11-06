@@ -5,7 +5,7 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from functools import lru_cache
+from functools import cache
 
 import pandas as pd
 from loguru import logger as log
@@ -191,7 +191,7 @@ def residue_type_tensor(
     return residues
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_atom_indices(
     invert: bool = False,
 ) -> dict[str, tuple[int, ...]] | dict[tuple[int, ...], str]:

@@ -316,7 +316,6 @@ class GraphFormatConvertor:
                     data[key] = torch.tensor(np.array(val))
             except Exception as e:
                 log.warning(e)
-                pass
 
         # Construct PyG data
         data = Data.from_dict(data)

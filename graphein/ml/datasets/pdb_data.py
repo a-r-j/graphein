@@ -571,8 +571,7 @@ class PDBManager:
         with open(self.root_dir / self.pdb_availability_filename) as f:
             ids = f.read().splitlines()
         log.info(f"Found {len(ids)} PDB files unavailable for download.")
-        ids = dict.fromkeys(ids, False)
-        return ids
+        return dict.fromkeys(ids, False)
 
     def _parse_uniprot_id(self) -> dict[str, str]:
         """Parse the uniprot ID for all PDB chains.
@@ -1293,10 +1292,8 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         df = splits_df.groupby("pdb").filter(
             lambda group: all(
-                [
-                    molecule_type_to_group in group["molecule_type"].values
-                    for molecule_type_to_group in molecule_types_to_group
-                ]
+                molecule_type_to_group in group["molecule_type"].values
+                for molecule_type_to_group in molecule_types_to_group
             )
         )
         if update:
@@ -1885,9 +1882,7 @@ class PDBManager:
         }
 
         to_download = [
-            k
-            for k in df.keys()
-            if f"{k}.{self.structure_format}" not in downloaded
+            k for k in df if f"{k}.{self.structure_format}" not in downloaded
         ]
         if to_download:
             log.info(f"Downloading {len(to_download)} PDB files...")

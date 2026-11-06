@@ -88,10 +88,11 @@ def aggregate_feature_over_residues(
     func = parse_aggregation_type(aggregation_type)
 
     for c in G.graph["chain_ids"]:
-        chain_features = []
-        for n in G.nodes:
-            if G.nodes[n]["chain_id"] == c:
-                chain_features.append(G.nodes[n][feature_name])
+        chain_features = [
+            d[feature_name]
+            for _, d in G.nodes(data=True)
+            if d["chain_id"] == c
+        ]
         G.graph[f"{feature_name}_{aggregation_type}_{c}"] = func(
             chain_features, axis=0
         )
