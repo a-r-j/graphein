@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from deepdiff import DeepDiff
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, PositiveFloat, validator
 
 from graphein.protein.edges.distance import add_peptide_bonds
 from graphein.protein.features.nodes.amino_acid import meiler_embedding
@@ -257,7 +257,13 @@ class ProteinMeshConfig(BaseModel):
     :param pymol_commands: List of Commands passed to PyMol in surface
         construction.
     :type pymol_commands: List[str], optional
+    :param max_wait_seconds: Seconds to wait for each step of mesh creation:
+        the PyMOL server starting, each call to it, and the ``.obj`` file
+        being written. This is not a limit on the total time. ``None`` waits
+        indefinitely.
+    :type max_wait_seconds: float | None
     """
 
     pymol_command_line_options: str | None = "-cKq"
     pymol_commands: list[str] | None = ["show surface"]
+    max_wait_seconds: PositiveFloat | None = 600.0
