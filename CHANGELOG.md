@@ -2,6 +2,9 @@
 
 #### New Features
 
+* Add the `hydrophobicity` node feature and `residue_hydrophobicity`, with five hydrophobicity scales from UCSF Chimera (`HYDROPHOBICITY_SCALES`: Kyte-Doolittle `kd`, Wimley-White `ww`, Hessa `hh`, Moon-Fleming `mf` and Zhao-London `tt`). Modified residues use their parent's value (e.g. `MSE` uses `MET`). [#197](https://github.com/a-r-j/graphein/pull/197)
+* `asteroid_plot` can size (`size_nodes_by`, `node_size_min`, `node_size_multiplier`) and colour (`colour_nodes_by`) nodes by degree, sequence position, RSA, B-factor, distance to the centre node, a Meiler dimension (`"meiler-1"` to `"meiler-7"`), hydrophobicity (`"hydrophobicity"`, `"ww-hydrophobicity"` or `"hydrophobicity_ww"`) or any numeric node feature. `plotly_protein_structure_graph`'s `node_size_feature` accepts the same features. Sizes are clipped at 0. [#197](https://github.com/a-r-j/graphein/pull/197)
+* Add `get_node_attribute_names`, `get_edge_attribute_names` and `get_graph_attribute_names` to `graphein.utils.utils`. [#197](https://github.com/a-r-j/graphein/pull/197)
 * Add `graphein.protein.tensor.dssp`: optimised NumPy and PyTorch implementations of [PyDSSP](https://github.com/ShintaroMinami/PyDSSP) (`assign_dssp`, `get_hbond_map`, `assign_dssp_np`, `get_hbond_map_np`) for tensor-based protein representations. Up to ~10x (NumPy) and ~4x (PyTorch) faster than PyDSSP, with identical assignments. Also adds full 8-state DSSP (`assign_dssp8`, `assign_dssp8_np`; H, B, E, G, I, T, S, loop) matching mkdssp 4.6.1, and DSSP solvent accessibility (`accessibility`, `accessibility_np`) matching mkdssp 4.6.1. [#483](https://github.com/a-r-j/graphein/pull/483)
 * DSSP node features (`secondary_structure`, `rsa`, `asa`, `phi`, `psi`, `dssp_df`) are now computed natively (`graphein.protein.features.nodes.dssp.compute_dssp_df`), so `mkdssp` is no longer required. Output columns are unchanged and values match mkdssp 4.6.1, except that polyproline (`P`) is reported as loop and, for atoms with alternate locations, only the highest-occupancy conformer is used. `DSSPConfig` is deprecated and ignored (passing one gives a `FutureWarning`). DSSP runs on the structure in file order, so residue numbering that doesn't increase along a chain (e.g. a T4 lysozyme insertion numbered 1001+) and chain order are handled as by mkdssp, and a change of chain ID is a chain break. `G.graph["dssp_df"]` is indexed by node ID and holds the residues that are graph nodes, matched by chain, residue number and insertion code, so nodes whose ID carries an alt_loc label (e.g. `A:SER:10:A`) get their features, and with `insertions=False` residue 52 no longer gets 52A's. Waters or ligands numbered like a protein residue are not merged into it, and hydrogens are ignored even when the element column is blank. H-bond candidates come from a KD-tree rather than an L x L distance matrix, so large assemblies don't run out of memory. This also fixes disulfide-bonded cysteines losing their DSSP features (mkdssp reports them as lowercase codes, which did not map to residue names), and PDB files whose headers mkdssp 4 rejects. Modified residues peptide-bonded into a chain (e.g. `MSE`) now keep their own name in the `aa` column rather than their parent's (`MET`); `rsa` still uses the parent's maximum accessibility. [#483](https://github.com/a-r-j/graphein/pull/483)
 * Add `add_bond_type_one_hot` edge feature for molecules. Fixes [#430](https://github.com/a-r-j/graphein/issues/430)
@@ -330,8 +333,6 @@
 * [Bugfix] - [#208](https://github.com/a-r-j/graphein/pull/208) explicitly installs `jupyter_contrib_nbextensions` in Docker.
 
 ### 1.5.1
-* [Feature] - [#197](https://github.com/a-r-j/graphein/pull/197/) adds support for sizing and colouring nodes in asteroid plots
-* [Feature] - [#197](https://github.com/a-r-j/graphein/pull/197/) adds utilities for retrieving a list of graph/node/edge attribute names in `graphein.utils.utils`.
 
 #### Protein
 
@@ -340,7 +341,6 @@
 * [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) adds support for: van der waals interactions, vdw clashes, pi-stacking interactions, t_stacking interactions, backbone carbonyl-carbonyl interactions, salt bridges
 * [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) adds a `residue_id` column to PDB dfs to enable easier accounting in atom graphs.
 * [Feature] - [#189](https://github.com/a-r-j/graphein/pull/189/) refactors torch geometric datasets to use parallelised download for faster dataset preparation.
-
 
 #### Bugfixes
 

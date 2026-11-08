@@ -1,5 +1,7 @@
 """Tests for graphein.utils.utils"""
 
+import networkx as nx
+
 from graphein.protein.graphs import construct_graph
 from graphein.utils.utils import (
     get_edge_attribute_names,
@@ -13,7 +15,7 @@ def test_get_graph_attribute_names():
     DEFAULT_ATTRS = [
         "name",
         "pdb_code",
-        "pdb_path",
+        "path",
         "chain_ids",
         "pdb_df",
         "raw_pdb_df",
@@ -25,9 +27,9 @@ def test_get_graph_attribute_names():
         "dist_mat",
     ]
     graph_attrs = get_graph_attribute_names(g)
-    assert set(graph_attrs) == set(
-        DEFAULT_ATTRS
-    ), "Graph attributes do not match expected attributes."
+    assert set(graph_attrs) == set(DEFAULT_ATTRS), (
+        "Graph attributes do not match expected attributes."
+    )
 
 
 def test_get_node_attribute_names():
@@ -43,15 +45,27 @@ def test_get_node_attribute_names():
         "meiler",
     ]
     node_attrs = get_node_attribute_names(g)
-    assert set(node_attrs) == set(
-        DEFAULT_ATTRS
-    ), "Node attributes do not match expected attributes."
+    assert set(node_attrs) == set(DEFAULT_ATTRS), (
+        "Node attributes do not match expected attributes."
+    )
 
 
 def test_get_edge_attribute_names():
     g = construct_graph(pdb_code="3eiy")
     DEFAULT_ATTRS = ["kind", "distance"]
     edge_attrs = get_edge_attribute_names(g)
-    assert set(edge_attrs) == set(
-        DEFAULT_ATTRS
-    ), "Edge attributes do not match expected attributes."
+    assert set(edge_attrs) == set(DEFAULT_ATTRS), (
+        "Edge attributes do not match expected attributes."
+    )
+
+
+def test_attribute_names_with_differing_attributes():
+    # Nodes and edges often carry different attributes, e.g. edges from
+    # different edge functions.
+    g = nx.Graph()
+    g.add_node(1, a=1)
+    g.add_node(2, a=1, b=2)
+    g.add_edge(1, 2, kind={"peptide_bond"})
+    g.add_edge(2, 3, kind={"hbond"}, distance=3.0)
+    assert sorted(get_node_attribute_names(g)) == ["a", "b"]
+    assert sorted(get_edge_attribute_names(g)) == ["distance", "kind"]

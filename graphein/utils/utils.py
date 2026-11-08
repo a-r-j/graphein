@@ -358,7 +358,7 @@ def ping(host: str) -> bool:
     return subprocess.call(command) == 0
 
 
-def get_node_attribute_names(g: nx.Graph) -> List[str]:
+def get_node_attribute_names(g: nx.Graph) -> list[str]:
     """Returns a list of node attribute names present within a graph.
 
     :param g: Networkx Graph.
@@ -367,12 +367,10 @@ def get_node_attribute_names(g: nx.Graph) -> List[str]:
     :rtype: List[str]
     """
 
-    return list(
-        set(np.array([list(g.nodes[n].keys()) for n in g.nodes()]).flatten())
-    )
+    return list(set().union(*(d.keys() for _, d in g.nodes(data=True))))
 
 
-def get_edge_attribute_names(g: nx.Graph) -> List[str]:
+def get_edge_attribute_names(g: nx.Graph) -> list[str]:
     """Returns a list of edge attribute names present within a graph.
 
     :param g: Networkx Graph.
@@ -380,16 +378,10 @@ def get_edge_attribute_names(g: nx.Graph) -> List[str]:
     :returns: List of edge attribute names
     :rtype: List[str]
     """
-    return list(
-        set(
-            np.array(
-                [list(g.edges[u, v].keys()) for u, v in g.edges()]
-            ).flatten()
-        )
-    )
+    return list(set().union(*(d.keys() for _, _, d in g.edges(data=True))))
 
 
-def get_graph_attribute_names(g: nx.Graph) -> List[str]:
+def get_graph_attribute_names(g: nx.Graph) -> list[str]:
     """Returns a list of graph attribute names present within a graph.
 
     :param g: Networkx Graph.

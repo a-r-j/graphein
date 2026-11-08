@@ -14,9 +14,10 @@ We also include mappings of covalent radii and bond lengths for the amino acids 
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
+from typing import Literal
+
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from typing_extensions import Literal
 
 BACKBONE_ATOMS: list[str] = ["N", "CA", "C", "O"]
 """Atoms present in Amino Acid Backbones."""
@@ -1111,7 +1112,7 @@ https://pubs.acs.org/doi/10.1021/j100785a001
 HYDROPHOBICITY_TYPE = Literal["kd", "ww", "hh", "mf", "tt"]
 """Supported hydrophobicity types. See :const:`~graphein.protein.resi_atoms.HYDROPHOBICITY_SCALES` for further details."""
 
-HYDROPHOBICITY_SCALES: Dict[str, Dict[str, float]] = {
+HYDROPHOBICITY_SCALES: dict[str, dict[str, float]] = {
     "kd": {  # kdHydrophobicity (a)
         "ILE": 4.5,
         "VAL": 4.2,
