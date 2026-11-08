@@ -490,6 +490,108 @@ def test_alt_loc_inclusion():
     # TODO Test on other PDBs where altlocs are of the same residues
 
 
+def _alt_loc_df(occupancy_a: float, occupancy_b: float, n_atoms: int = 20):
+    """One residue with a blank-``alt_loc`` backbone and a side chain in two
+    conformers, ``A`` and ``B``, listed atom by atom as in PDB files."""
+    rows = [(atom, "") for atom in ("N", "CA", "C", "O")]
+    rows += [(f"X{i}", alt) for i in range(n_atoms) for alt in "AB"]
+    occupancy = {"": 1.0, "A": occupancy_a, "B": occupancy_b}
+    return pd.DataFrame(
+        {
+            "record_name": "ATOM",
+            "atom_number": np.arange(1, len(rows) + 1),
+            "atom_name": [atom for atom, _ in rows],
+            "alt_loc": [alt for _, alt in rows],
+            "residue_name": "LYS",
+            "chain_id": "A",
+            "residue_number": 1,
+            "insertion": "",
+            "x_coord": 0.0,
+            "y_coord": 0.0,
+            "z_coord": 0.0,
+            "occupancy": [occupancy[alt] for _, alt in rows],
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    "keep,occupancies,expected",
+    [
+        ("max_occupancy", (0.5, 0.5), "A"),
+        ("min_occupancy", (0.5, 0.5), "A"),
+        ("max_occupancy", (0.4, 0.6), "B"),
+        ("min_occupancy", (0.4, 0.6), "A"),
+        ("first", (0.5, 0.5), "A"),
+        ("last", (0.5, 0.5), "B"),
+    ],
+)
+def test_remove_alt_locs_keeps_one_conformer(keep, occupancies, expected):
+    """Atoms are not picked from different conformers, even when the
+    conformers' occupancies are tied, and file order is kept."""
+    df = _alt_loc_df(*occupancies)
+    out = remove_alt_locs(df, keep=keep)
+    assert set(out["alt_loc"]) == {"", expected}
+    assert len(out) == 4 + 20
+    assert out["atom_number"].is_monotonic_increasing
+
+
+@pytest.mark.parametrize(
+    "keep,expected",
+    [
+        ("max_occupancy", "A"),
+        ("min_occupancy", "B"),
+        ("first", "A"),
+        ("last", "B"),
+    ],
+)
+def test_remove_alt_locs_conformer_not_atom(keep, expected):
+    """The conformer is chosen per residue, not per atom: here conformer
+    ``B`` has the higher occupancy for one atom and is a different residue
+    with an atom ``A`` lacks (microheterogeneity, e.g. Pro/Ser)."""
+    df = _alt_loc_df(0.6, 0.4, n_atoms=4)
+    df.loc[(df["atom_name"] == "X0") & (df["alt_loc"] == "B"), "occupancy"] = (
+        0.7
+    )
+    extra = df.iloc[[-1]].assign(
+        atom_name="OG", alt_loc="B", residue_name="SER", atom_number=99
+    )
+    df = pd.concat([df, extra], ignore_index=True)
+    out = remove_alt_locs(df, keep=keep)
+    assert set(out["alt_loc"]) == {"", expected}
+    assert ("OG" in set(out["atom_name"])) == (expected == "B")
+
+
+def test_remove_alt_locs_exclude():
+    """``"exclude"`` drops every atom with an ``alt_loc``, including atoms
+    found in only one conformer."""
+    df = _alt_loc_df(0.5, 0.5, n_atoms=4)
+    df = pd.concat(
+        [df, df.iloc[[-1]].assign(atom_name="OG", atom_number=99)],
+        ignore_index=True,
+    )
+    out = remove_alt_locs(df, keep="exclude")
+    assert out["atom_name"].tolist() == ["N", "CA", "C", "O"]
+
+
+@pytest.mark.parametrize("pdb_code", ["1AKE", "3NIR"])
+def test_alt_locs_not_mixed_within_residue(pdb_code):
+    """1AKE has side chains in two conformers at 0.5 occupancy each (e.g.
+    Arg167). 3NIR has per-atom occupancies and Pro/Ser microheterogeneity
+    (A22). Each residue must keep atoms from one conformer only."""
+    config = ProteinGraphConfig(
+        granularity="atom", edge_construction_functions=[]
+    )
+    g = construct_graph(config=config, pdb_code=pdb_code)
+    df = g.graph["pdb_df"]
+    conformers = (
+        df.loc[df["alt_loc"] != ""]
+        .groupby(["chain_id", "residue_number", "insertion"])["alt_loc"]
+        .nunique()
+    )
+    assert not conformers.empty
+    assert (conformers == 1).all(), conformers[conformers > 1]
+
+
 def test_edges_do_not_add_nodes_for_chain_subset():
     new_funcs = {
         "edge_construction_functions": [
