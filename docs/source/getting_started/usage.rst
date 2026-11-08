@@ -11,6 +11,12 @@ Graphein has a simple command line interface to get started and convert PDB file
 
     graphein -c config.yaml -p path/to/pdbs -o path/to/output
 
+``-c`` also accepts the name of a config that ships with Graphein. List them with ``graphein --list-configs``:
+
+.. code-block:: bash
+
+    graphein -c ca_distance_10 -p path/to/pdbs -o path/to/output
+
 YAML Config
 ---------------------
 A ``.yaml`` config file can be specified to specify any of the config objects. To specify functions, use the ``!func:`` tag. To specify one of the config objects defined in graphein use the format ``!<config_name>`` (e.g. ``!ProteinGraphConfig``).
