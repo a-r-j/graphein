@@ -212,9 +212,7 @@ def parse_RegNetwork(
     df["g2"] = df["g2"].combine_first(df["target"])
 
     # Select input genes
-    df = df[df["g1"].isin(gene_list) & df["g2"].isin(gene_list)]
-
-    return df
+    return df[df["g1"].isin(gene_list) & df["g2"].isin(gene_list)]
 
 
 def filter_RegNetwork(
@@ -285,6 +283,4 @@ def RegNetwork_df(
     """
     df = parse_RegNetwork(gene_list=gene_list, root_dir=root_dir)
     df = filter_RegNetwork(df, filtering_funcs)
-    df = standardise_RegNetwork(df)
-
-    return df
+    return standardise_RegNetwork(df)

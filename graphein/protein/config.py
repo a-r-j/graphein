@@ -11,7 +11,7 @@ import os
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel, validator
@@ -27,6 +27,11 @@ except ImportError:
 
 
 class DSSPConfig(BaseModel):
+    """Deprecated and ignored: DSSP is computed natively (see
+    :func:`graphein.protein.features.nodes.dssp.compute_dssp_df`), so the
+    ``mkdssp`` executable is no longer needed. Kept so existing configs
+    still load."""
+
     executable: str = "mkdssp"
 
 
@@ -109,12 +114,12 @@ GraphAtoms = Literal[
 GranularityOpts = Literal["atom", "centroids"]
 """Allowable granularity options for nodes in the graph."""
 
-AltLocsOpts = Union[
-    bool,
-    Literal[
+AltLocsOpts = (
+    bool
+    | Literal[
         "max_occupancy", "min_occupancy", "first", "last", "exclude", "include"
-    ],
-]
+    ]
+)
 """Allowable altlocs options for alternative locations handling."""
 
 
@@ -184,10 +189,8 @@ class ProteinGraphConfig(BaseModel):
         ``GetContacts`` for computing intramolecular contact-based edges.
         Defaults to ``None``.
     :type get_contacts_config: GetContactsConfig, optional
-    :param dssp_config: Config Object containing reference to ``DSSP``
-        executable. Defaults to ``None``. **NB** DSSP must be installed. See
-        installation instructions:
-        https://graphein.ai/getting_started/installation.html#optional-dependencies
+    :param dssp_config: Deprecated and ignored; DSSP features are computed
+        natively. Defaults to ``None``.
     :type dssp_config: DSSPConfig, optional
     """
 

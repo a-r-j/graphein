@@ -71,6 +71,15 @@ def subset_structure_to_rna(
     )
 
 
+def _concat_in_file_order(atomic_df) -> pd.DataFrame:
+    """Joins biopandas' ``ATOM`` and ``HETATM`` frames in file order (by atom
+    serial, which mmCIF and MMTF keep unique), so modified residues such as
+    ``MSE`` stay in place in their chain rather than after all ``ATOM``s."""
+    df = pd.concat([atomic_df.df["ATOM"], atomic_df.df["HETATM"]])
+    df = df.sort_values("atom_number", kind="stable")
+    return df.reset_index(drop=True)
+
+
 def read_pdb_to_dataframe(
     path: str | os.PathLike | None = None,
     pdb_code: str | None = None,
@@ -110,16 +119,12 @@ def read_pdb_to_dataframe(
         elif path.endswith((".mmtf", ".mmtf.gz")):
             atomic_df = PandasMmtf().read_mmtf(path)
             atomic_df = atomic_df.get_model(model_index)
-            atomic_df = pd.concat(
-                [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
-            )
+            atomic_df = _concat_in_file_order(atomic_df)
         elif path.endswith((".cif", ".cif.gz", ".mmcif", ".mmcif.gz")):
             atomic_df = PandasMmcif().read_mmcif(path)
             atomic_df = atomic_df.get_model(model_index)
             atomic_df = atomic_df.convert_to_pandas_pdb()
-            atomic_df = pd.concat(
-                [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
-            )
+            atomic_df = _concat_in_file_order(atomic_df)
         else:
             raise ValueError(
                 f"File {path} must be either .pdb(.gz), .mmtf(.gz), .(mm)cif(.gz) or .ent, not {path.split('.')[-1]}"
@@ -490,9 +495,7 @@ def process_dataframe(
 
     # Sort dataframe to place HETATMs and reset index
     protein_df = sort_dataframe(protein_df)
-    protein_df = protein_df.reset_index(drop=True)
-
-    return protein_df
+    return protein_df.reset_index(drop=True)
 
 
 def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:

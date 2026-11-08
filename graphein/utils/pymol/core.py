@@ -45,14 +45,14 @@ class MolViewer:
 
         self._process = subprocess.Popen([exe, "-R"] + list(args))
 
-        self._server = Server(uri="http://%s:%d/RPC2" % (self.host, self.port))
+        self._server = Server(uri=f"http://{self.host}:{self.port}/RPC2")
 
         # wait for the server
         while True:
             try:
                 self._server.bg_color("white")
                 break
-            except IOError:
+            except OSError:
                 time.sleep(0.1)
 
     def stop(self):

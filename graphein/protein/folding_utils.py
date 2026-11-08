@@ -62,8 +62,7 @@ def _get_model(model: str = "v1") -> torch.nn.Module:
     elif model == "v0":
         model = esm.pretrained.esmfold_v0()
 
-    model = model.eval().cuda()
-    return model
+    return model.eval().cuda()
 
 
 def esmfold(sequence: str, out_path: str):

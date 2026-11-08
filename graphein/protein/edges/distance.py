@@ -1375,10 +1375,7 @@ def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
     """
     ring_atom_df = filter_dataframe(dataframe, "residue_name", [aa], True)
 
-    ring_atom_df = filter_dataframe(
-        ring_atom_df, "atom_name", AA_RING_ATOMS[aa], True
-    )
-    return ring_atom_df
+    return filter_dataframe(ring_atom_df, "atom_name", AA_RING_ATOMS[aa], True)
 
 
 def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:

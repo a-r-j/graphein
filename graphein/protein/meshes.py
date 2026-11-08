@@ -211,8 +211,7 @@ def normalize_and_center_mesh_vertices(
     center = verts.mean()
     verts = verts - center
     scale = max(verts.abs().max(0)[0])
-    verts = verts / scale
-    return verts
+    return verts / scale
 
 
 @requires_python_libs("torch", "pytorch3d")

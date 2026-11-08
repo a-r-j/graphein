@@ -99,8 +99,7 @@ def expasy_protein_scale(
         features = np.array(features)
 
     if add_separate:
-        for k, v in features.to_dict().items():
-            d[k] = v
+        d.update(features.to_dict())
     else:
         d["expasy"] = features
 
@@ -205,10 +204,7 @@ def hydrogen_bond_donor(
 
     # Hack to determine graph type
     # If last ID component is atom type, assume graph is atomic
-    if n.split(":")[-1] == d["atom_type"]:
-        granularity = "atom"
-    else:
-        granularity = "residue"
+    granularity = "atom" if n.split(":")[-1] == d["atom_type"] else "residue"
 
     if granularity == "atom":  # Atomic graph
         atom = d["atom_type"]
@@ -253,10 +249,7 @@ def hydrogen_bond_acceptor(
     res = d["residue_name"]
     # Hack to determine graph type
     # If last ID component is atom type, assume graph is atomic
-    if n.split(":")[-1] == d["atom_type"]:
-        granularity = "atom"
-    else:
-        granularity = "residue"
+    granularity = "atom" if n.split(":")[-1] == d["atom_type"] else "residue"
 
     if granularity == "atom":  # Atomic graph
         atom = d["atom_type"]

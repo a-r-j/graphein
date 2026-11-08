@@ -84,9 +84,7 @@ def parse_TRRUST(
     """
     df = load_TRRUST(root_dir=root_dir)
     # Select input genes
-    df = df[df["g1"].isin(gene_list) & df["g2"].isin(gene_list)]
-
-    return df
+    return df[df["g1"].isin(gene_list) & df["g2"].isin(gene_list)]
 
 
 def filter_TRRUST(
@@ -152,6 +150,4 @@ def TRRUST_df(
     """
     df = parse_TRRUST(gene_list=gene_list)
     df = filter_TRRUST(df, filtering_funcs)
-    df = standardise_TRRUST(df)
-
-    return df
+    return standardise_TRRUST(df)

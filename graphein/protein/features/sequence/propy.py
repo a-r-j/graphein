@@ -1817,11 +1817,9 @@ def quasi_sequence_order_aa_composition(G: nx.Graph) -> nx.Graph:
     from propy.QuasiSequenceOrder import GetAAComposition
 
     func = GetAAComposition
-    G = compute_feature_over_chains(
+    return compute_feature_over_chains(
         G, func, feature_name="quasi_seq_order_aa_composition"
     )
-
-    return G
 
 
 def quasi_sequence_order(
@@ -1845,10 +1843,9 @@ def quasi_sequence_order(
     from propy.QuasiSequenceOrder import GetQuasiSequenceOrder
 
     func = partial(GetQuasiSequenceOrder, weight=weight, maxlag=maxlag)
-    G = compute_feature_over_chains(
+    return compute_feature_over_chains(
         G, func, feature_name="quasi_sequence_order"
     )
-    return G
 
 
 def sequence_order_coupling_number_total(
@@ -1870,11 +1867,9 @@ def sequence_order_coupling_number_total(
     from propy.QuasiSequenceOrder import GetSequenceOrderCouplingNumberTotal
 
     func = partial(GetSequenceOrderCouplingNumberTotal, maxlag=maxlag)
-    G = compute_feature_over_chains(
+    return compute_feature_over_chains(
         G, func, feature_name="sequence_order_coupling_number_total"
     )
-
-    return G
 
 
 # TODO feature aggregation

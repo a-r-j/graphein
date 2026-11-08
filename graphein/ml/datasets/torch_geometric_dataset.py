@@ -271,11 +271,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
 
         if self.chain_selection_map:
             chain_selections = [
-                (
-                    self.chain_selection_map[pdb]
-                    if pdb in self.chain_selection_map
-                    else "all"
-                )
+                (self.chain_selection_map.get(pdb, "all"))
                 for pdb in self.structures
             ]
         else:
