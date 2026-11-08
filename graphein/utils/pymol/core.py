@@ -1,5 +1,6 @@
 import contextlib
 import os
+import socket
 import subprocess
 import tempfile
 import time
@@ -34,9 +35,15 @@ class MolViewer:
         self._timeout = None
 
     def __del__(self):
-        self.stop()
+        # Don't wait for PyMOL to exit: this can run at interpreter shutdown
+        with contextlib.suppress(Exception):
+            if self._process_is_running():
+                self._process.terminate()
 
     def __getattr__(self, key):
+        # Protocol probes (copy, pickle, hasattr) aren't PyMOL commands
+        if key.startswith("_"):
+            raise AttributeError(key)
         if not self._process_is_running():
             self.start(self._start_args, timeout=self._timeout)
 
@@ -64,6 +71,11 @@ class MolViewer:
     def _process_is_running(self):
         return self._process is not None and self._process.poll() is None
 
+    def _port_in_use(self):
+        with socket.socket() as s:
+            s.settimeout(1)
+            return s.connect_ex((self.host, self.port)) == 0
+
     @requires_external_dependencies("pymol")
     def start(self, args=("-Q",), exe="pymol", timeout=None):
         """Start the PyMOL RPC server and connect to it
@@ -79,26 +91,47 @@ class MolViewer:
         :param timeout: Seconds to wait for the server to start, and for
             each later call to it. ``None`` waits indefinitely.
         :type timeout: float | None
-        :raises RuntimeError: if PyMOL exits before the server is up.
+        If PyMOL is already running with the same ``args``, only the timeout
+        is updated. With different ``args``, it is restarted.
+
+        :raises RuntimeError: if PyMOL exits before the server is up, or
+            another server already holds the port.
         :raises TimeoutError: if the server is not up after ``timeout``
             seconds.
         """
-        if self._process_is_running():
-            print("A PyMOL RPC server is already running.")
-            return
-
         assert isinstance(args, (list, tuple))
+
+        if self._process_is_running():
+            if list(args) == self._start_args:
+                self._timeout = timeout
+                self._connect(timeout)
+                return
+            self.stop()
+
+        # PyMOL moves to another port if this one is taken, so we would
+        # talk to (and time out on) the other server, not our child.
+        if self._port_in_use():
+            raise RuntimeError(
+                f"Port {self.port} on {self.host} is already in use, likely "
+                "by a PyMOL left running from another session. Stop it first."
+            )
 
         # Used to restart PyMOL the same way if it dies
         self._start_args, self._timeout = list(args), timeout
         self._process = subprocess.Popen([exe, "-R"] + list(args))
-        self._connect(timeout)
 
-        # wait for the server
+        # wait for the server, giving each probe only the time remaining
         start_time = time.monotonic()
         while True:
+            remaining = (
+                None
+                if timeout is None
+                else max(timeout - (time.monotonic() - start_time), 0.01)
+            )
+            self._connect(remaining)
             try:
                 self._server.bg_color("white")
+                self._connect(timeout)
                 break
             except OSError:
                 if self._process.poll() is not None:

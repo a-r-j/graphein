@@ -1,7 +1,10 @@
 """Tests for graphein.protein.meshes."""
 
+import os
 import socket
 import subprocess
+import threading
+import time
 
 import pydantic
 import pytest
@@ -25,7 +28,7 @@ def test_wait_for_obj_file_returns_when_file_is_found(tmp_path, pymol_running):
 
 
 def test_wait_for_obj_file_raises_timeout(tmp_path, pymol_running):
-    with pytest.raises(TimeoutError, match="missing.obj not found"):
+    with pytest.raises(TimeoutError, match="missing.obj not written"):
         meshes.wait_for_obj_file(
             str(tmp_path / "missing.obj"), max_wait_seconds=0.2
         )
@@ -185,11 +188,11 @@ def test_restart_reuses_start_args_and_timeout(monkeypatch):
 
     def fake_start(args, timeout=None):
         calls.append((list(args), timeout))
-        v._server = object()
+        v._server = FakeViewer()
 
     monkeypatch.setattr(v, "start", fake_start)
     v._start_args, v._timeout = ["-cq"], 5.0
-    v.__getattr__("__class__")
+    v.load("model.pdb")
     assert calls == [(["-cq"], 5.0)]
 
 
@@ -216,3 +219,137 @@ def test_stop_waits_for_exit_and_forgets_process():
     v.stop()
     assert process.returncode == -9
     assert v._process is None
+
+
+class AliveProcess:
+    returncode = None
+
+    def __init__(self):
+        self.terminated = False
+
+    def poll(self):
+        return self.returncode
+
+    def terminate(self):
+        self.terminated = True
+        self.returncode = -15
+
+    def wait(self, timeout=None):
+        return self.returncode
+
+    def kill(self):
+        self.returncode = -9
+
+
+def free_port():
+    with socket.socket() as s:
+        s.bind(("localhost", 0))
+        return s.getsockname()[1]
+
+
+def test_start_applies_new_timeout_to_running_pymol(monkeypatch):
+    v = core.MolViewer(port=free_port())
+    v._process, v._start_args, v._timeout = AliveProcess(), ["-cKq"], 600.0
+    timeouts = []
+    monkeypatch.setattr(
+        v, "_connect", lambda timeout: timeouts.append(timeout)
+    )
+    core.MolViewer.start.__wrapped__(v, ["-cKq"], timeout=None)
+    assert v._timeout is None
+    assert timeouts == [None]
+    assert not v._process.terminated
+
+
+def test_start_restarts_pymol_with_new_options(monkeypatch):
+    v = core.MolViewer(port=free_port())
+    old = v._process = AliveProcess()
+    v._start_args = ["-cKq"]
+    launched = []
+
+    class UpServer:
+        def __init__(self, uri, **kwargs):
+            pass
+
+        def bg_color(self, colour):
+            pass
+
+    def popen(cmd):
+        launched.append(cmd)
+        return AliveProcess()
+
+    monkeypatch.setattr(core.subprocess, "Popen", popen)
+    monkeypatch.setattr(core, "Server", UpServer)
+    core.MolViewer.start.__wrapped__(v, ["-cq"], timeout=1.0)
+    assert old.terminated
+    assert launched == [["pymol", "-R", "-cq"]]
+
+
+def test_start_refuses_port_held_by_another_server(monkeypatch):
+    with socket.socket() as listener:
+        listener.bind(("localhost", 0))
+        listener.listen()
+        v = core.MolViewer(port=listener.getsockname()[1])
+        launched = []
+        monkeypatch.setattr(
+            core.subprocess, "Popen", lambda cmd: launched.append(cmd)
+        )
+        with pytest.raises(RuntimeError, match="already in use"):
+            core.MolViewer.start.__wrapped__(v, timeout=1.0)
+        assert not launched
+
+
+def test_start_timeout_includes_slow_probes(monkeypatch):
+    # The server isn't up for 0.3 s, then accepts but never answers.
+    port = free_port()
+    listener = socket.socket()
+
+    def come_up_hung():
+        time.sleep(0.3)
+        listener.bind(("localhost", port))
+        listener.listen()
+
+    v = core.MolViewer(port=port)
+    monkeypatch.setattr(core.subprocess, "Popen", lambda cmd: AliveProcess())
+    monkeypatch.setattr(core.MolViewer, "_port_in_use", lambda self: False)
+    threading.Thread(target=come_up_hung).start()
+    start = time.monotonic()
+    try:
+        with pytest.raises(TimeoutError):
+            core.MolViewer.start.__wrapped__(v, timeout=0.6)
+    finally:
+        listener.close()
+    assert time.monotonic() - start < 0.85
+
+
+def test_del_does_not_wait_for_pymol():
+    class SlowProcess(AliveProcess):
+        def wait(self, timeout=None):
+            raise AssertionError("__del__ must not block")
+
+    v = core.MolViewer()
+    process = v._process = SlowProcess()
+    v.__del__()
+    assert process.terminated
+
+
+def test_private_attribute_lookup_does_not_start_pymol(monkeypatch):
+    v = core.MolViewer()
+
+    def fail(*args, **kwargs):
+        raise AssertionError("PyMOL started")
+
+    monkeypatch.setattr(v, "start", fail)
+    assert not hasattr(v, "__deepcopy__")
+
+
+def test_obj_file_path_is_absolute(tmp_path, monkeypatch):
+    fake = FakeViewer()
+    monkeypatch.setattr(meshes, "viewer", fake)
+    monkeypatch.setattr(meshes, "configure_pymol_session", lambda _: None)
+    monkeypatch.setattr(meshes, "run_pymol_commands", lambda _: None)
+    monkeypatch.chdir(tmp_path)
+
+    obj_file = meshes.get_obj_file.__wrapped__(pdb_file="model.pdb")
+
+    assert obj_file == os.path.join(os.getcwd(), "model.obj")
+    assert ("do", f"save {obj_file}") in fake.commands

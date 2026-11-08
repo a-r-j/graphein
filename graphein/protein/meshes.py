@@ -114,7 +114,8 @@ def get_obj_file(
     # Load structure
     pymol.load(pdb_file) if pdb_file else pymol.fetch(pdb_code)
     # Create file_name
-    file_name = (
+    # Absolute, as PyMOL resolves relative paths against its own cwd
+    file_name = os.path.abspath(
         os.path.splitext(pdb_file)[0] + ".obj"
         if pdb_file
         else out_dir + pdb_code + ".obj"
@@ -199,13 +200,17 @@ def create_mesh(
     return verts, faces, aux
 
 
+OBJ_SETTLE_SECONDS = 1.0
+"""Seconds an ``.obj`` file's size must hold still to count as written."""
+
+
 def wait_for_obj_file(
     obj_file: str, max_wait_seconds: float | None = None
 ) -> None:
     """Waits for PyMOL to finish writing an ``.obj`` mesh file.
 
-    The file is taken as written once it is non-empty and its size is
-    unchanged between two checks 0.1 s apart, or once PyMOL has exited.
+    The file is taken as written once it is non-empty and its size has
+    not changed for ``OBJ_SETTLE_SECONDS``, or once PyMOL has exited.
     If the wait times out, the PyMOL process is stopped so that a hung
     session isn't reused.
 
@@ -221,15 +226,20 @@ def wait_for_obj_file(
     def size():
         return os.path.getsize(obj_file) if os.path.isfile(obj_file) else 0
 
-    # ponytail: size-stable heuristic, a write stalled >0.1 s mid-file
-    # passes. Have PyMOL save to a temporary name and rename it if needed.
-    start_time = time.monotonic()
+    # ponytail: PyMOL queues `save`, so there's no completion signal. A write
+    # stalled longer than OBJ_SETTLE_SECONDS passes; saving to a temporary
+    # name and renaming it in PyMOL would make this exact.
+    start_time = changed_at = time.monotonic()
     last_size = 0
     while True:
         current_size = size()
-        if current_size and current_size == last_size:
+        if current_size != last_size:
+            last_size, changed_at = current_size, time.monotonic()
+        elif (
+            current_size
+            and time.monotonic() - changed_at >= OBJ_SETTLE_SECONDS
+        ):
             return
-        last_size = current_size
         if not viewer._process_is_running():
             # PyMOL may have written the file and exited since the check
             if size():
@@ -241,7 +251,7 @@ def wait_for_obj_file(
         ):
             viewer.stop()
             raise TimeoutError(
-                f"{obj_file} not found after {max_wait_seconds} seconds"
+                f"{obj_file} not written after {max_wait_seconds} seconds"
             )
         time.sleep(0.1)
 
