@@ -822,17 +822,9 @@ def add_vdw_interactions(
     )
     dists = np.linalg.norm(coords[i] - coords[j], axis=1)
     keep = dists - (radii[i] + radii[j]) <= threshold
-    interacting_atoms = (i[keep], j[keep])
-    add_interacting_resis(g, interacting_atoms, df, [name])
-
     if remove_intraresidue:
-        for u, v in get_edges_by_bond_type(g, name):
-            u_id = "".join(u.split(":")[:-1])
-            v_id = "".join(v.split(":")[:-1])
-            if u_id == v_id:
-                g.edges[u, v]["kind"].remove(name)
-                if len(g.edges[u, v]["kind"]) == 0:
-                    g.remove_edge(u, v)
+        keep &= ~same_residue(df, i, j)
+    add_interacting_resis(g, (i[keep], j[keep]), df, [name])
 
 
 def add_vdw_clashes(
@@ -1538,6 +1530,30 @@ def node_coords(G: nx.Graph, n: str) -> tuple[float, float, float]:
     return x, y, z
 
 
+def same_residue(
+    dataframe: pd.DataFrame, i: np.ndarray, j: np.ndarray
+) -> np.ndarray:
+    """Whether the atoms in rows ``i`` and ``j`` of ``dataframe`` belong to
+    the same residue (chain, residue number and insertion code).
+
+    :param dataframe: Atomic dataframe, e.g. from
+        :func:`assign_atoms_to_nodes`.
+    :type dataframe: pd.DataFrame
+    :param i: Row labels of the first atom of each pair.
+    :type i: np.ndarray
+    :param j: Row labels of the second atom of each pair.
+    :type j: np.ndarray
+    :return: Boolean mask over the pairs.
+    :rtype: np.ndarray
+    """
+    same = np.ones(len(i), dtype=bool)
+    for col in ("chain_id", "residue_number", "insertion"):
+        if col in dataframe:
+            values = dataframe[col]
+            same &= values.loc[i].to_numpy() == values.loc[j].to_numpy()
+    return same
+
+
 def add_interacting_resis(
     G: nx.Graph,
     interacting_atoms: np.ndarray,
@@ -1579,8 +1595,14 @@ def add_interacting_resis(
     for k in kind:
         assert k in BOND_TYPES
 
-    resi1 = dataframe.loc[interacting_atoms[0], "node_id"].values
-    resi2 = dataframe.loc[interacting_atoms[1], "node_id"].values
+    i, j = (np.asarray(a) for a in interacting_atoms)
+    if G.graph.get("node_type") != "atom":
+        # Different nodes of one residue are its alt_loc conformers, which
+        # are alternatives and can't interact (they share atoms 0A apart)
+        keep = ~same_residue(dataframe, i, j)
+        i, j = i[keep], j[keep]
+    resi1 = dataframe.loc[i, "node_id"].values
+    resi2 = dataframe.loc[j, "node_id"].values
 
     interacting_resis = set(zip(resi1, resi2))
     log.info(f"Found {len(interacting_resis)} {kind} interactions.")

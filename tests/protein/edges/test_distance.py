@@ -1071,6 +1071,58 @@ def test_interactions_alt_loc_conformers(func, path):
 @pytest.mark.parametrize(
     "func,path", INTERACTION_FUNCTIONS, ids=INTERACTION_IDS
 )
+def test_interactions_no_edge_between_conformers(func, path):
+    """A residue's conformer nodes don't interact with each other.
+
+    Only ``u``'s CA gets a conformer B (0.3A away), so with
+    ``alt_locs="include"`` its other atoms belong to both ``u:A`` and
+    ``u:B``, 0A apart.
+    """
+    df, _, u, _ = _interaction_edge(func, path)
+    ca = _residue_atoms(df, u) & (df["atom_name"] == "CA")
+    copy = df.loc[ca].assign(alt_loc="B", occupancy=0.5)
+    copy["x_coord"] += 0.3
+    df.loc[ca, ["alt_loc", "occupancy"]] = ["A", 0.5]
+    df = pd.concat([df, copy], ignore_index=True)
+
+    g_alt = _interaction_graph(func, df, alt_locs="include")
+    assert {f"{u}:A", f"{u}:B"} <= set(g_alt)
+    assert not g_alt.has_edge(f"{u}:A", f"{u}:B")
+
+
+@pytest.mark.parametrize("granularity", ["CA", "atom"])
+def test_vdw_remove_intraresidue_keeps_interresidue_edges(granularity):
+    """Only edges within one residue are removed, not edges between
+    residues of the same type (e.g. two LEUs on one chain)."""
+
+    def build(remove_intraresidue):
+        func = partial(
+            add_vdw_interactions, remove_intraresidue=remove_intraresidue
+        )
+        config = ProteinGraphConfig(
+            granularity=granularity, edge_construction_functions=[func]
+        )
+        return construct_graph(config=config, path=str(DATA_PATH))
+
+    def residue(g, n):
+        return g.nodes[n]["chain_id"], g.nodes[n]["residue_number"]
+
+    g, g_all = build(True), build(False)
+    inter = {
+        frozenset(e)
+        for e in g_all.edges()
+        if residue(g_all, e[0]) != residue(g_all, e[1])
+    }
+    assert any(
+        g_all.nodes[u]["residue_name"] == g_all.nodes[v]["residue_name"]
+        for u, v in map(tuple, inter)
+    )
+    assert {frozenset(e) for e in g.edges()} == inter
+
+
+@pytest.mark.parametrize(
+    "func,path", INTERACTION_FUNCTIONS, ids=INTERACTION_IDS
+)
 def test_interactions_removed_insertions(func, path):
     """With ``insertions=False``, removed inserted residues add no edges.
 
