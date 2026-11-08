@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 import time
 from xmlrpc.client import ServerProxy as Server
+from xmlrpc.client import Transport
 
 from ..dependencies import requires_external_dependencies
 
@@ -11,20 +12,54 @@ HOST = os.environ.get("PYMOL_RPCHOST", "localhost")
 PORT = 9123
 
 
+class _TimeoutTransport(Transport):
+    """XML-RPC transport whose connections time out after ``timeout`` s."""
+
+    def __init__(self, timeout):
+        super().__init__()
+        self._timeout = timeout
+
+    def make_connection(self, host):
+        conn = super().make_connection(host)
+        conn.timeout = self._timeout
+        return conn
+
+
 class MolViewer:
     def __init__(self, host=HOST, port=PORT):
         self.host = host
         self.port = int(port)
         self._process = None
+        self._start_args = ["-cKQ"]
+        self._timeout = None
 
     def __del__(self):
         self.stop()
 
     def __getattr__(self, key):
         if not self._process_is_running():
-            self.start(["-cKQ"])
+            self.start(self._start_args, timeout=self._timeout)
 
-        return getattr(self._server, key)
+        method = getattr(self._server, key)
+
+        def call(*args):
+            try:
+                return method(*args)
+            except TimeoutError:
+                # Don't leave a hung PyMOL to be reused by the next call
+                self.stop()
+                raise
+
+        return call
+
+    def _connect(self, timeout=None):
+        """Create the XML-RPC client. Calls raise ``TimeoutError`` after
+        ``timeout`` seconds without a reply (``None`` waits indefinitely).
+        """
+        self._server = Server(
+            uri=f"http://{self.host}:{self.port}/RPC2",
+            transport=_TimeoutTransport(timeout),
+        )
 
     def _process_is_running(self):
         return self._process is not None and self._process.poll() is None
@@ -36,9 +71,17 @@ class MolViewer:
             >>> viewer.start(["-xiQ"])
         Start headless (-cK), with some output (-q):
             >>> viewer.start(["-cKq"])
-        Raises ``RuntimeError`` if PyMOL exits before the server is up and
-        ``TimeoutError`` if it is not up after ``timeout`` seconds
-        (``None`` waits indefinitely).
+
+        :param args: PyMOL command line options.
+        :type args: list[str] | tuple[str, ...]
+        :param exe: PyMOL executable.
+        :type exe: str
+        :param timeout: Seconds to wait for the server to start, and for
+            each later call to it. ``None`` waits indefinitely.
+        :type timeout: float | None
+        :raises RuntimeError: if PyMOL exits before the server is up.
+        :raises TimeoutError: if the server is not up after ``timeout``
+            seconds.
         """
         if self._process_is_running():
             print("A PyMOL RPC server is already running.")
@@ -46,9 +89,10 @@ class MolViewer:
 
         assert isinstance(args, (list, tuple))
 
+        # Used to restart PyMOL the same way if it dies
+        self._start_args, self._timeout = list(args), timeout
         self._process = subprocess.Popen([exe, "-R"] + list(args))
-
-        self._server = Server(uri=f"http://{self.host}:{self.port}/RPC2")
+        self._connect(timeout)
 
         # wait for the server
         start_time = time.monotonic()
@@ -75,6 +119,12 @@ class MolViewer:
     def stop(self):
         if self._process_is_running():
             self._process.terminate()
+            try:
+                self._process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self._process.kill()
+                self._process.wait()
+        self._process = None
 
     def display(self, width=0, height=0, ray=False, timeout=120):
         """Display PyMol session

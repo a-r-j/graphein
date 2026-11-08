@@ -115,7 +115,9 @@ def get_obj_file(
     pymol.load(pdb_file) if pdb_file else pymol.fetch(pdb_code)
     # Create file_name
     file_name = (
-        f"{pdb_file[:-3]}obj" if pdb_file else out_dir + pdb_code + ".obj"
+        os.path.splitext(pdb_file)[0] + ".obj"
+        if pdb_file
+        else out_dir + pdb_code + ".obj"
     )
 
     commands = parse_pymol_commands(config)
@@ -200,19 +202,44 @@ def create_mesh(
 def wait_for_obj_file(
     obj_file: str, max_wait_seconds: float | None = None
 ) -> None:
-    """Waits for PyMOL to write an ``.obj`` mesh file.
+    """Waits for PyMOL to finish writing an ``.obj`` mesh file.
 
-    :raises RuntimeError: if the PyMOL process exits before the file appears.
-    :raises TimeoutError: if the file is not found after ``max_wait_seconds``.
+    The file is taken as written once it is non-empty and its size is
+    unchanged between two checks 0.1 s apart, or once PyMOL has exited.
+    If the wait times out, the PyMOL process is stopped so that a hung
+    session isn't reused.
+
+    :param obj_file: Path PyMOL is saving the mesh to.
+    :type obj_file: str
+    :param max_wait_seconds: Seconds to wait. ``None`` waits indefinitely.
+    :type max_wait_seconds: float | None
+    :raises RuntimeError: if the PyMOL process exits before writing the file.
+    :raises TimeoutError: if the file is not written after
+        ``max_wait_seconds``.
     """
+
+    def size():
+        return os.path.getsize(obj_file) if os.path.isfile(obj_file) else 0
+
+    # ponytail: size-stable heuristic, a write stalled >0.1 s mid-file
+    # passes. Have PyMOL save to a temporary name and rename it if needed.
     start_time = time.monotonic()
-    while not os.path.isfile(obj_file):
+    last_size = 0
+    while True:
+        current_size = size()
+        if current_size and current_size == last_size:
+            return
+        last_size = current_size
         if not viewer._process_is_running():
+            # PyMOL may have written the file and exited since the check
+            if size():
+                return
             raise RuntimeError(f"PyMOL exited before writing {obj_file}")
         if (
             max_wait_seconds is not None
             and time.monotonic() - start_time >= max_wait_seconds
         ):
+            viewer.stop()
             raise TimeoutError(
                 f"{obj_file} not found after {max_wait_seconds} seconds"
             )
