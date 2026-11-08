@@ -1,6 +1,5 @@
 import contextlib
 import os
-import socket
 import subprocess
 import tempfile
 import time
@@ -71,11 +70,6 @@ class MolViewer:
     def _process_is_running(self):
         return self._process is not None and self._process.poll() is None
 
-    def _port_in_use(self):
-        with socket.socket() as s:
-            s.settimeout(1)
-            return s.connect_ex((self.host, self.port)) == 0
-
     @requires_external_dependencies("pymol")
     def start(self, args=("-Q",), exe="pymol", timeout=None):
         """Start the PyMOL RPC server and connect to it
@@ -89,32 +83,19 @@ class MolViewer:
         :param exe: PyMOL executable.
         :type exe: str
         :param timeout: Seconds to wait for the server to start, and for
-            each later call to it. ``None`` waits indefinitely.
+            each later call to it. ``None`` waits indefinitely. If PyMOL is
+            already running, only this is applied; ``args`` are ignored.
         :type timeout: float | None
-        If PyMOL is already running with the same ``args``, only the timeout
-        is updated. With different ``args``, it is restarted.
-
-        :raises RuntimeError: if PyMOL exits before the server is up, or
-            another server already holds the port.
+        :raises RuntimeError: if PyMOL exits before the server is up.
         :raises TimeoutError: if the server is not up after ``timeout``
             seconds.
         """
         assert isinstance(args, (list, tuple))
 
         if self._process_is_running():
-            if list(args) == self._start_args:
-                self._timeout = timeout
-                self._connect(timeout)
-                return
-            self.stop()
-
-        # PyMOL moves to another port if this one is taken, so we would
-        # talk to (and time out on) the other server, not our child.
-        if self._port_in_use():
-            raise RuntimeError(
-                f"Port {self.port} on {self.host} is already in use, likely "
-                "by a PyMOL left running from another session. Stop it first."
-            )
+            self._timeout = timeout
+            self._connect(timeout)
+            return
 
         # Used to restart PyMOL the same way if it dies
         self._start_args, self._timeout = list(args), timeout

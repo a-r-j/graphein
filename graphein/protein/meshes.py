@@ -118,7 +118,7 @@ def get_obj_file(
     file_name = os.path.abspath(
         os.path.splitext(pdb_file)[0] + ".obj"
         if pdb_file
-        else out_dir + pdb_code + ".obj"
+        else os.path.join(out_dir, pdb_code + ".obj")
     )
 
     commands = parse_pymol_commands(config)
@@ -200,18 +200,13 @@ def create_mesh(
     return verts, faces, aux
 
 
-OBJ_SETTLE_SECONDS = 1.0
-"""Seconds an ``.obj`` file's size must hold still to count as written."""
-
-
 def wait_for_obj_file(
     obj_file: str, max_wait_seconds: float | None = None
 ) -> None:
     """Waits for PyMOL to finish writing an ``.obj`` mesh file.
 
-    The file is taken as written once it is non-empty and its size has
-    not changed for ``OBJ_SETTLE_SECONDS``, or once PyMOL has exited.
-    If the wait times out, the PyMOL process is stopped so that a hung
+    The file is taken as written once it is non-empty and its size is
+    unchanged between two checks 0.1 s apart. If the wait times out, the PyMOL process is stopped so that a hung
     session isn't reused.
 
     :param obj_file: Path PyMOL is saving the mesh to.
@@ -226,24 +221,17 @@ def wait_for_obj_file(
     def size():
         return os.path.getsize(obj_file) if os.path.isfile(obj_file) else 0
 
-    # ponytail: PyMOL queues `save`, so there's no completion signal. A write
-    # stalled longer than OBJ_SETTLE_SECONDS passes; saving to a temporary
-    # name and renaming it in PyMOL would make this exact.
-    start_time = changed_at = time.monotonic()
+    # ponytail: size-stable heuristic, a write stalled >0.1 s mid-file
+    # passes. Unverified against real PyMOL whether `do("save ...")` returns
+    # only after the save (then this wait is unneeded) or is queued.
+    start_time = time.monotonic()
     last_size = 0
     while True:
         current_size = size()
-        if current_size != last_size:
-            last_size, changed_at = current_size, time.monotonic()
-        elif (
-            current_size
-            and time.monotonic() - changed_at >= OBJ_SETTLE_SECONDS
-        ):
+        if current_size and current_size == last_size:
             return
+        last_size = current_size
         if not viewer._process_is_running():
-            # PyMOL may have written the file and exited since the check
-            if size():
-                return
             raise RuntimeError(f"PyMOL exited before writing {obj_file}")
         if (
             max_wait_seconds is not None

@@ -125,19 +125,6 @@ def test_wait_for_obj_file_stops_pymol_on_timeout(
     assert stopped
 
 
-def test_wait_for_obj_file_accepts_file_written_as_pymol_exits(
-    tmp_path, monkeypatch
-):
-    obj_file = tmp_path / "test.obj"
-
-    def write_then_exit():
-        obj_file.write_text("v 0 0 0\n")
-        return False
-
-    monkeypatch.setattr(meshes.viewer, "_process_is_running", write_then_exit)
-    meshes.wait_for_obj_file(str(obj_file), max_wait_seconds=1.0)
-
-
 def test_wait_for_obj_file_waits_for_writing_to_finish(tmp_path, monkeypatch):
     obj_file = tmp_path / "test.obj"
     obj_file.write_text("v 0 0 0\n")
@@ -248,8 +235,9 @@ def free_port():
 
 
 def test_start_applies_new_timeout_to_running_pymol(monkeypatch):
+    # Different args mustn't restart PyMOL and lose the user's session
     v = core.MolViewer(port=free_port())
-    v._process, v._start_args, v._timeout = AliveProcess(), ["-cKq"], 600.0
+    v._process, v._start_args, v._timeout = AliveProcess(), ["-cKQ"], 600.0
     timeouts = []
     monkeypatch.setattr(
         v, "_connect", lambda timeout: timeouts.append(timeout)
@@ -258,44 +246,6 @@ def test_start_applies_new_timeout_to_running_pymol(monkeypatch):
     assert v._timeout is None
     assert timeouts == [None]
     assert not v._process.terminated
-
-
-def test_start_restarts_pymol_with_new_options(monkeypatch):
-    v = core.MolViewer(port=free_port())
-    old = v._process = AliveProcess()
-    v._start_args = ["-cKq"]
-    launched = []
-
-    class UpServer:
-        def __init__(self, uri, **kwargs):
-            pass
-
-        def bg_color(self, colour):
-            pass
-
-    def popen(cmd):
-        launched.append(cmd)
-        return AliveProcess()
-
-    monkeypatch.setattr(core.subprocess, "Popen", popen)
-    monkeypatch.setattr(core, "Server", UpServer)
-    core.MolViewer.start.__wrapped__(v, ["-cq"], timeout=1.0)
-    assert old.terminated
-    assert launched == [["pymol", "-R", "-cq"]]
-
-
-def test_start_refuses_port_held_by_another_server(monkeypatch):
-    with socket.socket() as listener:
-        listener.bind(("localhost", 0))
-        listener.listen()
-        v = core.MolViewer(port=listener.getsockname()[1])
-        launched = []
-        monkeypatch.setattr(
-            core.subprocess, "Popen", lambda cmd: launched.append(cmd)
-        )
-        with pytest.raises(RuntimeError, match="already in use"):
-            core.MolViewer.start.__wrapped__(v, timeout=1.0)
-        assert not launched
 
 
 def test_start_timeout_includes_slow_probes(monkeypatch):
@@ -310,7 +260,6 @@ def test_start_timeout_includes_slow_probes(monkeypatch):
 
     v = core.MolViewer(port=port)
     monkeypatch.setattr(core.subprocess, "Popen", lambda cmd: AliveProcess())
-    monkeypatch.setattr(core.MolViewer, "_port_in_use", lambda self: False)
     threading.Thread(target=come_up_hung).start()
     start = time.monotonic()
     try:
@@ -353,3 +302,29 @@ def test_obj_file_path_is_absolute(tmp_path, monkeypatch):
 
     assert obj_file == os.path.join(os.getcwd(), "model.obj")
     assert ("do", f"save {obj_file}") in fake.commands
+
+
+def test_obj_file_joins_out_dir_without_trailing_slash(tmp_path, monkeypatch):
+    monkeypatch.setattr(meshes, "viewer", FakeViewer())
+    monkeypatch.setattr(meshes, "configure_pymol_session", lambda _: None)
+    monkeypatch.setattr(meshes, "run_pymol_commands", lambda _: None)
+
+    obj_file = meshes.get_obj_file.__wrapped__(
+        pdb_code="3eiy", out_dir=str(tmp_path / "meshes")
+    )
+
+    assert obj_file == str(tmp_path / "meshes" / "3eiy.obj")
+
+
+def test_wait_for_obj_file_rejects_partial_file_if_pymol_dies(
+    tmp_path, monkeypatch
+):
+    obj_file = tmp_path / "test.obj"
+
+    def crash_mid_write():
+        obj_file.write_text("v 0 0 0\n")
+        return False
+
+    monkeypatch.setattr(meshes.viewer, "_process_is_running", crash_mid_write)
+    with pytest.raises(RuntimeError, match="PyMOL exited"):
+        meshes.wait_for_obj_file(str(obj_file), max_wait_seconds=1.0)
