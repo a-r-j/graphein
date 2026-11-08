@@ -29,28 +29,24 @@ def available_configs() -> list[str]:
 
 
 def resolve_config_path(name_or_path: str | Path) -> Path:
-    """Resolve a config name or an existing file path to a YAML file.
+    """Resolve a built-in config name or an existing file path to a YAML file.
 
-    An existing path always takes precedence over a built-in name.
+    Built-in names are checked first, so a file in the current directory
+    named exactly like a built-in must be passed as ``./<name>``.
 
     :param name_or_path: Built-in config name or path to a YAML file.
     :type name_or_path: str | pathlib.Path
     :return: Path to the YAML config file.
     :rtype: pathlib.Path
-    :raises ValueError: If the argument is a directory, looks like a file
-        path that doesn't exist, or is not a built-in name.
+    :raises ValueError: If the argument is neither a built-in name nor an
+        existing file.
     """
-    path = Path(name_or_path)
-    if path.is_file():
-        return path
-    if str(name_or_path) and path.is_dir():
-        raise ValueError(f"Config path is a directory: {name_or_path}")
     builtins = _builtin_configs()
     if str(name_or_path) in builtins:
         return builtins[str(name_or_path)]
-    if path.suffix in {".yml", ".yaml"} or len(path.parts) > 1:
-        raise ValueError(f"Config file not found: {name_or_path}")
+    if Path(name_or_path).is_file():
+        return Path(name_or_path)
     raise ValueError(
-        f"Unknown config {name_or_path!r}. "
-        f"Available built-in configs: {', '.join(sorted(builtins))}"
+        f"No built-in config or file {str(name_or_path)!r}. "
+        f"Built-in configs: {', '.join(available_configs())}"
     )

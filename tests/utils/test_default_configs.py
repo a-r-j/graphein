@@ -1,5 +1,7 @@
 """Tests for built-in default graph construction configs."""
 
+from pathlib import Path
+
 import pytest
 from click.testing import CliRunner
 
@@ -22,18 +24,29 @@ def test_resolve_builtin_config_by_name():
     assert path.suffix == ".yml"
 
 
-def test_resolve_explicit_path_takes_precedence(tmp_path):
-    """An existing file path is used as-is, not looked up in built-ins."""
+def test_resolve_existing_file_path(tmp_path):
+    """An existing file path that isn't a built-in name is used as-is."""
     custom = tmp_path / "custom.yml"
     custom.write_text("!ProteinGraphConfig\ngranularity: CA\n")
     assert resolve_config_path(str(custom)) == custom
 
 
-@pytest.mark.parametrize("name", ["configs/missing.yml", "missing.yaml"])
-def test_resolve_missing_file_path_says_not_found(name):
-    """A path-like argument that doesn't exist is reported as missing."""
-    with pytest.raises(ValueError, match="not found"):
+@pytest.mark.parametrize(
+    "name",
+    ["configs/missing.yml", "missing.yaml", "./missing", "ca_distance_10.yml"],
+)
+def test_resolve_missing_path_lists_builtins(name):
+    """A missing path fails with an error that lists the built-ins."""
+    with pytest.raises(ValueError, match="Built-in configs: ca_distance_10"):
         resolve_config_path(name)
+
+
+@pytest.mark.parametrize("make", [Path.mkdir, Path.touch])
+def test_builtin_name_wins_over_cwd_entry(tmp_path, monkeypatch, make):
+    """A same-named folder or file in the cwd doesn't hide a built-in."""
+    monkeypatch.chdir(tmp_path)
+    make(tmp_path / "ca_distance_10")
+    assert resolve_config_path("ca_distance_10").parent == configs.CONFIG_DIR
 
 
 def test_resolve_rejects_names_outside_config_dir():
@@ -63,11 +76,10 @@ def test_builtin_config_parses_to_protein_graph_config():
     assert config.insertions
 
 
-def test_resolve_directory_says_not_a_file(tmp_path):
-    """An existing directory is reported as such, not as unknown."""
-    (tmp_path / "cfgs").mkdir()
-    with pytest.raises(ValueError, match="is a directory"):
-        resolve_config_path(str(tmp_path / "cfgs"))
+def test_resolve_directory_raises(tmp_path):
+    """An existing directory is not a config file."""
+    with pytest.raises(ValueError, match="Built-in configs"):
+        resolve_config_path(str(tmp_path))
 
 
 def test_yaml_suffix_configs_are_listed_and_resolved(tmp_path, monkeypatch):
