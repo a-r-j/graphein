@@ -240,5 +240,4 @@ def BIOGRID_df(
         protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs
     )
     df = filter_BIOGRID(df, **kwargs)
-    df = standardise_BIOGRID(df)
-    return df
+    return standardise_BIOGRID(df)

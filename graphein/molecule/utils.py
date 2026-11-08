@@ -241,8 +241,7 @@ def get_clique_mol(mol: rdkit.Chem.rdchem.Atom, atoms: list[int]):
     smiles = Chem.MolFragmentToSmiles(mol, atoms, kekuleSmiles=True)
     new_mol = Chem.MolFromSmiles(smiles, sanitize=False)
     new_mol = copy_edit_mol(new_mol).GetMol()
-    new_mol = sanitize(new_mol)  # We assume this is not None
-    return new_mol
+    return sanitize(new_mol)  # We assume this is not None
 
 
 @requires_python_libs("rdkit")

@@ -33,7 +33,7 @@ def test_add_beta_carbon_vector(caplog):
     raw_pdb = g.graph["raw_pdb_df"]
     for n, d in g.nodes(data=True):
         # Check that the node has the correct attributes
-        assert "c_beta_vector" in d.keys()
+        assert "c_beta_vector" in d
         # Check the vector is of the correct dimensionality
         assert d["c_beta_vector"].shape == (3,)
 
@@ -103,7 +103,7 @@ def test_add_sidechain_vector():
 
     for n, d in g.nodes(data=True):
         # Check that the node has the correct attributes
-        assert "sidechain_vector" in d.keys()
+        assert "sidechain_vector" in d
         # Check the vector is of the correct dimensionality
         assert d["sidechain_vector"].shape == (3,)
 
@@ -155,7 +155,7 @@ def test_add_virtual_beta_carbon_vector():
 
     for n, d in g.nodes(data=True):
         # Check that the node has the correct attributes
-        assert "virtual_c_beta_vector" in d.keys()
+        assert "virtual_c_beta_vector" in d
         # Check the vector is of the correct dimensionality
         assert d["virtual_c_beta_vector"].shape == (3,)
 
@@ -208,7 +208,7 @@ def test_add_sequence_neighbour_vector(n_to_c):
     key = "sequence_neighbour_vector_" + ("n_to_c" if n_to_c else "c_to_n")
     for n, d in g.nodes(data=True):
         # Check that the node has the correct attributes
-        assert key in d.keys()
+        assert key in d
         # Check the vector is of the correct dimensionality
         assert d[key].shape == (3,)
 

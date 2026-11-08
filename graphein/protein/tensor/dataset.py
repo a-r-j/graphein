@@ -11,7 +11,6 @@ import os
 from collections.abc import Callable, Generator, Sequence
 from difflib import get_close_matches
 from pathlib import Path
-from typing import Union
 
 import numpy as np
 from loguru import logger as log
@@ -38,7 +37,7 @@ except ImportError:
         pip_install=True,
     )
 
-IndexType = Union[slice, torch.Tensor, np.ndarray, Sequence]
+IndexType = slice | torch.Tensor | np.ndarray | Sequence
 
 
 class ProteinDataset(Dataset):
@@ -495,12 +494,10 @@ class ProteinDataset(Dataset):
             or (isinstance(idx, np.ndarray) and np.isscalar(idx))
         ):
             data = self.get(self.indices()[idx])
-            data = data if self.transform is None else self.transform(data)
-            return data
+            return data if self.transform is None else self.transform(data)
         if isinstance(idx, str):
             data = self.get(idx)
-            data = data if self.transform is None else self.transform(data)
-            return data
+            return data if self.transform is None else self.transform(data)
         return self.index_select(idx)
 
 

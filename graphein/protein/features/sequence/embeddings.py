@@ -220,9 +220,7 @@ def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     func = partial(compute_esm_embedding, representation="sequence")
-    G = compute_feature_over_chains(G, func, feature_name="esm_embedding")
-
-    return G
+    return compute_feature_over_chains(G, func, feature_name="esm_embedding")
 
 
 @lru_cache
@@ -264,5 +262,6 @@ def biovec_sequence_embedding(G: nx.Graph) -> nx.Graph:
     """
     pv = _load_biovec_model()
     func = pv.to_vecs
-    G = compute_feature_over_chains(G, func, feature_name="biovec_embedding")
-    return G
+    return compute_feature_over_chains(
+        G, func, feature_name="biovec_embedding"
+    )

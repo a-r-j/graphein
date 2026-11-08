@@ -635,6 +635,7 @@ RESI_THREE_TO_1: dict[str, str] = {
     "AIB": "A",
     "ALA": "A",
     "ARG": "R",
+    "ASH": "D",  # Protonated ASP (Amber)
     "ASN": "N",
     "ASP": "D",
     "ASX": "B",
@@ -656,6 +657,7 @@ RESI_THREE_TO_1: dict[str, str] = {
     "CYX": "C",
     "DAL": "A",
     "DAR": "R",
+    "DAS": "D",  # D-aspartic acid
     "DCY": "C",
     "DGL": "E",
     "DGN": "Q",
@@ -675,6 +677,7 @@ RESI_THREE_TO_1: dict[str, str] = {
     "DVA": "V",
     "FME": "M",
     "FOR": "X",
+    "GLH": "E",  # Protonated GLU (Amber)
     "GLN": "Q",
     "GLU": "E",
     "GLX": "Z",
@@ -683,12 +686,16 @@ RESI_THREE_TO_1: dict[str, str] = {
     "HIE": "H",  # Different protonation states of HIS
     "HIP": "H",  # Different protonation states of HIS
     "HIS": "H",
+    "HSD": "H",  # Protonation states of HIS (CHARMM)
+    "HSE": "H",  # Protonation states of HIS (CHARMM)
+    "HSP": "H",  # Protonation states of HIS (CHARMM)
     "HYP": "P",
     "ILE": "I",
     "IVA": "X",
     "KCX": "K",
     "LEU": "L",
     "LLP": "K",
+    "LYN": "K",  # Neutral LYS (Amber)
     "LYS": "K",
     "MET": "M",
     "MLE": "L",

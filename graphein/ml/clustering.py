@@ -191,7 +191,7 @@ def create_pairs_for_clustering(
             if p in done:
                 continue
             ff = list(p)
-            out.write("%s\t%s\t%lf\n" % (ff[0], ff[1], identity))
+            out.write(f"{ff[0]}\t{ff[1]}\t{identity:f}\n")
             done[p] = identity
     if delete_blast_databases_when_done:
         os.system(f"rm -f {fasta_file}.phr {fasta_file}.pin {fasta_file}.psq")
@@ -248,7 +248,7 @@ def clustering_from_pairs(pairs, out_file=None):
     if out_file is not None:
         with open(out_file, "w") as out:
             for c in clusters:
-                out.write("%s\n" % (" ".join(c)))
+                out.write(" ".join(c) + "\n")
     return clusters
 
 
@@ -315,7 +315,7 @@ def blast(
     if blast_path != "" and not os.path.isfile(
         blast_path + "makeblastdb"
     ):  # check if the BLAST_PATH is correct
-        raise IOError(
+        raise OSError(
             f"***ERROR*** in run_blast path {blast_path} doesnt lead to blast directory "
             "where makeblastdb should be located"
         )

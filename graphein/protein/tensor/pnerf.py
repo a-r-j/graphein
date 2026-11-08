@@ -239,11 +239,10 @@ def point_to_coordinate(
                 1, 2, 0
             )
             m = m.repeat(s[0], 1, 1).view(s)
-        coord = (
+        return (
             torch.squeeze(torch.matmul(m, point.unsqueeze(3)), dim=3)
             + prev_three_coords.c
         )
-        return coord
 
     # Loop over FRAG_SIZE in NUM_FRAGS parallel fragments, sequentially
     # generating the coordinates for each fragment across all batches
