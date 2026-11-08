@@ -8,13 +8,11 @@
 
 import pickle
 from pathlib import Path
-from typing import List
 
 import networkx as nx
 import numpy as np
-import pytest
 
-from graphein.protein.config import DSSPConfig, ProteinGraphConfig
+from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
     add_ionic_interactions,
     add_peptide_bonds,
@@ -23,7 +21,6 @@ from graphein.protein.features.nodes import rsa, secondary_structure
 from graphein.protein.graphs import construct_graph
 from graphein.protein.subgraphs import (
     extract_k_hop_subgraph,
-    extract_subgraph,
     extract_subgraph_by_bond_type,
     extract_subgraph_by_sequence_position,
     extract_subgraph_from_atom_types,
@@ -34,9 +31,6 @@ from graphein.protein.subgraphs import (
     extract_subgraph_from_secondary_structure,
     extract_surface_subgraph,
 )
-from graphein.utils.dependencies import is_tool
-
-DSSP_AVAILABLE = is_tool("mkdssp")
 
 
 def test_node_list_subgraphing():
@@ -273,17 +267,20 @@ def test_extract_subgraph_from_bond_type():
     config = ProteinGraphConfig(
         edge_construction_functions=[add_peptide_bonds, add_ionic_interactions]
     )
-    G = construct_graph(path=str(file_path))  # , config=config)
+    G = construct_graph(path=str(file_path), config=config)
 
     BOND_TYPES = ["ionic"]
+    ionic_edges = [
+        (u, v) for u, v, d in G.edges(data=True) if "ionic" in d["kind"]
+    ]
+    assert ionic_edges
 
     s_g = extract_subgraph_by_bond_type(G, BOND_TYPES, filter_dataframe=True)
 
-    for u, v, d in G.edges(data=True):
-        if d["kind"] in BOND_TYPES:
-            assert u in s_g.nodes()
-            assert v in s_g.nodes()
-            assert (u, v) in s_g.edges()
+    for u, v in ionic_edges:
+        assert u in s_g.nodes()
+        assert v in s_g.nodes()
+        assert (u, v) in s_g.edges()
 
     for u, v, d in s_g.edges(data=True):
         for bond in list(d["kind"]):
@@ -319,13 +316,10 @@ def test_extract_k_hop_subgraph():
         assert n in s_g.nodes()
 
 
-@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_surface_subgraph():
     """Tests surface subgraph extraction."""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
-    config = ProteinGraphConfig(
-        graph_metadata_functions=[rsa], dssp_config=DSSPConfig()
-    )
+    config = ProteinGraphConfig(graph_metadata_functions=[rsa])
     G = construct_graph(path=str(file_path), config=config)
 
     RSA_THRESHOLD: float = 0.2
@@ -339,17 +333,15 @@ def test_surface_subgraph():
             assert n in s_g.nodes(), print(n, d)
 
 
-@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_secondary_structure_subgraph():
     """Tests secondary subgraph extraction."""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
     config = ProteinGraphConfig(
         graph_metadata_functions=[secondary_structure],
-        dssp_config=DSSPConfig(),
     )
     G = construct_graph(path=str(file_path), config=config)
 
-    SS_ELEMENTS: List[str] = ["H"]
+    SS_ELEMENTS: list[str] = ["H"]
     s_g = extract_subgraph_from_secondary_structure(
         G, SS_ELEMENTS, filter_dataframe=True
     )
@@ -362,13 +354,11 @@ def test_secondary_structure_subgraph():
             assert n in s_g.nodes()
 
 
-@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_successful_pickle():
     """Tests subgraphs can be successfully pickled and unpickled"""
     file_path = Path(__file__).parent / "test_data/4hhb.pdb"
     config = ProteinGraphConfig(
         graph_metadata_functions=[secondary_structure],
-        dssp_config=DSSPConfig(),
     )
     G = construct_graph(path=str(file_path), config=config)
     s_g = extract_subgraph_from_residue_types(

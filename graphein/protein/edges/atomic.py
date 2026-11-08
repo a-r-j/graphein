@@ -7,7 +7,7 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Any, Dict
+from typing import Any
 
 import networkx as nx
 import numpy as np
@@ -65,9 +65,7 @@ def assign_bond_states_to_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df = df.join(ss, on=["residue_name", "atom_name"])
 
     # Fill the NaNs with the standard states
-    df = df.fillna(value={"atom_bond_state": naive_bond_states})
-
-    return df
+    return df.fillna(value={"atom_bond_state": naive_bond_states})
 
 
 def assign_covalent_radii_to_dataframe(df: pd.DataFrame) -> pd.DataFrame:
@@ -239,7 +237,7 @@ def add_bond_order(G: nx.Graph) -> nx.Graph:
 
 
 def identify_bond_type_from_mapping(
-    G: nx.Graph, u: str, v: str, a: Dict[str, Any], query: str
+    G: nx.Graph, u: str, v: str, a: dict[str, Any], query: str
 ):
     """
     Compares the bond length between two atoms in the graph, and the relevant

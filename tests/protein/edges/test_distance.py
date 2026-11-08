@@ -10,7 +10,6 @@ from functools import partial
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 from pathlib import Path
-from typing import Optional, Tuple
 from unittest.mock import MagicMock
 
 import networkx as nx
@@ -46,7 +45,6 @@ from graphein.protein.edges.intramolecular import peptide_bonds
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 from graphein.protein.resi_atoms import (
     AROMATIC_RESIS,
-    BOND_TYPES,
     CATION_RESIS,
     HYDROGEN_BOND_ACCEPTORS,
     HYDROGEN_BOND_DONORS,
@@ -54,7 +52,6 @@ from graphein.protein.resi_atoms import (
     NEG_AA,
     PI_RESIS,
     POS_AA,
-    RESI_NAMES,
     RESI_THREE_TO_1,
     SALT_BRIDGE_ANIONS,
     SALT_BRIDGE_CATIONS,
@@ -117,13 +114,12 @@ def test_delaunay_triangulation(net):
     I am including this test here that always passes because I don't know how
     best to test it. The code in pin.py uses scipy's delaunay triangulation.
     """
-    pass
 
 
 def _hbond_graph(
     granularity: str,
-    df: Optional[pd.DataFrame] = None,
-    config_kwargs: Optional[dict] = None,
+    df: pd.DataFrame | None = None,
+    config_kwargs: dict | None = None,
     **kwargs,
 ) -> nx.Graph:
     config = ProteinGraphConfig(
@@ -160,10 +156,8 @@ def _peptide_bonded(g: nx.Graph, res_1: str, res_2: str) -> bool:
     for c_res, n_res in ((res_1, res_2), (res_2, res_1)):
         c, n = f"{c_res}:C", f"{n_res}:N"
         if c in g and n in g:
-            if (
-                np.linalg.norm(g.nodes[c]["coords"] - g.nodes[n]["coords"])
-                <= 2
-            ):
+            dist = np.linalg.norm(g.nodes[c]["coords"] - g.nodes[n]["coords"])
+            if dist <= 2:
                 return True
     return False
 
@@ -452,7 +446,7 @@ def test_add_hydrogen_bond_interactions_residue_variants(res_name, variant):
     assert g.has_edge(u_new, v)
 
 
-def _helical_backbone_hbond(g: nx.Graph) -> Tuple[str, str]:
+def _helical_backbone_hbond(g: nx.Graph) -> tuple[str, str]:
     """An ``O(i)``-``N(i+4)`` hbond edge in chain A as ``(O node, N node)``."""
     for u, v in get_edges_by_bond_type(g, "hbond"):
         if g.nodes[u]["atom_type"] == "N":
@@ -820,7 +814,7 @@ def test_add_k_nn_edges():
     g_empty.graph["pdb_df"] = pdb_df
     args_edges_pairs = [
         (
-            dict(k=1),
+            {"k": 1},
             [
                 ("A:HIS:1", "A:TYR:2"),
                 ("A:TYR:2", "B:ALA:3"),
@@ -828,7 +822,7 @@ def test_add_k_nn_edges():
             ],
         ),
         (
-            dict(k=2),
+            {"k": 2},
             [
                 ("A:HIS:1", "A:TYR:2"),
                 ("A:HIS:1", "B:ALA:3"),
@@ -838,7 +832,7 @@ def test_add_k_nn_edges():
             ],
         ),
         (
-            dict(k=1, exclude_edges=["intra"]),
+            {"k": 1, "exclude_edges": ["intra"]},
             [
                 ("A:HIS:1", "B:ALA:3"),
                 ("A:TYR:2", "B:ALA:3"),
@@ -846,14 +840,14 @@ def test_add_k_nn_edges():
             ],
         ),
         (
-            dict(k=1, exclude_edges=["inter"]),
+            {"k": 1, "exclude_edges": ["inter"]},
             [
                 ("A:HIS:1", "A:TYR:2"),
                 ("B:ALA:3", "B:ALA:4"),
             ],
         ),
         (
-            dict(k=2, exclude_edges=["intra"], exclude_self_loops=False),
+            {"k": 2, "exclude_edges": ["intra"], "exclude_self_loops": False},
             [
                 ("A:HIS:1", "B:ALA:3"),
                 ("A:TYR:2", "B:ALA:3"),
@@ -865,7 +859,7 @@ def test_add_k_nn_edges():
             ],
         ),
         (
-            dict(k=1, exclude_edges=["intra"], exclude_self_loops=False),
+            {"k": 1, "exclude_edges": ["intra"], "exclude_self_loops": False},
             [
                 ("A:HIS:1", "A:HIS:1"),
                 ("A:TYR:2", "A:TYR:2"),
@@ -1029,7 +1023,7 @@ def _residue_atoms(df: pd.DataFrame, node_id: str) -> pd.Series:
     )
 
 
-def _interaction_edge(func, path) -> Tuple[pd.DataFrame, nx.Graph, str, str]:
+def _interaction_edge(func, path) -> tuple[pd.DataFrame, nx.Graph, str, str]:
     df = read_pdb_to_dataframe(path)
     g = _interaction_graph(func, df)
     u, v = sorted(g.edges())[0]

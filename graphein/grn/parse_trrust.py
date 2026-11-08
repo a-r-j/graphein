@@ -8,9 +8,9 @@
 # Code Repository: https://github.com/a-r-j/graphein
 
 import os
+from collections.abc import Callable
 from functools import lru_cache
 from pathlib import Path
-from typing import Callable, List, Optional
 
 import pandas as pd
 import wget
@@ -19,7 +19,7 @@ from loguru import logger as log
 from graphein.utils.utils import filter_dataframe
 
 
-def _download_TRRUST(root_dir: Optional[Path] = None) -> str:
+def _download_TRRUST(root_dir: Path | None = None) -> str:
     """
     Downloads TRRUST from
     https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv
@@ -46,8 +46,8 @@ def _download_TRRUST(root_dir: Optional[Path] = None) -> str:
     return file
 
 
-@lru_cache()
-def load_TRRUST(root_dir: Optional[Path] = None) -> pd.DataFrame:
+@lru_cache
+def load_TRRUST(root_dir: Path | None = None) -> pd.DataFrame:
     """
     Loads the TRRUST datafile. If file not found, it is downloaded.
 
@@ -67,7 +67,7 @@ def load_TRRUST(root_dir: Optional[Path] = None) -> pd.DataFrame:
 
 
 def parse_TRRUST(
-    gene_list: List[str], root_dir: Optional[Path] = None
+    gene_list: list[str], root_dir: Path | None = None
 ) -> pd.DataFrame:
     """
     Parser for TRRUST regulatory interactions. If the TRRUST dataset is not
@@ -84,13 +84,11 @@ def parse_TRRUST(
     """
     df = load_TRRUST(root_dir=root_dir)
     # Select input genes
-    df = df[df["g1"].isin(gene_list) & df["g2"].isin(gene_list)]
-
-    return df
+    return df[df["g1"].isin(gene_list) & df["g2"].isin(gene_list)]
 
 
 def filter_TRRUST(
-    df: pd.DataFrame, funcs: Optional[List[Callable]]
+    df: pd.DataFrame, funcs: list[Callable] | None
 ) -> pd.DataFrame:
     """
     Filters results of TRRUST call according to user kwargs.
@@ -137,7 +135,7 @@ def standardise_TRRUST(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def TRRUST_df(
-    gene_list: List[str], filtering_funcs: Optional[List[Callable]] = None
+    gene_list: list[str], filtering_funcs: list[Callable] | None = None
 ) -> pd.DataFrame:
     """
     Generates standardised dataframe with TRRUST protein-protein interactions,
@@ -152,6 +150,4 @@ def TRRUST_df(
     """
     df = parse_TRRUST(gene_list=gene_list)
     df = filter_TRRUST(df, filtering_funcs)
-    df = standardise_TRRUST(df)
-
-    return df
+    return standardise_TRRUST(df)

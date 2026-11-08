@@ -13,8 +13,6 @@ These include various collections of standard atom types used molecule-focussed 
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-from typing import Dict, List
-
 from loguru import logger
 
 from graphein.utils.dependencies import import_message
@@ -29,7 +27,7 @@ except (ImportError, ModuleNotFoundError):
         import_message(__name__, "rdkit", "rdkit", True, extras=True)
     )
 
-BASE_ATOMS: List[str] = [
+BASE_ATOMS: list[str] = [
     "C",
     "H",
     "O",
@@ -92,17 +90,17 @@ EXTENDED_ATOMS = [
 ]
 """Vocabulary of additional atom types."""
 
-ALLOWED_DEGREES: List[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+ALLOWED_DEGREES: list[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 """Vocabulary of allowed atom degrees."""
 
-ALLOWED_VALENCES: List[int] = [0, 1, 2, 3, 4, 5, 6]
+ALLOWED_VALENCES: list[int] = [0, 1, 2, 3, 4, 5, 6]
 """Vocabulary of allowed atom valences."""
 
-ALLOWED_NUM_H: List[int] = [0, 1, 2, 3, 4]
+ALLOWED_NUM_H: list[int] = [0, 1, 2, 3, 4]
 """Vocabulary of allowed number of Hydrogens."""
 
 if _HAS_RDKIT:
-    ALLOWED_HYBRIDIZATIONS: List[Chem.rdchem.HybridizationType] = [
+    ALLOWED_HYBRIDIZATIONS: list[Chem.rdchem.HybridizationType] = [
         Chem.rdchem.HybridizationType.SP,
         Chem.rdchem.HybridizationType.SP2,
         Chem.rdchem.HybridizationType.SP3,
@@ -111,7 +109,7 @@ if _HAS_RDKIT:
     ]
     """Vocabulary of allowed hybridizations."""
 
-    ALLOWED_BOND_TYPES: List[Chem.rdchem.BondType] = [
+    ALLOWED_BOND_TYPES: list[Chem.rdchem.BondType] = [
         Chem.rdchem.BondType.SINGLE,
         Chem.rdchem.BondType.DOUBLE,
         Chem.rdchem.BondType.TRIPLE,
@@ -119,7 +117,7 @@ if _HAS_RDKIT:
     ]
     """Vocabulary of allowed bondtypes."""
 
-    ALLOWED_BOND_TYPE_TO_CHANNEL: Dict[Chem.rdchem.BondType, int] = {
+    ALLOWED_BOND_TYPE_TO_CHANNEL: dict[Chem.rdchem.BondType, int] = {
         Chem.rdchem.BondType.SINGLE: 0,
         Chem.rdchem.BondType.DOUBLE: 1,
         Chem.rdchem.BondType.TRIPLE: 2,
@@ -127,7 +125,7 @@ if _HAS_RDKIT:
     }
     """Mapping of bondtypes to integer values."""
 
-    ALL_BOND_TYPES: List[Chem.rdchem.BondType] = [
+    ALL_BOND_TYPES: list[Chem.rdchem.BondType] = [
         Chem.rdchem.BondType.AROMATIC,
         Chem.rdchem.BondType.DATIVE,
         Chem.rdchem.BondType.DATIVEL,
@@ -152,7 +150,7 @@ if _HAS_RDKIT:
     ]
     """Vocabulary of all RDkit BondTypes."""
 
-    ALL_BOND_TYPES_TO_CHANNEL: Dict[Chem.rdchem.BondType, int] = {
+    ALL_BOND_TYPES_TO_CHANNEL: dict[Chem.rdchem.BondType, int] = {
         Chem.rdchem.BondType.AROMATIC: 0,
         Chem.rdchem.BondType.DATIVE: 1,
         Chem.rdchem.BondType.DATIVEL: 2,
@@ -177,7 +175,7 @@ if _HAS_RDKIT:
     }
     """Vocabulary of all RDkit BondTypes mapped to integer values."""
 
-    ALL_STEREO_TYPES: List[Chem.rdchem.BondStereo] = [
+    ALL_STEREO_TYPES: list[Chem.rdchem.BondStereo] = [
         Chem.rdchem.BondStereo.STEREOANY,
         Chem.rdchem.BondStereo.STEREOCIS,
         Chem.rdchem.BondStereo.STEREOE,
@@ -187,7 +185,7 @@ if _HAS_RDKIT:
     ]
     """Vocabulary of all RDKit bond stereo types."""
 
-    ALL_STEREO_TO_CHANNEL: Dict[Chem.rdchem.BondStereo, int] = {
+    ALL_STEREO_TO_CHANNEL: dict[Chem.rdchem.BondStereo, int] = {
         Chem.rdchem.BondStereo.STEREOANY: 0,
         Chem.rdchem.BondStereo.STEREOCIS: 1,
         Chem.rdchem.BondStereo.STEREOE: 2,
@@ -197,7 +195,7 @@ if _HAS_RDKIT:
     }
     """Vocabulary of all RDKit bond stereo types mapped to integer values."""
 
-    CHIRAL_TYPE: List[Chem.rdchem.ChiralType] = [
+    CHIRAL_TYPE: list[Chem.rdchem.ChiralType] = [
         Chem.rdchem.ChiralType.CHI_OTHER,
         Chem.rdchem.ChiralType.CHI_TETRAHEDRAL_CCW,
         Chem.rdchem.ChiralType.CHI_TETRAHEDRAL_CW,
@@ -205,7 +203,7 @@ if _HAS_RDKIT:
     ]
     """Vocabulary of all RDKit chiral types."""
 
-    CHIRAL_TYPE_TO_CHANNEL: Dict[Chem.rdchem.ChiralType, int] = {
+    CHIRAL_TYPE_TO_CHANNEL: dict[Chem.rdchem.ChiralType, int] = {
         Chem.rdchem.ChiralType.CHI_OTHER: 0,
         Chem.rdchem.ChiralType.CHI_TETRAHEDRAL_CCW: 1,
         Chem.rdchem.ChiralType.CHI_TETRAHEDRAL_CW: 2,
@@ -224,7 +222,7 @@ else:
     CHIRAL_TYPE_TO_CHANNEL: dict = {}
 
 
-RDKIT_MOL_DESCRIPTORS: List[str] = [
+RDKIT_MOL_DESCRIPTORS: list[str] = [
     "MaxEStateIndex",
     "MinEStateIndex",
     "MaxAbsEStateIndex",

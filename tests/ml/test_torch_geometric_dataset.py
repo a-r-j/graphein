@@ -12,7 +12,7 @@ import graphein.protein as gp
 from graphein.ml import GraphFormatConvertor
 
 try:
-    import torch_geometric
+    import torch_geometric  # noqa: F401
 
     PYG_AVAIL = True
 except ImportError:
@@ -120,6 +120,21 @@ def test_protein_graph_dataset():
     shutil.rmtree(ROOT_DIR / "processed")
 
 
+@pytest.mark.skipif(not PYG_AVAIL, reason="PyG not installed")
+def test_dataset_does_not_mutate_config(tmp_path):
+    config = gp.ProteinGraphConfig()
+    pdb_path = str(ROOT_DIR.parent / "protein" / "test_data" / "4hhb.pdb")
+    ds = ProteinGraphDataset(
+        root=tmp_path, paths=[pdb_path], graphein_config=config
+    )
+    assert config.pdb_dir is None
+    assert ds.config.pdb_dir == Path(ds.raw_dir)
+    # Datasets built with the default config don't share one instance
+    assert ProteinGraphDataset(root=tmp_path, paths=[pdb_path]).config is not (
+        ProteinGraphDataset(root=tmp_path, paths=[pdb_path]).config
+    )
+
+
 def _structures_with_a_bad_file(tmp_path):
     raw = tmp_path / "raw"
     raw.mkdir()
@@ -137,12 +152,12 @@ def test_protein_graph_dataset_skips_failed_graphs(tmp_path, monkeypatch):
     import torch
 
     labels = [torch.tensor([0]), torch.tensor([1]), torch.tensor([2])]
-    kwargs = dict(
-        root=str(tmp_path / "ds"),
-        paths=_structures_with_a_bad_file(tmp_path),
-        graph_labels=labels,
-        num_cores=1,
-    )
+    kwargs = {
+        "root": str(tmp_path / "ds"),
+        "paths": _structures_with_a_bad_file(tmp_path),
+        "graph_labels": labels,
+        "num_cores": 1,
+    }
     ds = ProteinGraphDataset(**kwargs)
 
     assert ds.failed_examples == ["bad"]

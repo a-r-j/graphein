@@ -5,8 +5,6 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-import copy
-from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from loguru import logger as log
@@ -14,7 +12,6 @@ from loguru import logger as log
 from graphein.utils.dependencies import import_message
 
 from ..resi_atoms import ATOM_NUMBERING, CHI_ANGLES_ATOMS
-from .testing import has_nan
 from .types import AtomTensor, CoordTensor, DihedralTensor, TorsionTensor
 
 try:
@@ -51,8 +48,8 @@ except ImportError:
 
 
 def _extract_torsion_coords(
-    coords: AtomTensor, res_types: List[str]
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    coords: AtomTensor, res_types: list[str]
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Returns a ``(L*?) x 4 x 3`` tensor of the coordinates of the atoms for
     each sidechain torsion angle. The first dimension will be larger than the
     input as we flatten the array of torsion angles per residue.
@@ -102,11 +99,11 @@ def _extract_torsion_coords(
 
 def sidechain_torsion(
     coords: AtomTensor,
-    res_types: List[str],
+    res_types: list[str],
     rad: bool = True,
     embed: bool = False,
     return_mask: bool = False,
-) -> Union[TorsionTensor, Tuple[TorsionTensor, torch.Tensor]]:
+) -> TorsionTensor | tuple[TorsionTensor, torch.Tensor]:
     """
     Computes sidechain torsion angles for a protein.
 
@@ -144,7 +141,8 @@ def sidechain_torsion(
     if not rad:
         angles = angles * 180 / torch.pi
 
-    angles, mask = to_dense_batch(angles, idxs)
+    # Always 4 chi angles per residue, even if no residue has all 4
+    angles, mask = to_dense_batch(angles, idxs, max_num_nodes=4)
     angles = angles.squeeze(-1)
 
     # Interleave sin and cos transformed tensors
@@ -155,33 +153,26 @@ def sidechain_torsion(
         mask = rearrange([mask, mask], "t h w -> h (w t)")
 
     # Pad if last residues are a run of ALA, GLY or UNK
+    # If we have selenocysteine but no Se atoms, SEC is padded too
+    pad_residues = (
+        {"ALA", "GLY", "UNK"} if selenium else {"ALA", "GLY", "UNK", "SEC"}
+    )
     post_pad_len = 0
-    res_types = copy.deepcopy(res_types)
-    res_types.reverse()
-    PAD_RESIDUES = ["ALA", "GLY", "UNK"]
-    # If we have selenocysteine but no Se atoms,
-    # add it to the list of residues to pad since
-    if not selenium:
-        PAD_RESIDUES.append("SEC")
-    for res in res_types:
-        if res in PAD_RESIDUES:
-            post_pad_len += 1
-        else:
+    for res in reversed(res_types):
+        if res not in pad_residues:
             break
+        post_pad_len += 1
 
     if post_pad_len != 0:
         if embed:
-            msk = torch.tensor(
-                [1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0], device=coords.device
-            ).repeat(post_pad_len, 1)
-            mask_msk = torch.tensor([False] * 8, device=coords.device).repeat(
+            msk = torch.tensor([1.0, 0.0] * 4, device=coords.device).repeat(
                 post_pad_len, 1
             )
         else:
             msk = torch.zeros(post_pad_len, 4, device=coords.device)
-            mask_msk = torch.zeros(
-                post_pad_len, 4, device=coords.device, dtype=bool
-            )
+        mask_msk = torch.zeros(
+            msk.shape, device=coords.device, dtype=torch.bool
+        )
         angles = torch.vstack([angles, msk])
         mask = torch.vstack([mask, mask_msk])
 
@@ -205,8 +196,8 @@ def chi4():
 
 
 def kappa(
-    x: Union[AtomTensor, CoordTensor],
-    batch: Optional[torch.Tensor] = None,
+    x: AtomTensor | CoordTensor,
+    batch: torch.Tensor | None = None,
     rad: bool = True,
     sparse: bool = True,
     ca_idx: int = 1,
@@ -266,8 +257,8 @@ def kappa(
 
 
 def alpha(
-    x: Union[AtomTensor, CoordTensor],
-    batch: Optional[torch.Tensor] = None,
+    x: AtomTensor | CoordTensor,
+    batch: torch.Tensor | None = None,
     sparse: bool = True,
     rad: bool = True,
     ca_idx: int = 1,
@@ -377,19 +368,12 @@ def get_backbone_bond_lengths(x: AtomTensor) -> torch.Tensor:
     n_a = torch.norm(n - a, dim=1)
     a_c = torch.norm(a - c, dim=1)
     c_n = torch.norm(c[:-1, :] - n[1:, :], dim=1)
-    # c_n = torch.cat([c_n, torch.tensor([1.3287])])
     c_n = torch.cat([c_n, torch.tensor([1.32], device=x.device)])
 
-    if has_nan(a_c):
-        a_c = torch.nan_to_num(a_c, nan=1.523)
-    if has_nan(c_n):
-        c_n = torch.nan_to_num(c_n, nan=1.320)
-    if has_nan(n_a):
-        n_a = torch.nan_to_num(n_a, nan=1.329)
-
-    # return torch.stack([n_a, a_c, c_n], dim=1)
-    # return torch.stack([n_a, a_c, c_n], dim=1)
-    # return torch.stack([c_n, a_c, n_a], dim=1)
+    # Fill missing values with ideal bond lengths
+    a_c = torch.nan_to_num(a_c, nan=1.523)
+    c_n = torch.nan_to_num(c_n, nan=1.320)
+    n_a = torch.nan_to_num(n_a, nan=1.458)
     return torch.stack([a_c, c_n, n_a], dim=1)
 
 
@@ -414,12 +398,10 @@ def get_backbone_bond_angles(x: AtomTensor) -> torch.Tensor:
     a_c_n = torch.cat([a_c_n, torch.tensor([2.0], device=x.device)])
     c_n_a = torch.cat([c_n_a, torch.tensor([2.1], device=x.device)])
 
-    if has_nan(c_n_a):
-        c_n_a = torch.nan_to_num(c_n_a, nan=2.124)
-    if has_nan(n_a_c):
-        n_a_c = torch.nan_to_num(n_a_c, nan=1.941)
-    if has_nan(a_c_n):
-        a_c_n = torch.nan_to_num(a_c_n, nan=2.028)
+    # Fill missing values with ideal bond angles
+    c_n_a = torch.nan_to_num(c_n_a, nan=2.124)
+    n_a_c = torch.nan_to_num(n_a_c, nan=1.941)
+    a_c_n = torch.nan_to_num(a_c_n, nan=2.028)
     # This (below line) works!!, Orig AlQ order
     return torch.stack([c_n_a, n_a_c, a_c_n], dim=1)
 
@@ -464,26 +446,20 @@ def _dihedral_angle(
     :return: Tensor of dihedral angles in radians.
     :rtype: torch.Tensor
     """
-    eps = torch.tensor(eps, device=a.device)  # type: ignore
-
-    # bc = F.normalize(b - c, dim=2)
     bc = F.normalize(b - c, dim=-1)
-    # n1 = torch.cross(F.normalize(a - b, dim=2), bc)
-    n1 = torch.cross(F.normalize(a - b, dim=-1), bc)
-    # n2 = torch.cross(bc, F.normalize(c - d, dim=2))
-    n2 = torch.cross(bc, F.normalize(c - d, dim=-1))
-    # x = (n1 * n2).sum(dim=2)
+    n1 = torch.linalg.cross(F.normalize(a - b, dim=-1), bc)
+    n2 = torch.linalg.cross(bc, F.normalize(c - d, dim=-1))
     x = (n1 * n2).sum(dim=-1)
     x = torch.clamp(x, -1 + eps, 1 - eps)
     x[x.abs() < eps] = eps
 
-    y = (torch.cross(n1, bc) * n2).sum(dim=-1)
+    y = (torch.linalg.cross(n1, bc) * n2).sum(dim=-1)
     return torch.atan2(y, x)
 
 
 def dihedrals(
     coords: torch.Tensor,
-    batch: Optional[torch.Tensor] = None,
+    batch: torch.Tensor | None = None,
     rad: bool = True,
     sparse: bool = True,
     embed: bool = True,
@@ -510,15 +486,11 @@ def dihedrals(
     Ca_next = X[:, 1:, ca_idx, :]
     C_next = X[:, 1:, c_idx, :]
 
-    phi = torch.zeros_like(X[:, :, 0, 0], device=coords.device)
-    psi = torch.zeros_like(X[:, :, 0, 0], device=coords.device)
-    omg = torch.zeros_like(X[:, :, 0, 0], device=coords.device)
-
-    phi[:, 1:] = _dihedral_angle(C_curr, N_next, Ca_next, C_next)
-    psi[:, :-1] = _dihedral_angle(N_curr, Ca_curr, C_curr, N_next)
-    omg[:, :-1] = _dihedral_angle(Ca_curr, C_curr, N_next, Ca_next)
-
-    angles = torch.stack([phi, psi, omg], dim=2)
+    # phi, psi, omega; the first phi and last psi/omega are zero
+    angles = X.new_zeros(*X.shape[:2], 3)
+    angles[:, 1:, 0] = _dihedral_angle(C_curr, N_next, Ca_next, C_next)
+    angles[:, :-1, 1] = _dihedral_angle(N_curr, Ca_curr, C_curr, N_next)
+    angles[:, :-1, 2] = _dihedral_angle(Ca_curr, C_curr, N_next, Ca_next)
 
     if not rad:
         angles = angles * 180 / np.pi
@@ -535,7 +507,7 @@ def dihedrals(
 def dihedrals_to_rad(
     x_dihedrals: DihedralTensor,
     concat: bool = False,
-) -> Union[DihedralTensor, Tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+) -> DihedralTensor | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     Converts dihedrals to radians.
 
@@ -558,10 +530,10 @@ def dihedrals_to_rad(
 def torsion_to_rad(
     x_torsion: TorsionTensor,
     concat: bool = True,
-) -> Union[
-    TorsionTensor,
-    Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor],
-]:
+) -> (
+    TorsionTensor
+    | tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
+):
     """
     Converts sidechain torsions in
     ``(sin(chi1), sin(chi1), cos(chi2), sin(chi2), ...)`` format to radians.

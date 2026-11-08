@@ -7,11 +7,8 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Any, Dict
-
 import networkx as nx
 import numpy as np
-from loguru import logger as log
 from scipy.spatial import distance_matrix
 
 import graphein.protein.edges.atomic as protein

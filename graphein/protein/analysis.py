@@ -10,17 +10,20 @@ from __future__ import annotations
 
 import itertools
 from collections import Counter
-from typing import List, Optional, Union
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
 import plotly as ply
 import plotly.express as px
 
+if TYPE_CHECKING:
+    import plotly
+
 
 def plot_degree_distribution(
-    g: nx.Graph, title: Optional[str] = None
+    g: nx.Graph, title: str | None = None
 ) -> plotly.graph_objects.Figure:
     """Plots the distribution of node degrees in the graph.
 
@@ -39,7 +42,7 @@ def plot_degree_distribution(
 
 
 def plot_residue_composition(
-    g: nx.Graph, sort_by: Optional[str] = None, plot_type: str = "bar"
+    g: nx.Graph, sort_by: str | None = None, plot_type: str = "bar"
 ) -> plotly.graph_objects.Figure:
     """Plots the residue composition of the graph.
 
@@ -93,7 +96,7 @@ def plot_degree_by_residue_type(
     counts = pd.Series(Counter(residues))
     residues = list(set(residues))
 
-    degree_values = {r: 0 for r in residues}
+    degree_values = dict.fromkeys(residues, 0)
     for r, deg in g.degree():
         degree_values[r[2:5]] += deg
 
@@ -106,7 +109,7 @@ def plot_degree_by_residue_type(
 
 
 def plot_edge_type_distribution(
-    g: nx.Graph, plot_type: str = "bar", title: Optional[str] = None
+    g: nx.Graph, plot_type: str = "bar", title: str | None = None
 ) -> plotly.graph_objects.Figure:
     """Plots the distribution of edge types in the graph.
 
@@ -138,14 +141,14 @@ def plot_edge_type_distribution(
 
 def graph_summary(
     G: nx.Graph,
-    summary_statistics: List[str] = [
+    summary_statistics: Sequence[str] = (
         "degree",
         "betweenness_centrality",
         "closeness_centrality",
         "eigenvector_centrality",
         "communicability_betweenness_centrality",
-    ],
-    custom_data: Optional[Union[pd.DataFrame, pd.Series]] = None,
+    ),
+    custom_data: pd.DataFrame | pd.Series | None = None,
     plot: bool = False,
 ) -> pd.DataFrame:
     """Returns a summary of the graph in a dataframe.
@@ -208,18 +211,18 @@ def graph_summary(
 
 def plot_graph_metric_property_correlation(
     g: nx.Graph,
-    summary_statistics: List[str] = [
+    summary_statistics: Sequence[str] = (
         "degree",
         "betweenness_centrality",
         "closeness_centrality",
         "eigenvector_centrality",
         "communicability_betweenness_centrality",
-    ],
-    properties: List[str] = ["asa"],
-    colour_by: Optional[str] = "residue_type",
+    ),
+    properties: Sequence[str] = ("asa",),
+    colour_by: str | None = "residue_type",
     opacity: float = 0.2,
     diagonal_visible: bool = True,
-    title: Optional[str] = None,
+    title: str | None = None,
     height: int = 1000,
     width: int = 1000,
     font_size: int = 10,
@@ -264,14 +267,14 @@ def plot_graph_metric_property_correlation(
 
     summary = graph_summary(g, summary_statistics=summary_statistics)
     summary = summary[
-        summary_statistics + ["residue_type", "position", "chain"]
+        [*summary_statistics, "residue_type", "position", "chain"]
     ]
     dataf = pd.concat([summary, protein_properties], axis=1)
 
     fig = px.scatter_matrix(
         data_frame=dataf,
         # custom_data=dataf.index,
-        dimensions=summary_statistics + properties,
+        dimensions=[*summary_statistics, *properties],
         opacity=opacity,
         labels={
             col: col.replace("_", " ") for col in dataf.columns
@@ -282,7 +285,7 @@ def plot_graph_metric_property_correlation(
         width=width,
         title=title,
     )
-    fig.update_layout(font=dict(size=font_size))
+    fig.update_layout(font={"size": font_size})
     fig.update_traces(diagonal_visible=diagonal_visible)
 
     return fig

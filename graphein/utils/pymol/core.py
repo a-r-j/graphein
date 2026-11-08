@@ -1,19 +1,17 @@
-from __future__ import print_function
-
 import contextlib
 import os
 import subprocess
 import tempfile
 import time
+from xmlrpc.client import ServerProxy as Server
 
 from ..dependencies import requires_external_dependencies
-from .compat import Server
 
 HOST = os.environ.get("PYMOL_RPCHOST", "localhost")
 PORT = 9123
 
 
-class MolViewer(object):
+class MolViewer:
     def __init__(self, host=HOST, port=PORT):
         self.host = host
         self.port = int(port)
@@ -47,14 +45,14 @@ class MolViewer(object):
 
         self._process = subprocess.Popen([exe, "-R"] + list(args))
 
-        self._server = Server(uri="http://%s:%d/RPC2" % (self.host, self.port))
+        self._server = Server(uri=f"http://{self.host}:{self.port}/RPC2")
 
         # wait for the server
         while True:
             try:
                 self._server.bg_color("white")
                 break
-            except IOError:
+            except OSError:
                 time.sleep(0.1)
 
     def stop(self):

@@ -7,9 +7,10 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import copy
 import os
+from collections.abc import Callable, Generator
 from pathlib import Path
-from typing import Callable, Dict, Generator, List, Optional
 
 import networkx as nx
 from loguru import logger as log
@@ -20,7 +21,6 @@ from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.graphs import construct_graphs_mp
 from graphein.protein.utils import (
     download_alphafold_structure,
-    download_pdb,
     download_pdb_multiprocessing,
 )
 from graphein.utils.dependencies import import_message
@@ -42,21 +42,19 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self,
         root: str,
         name: str,
-        paths: Optional[List[str]] = None,
-        pdb_codes: Optional[List[str]] = None,
-        uniprot_ids: Optional[List[str]] = None,
-        graph_label_map: Optional[Dict[str, torch.Tensor]] = None,
-        node_label_map: Optional[Dict[str, torch.Tensor]] = None,
-        chain_selection_map: Optional[Dict[str, List[str]]] = None,
-        graphein_config: ProteinGraphConfig = ProteinGraphConfig(),
-        graph_format_convertor: GraphFormatConvertor = GraphFormatConvertor(
-            src_format="nx", dst_format="pyg"
-        ),
-        graph_transformation_funcs: Optional[List[Callable]] = None,
-        transform: Optional[Callable] = None,
-        pdb_transform: Optional[List[Callable]] = None,
-        pre_transform: Optional[Callable] = None,
-        pre_filter: Optional[Callable] = None,
+        paths: list[str] | None = None,
+        pdb_codes: list[str] | None = None,
+        uniprot_ids: list[str] | None = None,
+        graph_label_map: dict[str, torch.Tensor] | None = None,
+        node_label_map: dict[str, torch.Tensor] | None = None,
+        chain_selection_map: dict[str, list[str]] | None = None,
+        graphein_config: ProteinGraphConfig | None = None,
+        graph_format_convertor: GraphFormatConvertor | None = None,
+        graph_transformation_funcs: list[Callable] | None = None,
+        transform: Callable | None = None,
+        pdb_transform: list[Callable] | None = None,
+        pre_transform: Callable | None = None,
+        pre_filter: Callable | None = None,
         num_cores: int = 16,
         af_version: int = 6,
     ):
@@ -165,7 +163,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         elif self.uniprot_ids:
             self.structures = uniprot_ids
         self.af_version = af_version
-        self.bad_pdbs: List[
+        self.bad_pdbs: list[
             str
         ] = []  # list of pdb codes that failed to download
 
@@ -175,8 +173,17 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         self.chain_selection_map = chain_selection_map
 
         # Configs
-        self.config = graphein_config
-        self.graph_format_convertor = graph_format_convertor
+        # Copy so setting pdb_dir below doesn't mutate the caller's config
+        self.config = (
+            ProteinGraphConfig()
+            if graphein_config is None
+            else copy.deepcopy(graphein_config)
+        )
+        self.graph_format_convertor = (
+            GraphFormatConvertor(src_format="nx", dst_format="pyg")
+            if graph_format_convertor is None
+            else graph_format_convertor
+        )
         self.graph_transformation_funcs = graph_transformation_funcs
         self.pdb_transform = pdb_transform
         self.num_cores = num_cores
@@ -193,12 +200,12 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
         )
 
     @property
-    def raw_file_names(self) -> List[str]:
+    def raw_file_names(self) -> list[str]:
         """Name of the raw files in the dataset."""
         return [f"{pdb}.pdb" for pdb in self.structures]
 
     @property
-    def processed_file_names(self) -> List[str]:
+    def processed_file_names(self) -> list[str]:
         """Name of the processed file."""
         return [f"data_{self.name}.pt"]
 
@@ -206,8 +213,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
     def raw_dir(self) -> str:
         if self.paths is not None:
             return self.path  # replace raw dir with user local path
-        else:
-            return os.path.join(self.root, "raw")
+        return os.path.join(self.root, "raw")
 
     def download(self):
         """Download the PDB files from RCSB or Alphafold."""
@@ -265,11 +271,7 @@ class InMemoryProteinGraphDataset(InMemoryDataset):
 
         if self.chain_selection_map:
             chain_selections = [
-                (
-                    self.chain_selection_map[pdb]
-                    if pdb in self.chain_selection_map
-                    else "all"
-                )
+                (self.chain_selection_map.get(pdb, "all"))
                 for pdb in self.structures
             ]
         else:
@@ -339,24 +341,22 @@ class ProteinGraphDataset(Dataset):
     def __init__(
         self,
         root: str,
-        paths: Optional[List[str]] = None,
-        pdb_codes: Optional[List[str]] = None,
-        uniprot_ids: Optional[List[str]] = None,
+        paths: list[str] | None = None,
+        pdb_codes: list[str] | None = None,
+        uniprot_ids: list[str] | None = None,
         # graph_label_map: Optional[Dict[str, int]] = None,
-        graph_labels: Optional[List[torch.Tensor]] = None,
-        node_labels: Optional[List[torch.Tensor]] = None,
-        chain_selections: Optional[List[str]] = None,
+        graph_labels: list[torch.Tensor] | None = None,
+        node_labels: list[torch.Tensor] | None = None,
+        chain_selections: list[str] | None = None,
         # node_label_map: Optional[Dict[str, int]] = None,
         # chain_selection_map: Optional[Dict[str, List[str]]] = None,
-        graphein_config: ProteinGraphConfig = ProteinGraphConfig(),
-        graph_format_convertor: GraphFormatConvertor = GraphFormatConvertor(
-            src_format="nx", dst_format="pyg"
-        ),
-        graph_transformation_funcs: Optional[List[Callable]] = None,
-        pdb_transform: Optional[List[Callable]] = None,
-        transform: Optional[Callable] = None,
-        pre_transform: Optional[Callable] = None,
-        pre_filter: Optional[Callable] = None,
+        graphein_config: ProteinGraphConfig | None = None,
+        graph_format_convertor: GraphFormatConvertor | None = None,
+        graph_transformation_funcs: list[Callable] | None = None,
+        pdb_transform: list[Callable] | None = None,
+        transform: Callable | None = None,
+        pre_transform: Callable | None = None,
+        pre_filter: Callable | None = None,
         num_cores: int = 16,
         af_version: int = 6,
     ):
@@ -452,7 +452,7 @@ class ProteinGraphDataset(Dataset):
 
         # Labels & Chains
 
-        self.examples: Dict[int, str] = dict(enumerate(self.structures))
+        self.examples: dict[int, str] = dict(enumerate(self.structures))
 
         if graph_labels is not None:
             self.graph_label_map = dict(enumerate(graph_labels))
@@ -469,11 +469,20 @@ class ProteinGraphDataset(Dataset):
         else:
             self.chain_selection_map = None
         self.validate_input()
-        self.bad_pdbs: List[str] = []
+        self.bad_pdbs: list[str] = []
 
         # Configs
-        self.config = graphein_config
-        self.graph_format_convertor = graph_format_convertor
+        # Copy so setting pdb_dir below doesn't mutate the caller's config
+        self.config = (
+            ProteinGraphConfig()
+            if graphein_config is None
+            else copy.deepcopy(graphein_config)
+        )
+        self.graph_format_convertor = (
+            GraphFormatConvertor(src_format="nx", dst_format="pyg")
+            if graph_format_convertor is None
+            else graph_format_convertor
+        )
         self.num_cores = num_cores
         self.pdb_transform = pdb_transform
         self.graph_transformation_funcs = graph_transformation_funcs
@@ -488,7 +497,7 @@ class ProteinGraphDataset(Dataset):
         self._file_names = self.processed_file_names
 
     @property
-    def raw_file_names(self) -> List[str]:
+    def raw_file_names(self) -> list[str]:
         """Names of raw files in the dataset."""
         return [f"{pdb}.pdb" for pdb in self.structures]
 
@@ -503,7 +512,7 @@ class ProteinGraphDataset(Dataset):
         return os.path.join(self.processed_dir, "failed_examples.txt")
 
     @property
-    def failed_examples(self) -> List[str]:
+    def failed_examples(self) -> list[str]:
         """Names of examples left out of the dataset because graph
         construction failed or ``pre_filter`` rejected them.
 
@@ -516,7 +525,7 @@ class ProteinGraphDataset(Dataset):
             return f.read().splitlines()
 
     @property
-    def processed_file_names(self) -> List[str]:
+    def processed_file_names(self) -> list[str]:
         """Names of processed files to look for"""
         failed = set(self.failed_examples)
         return [
@@ -529,8 +538,7 @@ class ProteinGraphDataset(Dataset):
     def raw_dir(self) -> str:
         if self.paths is not None:
             return self.path  # replace raw dir with user local path
-        else:
-            return os.path.join(self.root, "raw")
+        return os.path.join(self.root, "raw")
 
     def validate_input(self):
         if self.graph_label_map is not None:
@@ -619,16 +627,16 @@ class ProteinGraphDataset(Dataset):
         # Chunk dataset for parallel processing
         chunk_size = 128
 
-        def divide_chunks(l: List[str], n: int = 2) -> Generator:
+        def divide_chunks(l: list[str], n: int = 2) -> Generator:
             for i in range(0, len(l), n):
                 yield l[i : i + n]
 
         # chunks = list(divide_chunks(self.structures, chunk_size))
-        chunks: List[int] = list(
+        chunks: list[int] = list(
             divide_chunks(list(self.examples.keys()), chunk_size)
         )
 
-        failed: List[str] = []
+        failed: list[str] = []
         for chunk in tqdm(chunks):
             pdbs = [self.examples[idx] for idx in chunk]
             # Get chain selections
@@ -701,7 +709,7 @@ class ProteinGraphDataset(Dataset):
 
 class ProteinGraphListDataset(InMemoryDataset):
     def __init__(
-        self, root: str, data_list: List[Data], name: str, transform=None
+        self, root: str, data_list: list[Data], name: str, transform=None
     ):
         """Creates a dataset from a list of PyTorch Geometric Data objects.
 
