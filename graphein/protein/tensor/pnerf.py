@@ -299,49 +299,43 @@ def sn_nerf(
 
 
     Args:
-        a (torch.float32 tensor): (3 x 1) tensor describing point a.
-        b (torch.float32 tensor): (3 x 1) tensor describing point b.
-        c (torch.float32 tensor): (3 x 1) tensor describing point c.
-        l_cd (torch.float32 tensor): (1) tensor describing the length between points
-            c & d.
-        theta (torch.float32 tensor): (1) tensor describing angle between points b, c,
-            and d.
-        chi (torch.float32 tensor): (1) tensor describing dihedral angle between points
-            a, b, c, and d.
-        l_bc (torch.float32 tensor): (1) tensor describing length between points b and c.
+        a (torch.float32 tensor): ``(..., 3)`` tensor describing point a.
+        b (torch.float32 tensor): ``(..., 3)`` tensor describing point b.
+        c (torch.float32 tensor): ``(..., 3)`` tensor describing point c.
+        l_cd (torch.float32 tensor): Length between points c & d.
+        theta (torch.float32 tensor): Angle between points b, c, and d.
+        chi (torch.float32 tensor): Dihedral angle between points a, b, c,
+            and d. Scalar or of shape ``(...)``.
+        l_bc (torch.float32 tensor): Length between points b and c.
     Raises:
         ValueError: Raises ValueError when value of theta is not in [-pi, pi].
     Returns:
-        torch.float32 tensor: (3 x 1) tensor describing coordinates of point c after
-        placement using points a, b, c, and several parameters.
+        torch.float32 tensor: ``(..., 3)`` tensor of the coordinates of point d.
     """
-    if not (-np.pi <= theta <= np.pi):
+    if (theta.abs() > np.pi).any():
         raise ValueError(
             f"theta must be in radians and in [-pi, pi]. theta = {theta}"
         )
     AB = b - a
     BC = c - b
     bc = BC / l_bc
-    n = F.normalize(torch.linalg.cross(AB, bc), dim=0)
-    n_x_bc = torch.linalg.cross(n, bc)
+    n = F.normalize(torch.linalg.cross(AB, bc, dim=-1), dim=-1)
+    n_x_bc = torch.linalg.cross(n, bc, dim=-1)
 
-    M = torch.stack([bc, n_x_bc, n], dim=1).to(chi.device)
+    M = torch.stack([bc, n_x_bc, n], dim=-1).to(chi.device)
 
     l_cd = l_cd.to(chi.device)
     theta = theta.to(chi.device)
     c = c.to(chi.device)
-    D2 = (
-        torch.stack(
-            [
-                -l_cd * torch.cos(theta),
-                l_cd * torch.sin(theta) * torch.cos(chi),
-                l_cd * torch.sin(theta) * torch.sin(chi),
-            ]
-        )
-        .to(torch.float32)
-        .unsqueeze(1)
-    )
+    D2 = torch.stack(
+        torch.broadcast_tensors(
+            -l_cd * torch.cos(theta),
+            l_cd * torch.sin(theta) * torch.cos(chi),
+            l_cd * torch.sin(theta) * torch.sin(chi),
+        ),
+        dim=-1,
+    ).to(torch.float32)
 
-    D = torch.mm(M, D2).squeeze()
+    D = (M @ D2.unsqueeze(-1)).squeeze(-1)
 
     return D + c

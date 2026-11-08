@@ -9,6 +9,7 @@
 import os
 from pathlib import Path
 
+import pandas as pd
 import pytest
 from biopandas.pdb import PandasPdb
 from pandas.testing import assert_frame_equal
@@ -18,6 +19,7 @@ from graphein.protein.tensor.io import (
     protein_df_to_chain_tensor,
     protein_df_to_tensor,
     protein_to_pyg,
+    to_dataframe,
     to_pdb,
 )
 from graphein.protein.tensor.sequence import get_residue_id
@@ -155,3 +157,31 @@ def test_protein_to_pyg_ids_and_hetatms():
         assert list(data["atoms"]) == list(expected.atom_name)
         assert data["residue_number"].tolist() == list(expected.residue_number)
         assert list(data["element_symbol"]) == list(expected.element_symbol)
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_to_dataframe_custom_fill_value():
+    x = protein_to_pyg(path=str(PDB_DATA_PATH)).coords
+    expected = to_dataframe(x)
+    x[x == 1e-5] = 0.0
+    df = to_dataframe(x, fill_value=0.0)
+    assert len(df) == len(expected)
+    assert_frame_equal(
+        df[["atom_name", "x_coord", "y_coord", "z_coord"]],
+        expected[["atom_name", "x_coord", "y_coord", "z_coord"]],
+    )
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_protein_df_to_chain_tensor_sorts_chain_ids():
+    # Chains appear in the file as L, H, A; IDs follow sorted order
+    path = PDB_DATA_PATH.parent / "input_pdb_cryst1.pdb"
+    df = PandasPdb().read_pdb(str(path)).df["ATOM"]
+    chains = pd.Series(get_residue_id(df)).str.split(":").str[0]
+    expected = chains.map({c: i for i, c in enumerate(sorted(set(chains)))})
+
+    ids = protein_df_to_chain_tensor(df)
+    assert ids.tolist() == expected.tolist()
+    one_hot = protein_df_to_chain_tensor(df, one_hot=True)
+    assert one_hot.shape == (len(chains), 3)
+    assert one_hot.argmax(dim=1).tolist() == expected.tolist()
