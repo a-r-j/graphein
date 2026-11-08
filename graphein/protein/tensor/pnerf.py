@@ -13,7 +13,6 @@ PyTorch implementation modifield from the implementation by Felix Opolka:
 
 import collections
 import math
-from typing import Optional
 
 import numpy as np
 import torch
@@ -42,11 +41,6 @@ def reconstruct_dihedrals(
     ground truth.
 
     """
-    if dihedrals.shape[-1] == 6:
-        phi, psi, omg = dihedrals_to_rad(dihedrals)
-        # dihedrals = torch.stack([omg, phi, psi], dim=-1)  # This works
-        dihedrals = torch.stack([phi, psi, omg], dim=-1)
-
     bond_lengths = get_backbone_bond_lengths(ground_truth)
     bond_angles = get_backbone_bond_angles(ground_truth)
     bond_angles = torch.index_select(
@@ -57,13 +51,11 @@ def reconstruct_dihedrals(
 
 def dihedrals_to_coords(
     dihedral: torch.Tensor,
-    bond_lengths: Optional[torch.Tensor],
-    bond_angles: Optional[torch.Tensor],
+    bond_lengths: torch.Tensor | None,
+    bond_angles: torch.Tensor | None,
 ) -> AtomTensor:
     if dihedral.shape[-1] == 6:
-        phi, psi, omg = dihedrals_to_rad(dihedral)
-        # dihedrals = torch.stack([omg, phi, psi], dim=-1)  # This works
-        dihedral = torch.stack([phi, psi, omg], dim=-1)
+        dihedral = dihedrals_to_rad(dihedral, concat=True)
 
     if bond_lengths is None:
         pts = dihedral_to_point_fixed(dihedral.unsqueeze(1))
@@ -100,7 +92,7 @@ def dihedral_to_point_fixed(
     )
 
     # point_x = r_cos_theta.view(1, 1, -1).repeat(num_steps, batch_size, 1)
-    point_x = r_cos_theta.unsqueeze(1)
+    point_x = r_cos_theta.expand(dihedral.shape)
     point_y = torch.cos(dihedral) * r_sin_theta
     point_z = torch.sin(dihedral) * r_sin_theta
 
@@ -234,21 +226,23 @@ def point_to_coordinate(
         bc = F.normalize(prev_three_coords.c - prev_three_coords.b, dim=-1)
         # bc = F.normalize(prev_three_coords.b - prev_three_coords.c, dim=-1)
         n = F.normalize(
-            torch.cross(prev_three_coords.b - prev_three_coords.a, bc), dim=-1
+            torch.linalg.cross(prev_three_coords.b - prev_three_coords.a, bc),
+            dim=-1,
         )
         if multi_m:  # multiple fragments, one atom at a time
-            m = torch.stack([bc, torch.cross(n, bc), n]).permute(1, 2, 3, 0)
-            m = m.to(point.device)  ###
+            m = torch.stack([bc, torch.linalg.cross(n, bc), n]).permute(
+                1, 2, 3, 0
+            )
         else:  # single fragment, reconstructed entirely at once.
             s = point.shape + (3,)
-            m = torch.stack([bc, torch.cross(n, bc), n]).permute(1, 2, 0)
+            m = torch.stack([bc, torch.linalg.cross(n, bc), n]).permute(
+                1, 2, 0
+            )
             m = m.repeat(s[0], 1, 1).view(s)
-            m = m.to(point.device)  ###
-        coord = (
+        return (
             torch.squeeze(torch.matmul(m, point.unsqueeze(3)), dim=3)
             + prev_three_coords.c
         )
-        return coord
 
     # Loop over FRAG_SIZE in NUM_FRAGS parallel fragments, sequentially
     # generating the coordinates for each fragment across all batches
@@ -305,49 +299,43 @@ def sn_nerf(
 
 
     Args:
-        a (torch.float32 tensor): (3 x 1) tensor describing point a.
-        b (torch.float32 tensor): (3 x 1) tensor describing point b.
-        c (torch.float32 tensor): (3 x 1) tensor describing point c.
-        l_cd (torch.float32 tensor): (1) tensor describing the length between points
-            c & d.
-        theta (torch.float32 tensor): (1) tensor describing angle between points b, c,
-            and d.
-        chi (torch.float32 tensor): (1) tensor describing dihedral angle between points
-            a, b, c, and d.
-        l_bc (torch.float32 tensor): (1) tensor describing length between points b and c.
+        a (torch.float32 tensor): ``(..., 3)`` tensor describing point a.
+        b (torch.float32 tensor): ``(..., 3)`` tensor describing point b.
+        c (torch.float32 tensor): ``(..., 3)`` tensor describing point c.
+        l_cd (torch.float32 tensor): Length between points c & d.
+        theta (torch.float32 tensor): Angle between points b, c, and d.
+        chi (torch.float32 tensor): Dihedral angle between points a, b, c,
+            and d. Scalar or of shape ``(...)``.
+        l_bc (torch.float32 tensor): Length between points b and c.
     Raises:
         ValueError: Raises ValueError when value of theta is not in [-pi, pi].
     Returns:
-        torch.float32 tensor: (3 x 1) tensor describing coordinates of point c after
-        placement using points a, b, c, and several parameters.
+        torch.float32 tensor: ``(..., 3)`` tensor of the coordinates of point d.
     """
-    if not (-np.pi <= theta <= np.pi):
+    if (theta.abs() > np.pi).any():
         raise ValueError(
             f"theta must be in radians and in [-pi, pi]. theta = {theta}"
         )
     AB = b - a
     BC = c - b
     bc = BC / l_bc
-    n = F.normalize(torch.cross(AB, bc), dim=0)
-    n_x_bc = torch.cross(n, bc)
+    n = F.normalize(torch.linalg.cross(AB, bc, dim=-1), dim=-1)
+    n_x_bc = torch.linalg.cross(n, bc, dim=-1)
 
-    M = torch.stack([bc, n_x_bc, n], dim=1).to(chi.device)
+    M = torch.stack([bc, n_x_bc, n], dim=-1).to(chi.device)
 
     l_cd = l_cd.to(chi.device)
     theta = theta.to(chi.device)
     c = c.to(chi.device)
-    D2 = (
-        torch.stack(
-            [
-                -l_cd * torch.cos(theta),
-                l_cd * torch.sin(theta) * torch.cos(chi),
-                l_cd * torch.sin(theta) * torch.sin(chi),
-            ]
-        )
-        .to(torch.float32)
-        .unsqueeze(1)
-    )
+    D2 = torch.stack(
+        torch.broadcast_tensors(
+            -l_cd * torch.cos(theta),
+            l_cd * torch.sin(theta) * torch.cos(chi),
+            l_cd * torch.sin(theta) * torch.sin(chi),
+        ),
+        dim=-1,
+    ).to(torch.float32)
 
-    D = torch.mm(M, D2).squeeze()
+    D = (M @ D2.unsqueeze(-1)).squeeze(-1)
 
     return D + c

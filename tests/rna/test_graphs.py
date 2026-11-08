@@ -2,14 +2,14 @@ from pathlib import Path
 
 import networkx as nx
 import pytest
-from hypothesis import given
-from hypothesis.strategies import text
 
+from graphein.rna.config import RNAGraphConfig
 from graphein.rna.edges import (
     add_all_dotbracket_edges,
     add_base_pairing_interactions,
     add_phosphodiester_bonds,
 )
+from graphein.rna.edges.atomic import add_atomic_edges
 from graphein.rna.graphs import (
     RNA_BASES,
     SUPPORTED_DOTBRACKET_NOTATION,
@@ -67,24 +67,24 @@ def test_pdb_rna_graph():
 
     for n, d in g.nodes(data=True):
         assert isinstance(n, str)
-        assert "coords" in d.keys()
-        assert "chain_id" in d.keys()
-        assert "residue_name" in d.keys()
-        assert "residue_number" in d.keys()
-        assert "atom_type" in d.keys()
-        assert "b_factor" in d.keys()
+        assert "coords" in d
+        assert "chain_id" in d
+        assert "residue_name" in d
+        assert "residue_number" in d
+        assert "atom_type" in d
+        assert "b_factor" in d
 
     for _, _, d in g.edges(data=True):
-        assert "kind" in d.keys()
-        assert "bond_length" in d.keys()
+        assert "kind" in d
+        assert "bond_length" in d
 
-    assert "name" in g.graph.keys()
-    assert "pdb_code" in g.graph.keys()
-    assert "path" in g.graph.keys()
-    assert "chain_ids" in g.graph.keys()
-    assert "pdb_df" in g.graph.keys()
-    assert "raw_pdb_df" in g.graph.keys()
-    assert "coords" in g.graph.keys()
+    assert "name" in g.graph
+    assert "pdb_code" in g.graph
+    assert "path" in g.graph
+    assert "chain_ids" in g.graph
+    assert "pdb_df" in g.graph
+    assert "raw_pdb_df" in g.graph
+    assert "coords" in g.graph
 
 
 def test_construct_graph():
@@ -96,21 +96,43 @@ def test_construct_graph():
 
     for n, d in g.nodes(data=True):
         assert isinstance(n, str)
-        assert "coords" in d.keys()
-        assert "chain_id" in d.keys()
-        assert "residue_name" in d.keys()
-        assert "residue_number" in d.keys()
-        assert "atom_type" in d.keys()
-        assert "b_factor" in d.keys()
+        assert "coords" in d
+        assert "chain_id" in d
+        assert "residue_name" in d
+        assert "residue_number" in d
+        assert "atom_type" in d
+        assert "b_factor" in d
 
     for _, _, d in g.edges(data=True):
-        assert "kind" in d.keys()
-        assert "bond_length" in d.keys()
+        assert "kind" in d
+        assert "bond_length" in d
 
-    assert "name" in g.graph.keys()
-    assert "pdb_code" in g.graph.keys()
-    assert "path" in g.graph.keys()
-    assert "chain_ids" in g.graph.keys()
-    assert "pdb_df" in g.graph.keys()
-    assert "raw_pdb_df" in g.graph.keys()
-    assert "coords" in g.graph.keys()
+    assert "name" in g.graph
+    assert "pdb_code" in g.graph
+    assert "path" in g.graph
+    assert "chain_ids" in g.graph
+    assert "pdb_df" in g.graph
+    assert "raw_pdb_df" in g.graph
+    assert "coords" in g.graph
+
+
+def test_atomic_edges_skip_cross_chain_bonds():
+    file_path = Path(__file__).parent / "test_data/2jyf.pdb"
+    config = RNAGraphConfig(edge_construction_functions=[])
+    g = construct_graph(config=config, path=str(file_path))
+    assert g.number_of_edges() == 0
+    df = g.graph["pdb_df"]
+    # Split chain A so the O3'-P bond between residues 21 and 22 crosses chains
+    df.loc[
+        (df["chain_id"] == "A") & (df["residue_number"] >= 22), "chain_id"
+    ] = "C"
+    add_atomic_edges(g)
+
+    chains = dict(zip(df["node_id"], df["chain_id"]))
+    assert g.number_of_edges() > 0
+    assert all(chains[u] == chains[v] for u, v in g.edges())
+
+
+def test_construct_graph_requires_input():
+    with pytest.raises(ValueError):
+        construct_graph()

@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from graphein.protein.config import DSSPConfig, ProteinGraphConfig
+from graphein.protein.config import ProteinGraphConfig, ProteinMeshConfig
 from graphein.protein.edges.distance import (
     add_aromatic_interactions,
     add_aromatic_sulphur_interactions,
@@ -22,7 +22,6 @@ from graphein.protein.edges.distance import (
     add_k_nn_edges,
     add_peptide_bonds,
 )
-from graphein.protein.features.nodes.aaindex import aaindex1
 from graphein.protein.features.nodes.amino_acid import (
     expasy_protein_scale,
     meiler_embedding,
@@ -36,24 +35,22 @@ from graphein.protein.features.nodes.dssp import (
 )
 from graphein.protein.features.sequence.embeddings import (
     biovec_sequence_embedding,
-    esm_residue_embedding,
-    esm_sequence_embedding,
+    compute_esm_embedding,
 )
 from graphein.protein.features.sequence.sequence import molecular_weight
 from graphein.protein.graphs import (
+    add_nodes_to_graph,
     compute_chain_graph,
     compute_secondary_structure_graph,
     construct_graph,
     construct_graphs_mp,
-    deprotonate_structure,
     read_pdb_to_dataframe,
+    remove_alt_locs,
 )
-from graphein.utils.dependencies import is_tool
+from graphein.protein.meshes import parse_pymol_commands
 
 PDB_DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.pdb"
 CIF_DATA_PATH = Path(__file__).resolve().parent / "test_data" / "4hhb.cif"
-
-DSSP_AVAILABLE = is_tool("mkdssp")
 
 
 def generate_graph():
@@ -116,7 +113,6 @@ def test_construct_graph():
     assert len(peptide_bond_edges) == 570
 
 
-@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_construct_graph_with_dssp():
     """Makes sure protein graphs can be constructed with dssp
 
@@ -137,7 +133,6 @@ def test_construct_graph_with_dssp():
             meiler_embedding,
             partial(expasy_protein_scale, add_separate=True),
         ],
-        "dssp_config": DSSPConfig(),
     }
 
     dssp_prot_config = ProteinGraphConfig(**dssp_config_functions)
@@ -184,7 +179,7 @@ def test_construct_graphs_mp():
     )
     assert isinstance(g, dict)
     assert len(g.keys()) == len(graph_list) / 5
-    for k, v in g.items():
+    for v in g.values():
         assert isinstance(v, (nx.Graph, None))
     g = construct_graphs_mp(
         pdb_code_it=graph_list, config=ProteinGraphConfig(), return_dict=False
@@ -245,9 +240,10 @@ def test_intramolecular_edges():
 
 
 def test_distance_edges():
-    """Example-based test that distance-based edge construction works correctly
+    """Example-based test that distance-based edge construction works correctly,
+    and that edges fulfill the distance threshold condition.
 
-    Uses 4hhb PDB file as an example test case.
+    Uses 4hhb and P04629 PDB file as an example test case.
     """
     file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
 
@@ -272,12 +268,33 @@ def test_distance_edges():
         ]
     }
     config = ProteinGraphConfig(**edge_functions)
-    G = construct_graph(path=str(file_path), config=config)
-    assert G is not None
+    G1 = construct_graph(path=str(file_path), config=config)
+    assert G1 is not None
+
+    """Use AlphaFold structure."""
+    file_path = Path(__file__).parent / "test_data" / "P04629.pdb"
+    threshold_distance = 10.0
+    new_edge_funcs = {
+        "edge_construction_functions": [
+            partial(
+                add_distance_threshold,
+                long_interaction_threshold=-1,
+                threshold=threshold_distance,
+            )
+        ]
+    }
+    config = ProteinGraphConfig(**new_edge_funcs)
+    G2 = construct_graph(
+        path=file_path,
+        config=config,
+    )
+    assert G2 is not None
+    # Check that the distance values of each edge are less than the threshold
+    for u, v, d in G2.edges(data=True):
+        assert d["distance"] < threshold_distance
 
 
 # Featurisation tests
-@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_node_features():
     # Todo this test requires attention
     # Tests node featurisers for a residue graph:
@@ -299,7 +316,6 @@ def test_node_features():
             secondary_structure,
             # partial(aaindex1, accession="FAUJ880111"),
         ],
-        "dssp_config": DSSPConfig(),
     }
     config = ProteinGraphConfig(**config_params)
     G = construct_graph(path=str(file_path), config=config)
@@ -307,13 +323,13 @@ def test_node_features():
     # Check for existence of features
     for _, d in G.nodes(data=True):
         # Todo these functions return pd.Series, rather than adding to the node
-        assert "meiler" in d.keys()
-        assert "expasy" in d.keys()
-        assert "rsa" in d.keys()
-        assert "asa" in d.keys()
-        assert "phi" in d.keys()
-        assert "psi" in d.keys()
-        assert "ss" in d.keys()
+        assert "meiler" in d
+        assert "expasy" in d
+        assert "rsa" in d
+        assert "asa" in d
+        assert "phi" in d
+        assert "psi" in d
+        assert "ss" in d
         continue
 
 
@@ -497,7 +513,6 @@ def test_edges_do_not_add_nodes_for_chain_subset():
     assert len(g) == 219
 
 
-@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_secondary_structure_graphs():
     file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     config = ProteinGraphConfig(
@@ -509,20 +524,19 @@ def test_secondary_structure_graphs():
             add_hydrogen_bond_interactions,
         ],
         graph_metadata_functions=[secondary_structure],
-        dssp_config=DSSPConfig(),
     )
     g = construct_graph(path=str(file_path), config=config)
 
     h = compute_secondary_structure_graph(g, remove_non_ss=False)
     # Check number of residues preserved
     res_counts = sum(d["residue_counts"] for _, d in h.nodes(data=True))
-    assert res_counts == len(
-        g
-    ), "Residue counts in SS graph should match number of residues in original \
+    assert res_counts == len(g), (
+        "Residue counts in SS graph should match number of residues in original \
         graph"
-    assert nx.is_connected(
-        h
-    ), "SS graph should be connected in this configuration"
+    )
+    assert nx.is_connected(h), (
+        "SS graph should be connected in this configuration"
+    )
 
     h = compute_secondary_structure_graph(
         g,
@@ -530,12 +544,11 @@ def test_secondary_structure_graphs():
         remove_self_loops=False,
         return_weighted_graph=False,
     )
-    assert len(g.edges) == len(
-        h.edges
-    ), "Multigraph should have same number of edges."
+    assert len(g.edges) == len(h.edges), (
+        "Multigraph should have same number of edges."
+    )
 
 
-@pytest.mark.skipif(not DSSP_AVAILABLE, reason="DSSP not installed.")
 def test_chain_graph():
     file_path = Path(__file__).parent / "test_data" / "4hhb.pdb"
     config = ProteinGraphConfig(
@@ -547,7 +560,6 @@ def test_chain_graph():
             add_hydrogen_bond_interactions,
         ],
         graph_metadata_functions=[secondary_structure],
-        dssp_config=DSSPConfig(),
     )
     g = construct_graph(path=str(file_path), config=config)
     h = compute_chain_graph(g)
@@ -580,9 +592,9 @@ def test_df_processing():
     g3 = construct_graph(config=config2, pdb_code="4cvi")
 
     for n, d in g1.nodes(data=True):
-        assert (
-            int(d["residue_number"]) % 2 == 0
-        ), "Only even residues should be present"
+        assert int(d["residue_number"]) % 2 == 0, (
+            "Only even residues should be present"
+        )
 
     assert len(g1) != len(g2), "Graphs should not be equal"
     for n, d in g3.nodes(data=True):
@@ -599,3 +611,118 @@ def test_df_processing():
         if d["element_symbol"] in {"H", "D", "T"}:
             has_H.append(n)
     assert len(has_H) > 0, "No hydrogen isotopes are present"
+
+
+def test_weighted_chain_graph_does_not_modify_input():
+    config = ProteinGraphConfig(
+        edge_construction_functions=[
+            partial(add_k_nn_edges, k=5),
+            add_ionic_interactions,
+        ]
+    )
+    g = construct_graph(config=config, path=str(PDB_DATA_PATH))
+    before = {(u, v): set(d["kind"]) for u, v, d in g.edges(data=True)}
+    compute_chain_graph(g, return_weighted_graph=True)
+    assert {(u, v): d["kind"] for u, v, d in g.edges(data=True)} == before
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        PDB_DATA_PATH,  # chains A-D in order
+        # chains L, H, A (not in alphabetical order) and insertion codes
+        Path(__file__).resolve().parent / "test_data" / "input_pdb_cryst1.pdb",
+    ],
+)
+def test_centroids_match_their_residue(path):
+    """Each node's centroid is the mean of its own residue's atoms."""
+    config = ProteinGraphConfig(granularity="centroids")
+    g = construct_graph(config=config, path=str(path))
+    atoms = read_pdb_to_dataframe(path=str(path))
+    atoms = atoms.loc[atoms["record_name"] == "ATOM"]
+    keys = ["chain_id", "residue_number", "insertion"]
+    expected = atoms.groupby(keys)[["x_coord", "y_coord", "z_coord"]].mean()
+    nodes = g.graph["pdb_df"].set_index(keys)
+    np.testing.assert_allclose(
+        np.stack([g.nodes[n]["coords"] for n in nodes["node_id"]]),
+        expected.loc[nodes.index].to_numpy(),
+    )
+
+
+def test_add_nodes_to_graph_verbose():
+    g = construct_graph(path=str(PDB_DATA_PATH))
+    h = nx.Graph(**g.graph)
+    add_nodes_to_graph(h, verbose=True)
+    assert set(h) == set(g)
+
+
+def test_parse_pymol_commands_none():
+    assert parse_pymol_commands(ProteinMeshConfig(pymol_commands=None)) == []
+
+
+def test_compute_esm_embedding_invalid_representation():
+    with pytest.raises(ValueError):
+        compute_esm_embedding("MKV", representation="token")
+
+
+def test_construct_graph_does_not_mutate_config():
+    def mark(G):
+        G.graph["marked"] = True
+        return G
+
+    config = ProteinGraphConfig()
+    g = construct_graph(
+        config=config, path=str(PDB_DATA_PATH), graph_annotation_funcs=[mark]
+    )
+    assert g.graph["marked"]
+    assert config.graph_metadata_functions is None
+
+
+def test_insertions_false_keeps_parent_residue():
+    # H 52 (TRP) and 52A (TYR): remove_alt_locs left the frame sorted by
+    # occupancy, so remove_insertions could drop 52 as 52A's duplicate.
+    path = Path(__file__).parent / "test_data" / "input_pdb_cryst1.pdb"
+    g = construct_graph(
+        config=ProteinGraphConfig(insertions=False), path=path, verbose=False
+    )
+    assert "H:TRP:52" in g
+    assert not any(n.startswith("H:TYR:52") for n in g)
+
+
+def test_remove_alt_locs_keeps_order_and_first_of_ties():
+    df = pd.DataFrame(
+        {
+            "chain_id": "A",
+            "residue_number": [1, 1, 2, 2, 3],
+            "atom_name": "CA",
+            "insertion": "",
+            "alt_loc": ["", "", "A", "B", ""],
+            "occupancy": [1.0, 1.0, 0.5, 0.5, 0.2],
+        }
+    )
+    df.loc[0, "insertion"] = "A"  # 1A, then 1
+    out = remove_alt_locs(df)
+    assert out["residue_number"].tolist() == [1, 1, 2, 3]
+    assert out["alt_loc"].tolist() == ["", "", "A", ""]
+    out = remove_alt_locs(df, keep="min_occupancy")
+    assert out["alt_loc"].tolist() == ["", "", "A", ""]
+
+
+def test_read_mmcif_keeps_file_order(tmp_path):
+    # HETATM records (here MET A 32 as MSE) stay where they are in the
+    # file, as for PDB files, rather than after every ATOM record.
+    lines = []
+    for line in CIF_DATA_PATH.read_text().splitlines():
+        f = line.split()
+        if f[:1] == ["ATOM"] and f[5:7] == ["MET", "A"] and f[8] == "32":
+            line = line.replace("ATOM  ", "HETATM", 1).replace(
+                " MET ", " MSE "
+            )
+        lines.append(line)
+    cif = tmp_path / "4hhb_mse.cif"
+    cif.write_text("\n".join(lines) + "\n")
+    df = read_pdb_to_dataframe(path=str(cif))
+    assert df["atom_number"].is_monotonic_increasing
+    assert df.index.equals(pd.RangeIndex(len(df)))
+    chain_a = df[df["chain_id"] == "A"]["residue_number"].drop_duplicates()
+    assert chain_a.tolist()[30:33] == [31, 32, 33]

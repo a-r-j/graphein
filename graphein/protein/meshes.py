@@ -10,7 +10,7 @@ from __future__ import annotations
 import importlib.util
 import os
 import time
-from typing import List, NamedTuple, Optional, Tuple
+from typing import TYPE_CHECKING, NamedTuple
 
 from loguru import logger as log
 
@@ -21,6 +21,10 @@ from graphein.utils.dependencies import (
     requires_python_libs,
 )
 from graphein.utils.pymol import MolViewer
+
+if TYPE_CHECKING:
+    import torch
+
 
 try:
     from pytorch3d.structures import Meshes
@@ -44,7 +48,7 @@ def check_for_pymol_installation():
 
 
 def configure_pymol_session(
-    config: Optional[ProteinMeshConfig] = None,
+    config: ProteinMeshConfig | None = None,
 ):
     """
     Configures a PyMol session based on ``config.parse_pymol_commands``. Uses default parameters ``"-cKq"``.
@@ -67,10 +71,10 @@ def configure_pymol_session(
 
 @requires_external_dependencies("pymol")
 def get_obj_file(
-    pdb_file: Optional[str] = None,
-    pdb_code: Optional[str] = None,
-    out_dir: Optional[str] = None,
-    config: Optional[ProteinMeshConfig] = None,
+    pdb_file: str | None = None,
+    pdb_code: str | None = None,
+    out_dir: str | None = None,
+    config: ProteinMeshConfig | None = None,
 ) -> str:
     """
     Runs PyMol to compute surface/mesh for a given protein.
@@ -113,7 +117,6 @@ def get_obj_file(
         config = ProteinMeshConfig()
 
     commands = parse_pymol_commands(config)
-    print(commands)
     run_pymol_commands(commands)
 
     # Save surface object as .obj
@@ -122,7 +125,7 @@ def get_obj_file(
     return file_name
 
 
-def parse_pymol_commands(config: ProteinMeshConfig) -> List[str]:
+def parse_pymol_commands(config: ProteinMeshConfig) -> list[str]:
     """
     Parses pymol commands from config. At the moment users can only supply a list of string commands.
 
@@ -135,12 +138,11 @@ def parse_pymol_commands(config: ProteinMeshConfig) -> List[str]:
         config = ProteinMeshConfig()
 
     # Todo parsing of individual pymol mesh calculation parameters. There's a lot of them so this is not a priority now.
-    if config.pymol_commands is not None:
-        return config.pymol_commands
+    return config.pymol_commands or []
 
 
 @requires_external_dependencies("pymol")
-def run_pymol_commands(commands: List[str]) -> None:
+def run_pymol_commands(commands: list[str]) -> None:
     """
     Runs Pymol Commands.
 
@@ -156,11 +158,11 @@ def run_pymol_commands(commands: List[str]) -> None:
 
 @requires_python_libs("pytorch3d")
 def create_mesh(
-    pdb_file: Optional[str] = None,
-    pdb_code: Optional[str] = None,
-    out_dir: Optional[str] = None,
-    config: Optional[ProteinMeshConfig] = None,
-) -> Tuple[torch.FloatTensor, NamedTuple, NamedTuple]:
+    pdb_file: str | None = None,
+    pdb_code: str | None = None,
+    out_dir: str | None = None,
+    config: ProteinMeshConfig | None = None,
+) -> tuple[torch.FloatTensor, NamedTuple, NamedTuple]:
     """
     Creates a ``PyTorch3D`` mesh from a ``pdb_file`` or ``pdb_code``.
 
@@ -209,8 +211,7 @@ def normalize_and_center_mesh_vertices(
     center = verts.mean()
     verts = verts - center
     scale = max(verts.abs().max(0)[0])
-    verts = verts / scale
-    return verts
+    return verts / scale
 
 
 @requires_python_libs("torch", "pytorch3d")
@@ -229,19 +230,3 @@ def convert_verts_and_face_to_mesh(
     """
     faces_idx = faces.verts_idx
     return Meshes(verts=[verts], faces=[faces_idx])
-
-
-if __name__ == "__main__":
-    from graphein.protein.visualisation import plot_pointcloud
-
-    config = ProteinMeshConfig(
-        pymol_commands=[
-            "show surface",
-            "set surface_solvent, on",
-            "set solvent_radius, 10000",
-        ]
-    )
-    verts, faces, aux = create_mesh(pdb_code="3eiy", config=config)
-
-    trg_mesh = convert_verts_and_face_to_mesh(verts, faces)
-    plot_pointcloud(trg_mesh)

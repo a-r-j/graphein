@@ -15,7 +15,8 @@ Junction tree code adapted from Wengong Jin https://github.com/wengong-jin/icml1
 from __future__ import annotations
 
 import collections
-from typing import Any, List, Optional, Tuple, Union
+import itertools
+from typing import Any
 
 import networkx as nx
 import numpy as np
@@ -29,13 +30,6 @@ try:
     from rdkit import Chem as Chem
     from rdkit import DataStructs
     from rdkit.Chem import AllChem
-    from rdkit.Chem.Descriptors import (
-        TPSA,
-        MolLogP,
-        MolWt,
-        NumHAcceptors,
-        NumHDonors,
-    )
     from rdkit.Chem.Descriptors3D import NPR1, NPR2
     from rdkit.Chem.rdMolTransforms import ComputeCentroid
 except ImportError:
@@ -57,7 +51,7 @@ MAX_NCAND: int = 2000
 
 @requires_python_libs("rdkit")
 def get_center(
-    mol: Union[nx.Graph, Chem.Mol], weights: Optional[np.ndarray] = None
+    mol: nx.Graph | Chem.Mol, weights: np.ndarray | None = None
 ) -> np.ndarray:
     """Compute the centroid of the conformation.
 
@@ -71,14 +65,14 @@ def get_center(
     """
     if isinstance(mol, nx.Graph):
         mol = mol.graph["rdmol"]
-    assert (
-        mol.GetNumConformers() > 0
-    ), "Molecule must have at least one conformer."
+    assert mol.GetNumConformers() > 0, (
+        "Molecule must have at least one conformer."
+    )
     return np.array(ComputeCentroid(mol.GetConformer(0), weights=weights))
 
 
 @requires_python_libs("rdkit")
-def get_shape_moments(mol: Union[nx.Graph, Chem.Mol]) -> Tuple[float, float]:
+def get_shape_moments(mol: nx.Graph | Chem.Mol) -> tuple[float, float]:
     """Calculate principal moments of inertia as defined in https://pubs.acs.org/doi/10.1021/ci025599w
 
     :param mol: Molecular Graph or RDkit Mol to compute the moments of intertia of.
@@ -88,16 +82,16 @@ def get_shape_moments(mol: Union[nx.Graph, Chem.Mol]) -> Tuple[float, float]:
     """
     if isinstance(mol, nx.Graph):
         mol = mol.graph["rdmol"]
-    assert (
-        mol.GetNumConformers() > 0
-    ), "Molecule must have at least one conformer."
+    assert mol.GetNumConformers() > 0, (
+        "Molecule must have at least one conformer."
+    )
     npr1 = NPR1(mol)
     npr2 = NPR2(mol)
     return npr1, npr2
 
 
 @requires_python_libs("rdkit")
-def count_fragments(mol: Union[nx.Graph, Chem.Mol]) -> int:
+def count_fragments(mol: nx.Graph | Chem.Mol) -> int:
     """Counts the number of the disconnected fragments in a molecule.
 
     :param mol: The molecule or molecular graph.
@@ -111,7 +105,7 @@ def count_fragments(mol: Union[nx.Graph, Chem.Mol]) -> int:
 
 
 @requires_python_libs("rdkit")
-def get_max_ring_size(mol: Union[nx.Graph, Chem.Mol]) -> int:
+def get_max_ring_size(mol: nx.Graph | Chem.Mol) -> int:
     """
     Get the size of the largest ring in a molecule.
 
@@ -130,8 +124,8 @@ def get_max_ring_size(mol: Union[nx.Graph, Chem.Mol]) -> int:
 
 @requires_python_libs("rdkit")
 def label_rdmol_atoms(
-    mol: Union[nx.Graph, Chem.Mol], labels: List[Any]
-) -> Union[nx.Graph, Chem.Mol]:
+    mol: nx.Graph | Chem.Mol, labels: list[Any]
+) -> nx.Graph | Chem.Mol:
     """Sets an atomNote label on each atom in the underlying RDKit Mol.
 
     :param mol: RDkit Mol or molecular graph containing a mol.
@@ -152,9 +146,7 @@ def label_rdmol_atoms(
 
 
 @requires_python_libs("rdkit")
-def tag_rdmol_atoms(
-    mol, atoms_to_tag, tag: str = "x"
-) -> Union[nx.Graph, Chem.Mol]:
+def tag_rdmol_atoms(mol, atoms_to_tag, tag: str = "x") -> nx.Graph | Chem.Mol:
     if isinstance(mol, nx.Graph):
         mol = mol.graph["rdmol"]
     [atm.SetProp("atomNote", "") for atm in mol.GetAtoms()]
@@ -180,7 +172,7 @@ def get_mol(smiles: str) -> rdkit.Chem.rdchem.Mol:
 
 
 @requires_python_libs("rdkit")
-def get_smiles(mol: Union[nx.Graph, rdkit.Chem.rdchem.Mol]) -> str:
+def get_smiles(mol: nx.Graph | rdkit.Chem.rdchem.Mol) -> str:
     """
     Function for getting smiles from rdmol. Applies kekulization.
 
@@ -207,7 +199,7 @@ def sanitize(mol: rdkit.Chem.rdchem.Mol) -> rdkit.Chem.rdchem.Mol:
     try:
         smiles = get_smiles(mol)
         mol = get_mol(smiles)
-    except Exception as e:
+    except Exception:
         return None
     return mol
 
@@ -224,7 +216,7 @@ def copy_edit_mol(mol: rdkit.Chem.rdchem.Mol) -> rdkit.Chem.rdchem.Mol:
     """
     new_mol = Chem.RWMol(Chem.MolFromSmiles(""))
     for atom in mol.GetAtoms():
-        new_atom = copy_atom(atom)
+        new_atom = copy_rdmol_atom(atom)
         new_mol.AddAtom(new_atom)
     for bond in mol.GetBonds():
         a1 = bond.GetBeginAtom().GetIdx()
@@ -235,7 +227,7 @@ def copy_edit_mol(mol: rdkit.Chem.rdchem.Mol) -> rdkit.Chem.rdchem.Mol:
 
 
 @requires_python_libs("rdkit")
-def get_clique_mol(mol: rdkit.Chem.rdchem.Atom, atoms: List[int]):
+def get_clique_mol(mol: rdkit.Chem.rdchem.Atom, atoms: list[int]):
     """
     Function for getting clique rdmol
 
@@ -249,8 +241,7 @@ def get_clique_mol(mol: rdkit.Chem.rdchem.Atom, atoms: List[int]):
     smiles = Chem.MolFragmentToSmiles(mol, atoms, kekuleSmiles=True)
     new_mol = Chem.MolFromSmiles(smiles, sanitize=False)
     new_mol = copy_edit_mol(new_mol).GetMol()
-    new_mol = sanitize(new_mol)  # We assume this is not None
-    return new_mol
+    return sanitize(new_mol)  # We assume this is not None
 
 
 @requires_python_libs("rdkit")
@@ -271,7 +262,7 @@ def copy_rdmol_atom(atom: rdkit.Chem.rdchem.Atom) -> rdkit.Chem.rdchem.Atom:
 
 @requires_python_libs("rdkit")
 def get_morgan_fp(
-    mol: Union[nx.Graph, rdkit.Chem.rdchem.Mol],
+    mol: nx.Graph | rdkit.Chem.rdchem.Mol,
     radius: int = 2,
     n_bits: int = 20,
 ) -> rdkit.DataStructs.cDataStructs.ExplicitBitVect:
@@ -296,7 +287,7 @@ def get_morgan_fp(
 
 @requires_python_libs("rdkit")
 def get_morgan_fp_np(
-    mol: Union[nx.Graph, rdkit.Chem.rdchem.Mol],
+    mol: nx.Graph | rdkit.Chem.rdchem.Mol,
     radius: int = 2,
     n_bits: int = 20,
 ) -> rdkit.Chem.rdMolDescriptors.MorganFingerprint:
@@ -322,14 +313,14 @@ def get_morgan_fp_np(
 
 
 @requires_python_libs("rdkit")
-def compute_fragments(mol: Union[nx.Graph, Chem.Mol]) -> List[Chem.Mol]:
+def compute_fragments(mol: nx.Graph | Chem.Mol) -> list[Chem.Mol]:
     if isinstance(mol, nx.Graph):
         mol = mol.graph["rdmol"]
     return list(Chem.GetMolFrags(mol, asMols=True))
 
 
 @requires_python_libs("rdkit")
-def get_mol_weight(mol: Union[nx.Graph, Chem.Mol]) -> float:
+def get_mol_weight(mol: nx.Graph | Chem.Mol) -> float:
     if isinstance(mol, nx.Graph):
         mol = mol.graph["rdmol"]
     return mol  # TDOO
@@ -337,8 +328,8 @@ def get_mol_weight(mol: Union[nx.Graph, Chem.Mol]) -> float:
 
 @requires_python_libs("rdkit")
 def get_qed_score(
-    mol: Union[nx.Graph, rdkit.Chem.rdchem.Mol]
-) -> Union[float, None]:
+    mol: nx.Graph | rdkit.Chem.rdchem.Mol,
+) -> float | None:
     """Computes the Quantitative Estimate of Druglikeness (QED) score for a molecule or molecular graph.
 
         Quantifying the chemical beauty of drugs
@@ -355,7 +346,7 @@ def get_qed_score(
 
     try:
         return Chem.QED.qed(mol)
-    except Exception as e:
+    except Exception:
         # log.warning(e)
         return None
 
@@ -406,7 +397,7 @@ def selfies_to_smile(selfie: str) -> str:
 
 
 @requires_python_libs("rdkit")
-def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
+def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> tuple[list]:
     """
     Function for decomposing rdmol to a tree
 
@@ -430,8 +421,8 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
     cliques.extend(ssr)
 
     nei_list = [[] for _ in range(n_atoms)]
-    for i in range(len(cliques)):
-        for atom in cliques[i]:
+    for i, clique in enumerate(cliques):
+        for atom in clique:
             nei_list[atom].append(i)
 
     # Merge Rings with intersection > 2 atoms
@@ -448,10 +439,10 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
                     cliques[i] = list(set(cliques[i]))
                     cliques[j] = []
 
-    cliques = [c for c in cliques if len(c) > 0]
+    cliques = [c for c in cliques if c]
     nei_list = [[] for _ in range(n_atoms)]
-    for i in range(len(cliques)):
-        for atom in cliques[i]:
+    for i, clique in enumerate(cliques):
+        for atom in clique:
             nei_list[atom].append(i)
 
     # Build edges and add singleton cliques
@@ -462,8 +453,8 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
         cnei = nei_list[atom]
         bonds = [c for c in cnei if len(cliques[c]) == 2]
         rings = [c for c in cnei if len(cliques[c]) > 4]
-        if len(bonds) > 2 or (
-            len(bonds) == 2 and len(cnei) > 2
+        if (
+            len(bonds) > 2 or (len(bonds) == 2 and len(cnei) > 2)
         ):  # In general, if len(cnei) >= 3, a singleton should be added, but 1 bond + 2 ring is currently not dealt with.
             cliques.append([atom])
             c2 = len(cliques) - 1
@@ -475,11 +466,9 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
             for c1 in cnei:
                 edges[(c1, c2)] = MST_MAX_WEIGHT - 1
         else:
-            for i in range(len(cnei)):
-                for j in range(i + 1, len(cnei)):
-                    c1, c2 = cnei[i], cnei[j]
-                    inter = set(cliques[c1]) & set(cliques[c2])
-                    edges[(c1, c2)] = max(edges[(c1, c2)], len(inter))
+            for c1, c2 in itertools.combinations(cnei, 2):
+                inter = set(cliques[c1]) & set(cliques[c2])
+                edges[(c1, c2)] = max(edges[(c1, c2)], len(inter))
     edges = [u + (MST_MAX_WEIGHT - v,) for u, v in edges.items()]
     if not edges:
         return cliques, edges
@@ -490,5 +479,5 @@ def tree_decomp(mol: rdkit.Chem.rdchem.Mol) -> Tuple[List]:
     clique_graph = csr_matrix((data, (row, col)), shape=(n_clique, n_clique))
     junc_tree = minimum_spanning_tree(clique_graph)
     row, col = junc_tree.nonzero()
-    edges = [(row[i], col[i]) for i in range(len(row))]
+    edges = list(zip(row, col))
     return (cliques, edges)

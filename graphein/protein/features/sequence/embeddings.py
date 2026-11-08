@@ -20,7 +20,7 @@ from graphein.protein.features.sequence.utils import (
     compute_feature_over_chains,
     subset_by_node_feature_value,
 )
-from graphein.utils.dependencies import import_message
+from graphein.utils.dependencies import import_message, requires_python_libs
 
 try:
     import torch
@@ -40,12 +40,11 @@ except ImportError:
         submodule="graphein.protein.features.sequence.embeddings",
         package="biovec",
         pip_install=True,
-        extras=True,
     )
     log.debug(message)
 
 
-@lru_cache()
+@lru_cache
 def _load_esm_model(model_name: str = "esm1b_t33_650M_UR50S"):
     """
     Loads pre-trained FAIR ESM model from torch hub.
@@ -123,13 +122,15 @@ def compute_esm_embedding(
     :return: embedding (``np.ndarray``)
     :rtype: np.ndarray
     """
+    if representation not in {"residue", "sequence"}:
+        raise ValueError(
+            f"representation must be 'residue' or 'sequence', got "
+            f"{representation!r}"
+        )
     model, alphabet = _load_esm_model(model_name)
     batch_converter = alphabet.get_batch_converter()
 
-    data = [
-        ("protein1", sequence),
-    ]
-    batch_labels, batch_strs, batch_tokens = batch_converter(data)
+    _, _, batch_tokens = batch_converter([("protein1", sequence)])
 
     # Extract per-residue representations (on CPU)
     with torch.no_grad():
@@ -144,13 +145,7 @@ def compute_esm_embedding(
     # Generate per-sequence representations via averaging
     # NOTE: token 0 is always a beginning-of-sequence token, so the first
     # residue is token 1.
-    elif representation == "sequence":
-        sequence_representations = []
-        for i, (_, seq) in enumerate(data):
-            sequence_representations.append(
-                token_representations[i, 1 : len(seq) + 1].mean(0)
-            )
-        return sequence_representations[0].numpy()
+    return token_representations[0, 1 : len(sequence) + 1].mean(0).numpy()
 
 
 def esm_residue_embedding(
@@ -208,7 +203,7 @@ def esm_residue_embedding(
         embedding = embedding[0, 1:-1]
         subgraph = subset_by_node_feature_value(G, "chain_id", chain)
 
-        for i, (n, d) in enumerate(subgraph.nodes(data=True)):
+        for i, n in enumerate(subgraph.nodes):
             G.nodes[n]["esm_embedding"] = embedding[i]
 
     return G
@@ -225,12 +220,11 @@ def esm_sequence_embedding(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     func = partial(compute_esm_embedding, representation="sequence")
-    G = compute_feature_over_chains(G, func, feature_name="esm_embedding")
-
-    return G
+    return compute_feature_over_chains(G, func, feature_name="esm_embedding")
 
 
-@lru_cache()
+@lru_cache
+@requires_python_libs("biovec")
 def _load_biovec_model():
     """Loads pretrained ProtVec Model.
 
@@ -250,6 +244,7 @@ def _load_biovec_model():
     )
 
 
+@requires_python_libs("biovec")
 def biovec_sequence_embedding(G: nx.Graph) -> nx.Graph:
     """
     Adds BioVec sequence embedding feature to the graph. Computed over chains.
@@ -267,5 +262,6 @@ def biovec_sequence_embedding(G: nx.Graph) -> nx.Graph:
     """
     pv = _load_biovec_model()
     func = pv.to_vecs
-    G = compute_feature_over_chains(G, func, feature_name="biovec_embedding")
-    return G
+    return compute_feature_over_chains(
+        G, func, feature_name="biovec_embedding"
+    )

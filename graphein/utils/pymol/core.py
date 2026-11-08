@@ -1,18 +1,17 @@
-from __future__ import print_function
-
+import contextlib
 import os
 import subprocess
 import tempfile
 import time
+from xmlrpc.client import ServerProxy as Server
 
 from ..dependencies import requires_external_dependencies
-from .compat import Server
 
 HOST = os.environ.get("PYMOL_RPCHOST", "localhost")
 PORT = 9123
 
 
-class MolViewer(object):
+class MolViewer:
     def __init__(self, host=HOST, port=PORT):
         self.host = host
         self.port = int(port)
@@ -46,14 +45,14 @@ class MolViewer(object):
 
         self._process = subprocess.Popen([exe, "-R"] + list(args))
 
-        self._server = Server(uri="http://%s:%d/RPC2" % (self.host, self.port))
+        self._server = Server(uri=f"http://{self.host}:{self.port}/RPC2")
 
         # wait for the server
         while True:
             try:
                 self._server.bg_color("white")
                 break
-            except IOError:
+            except OSError:
                 time.sleep(0.1)
 
     def stop(self):
@@ -76,13 +75,14 @@ class MolViewer(object):
 
         progress_max = int((timeout * 20) ** 0.5)
         progress = None
-        filename = tempfile.mktemp(".png")
+        fd, filename = tempfile.mkstemp(suffix=".png")
+        os.close(fd)
 
         try:
             self._server.png(filename, width, height, -1, int(ray))
 
             for i in range(1, progress_max):
-                if os.path.exists(filename):
+                if os.path.getsize(filename) > 0:
                     break
 
                 if progress is None:
@@ -92,7 +92,7 @@ class MolViewer(object):
                 progress.value += 1
                 time.sleep(i / 10.0)
 
-            if not os.path.exists(filename):
+            if os.path.getsize(filename) == 0:
                 raise RuntimeError("timeout exceeded")
 
             return Image(filename)
@@ -100,10 +100,8 @@ class MolViewer(object):
             if progress is not None:
                 progress.close()
 
-            try:
+            with contextlib.suppress(OSError):
                 os.unlink(filename)
-            except:
-                pass
 
 
 # Create a default instance for convenience

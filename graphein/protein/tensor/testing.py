@@ -1,17 +1,14 @@
 """Utilities for sanity checking protein tensors."""
 
+from collections.abc import Sequence
 from functools import partial
-from typing import List, Tuple, Union
 
 from loguru import logger as log
 
 from graphein.utils.dependencies import import_message
 
-from ..resi_atoms import (
-    ATOM_NUMBERING_MODIFIED,
-    STANDARD_AMINO_ACID_MAPPING_1_TO_3,
-)
-from .sequence import get_atom_indices
+from ..resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
+from .sequence import _present_atom_indices, get_atom_indices
 from .types import AtomTensor, BackboneTensor, CoordTensor, ResidueTensor
 
 try:
@@ -42,9 +39,9 @@ is_tensor_equal = partial(torch.allclose, rtol=0, atol=0)
 
 
 def has_complete_backbone(
-    x: Union[AtomTensor, BackboneTensor],
+    x: AtomTensor | BackboneTensor,
     fill_value: float = 1e-5,
-    backbone_indices: List[int] = [0, 1, 2, 3],
+    backbone_indices: Sequence[int] = (0, 1, 2, 3),
 ) -> bool:
     """
     Checks a protein coordinate tensor (``L x Num Atoms (default 37) x 3``) for
@@ -73,7 +70,7 @@ def has_complete_backbone(
 
     """
     indices = torch.tensor(backbone_indices)
-    return torch.sum(x[:, indices] == fill_value) == 0
+    return not (x[:, indices] == fill_value).any()
 
 
 def has_complete_residue(
@@ -100,24 +97,12 @@ def has_complete_residue(
     if len(residue_type) == 1:
         residue_type = STANDARD_AMINO_ACID_MAPPING_1_TO_3[residue_type]
     true_residue_indices = get_atom_indices()[residue_type]
-
-    def _get_index(y: torch.Tensor) -> Tuple[int, ...]:
-        indices = (
-            torch.nonzero(torch.sum(y != fill_value, dim=1))
-            .squeeze(1)
-            .tolist()
-        )
-        # remove oxt if present
-        oxt_index = ATOM_NUMBERING_MODIFIED["OXT"]
-        indices = tuple(i for i in indices if i != oxt_index)
-        return indices
-
-    present_indices = _get_index(x)
+    present_indices = _present_atom_indices(x.unsqueeze(0), fill_value)[0]
     return present_indices == true_residue_indices
 
 
 def is_complete_structure(
-    x: AtomTensor, residues: Union[List[str], str], fill_value: float = 1e-5
+    x: AtomTensor, residues: list[str] | str, fill_value: float = 1e-5
 ) -> bool:
     """Checks whether a protein structure has all of the requisite atoms.
 
@@ -137,16 +122,21 @@ def is_complete_structure(
         :func:`graphein.protein.tensor.sequence.infer_residue_types`
     """
     length = x.shape[0]
-    assert (
-        len(residues) == length
-    ), "Length of sequence must match coordinate tensor in dimension 0."
+    assert len(residues) == length, (
+        "Length of sequence must match coordinate tensor in dimension 0."
+    )
 
     if isinstance(residues, str):
         residues = list(residues)
 
+    true_indices = get_atom_indices()
+    present_indices = _present_atom_indices(x, fill_value)
     return all(
-        has_complete_residue(x[i], residues[i], fill_value=fill_value)
-        for i in range(length)
+        present
+        == true_indices[
+            STANDARD_AMINO_ACID_MAPPING_1_TO_3[res] if len(res) == 1 else res
+        ]
+        for present, res in zip(present_indices, residues)
     )
 
 
@@ -190,8 +180,8 @@ def fill_missing_o_coords(x: AtomTensor):
 
 
 def fill_missing_backbone(
-    x: Union[AtomTensor, CoordTensor], fill_value: float = 1e-5
-) -> Union[AtomTensor, BackboneTensor]:
+    x: AtomTensor | CoordTensor, fill_value: float = 1e-5
+) -> AtomTensor | BackboneTensor:
     if has_complete_backbone(x, fill_value):
         return x
     # TODO

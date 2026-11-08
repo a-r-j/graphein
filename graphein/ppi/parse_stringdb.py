@@ -7,16 +7,15 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Dict, List, Union
+import io
 
 import pandas as pd
 import requests
-from loguru import logger as log
 
 
 def params_STRING(
-    params: Dict[str, Union[str, int, List[str], List[int]]], **kwargs
-) -> Dict[str, Union[str, int]]:
+    params: dict[str, str | int | list[str] | list[int]], **kwargs
+) -> dict[str, str | int]:
     """
     Updates default parameters with user parameters for the method "network"
     of the STRING API REST. See also https://string-db.org/help/api/
@@ -46,15 +45,15 @@ def params_STRING(
         kwarg_name = f"STRING_{p}"
         if kwarg_name in kwargs:
             value = kwargs[kwarg_name]
-            if type(value) is list:
+            if isinstance(value, list):
                 value = "%0d".join(value)
             params[p] = value
     return params
 
 
 def parse_STRING(
-    protein_list: List[str],
-    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    protein_list: list[str],
+    ncbi_taxon_id: int | str | list[int] | list[str],
     **kwargs,
 ) -> pd.DataFrame:
     """
@@ -79,7 +78,7 @@ def parse_STRING(
     output_format = "json"  # "tsv-no-header"
     method = "network"
     request_url = "/".join([string_api_url, output_format, method])
-    if type(ncbi_taxon_id) is list:
+    if isinstance(ncbi_taxon_id, list):
         ncbi_taxon_id = "%0d".join(ncbi_taxon_id)
     params = {
         "identifiers": "%0d".join(protein_list),
@@ -90,7 +89,7 @@ def parse_STRING(
 
     # Call STRING
     response = requests.post(request_url, data=params)
-    return pd.read_json(response.text.strip())
+    return pd.read_json(io.StringIO(response.text.strip()))
 
 
 def filter_STRING(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
@@ -150,8 +149,8 @@ def standardise_STRING(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def STRING_df(
-    protein_list: List[str],
-    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    protein_list: list[str],
+    ncbi_taxon_id: int | str | list[int] | list[str],
     **kwargs,
 ) -> pd.DataFrame:
     """
@@ -172,6 +171,4 @@ def STRING_df(
         protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs
     )
     df = filter_STRING(df, **kwargs)
-    df = standardise_STRING(df)
-
-    return df
+    return standardise_STRING(df)

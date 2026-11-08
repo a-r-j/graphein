@@ -14,18 +14,15 @@ We also include mappings of covalent radii and bond lengths for the amino acids 
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-
-from typing import Dict, List, Union
-
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from typing_extensions import Literal
 
-BACKBONE_ATOMS: List[str] = ["N", "CA", "C", "O"]
+BACKBONE_ATOMS: list[str] = ["N", "CA", "C", "O"]
 """Atoms present in Amino Acid Backbones."""
 
 
-BASE_AMINO_ACIDS: List[str] = [
+BASE_AMINO_ACIDS: list[str] = [
     "A",
     "C",
     "D",
@@ -49,7 +46,7 @@ BASE_AMINO_ACIDS: List[str] = [
 ]
 """Vocabulary of 20 standard amino acids."""
 
-STANDARD_AMINO_ACIDS: List[str] = [
+STANDARD_AMINO_ACIDS: list[str] = [
     "A",
     "B",
     "C",
@@ -81,10 +78,10 @@ Vocabulary of amino acids with one-letter codes. Includes `fuzzy` standard amino
 and ``"Z"`` denotes ``"GLX"`` which corresponds to ``"GLU"`` (``"E"``) **or** ``"GLN"`` (``"Q"``).
 """
 
-NON_STANDARD_AMINO_ACIDS: List[str] = ["O", "U"]
+NON_STANDARD_AMINO_ACIDS: list[str] = ["O", "U"]
 """Non-standard amino acids with one-letter codes."""
 
-AMINO_ACIDS: List[str] = [
+AMINO_ACIDS: list[str] = [
     "A",
     "B",
     "C",
@@ -119,7 +116,7 @@ and ``"Z"`` denotes ``"GLX"`` which corresponds to``"GLU"`` (``"E"``) **or** ``"
 ``"X"`` denotes unknown (``"UNK"`` or sometimes ``"XAA"``).
 """
 
-STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
+STANDARD_AMINO_ACID_MAPPING_3_TO_1: dict[str, str] = {
     "ALA": "A",
     "CYS": "C",
     "ASP": "D",
@@ -155,7 +152,7 @@ STANDARD_AMINO_ACID_MAPPING_1_TO_3 = {
 Mapping of 1-letter standard amino acids codes to their three-letter form.
 """
 
-NON_STANDARD_AMINO_ACID_MAPPING_3_TO_1: Dict[str, str] = {
+NON_STANDARD_AMINO_ACID_MAPPING_3_TO_1: dict[str, str] = {
     "CGU": "E",
     "HID": "H",
     "HIE": "H",
@@ -180,7 +177,7 @@ See: http://ligand-expo.rcsb.org/
 """
 
 
-PROTEIN_ATOMS: List[str] = [
+PROTEIN_ATOMS: list[str] = [
     "N",
     "CA",
     "C",
@@ -222,7 +219,7 @@ PROTEIN_ATOMS: List[str] = [
 """List of standard atom types present in protein structures."""
 
 
-STANDARD_RESIDUE_ATOMS: Dict[str, List[str]] = {
+STANDARD_RESIDUE_ATOMS: dict[str, list[str]] = {
     "ALA": ["N", "CA", "C", "O", "CB"],
     "ARG": ["N", "CA", "C", "O", "CB", "CG", "CD", "NE", "CZ", "NH1", "NH2"],
     "ASN": ["N", "CA", "C", "O", "CB", "CG", "OD1", "ND2"],
@@ -275,7 +272,7 @@ STANDARD_RESIDUE_ATOMS: Dict[str, List[str]] = {
 """Dictionary mapping standard amino acid residues to their constituent atoms."""
 
 
-ATOM_NUMBERING: Dict[str, int] = {
+ATOM_NUMBERING: dict[str, int] = {
     atom: i
     for i, atom in enumerate(
         [
@@ -321,7 +318,7 @@ ATOM_NUMBERING: Dict[str, int] = {
 }
 """Default ordering of atoms in (dimension 1 of) a protein structure tensor."""
 
-ELEMENT_SYMBOL_MAP: Dict[str, str] = {
+ELEMENT_SYMBOL_MAP: dict[str, str] = {
     "N": "N",
     "CA": "C",
     "C": "C",
@@ -362,7 +359,7 @@ ELEMENT_SYMBOL_MAP: Dict[str, str] = {
 }
 """Maps PDB atom names to the element symbols."""
 
-ATOM_NUMBERING_MODIFIED: Dict[str, int] = {
+ATOM_NUMBERING_MODIFIED: dict[str, int] = {
     atom: i
     for i, atom in enumerate(
         [
@@ -410,7 +407,7 @@ ATOM_NUMBERING_MODIFIED: Dict[str, int] = {
 """Default Ordering of atoms (including non-standard residues) in (dimension 1 of) a protein structure tensor."""
 
 
-BOND_TYPES: List[str] = [
+BOND_TYPES: list[str] = [
     "hydrophobic",
     "disulfide",
     "hbond",
@@ -428,7 +425,7 @@ BOND_TYPES: List[str] = [
 ]
 """List of supported bond types."""
 
-STANDARD_RESI_NAMES: List[str] = [
+STANDARD_RESI_NAMES: list[str] = [
     "ALA",
     "ARG",
     "ASN",
@@ -459,7 +456,7 @@ Includes ``"UNK"`` for unknown residues.
 ``"ASX"`` denotes ``"ASP"`` **or** ``"ASN"`` and ``"GLX"`` denotes ``"GLU"`` **or** ``"GLN"``.
 """
 
-NON_STANDARD_RESI_NAMES: List[str] = [
+NON_STANDARD_RESI_NAMES: list[str] = [
     "5HP",
     "ABA",
     "ACE",
@@ -532,7 +529,7 @@ List of non-standard residue 3-letter names.
 Collected from: https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
 """
 
-RESI_NAMES: List[str] = [
+RESI_NAMES: list[str] = [
     "5HP",
     "ABA",
     "ACE",
@@ -630,7 +627,7 @@ Includes ``"UNK"`` to denote unknown residues.
 """
 
 # https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound
-RESI_THREE_TO_1: Dict[str, str] = {
+RESI_THREE_TO_1: dict[str, str] = {
     "3HP": "X",
     "4HP": "X",
     "5HP": "Q",
@@ -639,6 +636,7 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "AIB": "A",
     "ALA": "A",
     "ARG": "R",
+    "ASH": "D",  # Protonated ASP (Amber)
     "ASN": "N",
     "ASP": "D",
     "ASX": "B",
@@ -660,6 +658,7 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "CYX": "C",
     "DAL": "A",
     "DAR": "R",
+    "DAS": "D",  # D-aspartic acid
     "DCY": "C",
     "DGL": "E",
     "DGN": "Q",
@@ -679,6 +678,7 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "DVA": "V",
     "FME": "M",
     "FOR": "X",
+    "GLH": "E",  # Protonated GLU (Amber)
     "GLN": "Q",
     "GLU": "E",
     "GLX": "Z",
@@ -687,12 +687,16 @@ RESI_THREE_TO_1: Dict[str, str] = {
     "HIE": "H",  # Different protonation states of HIS
     "HIP": "H",  # Different protonation states of HIS
     "HIS": "H",
+    "HSD": "H",  # Protonation states of HIS (CHARMM)
+    "HSE": "H",  # Protonation states of HIS (CHARMM)
+    "HSP": "H",  # Protonation states of HIS (CHARMM)
     "HYP": "P",
     "ILE": "I",
     "IVA": "X",
     "KCX": "K",
     "LEU": "L",
     "LLP": "K",
+    "LYN": "K",  # Neutral LYS (Amber)
     "LYS": "K",
     "MET": "M",
     "MLE": "L",
@@ -730,7 +734,7 @@ Non-standard/modified amino acids are mapped to their parent amino acid.
 Includes ``"UNK"`` to denote unknown residues.
 """
 
-NON_STANDARD_RESIS_NAME: List[str] = [
+NON_STANDARD_RESIS_NAME: list[str] = [
     "3-SULFINOALANINE",
     "4-HYDROXYPROLINE",
     "4-METHYL-4-[(E)-2-BUTENYL]-4,N-METHYL-THREONINE",
@@ -794,7 +798,7 @@ Non-standard residue info taken from: https://www.globalphasing.com/buster/manua
 ``PYL`` (pyrolysine) and ``SEC`` are added
 """
 
-NON_STANDARD_RESIS_PARENT: Dict[str, str] = {
+NON_STANDARD_RESIS_PARENT: dict[str, str] = {
     "5HP": "GLU",
     "ABA": "ALA",
     "ACE": "-",
@@ -862,7 +866,7 @@ NON_STANDARD_RESIS_PARENT: Dict[str, str] = {
 Mapping of 3-letter non-standard/modified residues to their 3-letter parent residue names.
 """
 
-HYDROGEN_BOND_DONORS: Dict[str, Dict[str, int]] = {
+HYDROGEN_BOND_DONORS: dict[str, dict[str, int]] = {
     "ARG": {"NE": 1, "NH1": 2, "NH2": 2},
     "ASN": {"ND2": 2},
     "GLN": {"NE2": 2},
@@ -884,7 +888,7 @@ https://www.imgt.org/IMGTeducation/Aide-memoire/_UK/aminoacids/charge/
 """
 
 
-HYDROGEN_BOND_ACCEPTORS: Dict[str, Dict[str, int]] = {
+HYDROGEN_BOND_ACCEPTORS: dict[str, dict[str, int]] = {
     "ASN": {"OD1": 2},
     "ASP": {"OD1": 2, "OD2": 2},
     "GLN": {"OE1": 2},
@@ -904,7 +908,7 @@ their side chains.
 https://www.imgt.org/IMGTeducation/Aide-memoire/_UK/aminoacids/charge/
 """
 
-COFACTOR_NAMES: List[str] = [
+COFACTOR_NAMES: list[str] = [
     "ADP",
     "AMP",
     "ATP",
@@ -921,7 +925,7 @@ Names of cofactors commonly found in PDB structures.
 See: http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
 """
 
-COFACTOR_CODES: List[str] = [
+COFACTOR_CODES: list[str] = [
     "ADP",
     "AMP",
     "ATP",
@@ -938,7 +942,7 @@ Three letter codes of cofactors commonly found in PDB structures.
 See: http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
 """
 
-COFACTOR_CODE_NAME_MAPPING: Dict[str, str] = {
+COFACTOR_CODE_NAME_MAPPING: dict[str, str] = {
     "ADP": "ADP",
     "AMP": "AMP",
     "ATP": "ATP",
@@ -955,7 +959,7 @@ Mapping between 3-letter PDB ligand codes and cofactor names.
 See http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
 """
 
-CARBOHYDRATE_NAMES: List[str] = [
+CARBOHYDRATE_NAMES: list[str] = [
     "D-GALACTOSE",
     "D-GLUCOSE",
     "D-MANNOSE",
@@ -971,7 +975,7 @@ Names of commonly found carbohydrates in protein structures.
 See http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
 """
 
-CARBOHYDRATE_CODES: List[str] = [
+CARBOHYDRATE_CODES: list[str] = [
     "BGC",
     "BMA",
     "FUC",
@@ -990,7 +994,7 @@ Three letter codes of commonly found carbohydrates in protein structures.
 See http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
 """
 
-CARBOHYDRATE_CODE_NAME_MAPPING: Dict[str, str] = {
+CARBOHYDRATE_CODE_NAME_MAPPING: dict[str, str] = {
     "BGC": "D-GLUCOSE",
     "BMA": "D-MANNOSE",
     "FUC": "FUCOSE",
@@ -1009,7 +1013,7 @@ Mapping of 3-letter PDB ligand accession codes for common carbohydrates to their
 See http://ligand-expo.rcsb.org/ and https://www.globalphasing.com/buster/manual/maketnt/manual/lib_val/library_validation.html
 """
 
-HYDROPHOBIC_RESIS: List[str] = [
+HYDROPHOBIC_RESIS: list[str] = [
     "ALA",
     "ILE",
     "LEU",
@@ -1022,22 +1026,22 @@ HYDROPHOBIC_RESIS: List[str] = [
 ]
 """List of residues that are considered to be hydrophobic."""
 
-DISULFIDE_RESIS: List[str] = ["CYS"]
+DISULFIDE_RESIS: list[str] = ["CYS"]
 """Residues capable of forming disulfide bonds."""
 
-DISULFIDE_ATOMS: List[str] = ["SG"]
+DISULFIDE_ATOMS: list[str] = ["SG"]
 """List of atoms capable of forming disulphide bonds."""
 
-IONIC_RESIS: List[str] = ["ARG", "LYS", "HIS", "ASP", "GLU"]
+IONIC_RESIS: list[str] = ["ARG", "LYS", "HIS", "ASP", "GLU"]
 """Residues capable of forming ionic interactions."""
 
-POS_AA: List[str] = ["HIS", "LYS", "ARG"]
+POS_AA: list[str] = ["HIS", "LYS", "ARG"]
 """Positively charged amino acids."""
 
-NEG_AA: List[str] = ["GLU", "ASP"]
+NEG_AA: list[str] = ["GLU", "ASP"]
 """Negatively charged amino acids."""
 
-AA_RING_ATOMS: Dict[str, List[str]] = {
+AA_RING_ATOMS: dict[str, list[str]] = {
     # "HIS": ["CG", "CD", "CE", "ND", "NE"],
     "HIS": ["CG", "CD", "CE", "ND", "NE", "CD2", "ND1", "CE1", "NE2"],
     # "PHE": ["CG", "CD", "CE", "CZ"],
@@ -1051,41 +1055,41 @@ AA_RING_ATOMS: Dict[str, List[str]] = {
 Dictionary mapping amino acid 3-letter codes to lists of atoms that are part of rings.
 """
 
-RING_NORMAL_ATOMS: Dict[str, List[str]] = {
+RING_NORMAL_ATOMS: dict[str, list[str]] = {
     "PHE": ["CG", "CE1", "CE2"],
     "TRP": ["CD2", "CZ2", "CZ3"],
     "TYR": ["CG", "CE1", "CE2"],
 }
 """Dictionary of atoms used to compute ring normals for each residue."""
 
-AROMATIC_RESIS: List[str] = ["PHE", "TRP", "HIS", "TYR"]
+AROMATIC_RESIS: list[str] = ["PHE", "TRP", "HIS", "TYR"]
 """List of aromatic residues."""
 
-CATION_PI_RESIS: List[str] = ["LYS", "ARG", "PHE", "TYR", "TRP"]
+CATION_PI_RESIS: list[str] = ["LYS", "ARG", "PHE", "TYR", "TRP"]
 """List of residues involved in cation-pi interactions."""
 
-CATION_RESIS: List[str] = ["LYS", "ARG"]
+CATION_RESIS: list[str] = ["LYS", "ARG"]
 """List of cationic residues."""
 
-PI_RESIS: List[str] = ["PHE", "TYR", "TRP"]
+PI_RESIS: list[str] = ["PHE", "TYR", "TRP"]
 """List of residues involved in pi interactions."""
 
-SULPHUR_RESIS: List[str] = ["MET", "CYS"]
+SULPHUR_RESIS: list[str] = ["MET", "CYS"]
 """Residues containing sulphur atoms."""
 
-SALT_BRIDGE_ANIONS: List[str] = ["ASP", "GLU"]
+SALT_BRIDGE_ANIONS: list[str] = ["ASP", "GLU"]
 """List of anionic residues that can form salt bridges."""
 
-SALT_BRIDGE_CATIONS: List[str] = ["LYS", "ARG"]
+SALT_BRIDGE_CATIONS: list[str] = ["LYS", "ARG"]
 """List of cationic residues that can form salt bridges."""
 
-SALT_BRIDGE_RESIDUES: List[str] = SALT_BRIDGE_ANIONS + SALT_BRIDGE_CATIONS
+SALT_BRIDGE_RESIDUES: list[str] = SALT_BRIDGE_ANIONS + SALT_BRIDGE_CATIONS
 """List of residues that can form salt bridges."""
 
-SALT_BRIDGE_ATOMS: List[str] = ["OD1", "OD2", "OE1", "OE2", "NZ", "NH1", "NH2"]
+SALT_BRIDGE_ATOMS: list[str] = ["OD1", "OD2", "OE1", "OE2", "NZ", "NH1", "NH2"]
 """List of atoms that can form salt bridges."""
 
-VDW_RADII: Dict[str, float] = {
+VDW_RADII: dict[str, float] = {
     "H": 1.2,  # 1.09
     "C": 1.7,
     "N": 1.55,
@@ -1250,7 +1254,7 @@ and are as follows:
         https://www.ncbi.nlm.nih.gov/pubmed/16877712
 """
 
-ISOELECTRIC_POINTS: Dict[str, float] = {
+ISOELECTRIC_POINTS: dict[str, float] = {
     "ALA": 6.11,
     "ARG": 10.76,
     "ASN": 10.76,
@@ -1294,7 +1298,7 @@ Standardized (sklearn.StandardScaler) isoelectric points for standard amino acid
 See :const:`~graphein.protein.resi_atoms.ISOELECTRIC_POINTS` for details.
 """
 
-MOLECULAR_WEIGHTS: Dict[str, float] = {
+MOLECULAR_WEIGHTS: dict[str, float] = {
     "ALA": 89.0935,
     "ARG": 174.2017,
     "ASN": 132.1184,
@@ -1335,7 +1339,7 @@ Standardized (sklearn.StandardScaler) molecular weights for standard amino acids
 See :const:`~graphein.protein.resi_atoms.MOLECULAR_WEIGHTS` for details.
 """
 
-GRANTHAM_CHEMICAL_DISTANCE_MATRIX: Dict[str, float] = {
+GRANTHAM_CHEMICAL_DISTANCE_MATRIX: dict[str, float] = {
     "AA": 0.0,
     "AC": 0.112,
     "AD": 0.819,
@@ -1749,7 +1753,7 @@ Grantham Chemical Distance Matrix. Taken from ProPy3 https://github.com/MartinTh
 Paper: https://science.sciencemag.org/content/185/4154/862/tab-pdf
 """
 
-SCHNEIDER_WREDE_DISTMAT: Dict[str, float] = {
+SCHNEIDER_WREDE_DISTMAT: dict[str, float] = {
     "GW": 0.923,
     "GV": 0.464,
     "GT": 0.272,
@@ -2163,7 +2167,7 @@ Scheider-Wrede Physicochemical Distance Matrix taken from ProPy3 https://github.
 """
 
 
-MAX_NEIGHBOURS: Dict[str, int] = {
+MAX_NEIGHBOURS: dict[str, int] = {
     "C": 4,
     "H": 1,
     "B": 3,
@@ -2178,7 +2182,7 @@ Maximum number of neighbours an atom can have.
 Taken from: https://www.daylight.com/meetings/mug01/Sayle/m4xbondage.html
 """
 
-COVALENT_RADII: Dict[str, float] = {
+COVALENT_RADII: dict[str, float] = {
     "Csb": 0.77,
     "Cres": 0.72,
     "Cdb": 0.67,
@@ -2202,7 +2206,7 @@ Covalent radii from:
 Paper: https://arxiv.org/pdf/0804.2488.pdf
 """
 
-DEFAULT_BOND_STATE: Dict[str, str] = {
+DEFAULT_BOND_STATE: dict[str, str] = {
     "N": "Nsb",
     "CA": "Csb",
     "C": "Cdb",
@@ -2235,7 +2239,7 @@ Covalent radii from:
 Paper: https://arxiv.org/pdf/0804.2488.pdf
 """
 
-RESIDUE_ATOM_BOND_STATE: Dict[str, Dict[str, str]] = {
+RESIDUE_ATOM_BOND_STATE: dict[str, dict[str, str]] = {
     "XXX": {
         "N": "Nsb",
         "CA": "Csb",
@@ -2311,7 +2315,7 @@ Covalent radii from:
 Paper: https://arxiv.org/pdf/0804.2488.pdf
 """
 
-BOND_LENGTHS: Dict[str, Dict[str, float]] = {
+BOND_LENGTHS: dict[str, dict[str, float]] = {
     "As-N": {"i_s": 1.86, "i_d": 1.835, "w_sd": 1.845},
     "As-O": {"i_s": 1.71, "i_d": 1.66, "w_sd": 1.68},
     "As-S": {"i_s": 2.28, "i_d": 2.08, "w_sd": 2.15},
@@ -2389,7 +2393,7 @@ Taken from:
     J. Chem. Inf. Comput. Sci. 1992, 32. 401-406
 """
 
-BOND_ORDERS: Dict = {
+BOND_ORDERS: dict = {
     "As-N": [1, 2],
     "As-O": [1, 2],
     "As-S": [1, 2],
@@ -2417,7 +2421,7 @@ Taken from:
     J. Chem. Inf. Comput. Sci. 1992, 32. 401-406
 """
 
-ATOMIC_MASSES: Dict[str, float] = {
+ATOMIC_MASSES: dict[str, float] = {
     "C": 12.0107,
     "H": 1.00794,
     "O": 15.9994,
@@ -2428,7 +2432,7 @@ ATOMIC_MASSES: Dict[str, float] = {
 """Dictionary of atomic masses for standard protein elements."""
 
 
-CHI_ANGLES_ATOMS: Dict[str, List[List[str]]] = {
+CHI_ANGLES_ATOMS: dict[str, list[list[str]]] = {
     "ALA": [],
     # Chi5 in arginine is always 0 +- 5 degrees, so ignore it.
     "ARG": [
@@ -2483,7 +2487,7 @@ For residues with no chi angles (GLY, ALA), the list is empty.
 """
 
 
-BB_BUILD_INFO: Dict[str, Dict[str, float]] = {
+BB_BUILD_INFO: dict[str, dict[str, float]] = {
     "BONDLENS": {
         "n-ca": 1.442,
         "ca-c": 1.498,
@@ -2506,14 +2510,14 @@ Sourced from SideChainNet: https://github.com/jonathanking/sidechainnet/blob/mas
 """
 
 
-IDEAL_BB_BOND_LENGTHS: List[float] = [1.523, 1.329, 1.458]
+IDEAL_BB_BOND_LENGTHS: list[float] = [1.523, 1.329, 1.458]
 """Idealised backbone bond lengths. ``[Ca-C, C-N, N-Ca]``.
 
 .. seealso::
     :ref:`graphein.protein.tensor.geometry.idealize_backbone
 """
 
-IDEAL_BB_BOND_ANGLES: List[float] = [2.124, 1.941, 2.028]
+IDEAL_BB_BOND_ANGLES: list[float] = [2.124, 1.941, 2.028]
 """Idealised backbone bond angles. ``[C-N-Ca, N-Ca-C, Ca-C-N]``.
 
 
@@ -2521,7 +2525,7 @@ IDEAL_BB_BOND_ANGLES: List[float] = [2.124, 1.941, 2.028]
     :ref:`graphein.protein.tensor.geometry.idealize_backbone
 """
 
-SC_BUILD_INFO: Dict[str, Dict[str, List[Union[str, float]]]] = {
+SC_BUILD_INFO: dict[str, dict[str, list[str | float]]] = {
     "ALA": {
         "angles-names": ["N-CA-CB"],
         "angles-types": ["N -CX-CT"],

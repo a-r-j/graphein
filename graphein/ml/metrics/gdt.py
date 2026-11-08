@@ -1,12 +1,13 @@
 import torch
+from torch_geometric.utils import unbatch
 from torchmetrics import Metric
 
 from ...protein.tensor.types import AtomTensor, CoordTensor
 
 
 def gdt(
-    y: Union[CoordTensor, AtomTensor],
-    y_hat: Union[CoordTensor, AtomTensor],
+    y: CoordTensor | AtomTensor,
+    y_hat: CoordTensor | AtomTensor,
     ca_only: bool = True,
     cutoff: float = 4,
     ts: bool = True,
@@ -69,8 +70,6 @@ class GDT_TS(Metric):
         self.add_state(
             "correct", default=torch.tensor(0.0), dist_reduce_fx="sum"
         )
-        higher_is_better = True
-        full_state_update = True
 
     @property
     def higher_is_better(self):

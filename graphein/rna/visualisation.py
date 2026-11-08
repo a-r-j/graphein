@@ -9,15 +9,14 @@
 
 from collections import defaultdict
 from itertools import chain
-from typing import Dict, List
 
 import networkx as nx
 from loguru import logger as log
 
-from graphein.protein.visualisation import (
+# Re-exported as graphein.rna.plotly_rna_structure_graph
+from graphein.protein.visualisation import (  # noqa: F401
     plotly_protein_structure_graph as plotly_rna_structure_graph,
 )
-from graphein.rna.graphs import RNA_BASE_COLORS
 
 
 def plot_rna_graph(
@@ -40,15 +39,11 @@ def plot_rna_graph(
     :type label_base_position: bool
     :param label_dotbracket_symbol: Whether to label the dotbracket symbol of each base.
     """
-    edge_colors = nx.get_edge_attributes(g, "color").values()
-    node_colors = nx.get_node_attributes(g, "color").values()
-    if len(node_colors) == 0:
-        node_colors = None
-    if len(edge_colors) == 0:
-        edge_colors = None
+    edge_colors = nx.get_edge_attributes(g, "color").values() or None
+    node_colors = nx.get_node_attributes(g, "color").values() or None
 
     # Construct node labelling scheme
-    node_label_dicts: List[Dict[int, str]] = []
+    node_label_dicts: list[dict[int, str]] = []
     if label_base_type:
         try:
             node_label_dicts.append(

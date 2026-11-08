@@ -8,14 +8,16 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import copy
 import traceback
+from collections.abc import Callable
 from functools import partial
-from typing import Callable, Dict, List, Optional, Union
+from pathlib import Path
 
 import networkx as nx
 import numpy as np
 from loguru import logger as log
-from tqdm.contrib.concurrent import process_map, thread_map
+from tqdm.contrib.concurrent import thread_map
 
 from graphein.utils.dependencies import import_message, requires_python_libs
 from graphein.utils.utils import (
@@ -36,14 +38,16 @@ try:
     from rdkit import Chem
     from rdkit.Chem import AllChem
 except ImportError:
-    msg = import_message("graphein.molecule.graphs", "rdkit", "rdkit", True)
+    msg = import_message(
+        "graphein.molecule.graphs", "rdkit", "rdkit", True, extras=True
+    )
     log.warning(msg)
 
 
 @requires_python_libs("rdkit")
 def initialise_graph_with_metadata(
     name: str,
-    rdmol: rdkit.Mol,
+    rdmol: Chem.Mol,
     coords: np.ndarray,
 ) -> nx.Graph:
     """
@@ -53,7 +57,7 @@ def initialise_graph_with_metadata(
         on how the graph was created.
     :type name: str
     :param rdmol: Processed DataFrame of molecule structure.
-    :type rdmol: rdkit.Mol
+    :type rdmol: Chem.Mol
     :return: Returns initial molecule structure graph with metadata.
     :rtype: nx.Graph
     """
@@ -89,7 +93,7 @@ def add_nodes_to_graph(
         )
 
     if verbose:
-        print(nx.info(G))
+        print(G)
         print(G.nodes())
 
     return G
@@ -97,8 +101,8 @@ def add_nodes_to_graph(
 
 @requires_python_libs("rdkit")
 def generate_3d(
-    mol: Union[nx.Graph, Chem.Mol], recompute_graph: bool = False
-) -> Union[nx.Graph, rdkit.Chem.rdchem.Mol]:
+    mol: nx.Graph | Chem.Mol, recompute_graph: bool = False
+) -> nx.Graph | rdkit.Chem.rdchem.Mol:
     """
     Generate a 3D structure for a RDKit molecule.
 
@@ -136,17 +140,17 @@ def generate_3d(
 
 @requires_python_libs("rdkit")
 def construct_graph(
-    config: Optional[MoleculeGraphConfig] = None,
-    mol: Optional[rdkit.Mol] = None,
-    path: Optional[str] = None,
-    smiles: Optional[str] = None,
-    zinc_id: Optional[str] = None,
-    chembl_id: Optional[str] = None,
-    generate_conformer: Optional[bool] = False,
-    edge_construction_funcs: Optional[str] = None,
-    edge_annotation_funcs: Optional[List[Callable]] = None,
-    node_annotation_funcs: Optional[List[Callable]] = None,
-    graph_annotation_funcs: Optional[List[Callable]] = None,
+    config: MoleculeGraphConfig | None = None,
+    mol: Chem.Mol | None = None,
+    path: str | None = None,
+    smiles: str | None = None,
+    zinc_id: str | None = None,
+    chembl_id: str | None = None,
+    generate_conformer: bool | None = False,
+    edge_construction_funcs: str | None = None,
+    edge_annotation_funcs: list[Callable] | None = None,
+    node_annotation_funcs: list[Callable] | None = None,
+    graph_annotation_funcs: list[Callable] | None = None,
 ) -> nx.Graph:
     """
     Constructs molecular structure graph from a ``sdf_path``, ``mol2_path``,
@@ -161,9 +165,9 @@ def construct_graph(
     :param config: :class:`~graphein.molecule.config.MoleculeGraphConfig`
         object. If None, defaults to config in ``graphein.molecule.config``.
     :type config: graphein.molecule.config.MoleculeGraphConfig, optional
-    :param mol: rdkit.Mol object to build graph from. Defaults to ``None``.
-    :type mol: rdkit.Mol, optional
-    :param path: Path to either a ``.sdf``, ``.mol2``, ``.smi`` or ``pdb`` file.
+    :param mol: Chem.Mol object to build graph from. Defaults to ``None``.
+    :type mol: Chem.Mol, optional
+    :param path: Path to either a ``.sdf``, ``.mol2``, ``.smi`` or ``pdb`` file. # noqa: E501
         Defaults to ``None``.
     :type path: str
     :param smiles: smiles string to build graph from. Default is ``None``.
@@ -172,7 +176,7 @@ def construct_graph(
     :type zinc_id: str, optional
     :param chembl_id: ChEMBL ID to build graph from. Default is ``None``.
     :type chembl_id: str, optional
-    :param generate_conformer: Whether to generate a conformer for the molecule.
+    :param generate_conformer: Whether to generate a conformer for the molecule. # noqa: E501
         Defaults to ``False``.
     :type generate_conformer: bool, optional
     :param edge_construction_funcs: List of edge construction functions.
@@ -191,9 +195,9 @@ def construct_graph(
     :type: nx.Graph
     """
 
-    # If no config is provided, use default
-    if config is None:
-        config = MoleculeGraphConfig()
+    # Use the default config, or a copy so filling in the function lists
+    # below doesn't mutate the caller's config
+    config = MoleculeGraphConfig() if config is None else copy.copy(config)
 
     config.node_metadata_functions = (
         node_annotation_funcs
@@ -228,32 +232,27 @@ def construct_graph(
         rdmol = Chem.MolFromSmiles(smiles)
         if config.generate_conformer or generate_conformer:
             rdmol = generate_3d(mol=rdmol, recompute_graph=False)
-            coords = [
-                list(rdmol.GetConformer(0).GetAtomPosition(idx))
-                for idx in range(rdmol.GetNumAtoms())
-            ]
+            if config.add_hs:
+                rdmol = Chem.AddHs(rdmol, addCoords=True)
+            coords = get_coords(rdmol)
 
     if path is not None:
-        name = path.split("/")[-1].split(".")[0]
+        name = Path(path).stem
         if path.lower().endswith(".sdf"):
             rdmol = Chem.SDMolSupplier(path)[0]
-            coords = [
-                list(rdmol.GetConformer(0).GetAtomPosition(idx))
-                for idx in range(rdmol.GetNumAtoms())
-            ]
+            if config.add_hs:
+                rdmol = Chem.AddHs(rdmol, addCoords=True)
+            coords = get_coords(rdmol)
         elif path.lower().endswith(".mol2"):
             rdmol = Chem.MolFromMol2File(path)
-            coords = [
-                list(rdmol.GetConformer(0).GetAtomPosition(idx))
-                for idx in range(rdmol.GetNumAtoms())
-            ]
+            if config.add_hs:
+                rdmol = Chem.AddHs(rdmol, addCoords=True)
+            coords = get_coords(rdmol)
         elif path.lower().endswith(".pdb"):
-            name = path.split("/")[-1].split(".")[0]
             rdmol = Chem.MolFromPDBFile(path)
-            coords = [
-                list(rdmol.GetConformer(0).GetAtomPosition(idx))
-                for idx in range(rdmol.GetNumAtoms())
-            ]
+            if config.add_hs:
+                rdmol = Chem.AddHs(rdmol, addCoords=True)
+            coords = get_coords(rdmol)
         elif path.lower().endswith(".smi"):
             with open(path) as f:
                 smiles = f.readlines()[0]
@@ -261,21 +260,16 @@ def construct_graph(
             rdmol = Chem.MolFromSmiles(smiles)
             if config.generate_conformer or generate_conformer:
                 rdmol = generate_3d(mol=rdmol, recompute_graph=False)
-                coords = [
-                    list(rdmol.GetConformer(0).GetAtomPosition(idx))
-                    for idx in range(rdmol.GetNumAtoms())
-                ]
+                if config.add_hs:
+                    rdmol = Chem.AddHs(rdmol, addCoords=True)
+                coords = get_coords(rdmol)
 
     elif mol is not None:
         name = Chem.MolToSmiles(mol)
         rdmol = mol
-        coords = [
-            list(rdmol.GetConformer(0).GetAtomPosition(idx))
-            for idx in range(rdmol.GetNumAtoms())
-        ]
-
-    if config.add_hs:
-        rdmol = Chem.AddHs(rdmol)
+        if config.add_hs:
+            rdmol = Chem.AddHs(rdmol, addCoords=True)
+        coords = get_coords(rdmol)
 
     if coords is None:
         # If no coords are provided, add edges by bonds
@@ -327,8 +321,8 @@ def construct_graph(
 
 
 def compute_fragment_graphs(
-    g: Union[nx.Graph, Chem.Mol], config: Optional[MoleculeGraphConfig] = None
-) -> List[nx.Graph]:
+    g: nx.Graph | Chem.Mol, config: MoleculeGraphConfig | None = None
+) -> list[nx.Graph]:
     """Computes graphs for each fragment in a molecule.
 
     :param g: Input graph or molecule to fragment.
@@ -349,7 +343,7 @@ def compute_fragment_graphs(
 
 
 def _mp_graph_constructor(
-    input: Union[str, Chem.Mol],
+    input: str | Chem.Mol,
     config: MoleculeGraphConfig,
     use_mol: bool = False,
     use_file: bool = False,
@@ -389,13 +383,13 @@ def _mp_graph_constructor(
 
 
 def construct_graphs_mp(
-    path_it: Optional[List[str]] = None,
-    smiles_it: Optional[List[str]] = None,
-    mol_it: Optional[List[Chem.Mol]] = None,
-    config: MoleculeGraphConfig = MoleculeGraphConfig(),
+    path_it: list[str] | None = None,
+    smiles_it: list[str] | None = None,
+    mol_it: list[Chem.Mol] | None = None,
+    config: MoleculeGraphConfig | None = None,
     num_cores: int = 16,
     return_dict: bool = True,
-) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:
+) -> list[nx.Graph] | dict[str, nx.Graph]:
     """
     Constructs molecular graphs for a list of smiles or paths using
     multiprocessing.
@@ -451,3 +445,19 @@ def construct_graphs_mp(
         graphs = {molecule: graphs[i] for i, molecule in enumerate(inputs)}
 
     return graphs
+
+
+@requires_python_libs("rdkit")
+def get_coords(mol: rdkit.Chem.rdchem.Mol) -> list[list[float]]:
+    """
+    Function for getting the coordinates of an RDKit molecule.
+
+    :param mol: RDKit molecule.
+    :type mol: rdkit.Chem.rdchem.Mol
+    :return: Coordinates.
+    :rtype: List[List[float]]
+    """
+    return [
+        list(mol.GetConformer(0).GetAtomPosition(idx))
+        for idx in range(mol.GetNumAtoms())
+    ]

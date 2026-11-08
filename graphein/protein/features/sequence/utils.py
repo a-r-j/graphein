@@ -5,10 +5,10 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Any, Callable, List
+from collections.abc import Callable
+from typing import Any
 
 import networkx as nx
-import numpy as np
 
 from graphein.utils.utils import parse_aggregation_type
 
@@ -88,17 +88,18 @@ def aggregate_feature_over_residues(
     func = parse_aggregation_type(aggregation_type)
 
     for c in G.graph["chain_ids"]:
-        chain_features = []
-        for n in G.nodes:
-            if G.nodes[n]["chain_id"] == c:
-                chain_features.append(G.nodes[n][feature_name])
+        chain_features = [
+            d[feature_name]
+            for _, d in G.nodes(data=True)
+            if d["chain_id"] == c
+        ]
         G.graph[f"{feature_name}_{aggregation_type}_{c}"] = func(
             chain_features, axis=0
         )
     return G
 
 
-def sequence_to_ngram(sequence: str, N: int) -> List[str]:
+def sequence_to_ngram(sequence: str, N: int) -> list[str]:
     """
     Chops a sequence into overlapping N-grams (substrings of length ``N``).
 

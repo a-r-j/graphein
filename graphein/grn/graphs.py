@@ -6,7 +6,7 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Callable, List, Optional
+from collections.abc import Callable
 
 import networkx as nx
 from loguru import logger as log
@@ -48,12 +48,12 @@ def parse_kwargs_from_config(config: GRNGraphConfig) -> GRNGraphConfig:
 
 
 def compute_grn_graph(
-    gene_list: List[str],
-    edge_construction_funcs: List[Callable],
-    graph_annotation_funcs: Optional[List[Callable]] = None,
-    node_annotation_funcs: Optional[List[Callable]] = None,
-    edge_annotation_funcs: Optional[List[Callable]] = None,
-    config: Optional[GRNGraphConfig] = None,
+    gene_list: list[str],
+    edge_construction_funcs: list[Callable],
+    graph_annotation_funcs: list[Callable] | None = None,
+    node_annotation_funcs: list[Callable] | None = None,
+    edge_annotation_funcs: list[Callable] | None = None,
+    config: GRNGraphConfig | None = None,
 ) -> nx.Graph:
     """
     Computes a Gene Regulatory Network Graph from a list of gene IDs
@@ -112,59 +112,3 @@ def compute_grn_graph(
         G = annotate_edge_metadata(G, edge_annotation_funcs)
 
     return G
-
-
-if __name__ == "__main__":
-    from functools import partial
-
-    import matplotlib.pyplot as plt
-
-    from graphein.grn.edges import add_regnetwork_edges, add_trrust_edges
-    from graphein.grn.features.node_features import add_sequence_to_nodes
-
-    gene_list = ["AATF", "MYC", "USF1", "SP1", "TP53", "DUSP1"]
-
-    config = GRNGraphConfig()
-    kwargs = config.kwargs
-
-    def edge_ann_fn(u, v, d):
-        if "+" in d["regtype"]:
-            d["regtype"] = "+"
-        elif "-" in d["regtype"]:
-            d["regtype"] = "-"
-        elif "?" in d["regtype"]:
-            d["regtype"] = "?"
-
-    g = compute_grn_graph(
-        gene_list=gene_list,
-        edge_construction_funcs=[
-            partial(
-                add_trrust_edges,
-                trrust_filtering_funcs=config.trrust_config.filtering_functions,
-            ),
-            partial(
-                add_regnetwork_edges,
-                regnetwork_filtering_funcs=config.regnetwork_config.filtering_functions,
-            ),
-        ],
-        node_annotation_funcs=[add_sequence_to_nodes],  # , molecular_weight],
-        edge_annotation_funcs=[edge_ann_fn],
-    )
-    print(g.edges(data=True))
-
-    edge_colors = [
-        (
-            "r"
-            if g[u][v]["kind"] == {"trrust"}
-            else "b" if g[u][v]["kind"] == {"regnetwork"} else "y"
-        )
-        for u, v in g.edges()
-    ]
-
-    print(nx.info(g))
-
-    pos = nx.spring_layout(g)
-    nx.draw(g, pos=pos, with_labels=True, edge_color=edge_colors)
-    edge_labels = {(u, v): g[u][v]["regtype"] for u, v in g.edges}
-    nx.draw_networkx_edge_labels(g, pos=pos, edge_labels=edge_labels)
-    plt.show()

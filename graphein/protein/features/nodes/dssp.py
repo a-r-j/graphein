@@ -7,19 +7,24 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
-import os
-import re
-import tempfile
-from typing import Any, Dict, Optional
+import warnings
+from typing import TYPE_CHECKING, Any
 
 import networkx as nx
+import numpy as np
 import pandas as pd
-from Bio.PDB.DSSP import dssp_dict_from_pdb_file, residue_max_acc
+from Bio.PDB.DSSP import residue_max_acc
 from loguru import logger
 
-from graphein.protein.resi_atoms import STANDARD_AMINO_ACID_MAPPING_1_TO_3
-from graphein.protein.utils import save_pdb_df_to_pdb
-from graphein.utils.dependencies import is_tool, requires_external_dependencies
+from graphein.protein import dssp_core
+from graphein.protein.resi_atoms import (
+    RESI_THREE_TO_1,
+    STANDARD_AMINO_ACID_MAPPING_1_TO_3,
+)
+
+if TYPE_CHECKING:
+    from graphein.protein.config import DSSPConfig
+
 
 DSSP_COLS = [
     "chain",
@@ -46,146 +51,200 @@ DSSP_SS = ["H", "B", "E", "G", "I", "T", "S"]
 """Secondary structure types detected by ``DSSP``"""
 
 
-def parse_dssp_df(dssp: Dict[str, Any]) -> pd.DataFrame:
+def parse_dssp_df(dssp: dict[str, Any]) -> pd.DataFrame:
     """
-    Parse ``DSSP`` output to DataFrame.
+    Parse ``DSSP`` output (as read by Biopython's
+    ``Bio.PDB.DSSP.dssp_dict_from_pdb_file``) to DataFrame.
 
     :param dssp: Dictionary containing ``DSSP`` output
     :type dssp: Dict[str, Any]
     :return: pd.DataFrame containing parsed ``DSSP`` output
     :rtype: pd.DataFrame
     """
-    appender = []
-    for k in dssp[1]:
-        to_append = []
-        y = dssp[0][k]
-        chain = k[0]
-        residue = k[1]
-        # het = residue[0]
-        resnum = residue[1]
-        icode = residue[2]
-        to_append.extend([chain, resnum, icode])
-        to_append.extend(y)
-        appender.append(to_append)
-
-    return pd.DataFrame.from_records(appender, columns=DSSP_COLS)
+    # Keys are (chain, (het, resnum, icode))
+    records = [
+        [chain, res[1], res[2], *dssp[0][(chain, res)]]
+        for chain, res in dssp[1]
+    ]
+    return pd.DataFrame.from_records(records, columns=DSSP_COLS)
 
 
-@requires_external_dependencies("mkdssp")
+def compute_dssp_df(df: pd.DataFrame) -> pd.DataFrame:
+    """Computes DSSP for an atomic dataframe, following mkdssp 4.x.
+
+    Produces the columns of mkdssp's classic output (:const:`DSSP_COLS`, as
+    previously parsed with Biopython), without requiring the ``mkdssp``
+    executable. Secondary structure, H-bond partners, phi/psi and
+    accessibility are identical to mkdssp 4.6.1, except that polyproline
+    (``P``, new in DSSP 4) is reported as loop (``-``).
+
+    Rows are protein residues with a complete backbone (N, CA, C, O) in file
+    order: ``ATOM`` residues, plus ``HETATM`` residues (e.g. ``MSE``)
+    peptide-bonded into a chain. Hydrogens are ignored and, where atoms have
+    alternate locations, the highest-occupancy one is used. Where several
+    residues share a chain, number and insertion code, the one with the
+    highest-occupancy CA is used.
+
+    :param df: Atomic dataframe in file order, e.g. from
+        :func:`~graphein.protein.graphs.read_pdb_to_dataframe`, or
+        ``G.graph["raw_pdb_df"]``. If the index is unique, rows are taken in
+        index order, so a dataframe sorted with
+        :func:`~graphein.protein.graphs.sort_dataframe` (which keeps the
+        index) is put back in file order.
+    :type df: pd.DataFrame
+    :return: DataFrame with columns :const:`DSSP_COLS`.
+    :rtype: pd.DataFrame
+    """
+    # File order. construct_graph sorts raw_pdb_df by chain and residue
+    # number but keeps its index, so sorting by the index undoes that.
+    if df.index.is_unique:
+        df = df.sort_index(kind="stable")
+    # Hydrogens, also where the element column is blank (e.g. MD output).
+    element = df["element_symbol"].fillna("").astype(str).str.strip()
+    name = df["atom_name"].astype(str).str.lstrip("0123456789")
+    hydrogen = element.str.upper().isin(["H", "D", "T"]) | (
+        element.eq("") & name.str.startswith(("H", "D"))
+    )
+    df = df.loc[df["record_name"].isin(["ATOM", "HETATM"]) & ~hydrogen]
+    df = df.reset_index(drop=True)
+
+    # One residue per (chain, number, insertion): the one with the
+    # highest-occupancy CA. Waters or ligands sharing its number, and other
+    # residues at the same position (microheterogeneity), are left out.
+    keys = ["chain_id", "residue_number", "insertion"]
+    res = df.groupby(keys, sort=False, dropna=False).ngroup().to_numpy()
+    ca_occupancy = df["occupancy"].where(df["atom_name"].eq("CA"), -np.inf)
+    best = ca_occupancy.fillna(-np.inf).groupby(res).idxmax().to_numpy()
+    resname = df["residue_name"].to_numpy()
+    df = df[resname == resname[best][res]]
+
+    # One conformer per atom (highest occupancy), then file order. Row
+    # position, not atom_number: serials wrap or restart per chain.
+    df = (
+        df.assign(_row=np.arange(len(df)))
+        .sort_values("occupancy", ascending=False, kind="stable")
+        .drop_duplicates(
+            ["chain_id", "residue_number", "insertion", "atom_name"]
+        )
+        .sort_values("_row")
+    )
+    keys = ["chain_id", "residue_number", "insertion"]
+    res = df.groupby(keys, sort=False, dropna=False).ngroup().to_numpy()
+    residues = df.drop_duplicates(keys)
+    het = df["record_name"].eq("HETATM").groupby(res).any().to_numpy()
+
+    # (residues, atoms, 3) with N, CA, C, O first, then side chain atoms.
+    slot = df["atom_name"].map({"N": 0, "CA": 1, "C": 2, "O": 3})
+    side = slot.isna().to_numpy()
+    slot = slot.to_numpy(copy=True)
+    slot[side] = 4 + df[side].groupby(res[side]).cumcount().to_numpy()
+    slot = slot.astype(int)
+    x = np.zeros((len(residues), slot.max(initial=3) + 1, 3), np.float32)
+    present = np.zeros(x.shape[:2], dtype=bool)
+    x[res, slot] = df[["x_coord", "y_coord", "z_coord"]].to_numpy()
+    present[res, slot] = True
+
+    # Keep complete residues; HETATM ones only if peptide-bonded in a chain.
+    keep = present[:, :4].all(1)
+    idx = np.flatnonzero(keep)
+    chain = residues["chain_id"].to_numpy()
+    bonded = np.zeros(len(residues), dtype=bool)
+    link = ~dssp_core._dssp_breaks(x[idx, :4]) & (
+        chain[idx[1:]] == chain[idx[:-1]]
+    )
+    bonded[idx[1:]] |= link
+    bonded[idx[:-1]] |= link
+    keep &= ~het | bonded
+    x, present, residues = x[keep], present[keep], residues[keep]
+    if not len(x):
+        raise ValueError(
+            "DSSP could not be calculated: no protein residues with a "
+            "complete backbone (N, CA, C, O)."
+        )
+
+    bb = x[:, :4]
+    L = len(bb)
+    aa = residues["residue_name"].to_numpy()
+    chain = residues["chain_id"].to_numpy()
+    # As mkdssp, a change of chain is a break even without a C-N gap.
+    breaks = dssp_core._dssp_breaks(bb) | (chain[1:] != chain[:-1])
+    donor_mask = aa != "PRO"  # proline N has no H to donate
+    energies = dssp_core._dssp_energies(bb, np, donor_mask)
+    ss = dssp_core._assign8(bb, np, donor_mask, energies, breaks)
+    acc = dssp_core._accessibility(x, present).astype(np.float64)
+    number = dssp_core._dssp_numbers(bb, breaks)
+    phi, psi = dssp_core._dssp_phi_psi(bb, breaks)
+    partners = dssp_core._dssp_partners(*energies, L)
+
+    def one_dp(v):  # as printed by mkdssp and parsed back by Biopython
+        return [float(f"{f:.1f}") for f in np.asarray(v, dtype=np.float64)]
+
+    out = {
+        "chain": residues["chain_id"].to_numpy(),
+        "resnum": residues["residue_number"].to_numpy(),
+        "icode": residues["insertion"].fillna("").replace("", " ").to_numpy(),
+        "aa": aa,
+        "ss": [dssp_core.DSSP8_STATES[i] for i in ss],
+        "asa": np.floor(acc + 0.5).astype(int),
+        "phi": one_dp(phi),
+        "psi": one_dp(psi),
+        "dssp_index": number,
+    }
+    for (partner, energy), name in zip(partners, ("NH_O", "O_NH")):
+        for k in (0, 1):
+            found = partner[:, k] >= 0
+            rel = np.where(found, number[partner[:, k]] - number, 0)
+            out[f"{name}_{k + 1}_relidx"] = rel
+            out[f"{name}_{k + 1}_energy"] = one_dp(energy[:, k])
+    return pd.DataFrame(out)[DSSP_COLS]
+
+
 def add_dssp_df(
     G: nx.Graph,
-    dssp_config: Optional[DSSPConfig],
+    dssp_config: DSSPConfig | None = None,
 ) -> nx.Graph:
     """
     Construct DSSP dataframe and add as graph level variable to protein graph.
 
+    DSSP is computed natively (see :func:`compute_dssp_df`) from
+    ``G.graph["raw_pdb_df"]``; the ``mkdssp`` executable is not required.
+
     :param G: Input protein graph
     :param G: nx.Graph
-    :param dssp_config: DSSPConfig object. Specifies which executable to run.
-        Located in `:obj:graphein.protein.config`.
+    Rows are indexed by node id; residues without a node (e.g. unselected
+    chains) are left out.
+
+    :param dssp_config: Deprecated and ignored.
     :type dssp_config: DSSPConfig, optional
     :return: Protein graph with DSSP dataframe added
     :rtype: nx.Graph
     """
-    # if dssp_config is None:
+    if dssp_config is not None:
+        warnings.warn(
+            "DSSPConfig is deprecated and ignored: DSSP is now computed "
+            "natively, without mkdssp.",
+            FutureWarning,
+            stacklevel=2,
+        )
     config = G.graph["config"]
-    pdb_code = G.graph["pdb_code"]
-    path = G.graph["path"]
-    pdb_name = G.graph["name"]
+    dssp_dict = compute_dssp_df(G.graph["raw_pdb_df"])
 
-    # Extract DSSP executable
-    executable = dssp_config.executable
-
-    # Ensure that DSSP is on PATH and is marked as an executable.
-    assert is_tool(
-        executable
-    ), "DSSP must be on PATH and marked as an executable"
-
-    pdb_file = None
-    if path:
-        if os.path.isfile(path):
-            pdb_file = path
-    else:
-        if config.pdb_dir:
-            if os.path.isfile(config.pdb_dir / (pdb_code + ".pdb")):
-                pdb_file = config.pdb_dir / (pdb_code + ".pdb")
-
-    # get dssp version string
-    dssp_version = re.search(
-        r"version ([\d\.]+)", os.popen(f"{executable} --version").read()
-    ).group(
-        1
-    )  # e.g. "4.0.4"
-    # Check for existence of pdb file. If not, reconstructs it from the raw df.
-    if pdb_file:
-        dssp_dict = dssp_dict_from_pdb_file(
-            pdb_file, DSSP=executable, dssp_version=dssp_version
-        )
-    else:
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            save_pdb_df_to_pdb(
-                G.graph["raw_pdb_df"], tmpdirname + f"/{pdb_name}.pdb"
-            )
-            dssp_dict = dssp_dict_from_pdb_file(
-                tmpdirname + f"/{pdb_name}.pdb",
-                DSSP=executable,
-                dssp_version=dssp_version,
-            )
-
-    if len(dssp_dict[0]) == 0:
-        raise ValueError(
-            "DSSP could not be calculated. Check DSSP version "
-            f"({dssp_version}) orthat the input PDB file is valid."
-        )
-
-    if config.verbose:
-        logger.debug(f"Using DSSP executable '{executable}'")
-
-    dssp_dict = parse_dssp_df(dssp_dict)
-    # Convert 1 letter aa code to 3 letter
-    dssp_dict["aa"] = dssp_dict["aa"].map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
-
-    # Resolve UNKs
-    # NOTE: the original didn't work if HETATM residues exist in DSSP output
-    _raw_pdb_df = G.graph["raw_pdb_df"].copy().drop_duplicates("node_id")
-    _dssp_df_unk = dssp_dict.loc[dssp_dict["aa"] == "UNK"][
-        ["chain", "resnum", "icode"]
-    ]
-    for chain, resnum, icode in _dssp_df_unk.values:
-        dssp_dict.loc[
-            (dssp_dict["chain"] == chain)
-            & (dssp_dict["resnum"] == resnum)  # e.g. 'H'
-            & (dssp_dict["icode"] == icode),  # e.g. 100  # e.g. 'E' or ' '
-            "aa",
-        ] = _raw_pdb_df.loc[
-            (_raw_pdb_df["chain_id"] == chain)
-            & (_raw_pdb_df["residue_number"] == resnum)
-            & (
-                _raw_pdb_df["insertion"] == icode.strip()
-            )  # why strip?: dssp icode is a space, raw_pdb_df is empty string
-        ][
-            "residue_name"
-        ].values[
-            0
-        ]
-
-    # Construct node IDs
-    dssp_dict["node_id"] = (
-        dssp_dict["chain"]
-        + ":"
-        + dssp_dict["aa"]
-        + ":"
-        + dssp_dict["resnum"].astype(str)
+    # Match residues to nodes by chain, number and insertion code. Node ids
+    # can carry an alt_loc label, and without insertions only the parent
+    # residue (e.g. 52, not 52A) is a node.
+    nodes = G.graph["pdb_df"].drop_duplicates("node_id")
+    nodes = pd.DataFrame(
+        {
+            "chain": nodes["chain_id"],
+            "resnum": nodes["residue_number"],
+            "_icode": nodes["insertion"].fillna("").astype(str).str.strip(),
+            "node_id": nodes["node_id"],
+        }
     )
-    if G.graph["config"].insertions:
-        dssp_dict["node_id"] = (
-            dssp_dict["node_id"] + ":" + dssp_dict["icode"].apply(str)
-        )
-        # Replace trailing : for non insertions
-        dssp_dict["node_id"] = dssp_dict["node_id"].str.replace(
-            r":\s*$", "", regex=True
-        )
-
+    dssp_dict = nodes.merge(
+        dssp_dict.assign(_icode=dssp_dict["icode"].str.strip()),
+        on=["chain", "resnum", "_icode"],
+    )[[*DSSP_COLS, "node_id"]]
     dssp_dict.set_index("node_id", inplace=True)
 
     if config.verbose:
@@ -249,8 +308,7 @@ def add_dssp_feature(G: nx.Graph, feature: str) -> nx.Graph:
             cannot be added to atom granularity graph"
         )
 
-    else:
-        nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
+    nx.set_node_attributes(G, dict(dssp_df[feature]), feature)
 
     if config.verbose:
         logger.debug("Added " + feature + " features to graph nodes")
@@ -275,7 +333,13 @@ def rsa(G: nx.Graph) -> nx.Graph:
     except KeyError:
         G = add_dssp_df(G, G.graph["config"].dssp_config)
         dssp_df = G.graph["dssp_df"]
-    dssp_df["max_acc"] = dssp_df["aa"].map(residue_max_acc["Sander"].get)
+    # Modified residues (e.g. MSE) use their parent's maximum.
+    parent = (
+        dssp_df["aa"]
+        .map(RESI_THREE_TO_1)
+        .map(STANDARD_AMINO_ACID_MAPPING_1_TO_3)
+    )
+    dssp_df["max_acc"] = parent.map(residue_max_acc["Sander"].get)
     dssp_df[["asa", "max_acc"]] = dssp_df[["asa", "max_acc"]].astype(float)
     dssp_df["rsa"] = dssp_df["asa"] / dssp_df["max_acc"]
 

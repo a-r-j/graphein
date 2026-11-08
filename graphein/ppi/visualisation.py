@@ -6,7 +6,6 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import List, Optional
 
 import networkx as nx
 import plotly.express as px
@@ -33,7 +32,9 @@ def plot_ppi_graph(
             (
                 "r"
                 if g[u][v]["kind"] == {"string"}
-                else "b" if g[u][v]["kind"] == {"biogrid"} else "y"
+                else "b"
+                if g[u][v]["kind"] == {"biogrid"}
+                else "y"
             )
             for u, v in g.edges()
         ]
@@ -47,11 +48,11 @@ def plot_ppi_graph(
 def plotly_ppi_graph(
     g: nx.Graph,
     layout: nx.layout = nx.layout.circular_layout,
-    title: Optional[str] = None,
+    title: str | None = None,
     show_labels: bool = False,
     node_size_multiplier: float = 5.0,
     node_colourscale: str = "Viridis",
-    edge_colours: Optional[List[str]] = None,
+    edge_colours: list[str] | None = None,
     edge_opacity: float = 0.5,
     height: int = 500,
     width: int = 500,
@@ -115,14 +116,21 @@ def plotly_ppi_graph(
         data=traces,
         layout=go.Layout(
             title=title,
-            titlefont_size=16,
             showlegend=False,
             width=width,
             height=height,
             hovermode="closest",
-            margin=dict(b=20, l=5, r=5, t=40),
-            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            margin={"b": 20, "l": 5, "r": 5, "t": 40},
+            xaxis={
+                "showgrid": False,
+                "zeroline": False,
+                "showticklabels": False,
+            },
+            yaxis={
+                "showgrid": False,
+                "zeroline": False,
+                "showticklabels": False,
+            },
         ),
     )
 
@@ -155,20 +163,19 @@ def get_node_trace(
         y=node_y,
         mode="markers",
         hoverinfo="text",
-        marker=dict(
-            showscale=False,
-            colorscale=node_colourscale,
-            reversescale=True,
-            color=[],
-            size=node_size,
-            colorbar=dict(
-                thickness=15,
-                title="Node Connections",
-                xanchor="left",
-                titleside="right",
-            ),
-            line_width=2,
-        ),
+        marker={
+            "showscale": False,
+            "colorscale": node_colourscale,
+            "reversescale": True,
+            "color": [],
+            "size": node_size,
+            "colorbar": {
+                "thickness": 15,
+                "title": "Node Connections",
+                "xanchor": "left",
+            },
+            "line_width": 2,
+        },
     )
     node_text = list(g.nodes())
     node_trace.marker.color = node_size
@@ -178,8 +185,8 @@ def get_node_trace(
 
 def get_edge_trace(
     g: nx.Graph,
-    edge_colours: Optional[List[str]] = None,
-) -> List[go.Scatter]:
+    edge_colours: list[str] | None = None,
+) -> list[go.Scatter]:
     """Gets edge traces from PPI graph. Returns a list of traces enabling edge colours to be set individually.
 
     :param g: _description_
@@ -204,7 +211,7 @@ def get_edge_trace(
             colour = edge_colours[2]
 
         edge_trace = go.Scatter(
-            line=dict(width=2, color=colour),
+            line={"width": 2, "color": colour},
             hoverinfo="text",
             x=(x0, x1),
             y=(y0, y1),
@@ -215,37 +222,3 @@ def get_edge_trace(
         )
         traces.append(edge_trace)
     return traces
-
-
-if __name__ == "__main__":
-    from functools import partial
-
-    from graphein.ppi.config import PPIGraphConfig
-    from graphein.ppi.edges import add_biogrid_edges, add_string_edges
-    from graphein.ppi.graphs import compute_ppi_graph
-
-    config = PPIGraphConfig()
-
-    protein_list = [
-        "CDC42",
-        "CDK1",
-        "KIF23",
-        "PLK1",
-        "RAC2",
-        "RACGAP1",
-        "RHOA",
-        "RHOB",
-    ]
-
-    g = compute_ppi_graph(
-        protein_list=protein_list,
-        edge_construction_funcs=[
-            partial(add_string_edges),
-            partial(add_biogrid_edges),
-        ],
-    )
-
-    plot_ppi_graph(g)
-    plotly_ppi_graph(g)
-
-# %%

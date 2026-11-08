@@ -2,7 +2,6 @@
 
 import os
 import shutil
-from typing import Tuple
 
 import wget
 
@@ -41,7 +40,7 @@ def download_bp_rna_1m(out_path: str = "/tmp/"):
         )
 
 
-def read_dbn_file(path: str) -> Tuple[str, str]:
+def read_dbn_file(path: str) -> tuple[str, str]:
     """
     Read a dotbracket file to sequence and dotbracket strings.
 
@@ -50,16 +49,8 @@ def read_dbn_file(path: str) -> Tuple[str, str]:
     :return: Tuple of sequence and dotbracket strings.
     :rtype: Tuple[str, str]
     """
-    with open(path, "r") as f:
+    with open(path) as f:
         lines = f.readlines()
-    print(lines)
     sequence = lines[-2]
     dotbracket = lines[-1]
     return sequence, dotbracket
-
-
-if __name__ == "__main__":
-    # download_bp_rna_1m(".")
-    seq, db = read_dbn_file("./bp_rna_1m/dbnFiles/bpRNA_CRW_23156.dbn")
-    print(seq)
-    print(db)

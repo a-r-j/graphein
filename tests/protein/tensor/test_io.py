@@ -9,6 +9,7 @@
 import os
 from pathlib import Path
 
+import pandas as pd
 import pytest
 from biopandas.pdb import PandasPdb
 from pandas.testing import assert_frame_equal
@@ -24,7 +25,7 @@ from graphein.protein.tensor.io import (
 from graphein.protein.tensor.sequence import get_residue_id
 
 try:
-    import torch
+    import torch  # noqa: F401
 
     TORCH_AVAIL = True
 except ImportError:
@@ -52,20 +53,20 @@ def test_protein_df_to_chain_tensor():
 
     chains = protein_df_to_chain_tensor(df, one_hot=True)
     print(chains)
-    assert (
-        chains.shape[0] == num_residues
-    ), "Number of residues and chain IDs do not match."
-    assert (
-        chains.shape[1] == num_chains
-    ), "Number of chains do not match dimension"
+    assert chains.shape[0] == num_residues, (
+        "Number of residues and chain IDs do not match."
+    )
+    assert chains.shape[1] == num_chains, (
+        "Number of chains do not match dimension"
+    )
     assert chains.max() == 1, "Chain IDs are not one hot."
     if num_chains > 1:
         assert chains.min() == 0, "Chain IDs are not one hot."
 
     chain = protein_df_to_chain_tensor(df, one_hot=False)
-    assert (
-        chain.shape[0] == num_residues
-    ), "Number of residues and chain IDs do not match."
+    assert chain.shape[0] == num_residues, (
+        "Number of residues and chain IDs do not match."
+    )
     assert chain.max() == num_chains - 1, "Chain IDs are not zero-indexed."
     assert chain.min() == 0, "Chain IDs are not zero-indexed."
 
@@ -111,14 +112,76 @@ def test_to_pdb():
 
 
 def test_pdb_to_pyg():
-    pyg_object = protein_to_pyg(PDB_DATA_PATH)
+    protein_to_pyg(PDB_DATA_PATH)
 
 
 def test_cif_to_pyg():
-    pyg_object = protein_to_pyg(CIF_DATA_PATH)
+    protein_to_pyg(CIF_DATA_PATH)
 
 
 def test_pdb_and_cif_parsing():
     pdb_pyg = protein_to_pyg(PDB_DATA_PATH)
     cif_pyg = protein_to_pyg(CIF_DATA_PATH)
     assert pdb_pyg.coords.shape == cif_pyg.coords.shape
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_protein_df_to_tensor_residue_without_kept_atoms():
+    df = PandasPdb().read_pdb(str(PDB_DATA_PATH)).df["ATOM"]
+    df = df.loc[df.residue_number.isin([1, 2, 3]) & (df.chain_id == "A")]
+    # Residue 2 has no CA
+    df = df.loc[~((df.residue_number == 2) & (df.atom_name == "CA"))]
+    positions = protein_df_to_tensor(df.copy(), atoms_to_keep=["CA"])
+    assert positions.shape == (3, 1, 3)
+    assert (positions[1] == 1e-5).all()
+    ca_3 = df.loc[(df.residue_number == 3) & (df.atom_name == "CA")]
+    assert positions[2, 0].tolist() == pytest.approx(
+        ca_3[["x_coord", "y_coord", "z_coord"]].values[0].tolist()
+    )
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_protein_to_pyg_ids_and_hetatms():
+    assert protein_to_pyg(path=str(PDB_DATA_PATH)).id == "4hhb"
+    assert (
+        protein_to_pyg(path=PDB_DATA_PATH, chain_selection="A").id == "4hhb_A"
+    )
+
+    out = protein_to_pyg(path=str(PDB_DATA_PATH), store_het=True)
+    hets = out.hetatms[0]
+    raw = PandasPdb().read_pdb(str(PDB_DATA_PATH)).df["HETATM"]
+    assert set(hets) == set(raw.residue_name)
+    for het, data in hets.items():
+        expected = raw.loc[raw.residue_name == het]
+        assert data["coords"].shape == (len(expected), 3)
+        assert list(data["atoms"]) == list(expected.atom_name)
+        assert data["residue_number"].tolist() == list(expected.residue_number)
+        assert list(data["element_symbol"]) == list(expected.element_symbol)
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_to_dataframe_custom_fill_value():
+    x = protein_to_pyg(path=str(PDB_DATA_PATH)).coords
+    expected = to_dataframe(x)
+    x[x == 1e-5] = 0.0
+    df = to_dataframe(x, fill_value=0.0)
+    assert len(df) == len(expected)
+    assert_frame_equal(
+        df[["atom_name", "x_coord", "y_coord", "z_coord"]],
+        expected[["atom_name", "x_coord", "y_coord", "z_coord"]],
+    )
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_protein_df_to_chain_tensor_sorts_chain_ids():
+    # Chains appear in the file as L, H, A; IDs follow sorted order
+    path = PDB_DATA_PATH.parent / "input_pdb_cryst1.pdb"
+    df = PandasPdb().read_pdb(str(path)).df["ATOM"]
+    chains = pd.Series(get_residue_id(df)).str.split(":").str[0]
+    expected = chains.map({c: i for i, c in enumerate(sorted(set(chains)))})
+
+    ids = protein_df_to_chain_tensor(df)
+    assert ids.tolist() == expected.tolist()
+    one_hot = protein_df_to_chain_tensor(df, one_hot=True)
+    assert one_hot.shape == (len(chains), 3)
+    assert one_hot.argmax(dim=1).tolist() == expected.tolist()

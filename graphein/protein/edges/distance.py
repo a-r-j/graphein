@@ -8,31 +8,33 @@
 from __future__ import annotations
 
 import itertools
+from collections.abc import Iterable
 from itertools import combinations, product
-from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 from loguru import logger as log
-from scipy.spatial import Delaunay
+from scipy.spatial import Delaunay, cKDTree
 from scipy.spatial.distance import pdist, squareform
-from sklearn.neighbors import NearestNeighbors, kneighbors_graph
+from sklearn.neighbors import NearestNeighbors
 
 from graphein.protein.resi_atoms import (
     AA_RING_ATOMS,
     AROMATIC_RESIS,
-    BACKBONE_ATOMS,
     BOND_TYPES,
     CATION_PI_RESIS,
     CATION_RESIS,
     DISULFIDE_ATOMS,
     DISULFIDE_RESIS,
+    HYDROGEN_BOND_ACCEPTORS,
+    HYDROGEN_BOND_DONORS,
     HYDROPHOBIC_RESIS,
     IONIC_RESIS,
     NEG_AA,
     PI_RESIS,
     POS_AA,
+    RESI_THREE_TO_1,
     RING_NORMAL_ATOMS,
     SALT_BRIDGE_ANIONS,
     SALT_BRIDGE_ATOMS,
@@ -41,7 +43,7 @@ from graphein.protein.resi_atoms import (
     SULPHUR_RESIS,
     VDW_RADII,
 )
-from graphein.protein.utils import filter_dataframe
+from graphein.protein.utils import filter_dataframe, sequence_positions
 
 INFINITE_DIST = 10_000.0  # np.inf leads to errors in some cases
 
@@ -151,9 +153,9 @@ def add_distance_to_edges(G: nx.Graph) -> nx.Graph:
     :return: Graph with added distances.
     :rtype: nx.Graph
     """
-    if "atomic_dist_mat" in G.graph.keys():
+    if "atomic_dist_mat" in G.graph:
         dist_mat = G.graph["atomic_dist_mat"]
-    elif "dist_mat" in G.graph.keys():
+    elif "dist_mat" in G.graph:
         dist_mat = G.graph["dist_mat"]
     else:
         dist_mat = compute_distmat(G.graph["pdb_df"])
@@ -173,7 +175,8 @@ def add_sequence_distance_edges(
     Adds edges based on sequence distance to residues in each chain.
 
     Eg. if ``d=6`` then we join: nodes ``(1,7), (2,8), (3,9)..``
-    based on their sequence number.
+    based on their position in sequence (see
+    :func:`~graphein.protein.utils.sequence_positions`).
 
     :param G: Networkx protein graph.
     :type G: nx.Graph
@@ -183,6 +186,8 @@ def add_sequence_distance_edges(
     :return G: Networkx protein graph with added peptide bonds.
     :rtype: nx.Graph
     """
+    pdb_df = G.graph["pdb_df"]
+    positions = dict(zip(pdb_df["node_id"], sequence_positions(pdb_df)))
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
         # Find chain residues
@@ -218,11 +223,11 @@ def add_sequence_distance_edges(
                     residue[1]["chain_id"]
                     == chain_residues[i + d][1]["chain_id"]
                 )
-                # Asserts residue numbers are adjacent
+                # Asserts residues are d apart in sequence
                 cond_2 = (
                     abs(
-                        residue[1]["residue_number"]
-                        - chain_residues[i + d][1]["residue_number"]
+                        positions[residue[0]]
+                        - positions[chain_residues[i + d][0]]
                     )
                     == d
                 )
@@ -230,14 +235,7 @@ def add_sequence_distance_edges(
                 # If this checks out, we add a peptide bond
                 if (cond_1) and (cond_2):
                     # Adds "peptide bond" between current residue and the next
-                    if G.has_edge(i, i + d):
-                        G.edges[i, i + d]["kind"].add(name)
-                    else:
-                        G.add_edge(
-                            residue[0],
-                            chain_residues[i + d][0],
-                            kind={name},
-                        )
+                    add_edge(G, residue[0], chain_residues[i + d][0], name)
             except IndexError:
                 continue
     return G
@@ -256,7 +254,7 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
 
 
 def add_hydrophobic_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+    G: nx.Graph, rgroup_df: pd.DataFrame | None = None
 ):
     """
     Find all hydrophobic interactions.
@@ -289,7 +287,7 @@ def add_hydrophobic_interactions(
 
 
 def add_disulfide_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+    G: nx.Graph, rgroup_df: pd.DataFrame | None = None
 ):
     """
     Find all disulfide interactions between CYS residues
@@ -333,49 +331,255 @@ def add_disulfide_interactions(
         )
 
 
+HBOND_TYPE_BACKBONE_ATOMS: dict[str, int] = {
+    "sc-sc": 0,
+    "bb-sc": 1,
+    "bb-bb": 2,
+}
+"""Number of backbone atoms in the donor-acceptor pair of each hydrogen bond
+type."""
+
+HBOND_TYPES: list[str] = list(HBOND_TYPE_BACKBONE_ATOMS)
+"""Hydrogen bond types by the location (backbone or side chain) of the donor
+and acceptor atoms."""
+
+NO_AMIDE_HYDROGEN_RESIS: list[str] = ["3HP", "4HP", "BMT", "MLE", "MVA", "SAR"]
+"""Residues whose backbone ``N`` has no hydrogen, so is not a hydrogen bond
+donor, besides those :const:`~graphein.protein.resi_atoms.RESI_THREE_TO_1`
+maps to proline: hydroxyprolines mapped to ``X`` and N-methylated residues."""
+
+HBOND_RESIDUE_VARIANTS: dict[str, str] = {
+    "ASH": "ASP",
+    "DAR": "ARG",
+    "DAS": "ASP",
+    "DGL": "GLU",
+    "DGN": "GLN",
+    "DHI": "HIS",
+    "DLY": "LYS",
+    "DSG": "ASN",
+    "DSN": "SER",
+    "DSP": "ASP",
+    "DTH": "THR",
+    "DTR": "TRP",
+    "DTY": "TYR",
+    "GLH": "GLU",
+    "HID": "HIS",
+    "HIE": "HIS",
+    "HIP": "HIS",
+    "HSD": "HIS",
+    "HSE": "HIS",
+    "HSP": "HIS",
+    "LYN": "LYS",
+}
+"""Residue variants (D-amino acids and Amber/CHARMM protonation states) with
+the same side chain hydrogen bond donors and acceptors as their parent
+residue. Protonation states are approximated by the parent residue (e.g. the
+protonated ``OD2`` of ``ASH`` is an acceptor, not a donor). Residues with
+modified side chains (e.g. phosphorylated ``SEP``, ``TPO`` and ``PTR``) are
+deliberately not included."""
+
+
 def add_hydrogen_bond_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+    G: nx.Graph,
+    rgroup_df: pd.DataFrame | None = None,
+    distance_threshold: float = 3.5,
+    hbond_types: Iterable[str] = HBOND_TYPES,
 ):
-    """Add all hydrogen-bond interactions."""
-    # For these atoms, find those that are within 3.5A of one another.
+    """
+    Add hydrogen bond interactions between donor and acceptor atoms.
+
+    An edge is added between two nodes if a hydrogen bond donor atom in one is
+    within ``distance_threshold`` Angstroms of a hydrogen bond acceptor atom in
+    the other. Side chain donors and acceptors are defined in
+    :const:`~graphein.protein.resi_atoms.HYDROGEN_BOND_DONORS` and
+    :const:`~graphein.protein.resi_atoms.HYDROGEN_BOND_ACCEPTORS`. Backbone
+    amide nitrogens (``N``, except in proline variants and N-methylated
+    residues; :const:`NO_AMIDE_HYDROGEN_RESIS`) are donors and backbone
+    oxygens (``O`` and ``OXT``) are acceptors.
+
+    Side chain atoms of the residue variants in :const:`HBOND_RESIDUE_VARIANTS`
+    (e.g. ``HIE``, ``DSN``) are matched to those of their parent residue.
+    Side chain atoms of other residues (e.g. ligands, or modified residues
+    such as ``SEP``) are not considered.
+
+    Atoms in the same residue are never paired. Covalent geometry alone puts
+    the backbone ``N`` and ``O`` atoms either side of a peptide bond ~2.3
+    Angstroms apart, and a Ser ``OG`` or Thr ``OG1`` ~3 Angstroms from the next
+    residue's ``N``, so these pairs are ignored between residues joined by a
+    peptide bond. Other side chain hydrogen bonds to a neighbouring residue's
+    backbone (e.g. Asx motifs) are kept. Peptide bonds are identified from
+    the backbone ``C`` and ``N`` coordinates, so insertion codes and gaps in
+    residue numbering are handled.
+
+    Hydrogen positions are not used, so this is a geometric approximation.
+
+    :param G: Protein graph to add hydrogen bond edges to.
+    :type G: nx.Graph
+    :param rgroup_df: Atomic dataframe to find interactions in. If ``None``
+        (default), ``G.graph["raw_pdb_df"]`` is used. Backbone hydrogen bonds
+        are only found if this dataframe contains backbone atoms (unlike
+        ``G.graph["rgroup_df"]``), and a warning is logged if they are
+        requested but there are none. Atoms are assigned to nodes by chain,
+        residue name and number and insertion code (and atom name and alt_loc
+        for atom graphs), and a warning is logged if none match; any
+        ``node_id`` column is ignored. Missing
+        ``insertion`` and ``alt_loc`` columns are treated as blank, and a
+        missing ``occupancy`` column as equal occupancies.
+    :type rgroup_df: Optional[pd.DataFrame]
+    :param distance_threshold: Maximum donor-acceptor distance in Angstroms.
+        Defaults to ``3.5``.
+    :type distance_threshold: float
+    :param hbond_types: Hydrogen bonds to add, by the location of the donor and
+        acceptor atoms: ``"bb-bb"`` (backbone-backbone), ``"bb-sc"``
+        (backbone-side chain) and/or ``"sc-sc"`` (side chain-side chain).
+        A single type can be given as a string. Defaults to all three
+        (:const:`HBOND_TYPES`).
+    :type hbond_types: Iterable[str]
+    :raises ValueError: If ``hbond_types`` contains an unknown type.
+    """
+    if isinstance(hbond_types, str):
+        hbond_types = [hbond_types]
+    hbond_types = set(hbond_types)
+    if not hbond_types:
+        raise ValueError(f"hbond_types is empty. Must be in {HBOND_TYPES}.")
+    if not hbond_types.issubset(HBOND_TYPES):
+        raise ValueError(
+            f"Unknown hbond_types: {hbond_types - set(HBOND_TYPES)}. "
+            f"Must be in {HBOND_TYPES}."
+        )
     if rgroup_df is None:
-        rgroup_df = G.graph["rgroup_df"]
-    rgroup_df = filter_dataframe(rgroup_df, "node_id", list(G.nodes()), True)
-    HBOND_ATOMS = [
-        "ND",  # histidine and asparagine
-        "NE",  # glutamate, tryptophan, arginine, histidine
-        "NH",  # arginine
-        "NZ",  # lysine
-        "OD1",
-        "OD2",
-        "OE",
-        "OG",
-        "OH",
-        "SD",  # cysteine
-        "SG",  # methionine
-        "N",
-        "O",
+        rgroup_df = G.graph["raw_pdb_df"]
+
+    # Assign atoms to nodes by key rather than node_id: residue node IDs carry
+    # the CA's alt_loc, which the residue's other atoms may not share, and
+    # without insertions inserted residues share their parent's node ID.
+    nodes = G.graph["pdb_df"]
+    nodes = nodes.loc[nodes["node_id"].isin(list(G.nodes()))]
+    key = ["chain_id", "residue_name", "residue_number", "insertion"]
+    df = rgroup_df.drop(columns="node_id", errors="ignore")
+    for col in ("insertion", "alt_loc"):
+        df[col] = df[col].fillna("") if col in df else ""
+    if "occupancy" not in df:
+        df["occupancy"] = 1.0
+    if G.graph.get("node_type") == "atom":
+        key += ["atom_name", "alt_loc"]
+    else:
+        # Avoid a circular import (graphs imports this module)
+        from graphein.protein.graphs import remove_alt_locs
+
+        alt_locs = getattr(G.graph.get("config"), "alt_locs", "max_occupancy")
+        if alt_locs != "include":
+            df = remove_alt_locs(df, keep=alt_locs)
+    nodes = nodes[key + ["node_id"]].fillna({"insertion": "", "alt_loc": ""})
+    df = df.merge(nodes, on=key)
+    if df.empty:
+        log.warning(
+            "No atoms in rgroup_df match a graph node by "
+            f"{', '.join(key)}, so no hydrogen bonds were added."
+        )
+        return
+
+    # Map residue variants (e.g. HIE, DSN) to their parent residue
+    parent = df["residue_name"].replace(HBOND_RESIDUE_VARIANTS)
+    res_atom = parent + ":" + df["atom_name"]
+    sc_donors = [
+        f"{res}:{atom}"
+        for res, atoms in HYDROGEN_BOND_DONORS.items()
+        for atom in atoms
     ]
-    hbond_df = filter_dataframe(rgroup_df, "atom_name", HBOND_ATOMS, True)
-    if len(hbond_df.index) > 0:
-        distmat = compute_distmat(hbond_df)
-        interacting_atoms = get_interacting_atoms(3.5, distmat)
-        add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
+    sc_acceptors = [
+        f"{res}:{atom}"
+        for res, atoms in HYDROGEN_BOND_ACCEPTORS.items()
+        for atom in atoms
+    ]
+    is_amino_acid = df["residue_name"].isin(list(RESI_THREE_TO_1))
+    # Proline variants (e.g. HYP, DPR) and N-methylated residues also lack a
+    # backbone amide hydrogen
+    no_amide_h = (df["residue_name"].map(RESI_THREE_TO_1) == "P") | df[
+        "residue_name"
+    ].isin(NO_AMIDE_HYDROGEN_RESIS)
+    bb_donor = is_amino_acid & (df["atom_name"] == "N") & ~no_amide_h
+    bb_acceptor = is_amino_acid & df["atom_name"].isin(["O", "OXT"])
+    donor = (bb_donor | res_atom.isin(sc_donors)).to_numpy()
+    acceptor = (bb_acceptor | res_atom.isin(sc_acceptors)).to_numpy()
+    backbone = (bb_donor | bb_acceptor).to_numpy()
+    # e.g. G.graph["rgroup_df"], which keeps only the terminal OXT
+    if not bb_donor.any() and hbond_types - {"sc-sc"}:
+        log.warning(
+            "No backbone N atoms to find backbone hydrogen bonds with. Pass "
+            "a dataframe with backbone atoms (e.g. G.graph['raw_pdb_df'], the "
+            "default) as rgroup_df, or hbond_types=['sc-sc']."
+        )
 
-    # For these atoms, find those that are within 4.0A of one another.
-    HBOND_ATOMS_SULPHUR = ["SD", "SG"]
-    hbond_df = filter_dataframe(
-        rgroup_df, "atom_name", HBOND_ATOMS_SULPHUR, True
+    all_residues = (
+        df["chain_id"].astype(str)
+        + ":"
+        + df["residue_number"].astype(str)
+        + ":"
+        + df["insertion"]
     )
-    if len(hbond_df.index) > 0:
-        distmat = compute_distmat(hbond_df)
-        interacting_atoms = get_interacting_atoms(4.0, distmat)
-        add_interacting_resis(G, interacting_atoms, hbond_df, ["hbond"])
+    merged = df
+    keep = donor | acceptor
+    df = df.loc[keep].reset_index(drop=True)
+    residue = all_residues[keep].to_numpy()
+    donor, acceptor, backbone = donor[keep], acceptor[keep], backbone[keep]
+
+    coord_cols = ["x_coord", "y_coord", "z_coord"]
+    i, j = (
+        cKDTree(df[coord_cols].to_numpy())
+        .query_pairs(distance_threshold, output_type="ndarray")
+        .T
+    )
+
+    n_backbone = backbone[i].astype(int) + backbone[j].astype(int)
+    allowed = [HBOND_TYPE_BACKBONE_ATOMS[t] for t in hbond_types]
+    is_hbond = (
+        ((donor[i] & acceptor[j]) | (donor[j] & acceptor[i]))
+        & (residue[i] != residue[j])
+        & np.isin(n_backbone, allowed)
+    )
+
+    # Drop bb-bb pairs, and Ser OG / Thr OG1 (i) to N (i + 1), between
+    # residues joined by a peptide bond (C-N ~1.33A). Missing C or N
+    # coordinates give NaN, i.e. not bonded.
+    atom = df["atom_name"].to_numpy()
+
+    def _gamma_to_n(x, y):
+        return np.isin(atom[x], ["OG", "OG1"]) & (atom[y] == "N") & backbone[y]
+
+    gamma_ij, gamma_ji = _gamma_to_n(i, j), _gamma_to_n(j, i)
+    bb = np.flatnonzero(is_hbond & ((n_backbone == 2) | gamma_ij | gamma_ji))
+    if len(bb) > 0:
+
+        def _coords(atom_name):
+            mask = is_amino_acid & (merged["atom_name"] == atom_name)
+            return (
+                merged.loc[mask, coord_cols]
+                .groupby(all_residues[mask])
+                .first()
+            )
+
+        c_coords, n_coords = _coords("C"), _coords("N")
+        res_i, res_j = residue[i[bb]], residue[j[bb]]
+
+        def _peptide_bonded(c_res, n_res):
+            c = c_coords.reindex(c_res).to_numpy()
+            n = n_coords.reindex(n_res).to_numpy()
+            return np.linalg.norm(c - n, axis=1) <= 2.0
+
+        bonded_ij = _peptide_bonded(res_i, res_j)
+        bonded_ji = _peptide_bonded(res_j, res_i)
+        bb_bb = n_backbone[bb] == 2
+        drop = (
+            (bb_bb & (bonded_ij | bonded_ji))
+            | (gamma_ij[bb] & bonded_ij)
+            | (gamma_ji[bb] & bonded_ji)
+        )
+        is_hbond[bb[drop]] = False
+    add_interacting_resis(G, (i[is_hbond], j[is_hbond]), df, ["hbond"])
 
 
-def add_ionic_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
-):
+def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame | None = None):
     """
     Find all ionic interactions.
 
@@ -416,9 +620,7 @@ def add_ionic_interactions(
                     G.remove_edge(r1, r2)
 
 
-def add_aromatic_interactions(
-    G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None
-):
+def add_aromatic_interactions(G: nx.Graph, pdb_df: pd.DataFrame | None = None):
     """
     Find all aromatic-aromatic interaction.
 
@@ -474,7 +676,7 @@ def add_aromatic_interactions(
 
 
 def add_aromatic_sulphur_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+    G: nx.Graph, rgroup_df: pd.DataFrame | None = None
 ):
     """Find all aromatic-sulphur interactions.
 
@@ -505,19 +707,21 @@ def add_aromatic_sulphur_interactions(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
 
+        node_ids = aromatic_sulphur_df["node_id"].to_numpy()
+        residue_names = aromatic_sulphur_df["residue_name"].to_numpy()
         for a1, a2 in interacting_atoms:
-            resi1 = aromatic_sulphur_df.loc[a1, "node_id"]
-            resi2 = aromatic_sulphur_df.loc[a2, "node_id"]
+            resi1, resi2 = node_ids[a1], node_ids[a2]
+            name1, name2 = residue_names[a1], residue_names[a2]
 
-            condition1 = resi1 in SULPHUR_RESIS and resi2 in PI_RESIS
-            condition2 = resi1 in PI_RESIS and resi2 in SULPHUR_RESIS
+            condition1 = name1 in SULPHUR_RESIS and name2 in PI_RESIS
+            condition2 = name1 in PI_RESIS and name2 in SULPHUR_RESIS
 
             if (condition1 or condition2) and resi1 != resi2:
                 add_edge(G, resi1, resi2, "aromatic_sulphur")
 
 
 def add_cation_pi_interactions(
-    G: nx.Graph, rgroup_df: Optional[pd.DataFrame] = None
+    G: nx.Graph, rgroup_df: pd.DataFrame | None = None
 ):
     """Add cation-pi interactions.
 
@@ -546,12 +750,14 @@ def add_cation_pi_interactions(
             zip(interacting_atoms[0], interacting_atoms[1])
         )
 
+        node_ids = cation_pi_df["node_id"].to_numpy()
+        residue_names = cation_pi_df["residue_name"].to_numpy()
         for a1, a2 in interacting_atoms:
-            resi1 = cation_pi_df.loc[a1, "node_id"]
-            resi2 = cation_pi_df.loc[a2, "node_id"]
+            resi1, resi2 = node_ids[a1], node_ids[a2]
+            name1, name2 = residue_names[a1], residue_names[a2]
 
-            condition1 = resi1 in CATION_RESIS and resi2 in PI_RESIS
-            condition2 = resi1 in PI_RESIS and resi2 in CATION_RESIS
+            condition1 = name1 in CATION_RESIS and name2 in PI_RESIS
+            condition2 = name1 in PI_RESIS and name2 in CATION_RESIS
 
             if (condition1 or condition2) and resi1 != resi2:
                 add_edge(G, resi1, resi2, "cation_pi")
@@ -624,7 +830,7 @@ def add_vdw_clashes(
 
 def add_pi_stacking_interactions(
     G: nx.Graph,
-    pdb_df: Optional[pd.DataFrame] = None,
+    pdb_df: pd.DataFrame | None = None,
     centroid_distance: float = 7.0,
 ):
     """Adds Pi-stacking interactions to graph.
@@ -670,22 +876,21 @@ def add_pi_stacking_interactions(
             for r, c in zip(indices[0], indices[1])
         ]
         # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
+        centroids = dict(
+            zip(
+                aromatic_df["node_id"],
+                aromatic_df[["x_coord", "y_coord", "z_coord"]].to_numpy(),
+            )
+        )
+        normals = dict(zip(aromatic_df["node_id"], aromatic_df[0]))
         for n1, n2 in interacting_resis:
             assert G.nodes[n1]["residue_name"] in PI_RESIS
             assert G.nodes[n2]["residue_name"] in PI_RESIS
-            n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
-                ["x_coord", "y_coord", "z_coord"]
-            ].values[0]
-            n2_centroid = aromatic_df.loc[aromatic_df["node_id"] == n2][
-                ["x_coord", "y_coord", "z_coord"]
-            ].values[0]
+            n1_centroid = centroids[n1]
+            n2_centroid = centroids[n2]
 
-            n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][
-                0
-            ].values[0]
-            n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][
-                0
-            ].values[0]
+            n1_normal = normals[n1]
+            n2_normal = normals[n2]
 
             centroid_vector = n2_centroid - n1_centroid
 
@@ -702,7 +907,7 @@ def add_pi_stacking_interactions(
             add_edge(G, n1, n2, "pi_stacking")
 
 
-def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
+def add_t_stacking(G: nx.Graph, pdb_df: pd.DataFrame | None = None):
     if pdb_df is None:
         pdb_df = G.graph["raw_pdb_df"]
     dfs = []
@@ -733,22 +938,21 @@ def add_t_stacking(G: nx.Graph, pdb_df: Optional[pd.DataFrame] = None):
             for r, c in zip(indices[0], indices[1])
         ]
         # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
+        centroids = dict(
+            zip(
+                aromatic_df["node_id"],
+                aromatic_df[["x_coord", "y_coord", "z_coord"]].to_numpy(),
+            )
+        )
+        normals = dict(zip(aromatic_df["node_id"], aromatic_df[0]))
         for n1, n2 in interacting_resis:
             assert G.nodes[n1]["residue_name"] in PI_RESIS
             assert G.nodes[n2]["residue_name"] in PI_RESIS
-            n1_centroid = aromatic_df.loc[aromatic_df["node_id"] == n1][
-                ["x_coord", "y_coord", "z_coord"]
-            ].values[0]
-            n2_centroid = aromatic_df.loc[aromatic_df["node_id"] == n2][
-                ["x_coord", "y_coord", "z_coord"]
-            ].values[0]
+            n1_centroid = centroids[n1]
+            n2_centroid = centroids[n2]
 
-            n1_normal = aromatic_df.loc[aromatic_df["node_id"] == n1][
-                0
-            ].values[0]
-            n2_normal = aromatic_df.loc[aromatic_df["node_id"] == n2][
-                0
-            ].values[0]
+            n1_normal = normals[n1]
+            n2_normal = normals[n2]
 
             centroid_vector = n2_centroid - n1_centroid
 
@@ -814,7 +1018,7 @@ def add_backbone_carbonyl_carbonyl_interactions(
 
 def add_salt_bridges(
     G: nx.Graph,
-    rgroup_df: Optional[pd.DataFrame] = None,
+    rgroup_df: pd.DataFrame | None = None,
     threshold: float = 4.0,
 ):
     """Compute salt bridge interactions.
@@ -877,7 +1081,7 @@ def get_interacting_atoms(
 
 
 def add_delaunay_triangulation(
-    G: nx.Graph, allowable_nodes: Optional[List[str]] = None
+    G: nx.Graph, allowable_nodes: list[str] | None = None
 ):
     """
     Compute the Delaunay triangulation of the protein structure.
@@ -909,7 +1113,7 @@ def add_delaunay_triangulation(
     """
     if allowable_nodes is None:
         coords = np.array([d["coords"] for _, d in G.nodes(data=True)])
-        node_map: Dict[int, str] = dict(enumerate(G.nodes()))
+        node_map: dict[int, str] = dict(enumerate(G.nodes()))
     else:
         coords = np.array(
             [
@@ -918,12 +1122,12 @@ def add_delaunay_triangulation(
                 if d["atom_type"] in allowable_nodes
             ]
         )
-        node_map: Dict[int, str] = {
+        node_map: dict[int, str] = {
             i: n
             for i, (n, d) in enumerate(G.nodes(data=True))
             if d["atom_type"] in allowable_nodes
         }
-        node_map: Dict[int, str] = dict(enumerate(node_map.values()))
+        node_map: dict[int, str] = dict(enumerate(node_map.values()))
 
     tri = Delaunay(coords)  # this is the triangulation
     log.debug(
@@ -948,7 +1152,8 @@ def add_distance_threshold(
     :param G: Protein Structure graph to add distance edges to
     :type G: nx.Graph
     :param long_interaction_threshold: minimum distance in sequence for two
-        nodes to be connected
+        nodes to be connected. See
+        :func:`~graphein.protein.utils.sequence_positions`.
     :type long_interaction_threshold: int
     :param threshold: Distance in angstroms, below which two nodes are connected
     :type threshold: float
@@ -962,23 +1167,19 @@ def add_distance_threshold(
     interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
 
     log.info(f"Found: {len(interacting_nodes)} distance edges")
+    node_ids = pdb_df["node_id"].to_numpy()
+    chains = pdb_df["chain_id"].to_numpy()
+    positions = sequence_positions(pdb_df)
     count = 0
     for a1, a2 in interacting_nodes:
-        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
-        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
-        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
-        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
-        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
-        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
-
-        condition_1 = n1_chain == n2_chain
+        condition_1 = chains[a1] == chains[a2]
         condition_2 = (
-            abs(n1_position - n2_position) < long_interaction_threshold
+            abs(positions[a1] - positions[a2]) < long_interaction_threshold
         )
 
         if not (condition_1 and condition_2):
             count += 1
-            add_edge(G, n1, n2, "distance_threshold")
+            add_edge(G, node_ids[a1], node_ids[a2], "distance_threshold")
 
     log.info(
         f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
@@ -1001,7 +1202,8 @@ def add_distance_window(
     :type min: float
     :param max: Maximum distance in angstroms allowed for an edge.
     :param long_interaction_threshold: minimum distance in sequence for two
-        nodes to be connected
+        nodes to be connected. See
+        :func:`~graphein.protein.utils.sequence_positions`.
     :type long_interaction_threshold: int
     :return: Graph with distance-based edges added
     """
@@ -1015,28 +1217,27 @@ def add_distance_window(
 
     interacting_nodes = get_interacting_atoms(max, distmat=dist_mat)
     interacting_nodes = list(zip(interacting_nodes[0], interacting_nodes[1]))
+    less_than_min = set(less_than_min)
     interacting_nodes = [
         i for i in interacting_nodes if i not in less_than_min
     ]
 
     log.info(f"Found: {len(interacting_nodes)} distance edges")
+    node_ids = pdb_df["node_id"].to_numpy()
+    chains = pdb_df["chain_id"].to_numpy()
+    positions = sequence_positions(pdb_df)
     count = 0
     for a1, a2 in interacting_nodes:
-        n1 = G.graph["pdb_df"].loc[a1, "node_id"]
-        n2 = G.graph["pdb_df"].loc[a2, "node_id"]
-        n1_chain = G.graph["pdb_df"].loc[a1, "chain_id"]
-        n2_chain = G.graph["pdb_df"].loc[a2, "chain_id"]
-        n1_position = G.graph["pdb_df"].loc[a1, "residue_number"]
-        n2_position = G.graph["pdb_df"].loc[a2, "residue_number"]
-
-        condition_1 = n1_chain == n2_chain
+        condition_1 = chains[a1] == chains[a2]
         condition_2 = (
-            abs(n1_position - n2_position) < long_interaction_threshold
+            abs(positions[a1] - positions[a2]) < long_interaction_threshold
         )
 
         if not (condition_1 and condition_2):
             count += 1
-            add_edge(G, n1, n2, f"distance_window_{min}_{max}")
+            add_edge(
+                G, node_ids[a1], node_ids[a2], f"distance_window_{min}_{max}"
+            )
     log.info(
         f"Added {count} distance edges. ({len(list(interacting_nodes)) - count}\
             removed by LIN)"
@@ -1051,7 +1252,7 @@ def add_fully_connected_edges(G: nx.Graph):
     :type G: nx.Graph
     """
     for n1, n2 in itertools.product(G.nodes(), G.nodes()):
-        add_edge(G, n1, n2, f"fully_connected")
+        add_edge(G, n1, n2, "fully_connected")
 
 
 # TODO Support for directed edges
@@ -1071,7 +1272,8 @@ def add_k_nn_edges(
     :param G: Protein Structure graph to add distance edges to
     :type G: nx.Graph
     :param long_interaction_threshold: minimum distance in sequence for two
-        nodes to be connected
+        nodes to be connected. See
+        :func:`~graphein.protein.utils.sequence_positions`.
     :type long_interaction_threshold: int
     :param k: Number of neighbors for each sample.
     :type k: int
@@ -1126,37 +1328,29 @@ def add_k_nn_edges(
     nn = neigh.kneighbors_graph()
 
     # Create iterable of node indices
-    outgoing = np.repeat(np.array(range(len(pdb_df))), k)
+    outgoing = np.repeat(np.arange(len(pdb_df)), k)
     incoming = nn.indices
     interacting_nodes = list(zip(outgoing, incoming))
     log.info(f"Found: {len(interacting_nodes)} KNN edges")
+    dists = dist_mat.to_numpy()
+    node_ids = pdb_df["node_id"].to_numpy()
+    chains = pdb_df["chain_id"].to_numpy()
+    positions = sequence_positions(pdb_df)
     for a1, a2 in interacting_nodes:
-        if dist_mat.loc[a1, a2] == INFINITE_DIST:
+        if dists[a1, a2] == INFINITE_DIST:
             continue
 
-        # Get nodes IDs from indices
-        n1 = pdb_df.loc[a1, "node_id"]
-        n2 = pdb_df.loc[a2, "node_id"]
-
-        # Get chains
-        n1_chain = pdb_df.loc[a1, "chain_id"]
-        n2_chain = pdb_df.loc[a2, "chain_id"]
-
-        # Get sequence position
-        n1_position = pdb_df.loc[a1, "residue_number"]
-        n2_position = pdb_df.loc[a2, "residue_number"]
-
         # Check residues are not on same chain
-        condition_1 = n1_chain != n2_chain
+        condition_1 = chains[a1] != chains[a2]
         # Check residues are separated by long_interaction_threshold
         condition_2 = (
-            abs(n1_position - n2_position) > long_interaction_threshold
+            abs(positions[a1] - positions[a2]) > long_interaction_threshold
         )
 
         # If not on same chain add edge or
         # If on same chain and separation is sufficient add edge
         if condition_1 or condition_2:
-            add_edge(G, n1, n2, kind_name)
+            add_edge(G, node_ids[a1], node_ids[a2], kind_name)
 
 
 def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
@@ -1181,10 +1375,7 @@ def get_ring_atoms(dataframe: pd.DataFrame, aa: str) -> pd.DataFrame:
     """
     ring_atom_df = filter_dataframe(dataframe, "residue_name", [aa], True)
 
-    ring_atom_df = filter_dataframe(
-        ring_atom_df, "atom_name", AA_RING_ATOMS[aa], True
-    )
-    return ring_atom_df
+    return filter_dataframe(ring_atom_df, "atom_name", AA_RING_ATOMS[aa], True)
 
 
 def get_ring_centroids(ring_atom_df: pd.DataFrame) -> pd.DataFrame:
@@ -1263,7 +1454,7 @@ def compute_angle(
 
 def get_edges_by_bond_type(
     G: nx.Graph, bond_type: str
-) -> List[Tuple[str, str]]:
+) -> list[tuple[str, str]]:
     """
     Return edges of a particular bond type.
 
@@ -1280,7 +1471,7 @@ def get_edges_by_bond_type(
     ]
 
 
-def node_coords(G: nx.Graph, n: str) -> Tuple[float, float, float]:
+def node_coords(G: nx.Graph, n: str) -> tuple[float, float, float]:
     """
     Return the ``x, y, z`` coordinates of a node.
     This is a helper function. Simplifies the code.
@@ -1300,7 +1491,7 @@ def add_interacting_resis(
     G: nx.Graph,
     interacting_atoms: np.ndarray,
     dataframe: pd.DataFrame,
-    kind: List[str],
+    kind: list[str],
 ):
     """
     Add interacting residues to graph.
@@ -1337,11 +1528,11 @@ def add_interacting_resis(
     for k in kind:
         assert k in BOND_TYPES
 
-    resi1 = dataframe.loc[interacting_atoms[0]]["node_id"].values
-    resi2 = dataframe.loc[interacting_atoms[1]]["node_id"].values
+    resi1 = dataframe.loc[interacting_atoms[0], "node_id"].values
+    resi2 = dataframe.loc[interacting_atoms[1], "node_id"].values
 
-    interacting_resis = set(list(zip(resi1, resi2)))
-    log.info(f"Found {len(interacting_resis)} {k} interactions.")
+    interacting_resis = set(zip(resi1, resi2))
+    log.info(f"Found {len(interacting_resis)} {kind} interactions.")
     for i1, i2 in interacting_resis:
         if i1 != i2:
             if G.has_edge(i1, i2):

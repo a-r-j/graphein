@@ -7,12 +7,11 @@ channels:
 - schrodinger
 - salilab
 dependencies:
-- python=3.8
+- python=3.11
 - biopython
 - biopandas
 - conda
 - click
-- dssp
 - flake8
 - interrogate
 - ipympl
@@ -43,7 +42,6 @@ dependencies:
 - click
 - pip:
   - bioservices
-  - biovec
   - propy3
   - pyaaisc
   - git+https://github.com/a-r-j/graphein

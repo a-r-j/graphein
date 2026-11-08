@@ -8,12 +8,14 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+import copy
 import os
 import traceback
+from collections.abc import Callable, Sequence
 from contextlib import nullcontext
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import cpdb
 import networkx as nx
@@ -21,7 +23,6 @@ import numpy as np
 import pandas as pd
 from biopandas.mmcif import PandasMmcif
 from biopandas.mmtf import PandasMmtf
-from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from rich.progress import Progress
 from tqdm.contrib.concurrent import process_map
@@ -31,7 +32,7 @@ from graphein.protein.edges.distance import (
     add_distance_to_edges,
     compute_distmat,
 )
-from graphein.protein.resi_atoms import BACKBONE_ATOMS, RESI_THREE_TO_1
+from graphein.protein.resi_atoms import RESI_THREE_TO_1
 from graphein.protein.subgraphs import extract_subgraph_from_chains
 from graphein.protein.utils import (
     ProteinGraphConfigurationError,
@@ -45,13 +46,12 @@ from graphein.utils.utils import (
     annotate_edge_metadata,
     annotate_graph_metadata,
     annotate_node_metadata,
-    compute_edges,
 )
 
 try:
     from typing import Literal
 except ImportError:
-    from typing_extensions import Literal
+    from typing import Literal
 
 
 def subset_structure_to_rna(
@@ -71,10 +71,19 @@ def subset_structure_to_rna(
     )
 
 
+def _concat_in_file_order(atomic_df) -> pd.DataFrame:
+    """Joins biopandas' ``ATOM`` and ``HETATM`` frames in file order (by atom
+    serial, which mmCIF and MMTF keep unique), so modified residues such as
+    ``MSE`` stay in place in their chain rather than after all ``ATOM``s."""
+    df = pd.concat([atomic_df.df["ATOM"], atomic_df.df["HETATM"]])
+    df = df.sort_values("atom_number", kind="stable")
+    return df.reset_index(drop=True)
+
+
 def read_pdb_to_dataframe(
-    path: Optional[Union[str, os.PathLike]] = None,
-    pdb_code: Optional[str] = None,
-    uniprot_id: Optional[str] = None,
+    path: str | os.PathLike | None = None,
+    pdb_code: str | None = None,
+    uniprot_id: str | None = None,
     model_index: int = 1,
 ) -> pd.DataFrame:
     """
@@ -105,30 +114,17 @@ def read_pdb_to_dataframe(
     if path is not None:
         if isinstance(path, Path):
             path = os.fsdecode(path)
-        if (
-            path.endswith(".pdb")
-            or path.endswith(".pdb.gz")
-            or path.endswith(".ent")
-        ):
+        if path.endswith((".pdb", ".pdb.gz", ".ent")):
             atomic_df = cpdb.parse(path)
-        elif path.endswith(".mmtf") or path.endswith(".mmtf.gz"):
+        elif path.endswith((".mmtf", ".mmtf.gz")):
             atomic_df = PandasMmtf().read_mmtf(path)
             atomic_df = atomic_df.get_model(model_index)
-            atomic_df = pd.concat(
-                [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
-            )
-        elif (
-            path.endswith(".cif")
-            or path.endswith(".cif.gz")
-            or path.endswith(".mmcif")
-            or path.endswith(".mmcif.gz")
-        ):
+            atomic_df = _concat_in_file_order(atomic_df)
+        elif path.endswith((".cif", ".cif.gz", ".mmcif", ".mmcif.gz")):
             atomic_df = PandasMmcif().read_mmcif(path)
             atomic_df = atomic_df.get_model(model_index)
             atomic_df = atomic_df.convert_to_pandas_pdb()
-            atomic_df = pd.concat(
-                [atomic_df.df["ATOM"], atomic_df.df["HETATM"]]
-            )
+            atomic_df = _concat_in_file_order(atomic_df)
         else:
             raise ValueError(
                 f"File {path} must be either .pdb(.gz), .mmtf(.gz), .(mm)cif(.gz) or .ent, not {path.split('.')[-1]}"
@@ -171,19 +167,19 @@ def label_node_id(
     :rtype: pd.DataFrame
     """
     df["node_id"] = (
-        df["chain_id"].apply(str)
+        df["chain_id"].astype(str)
         + ":"
         + df["residue_name"]
         + ":"
-        + df["residue_number"].apply(str)
+        + df["residue_number"].astype(str)
     )
 
     if insertions:
-        df["node_id"] = df["node_id"] + ":" + df["insertion"].apply(str)
+        df["node_id"] = df["node_id"] + ":" + df["insertion"].astype(str)
         # Replace trailing : for non insertions
         df["node_id"] = df["node_id"].str.replace(":$", "", regex=True)
     # Add Alt Loc identifiers
-    df["node_id"] = df["node_id"] + ":" + df["alt_loc"].apply(str)
+    df["node_id"] = df["node_id"] + ":" + df["alt_loc"].astype(str)
     df["node_id"] = df["node_id"].str.replace(":$", "", regex=True)
     df["residue_id"] = df["node_id"]
     if granularity == "atom":
@@ -192,7 +188,7 @@ def label_node_id(
         df["node_id"] = (
             df["node_id"]
             + ":"
-            + df["atom_number"].apply(str)
+            + df["atom_number"].astype(str)
             + ":"
             + df["atom_name"]
         )
@@ -236,9 +232,11 @@ def convert_structure_to_centroids(df: pd.DataFrame) -> pd.DataFrame:
 
     centroids = calculate_centroid_positions(df)
     df = df.loc[df["atom_name"] == "CA"].reset_index(drop=True)
-    df["x_coord"] = centroids["x_coord"]
-    df["y_coord"] = centroids["y_coord"]
-    df["z_coord"] = centroids["z_coord"]
+    # Match centroids to residues by key: their row order differs (groupby
+    # sorts, df is in file order)
+    keys = ["chain_id", "residue_number", "residue_name", "insertion"]
+    coords = ["x_coord", "y_coord", "z_coord"]
+    df[coords] = df[keys].merge(centroids, on=keys, how="left")[coords]
 
     return df
 
@@ -275,15 +273,13 @@ def remove_alt_locs(
     :return: Protein structure dataframe with alternative located atoms removed
     :rtype: pd.DataFrame
     """
-    # Sort accordingly
-    if keep == "max_occupancy":
-        df = df.sort_values("occupancy")
-        keep = "last"
-    elif keep == "min_occupancy":
-        df = df.sort_values("occupancy")
-        keep = "first"
-    elif keep == "exclude":
-        keep = False
+    # Sort accordingly (stable, so ties keep the first in file order)
+    sort = keep in ["max_occupancy", "min_occupancy"]
+    if sort:
+        df = df.sort_values(
+            "occupancy", ascending=keep == "min_occupancy", kind="stable"
+        )
+    keep = "first" if sort else False if keep == "exclude" else keep
 
     # Filter
     duplicates = df.duplicated(
@@ -293,10 +289,9 @@ def remove_alt_locs(
     df = df[~duplicates]
 
     # Unsort
-    if keep in ["max_occupancy", "min_occupancy"]:
-        df = df.sort_index()
-    df = df.reset_index(drop=True)
-    return df
+    if sort:
+        df = df.sort_index(kind="stable")
+    return df.reset_index(drop=True)
 
 
 def remove_insertions(
@@ -326,8 +321,8 @@ def remove_insertions(
 
 
 def filter_hetatms(
-    df: pd.DataFrame, keep_hets: List[str]
-) -> List[pd.DataFrame]:
+    df: pd.DataFrame, keep_hets: list[str]
+) -> list[pd.DataFrame]:
     """Return hetatms of interest.
 
     :param df: Protein Structure dataframe to filter hetatoms from.
@@ -342,14 +337,14 @@ def filter_hetatms(
 
 def process_dataframe(
     protein_df: pd.DataFrame,
-    atom_df_processing_funcs: Optional[List[Callable]] = None,
-    hetatom_df_processing_funcs: Optional[List[Callable]] = None,
+    atom_df_processing_funcs: list[Callable] | None = None,
+    hetatom_df_processing_funcs: list[Callable] | None = None,
     granularity: str = "centroids",
     chain_selection: str = "all",
     insertions: bool = False,
     alt_locs: bool = False,
     deprotonate: bool = True,
-    keep_hets: List[str] = [],
+    keep_hets: Sequence[str] = (),
 ) -> pd.DataFrame:
     """
     Process ATOM and HETATM dataframes to produce singular dataframe used for
@@ -456,10 +451,9 @@ def process_dataframe(
 
     log.debug(f"Detected {len(protein_df)} total nodes")
 
-    # Sort dataframe to place HETATMs
+    # Sort dataframe to place HETATMs and reset index
     protein_df = sort_dataframe(protein_df)
-
-    return protein_df
+    return protein_df.reset_index(drop=True)
 
 
 def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
@@ -479,7 +473,7 @@ def sort_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
 def select_chains(
     protein_df: pd.DataFrame,
-    chain_selection: Union[str, List[str]],
+    chain_selection: str | list[str],
 ) -> pd.DataFrame:
     """
     Extracts relevant chains from ``protein_df``.
@@ -514,9 +508,9 @@ def initialise_graph_with_metadata(
     protein_df: pd.DataFrame,
     raw_pdb_df: pd.DataFrame,
     granularity: str,
-    name: Optional[str] = None,
-    pdb_code: Optional[str] = None,
-    path: Optional[str] = None,
+    name: str | None = None,
+    pdb_code: str | None = None,
+    path: str | None = None,
 ) -> nx.Graph:
     """
     Initializes the nx Graph object with initial metadata.
@@ -594,7 +588,7 @@ def initialise_graph_with_metadata(
 
 def add_nodes_to_graph(
     G: nx.Graph,
-    protein_df: Optional[pd.DataFrame] = None,
+    protein_df: pd.DataFrame | None = None,
     verbose: bool = False,
 ) -> nx.Graph:
     """Add nodes into protein graph.
@@ -615,7 +609,7 @@ def add_nodes_to_graph(
     if protein_df is None:
         protein_df: pd.DataFrame = G.graph["pdb_df"]
     # Assign intrinsic node attributes
-    chain_id = protein_df["chain_id"].apply(str)
+    chain_id = protein_df["chain_id"].astype(str)
     residue_name = protein_df["residue_name"]
     residue_number = protein_df["residue_number"]  # .apply(str)
     coords = np.asarray(protein_df[["x_coord", "y_coord", "z_coord"]])
@@ -640,7 +634,7 @@ def add_nodes_to_graph(
 
     # TODO: include charge, line_idx for traceability?
     if verbose:
-        print(nx.info(G))
+        print(G)
         print(G.nodes())
 
     return G
@@ -661,7 +655,8 @@ def calculate_centroid_positions(
     """
     centroids = (
         atoms.groupby(
-            ["residue_number", "chain_id", "residue_name", "insertion"]
+            ["residue_number", "chain_id", "residue_name", "insertion"],
+            dropna=False,
         )
         .mean(numeric_only=True)[["x_coord", "y_coord", "z_coord"]]
         .reset_index()
@@ -674,8 +669,8 @@ def calculate_centroid_positions(
 
 def compute_edges(
     G: nx.Graph,
-    funcs: List[Callable],
-    get_contacts_config: Optional[GetContactsConfig] = None,
+    funcs: list[Callable],
+    get_contacts_config: GetContactsConfig | None = None,
 ) -> nx.Graph:
     """
     Computes edges for the protein structure graph. Will compute a pairwise
@@ -707,19 +702,19 @@ def compute_edges(
 
 
 def construct_graph(
-    config: Optional[ProteinGraphConfig] = None,
-    name: Optional[str] = None,
-    path: Optional[Union[str, os.PathLike]] = None,
-    uniprot_id: Optional[str] = None,
-    pdb_code: Optional[str] = None,
-    df: Optional[pd.DataFrame] = None,
-    chain_selection: Union[str, List[str]] = "all",
+    config: ProteinGraphConfig | None = None,
+    name: str | None = None,
+    path: str | os.PathLike | None = None,
+    uniprot_id: str | None = None,
+    pdb_code: str | None = None,
+    df: pd.DataFrame | None = None,
+    chain_selection: str | list[str] = "all",
     model_index: int = 1,
-    df_processing_funcs: Optional[List[Callable]] = None,
-    edge_construction_funcs: Optional[List[Callable]] = None,
-    edge_annotation_funcs: Optional[List[Callable]] = None,
-    node_annotation_funcs: Optional[List[Callable]] = None,
-    graph_annotation_funcs: Optional[List[Callable]] = None,
+    df_processing_funcs: list[Callable] | None = None,
+    edge_construction_funcs: list[Callable] | None = None,
+    edge_annotation_funcs: list[Callable] | None = None,
+    node_annotation_funcs: list[Callable] | None = None,
+    graph_annotation_funcs: list[Callable] | None = None,
     verbose: bool = True,
 ) -> nx.Graph:
     """
@@ -786,9 +781,9 @@ def construct_graph(
     if path is not None and isinstance(path, Path):
         path = os.fsdecode(path)
 
-    # If no config is provided, use default
-    if config is None:
-        config = ProteinGraphConfig()
+    # Use the default config, or a copy so filling in the function lists
+    # below doesn't mutate the caller's config
+    config = ProteinGraphConfig() if config is None else copy.copy(config)
 
     # Use progress tracking context if in verbose mode
     context = Progress(transient=True) if verbose else nullcontext()
@@ -896,8 +891,8 @@ def construct_graph(
 
 
 def _mp_graph_constructor(
-    args: Tuple[str, str, int], source: str, config: ProteinGraphConfig
-) -> Union[nx.Graph, None]:
+    args: tuple[str, str, int], source: str, config: ProteinGraphConfig
+) -> nx.Graph | None:
     """
     Protein graph constructor for use in multiprocessing several protein
     structure graphs.
@@ -923,11 +918,11 @@ def _mp_graph_constructor(
             return func(
                 pdb_code=args[0], chain_selection=args[1], model_index=args[2]
             )
-        elif source == "path":
+        if source == "path":
             return func(
                 path=args[0], chain_selection=args[1], model_index=args[2]
             )
-        elif source == "uniprot_id":
+        if source == "uniprot_id":
             return func(
                 uniprot_id=args[0],
                 chain_selection=args[1],
@@ -944,16 +939,16 @@ def _mp_graph_constructor(
 
 
 def construct_graphs_mp(
-    pdb_code_it: Optional[List[str]] = None,
-    path_it: Optional[List[str]] = None,
-    uniprot_id_it: Optional[List[str]] = None,
-    chain_selections: Optional[Union[List[List[str]], List[str]]] = None,
-    model_indices: Optional[List[str]] = None,
-    config: ProteinGraphConfig = ProteinGraphConfig(),
+    pdb_code_it: list[str] | None = None,
+    path_it: list[str] | None = None,
+    uniprot_id_it: list[str] | None = None,
+    chain_selections: list[list[str]] | list[str] | None = None,
+    model_indices: list[str] | None = None,
+    config: ProteinGraphConfig | None = None,
     num_cores: int = 16,
     return_dict: bool = True,
-    out_path: Optional[str] = None,
-) -> Union[List[nx.Graph], Dict[str, nx.Graph]]:
+    out_path: str | None = None,
+) -> list[nx.Graph] | dict[str, nx.Graph]:
     """
     Constructs protein graphs for a list of pdb codes or pdb paths using
     multiprocessing.
@@ -986,9 +981,9 @@ def construct_graphs_mp(
         problem in constructing the graph for this particular pdb.
     :rtype: Union[List[nx.Graph], Dict[str, nx.Graph]]
     """
-    assert (
-        pdb_code_it is not None or path_it is not None
-    ), "Iterable of pdb codes, pdb paths or uniprot IDs required."
+    assert pdb_code_it is not None or path_it is not None, (
+        "Iterable of pdb codes, pdb paths or uniprot IDs required."
+    )
 
     if pdb_code_it is not None:
         pdbs = pdb_code_it
@@ -1036,10 +1031,10 @@ def construct_graphs_mp(
 
 def compute_chain_graph(
     g: nx.Graph,
-    chain_list: Optional[List[str]] = None,
+    chain_list: list[str] | None = None,
     remove_self_loops: bool = False,
     return_weighted_graph: bool = False,
-) -> Union[nx.Graph, nx.MultiGraph]:
+) -> nx.Graph | nx.MultiGraph:
     """Computes a chain-level graph from a protein structure graph.
 
     This graph features nodes as individual chains in a complex and edges as
@@ -1074,9 +1069,9 @@ def compute_chain_graph(
     h.graph["node_type"] = "chain"
 
     # Set nodes
-    nodes_per_chain = {chain: 0 for chain in g.graph["chain_ids"]}
-    sequences = {chain: "" for chain in g.graph["chain_ids"]}
-    for n, d in g.nodes(data=True):
+    nodes_per_chain = dict.fromkeys(g.graph["chain_ids"], 0)
+    sequences = dict.fromkeys(g.graph["chain_ids"], "")
+    for _, d in g.nodes(data=True):
         nodes_per_chain[d["chain_id"]] += 1
         sequences[d["chain_id"]] += RESI_THREE_TO_1[d["residue_name"]]
 
@@ -1089,12 +1084,12 @@ def compute_chain_graph(
     # Add edges
     for u, v, d in g.edges(data=True):
         h.add_edge(
-            g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=d["kind"]
+            g.nodes[u]["chain_id"], g.nodes[v]["chain_id"], kind=set(d["kind"])
         )
     # Remove self-loops if necessary. Checks for equality between nodes in a
     # given edge.
     if remove_self_loops:
-        edges_to_remove: List[Tuple[str]] = [
+        edges_to_remove: list[tuple[str]] = [
             (u, v) for u, v in h.edges() if u == v
         ]
         h.remove_edges_from(edges_to_remove)
@@ -1129,13 +1124,13 @@ def compute_weighted_graph_from_multigraph(g: nx.MultiGraph) -> nx.Graph:
                 except KeyError:
                     H[u][v][kind] = 1
         else:
-            H.add_edge(u, v, weight=len(d["kind"]), kind=d["kind"])
+            H.add_edge(u, v, weight=len(d["kind"]), kind=set(d["kind"]))
             for kind in list(d["kind"]):
                 H[u][v][kind] = 1
     return H
 
 
-def number_groups_of_runs(list_of_values: List[Any]) -> List[str]:
+def number_groups_of_runs(list_of_values: list[Any]) -> list[str]:
     """Numbers groups of runs in a list of values.
 
     E.g. ``["A", "A", "B", "A", "A", "A", "B", "B"] ->
@@ -1154,11 +1149,11 @@ def number_groups_of_runs(list_of_values: List[Any]) -> List[str]:
 
 def compute_secondary_structure_graph(
     g: nx.Graph,
-    allowable_ss_elements: Optional[List[str]] = None,
+    allowable_ss_elements: list[str] | None = None,
     remove_non_ss: bool = True,
     remove_self_loops: bool = False,
     return_weighted_graph: bool = False,
-) -> Union[nx.Graph, nx.MultiGraph]:
+) -> nx.Graph | nx.MultiGraph:
     """Computes a secondary structure graph from a protein structure graph.
 
     :param g: A protein structure graph to compute the secondary structure
@@ -1180,11 +1175,11 @@ def compute_secondary_structure_graph(
     :rtype: Union[nx.Graph, nx.MultiGraph]
     """
     # Initialise list of secondary structure elements we use to build the graph
-    ss_list: List[str] = []
+    ss_list: list[str] = []
 
     # Check nodes have secondary structure assignment & store them in list
     for _, d in g.nodes(data=True):
-        if "ss" not in d.keys():
+        if "ss" not in d:
             raise ProteinGraphConfigurationError(
                 "Secondary structure not defined for all nodes."
             )
@@ -1203,13 +1198,13 @@ def compute_secondary_structure_graph(
             ss_list.str.contains("|".join(allowable_ss_elements))
         ]
 
-    constituent_residues: Dict[str, List[str]] = ss_list.index.groupby(
+    constituent_residues: dict[str, list[str]] = ss_list.index.groupby(
         ss_list.values
     )
     constituent_residues = {
         k: list(v) for k, v in constituent_residues.items()
     }
-    residue_counts: Dict[str, int] = ss_list.groupby(ss_list).count().to_dict()
+    residue_counts: dict[str, int] = ss_list.groupby(ss_list).count().to_dict()
 
     # Add Nodes from secondary structure list
     h = nx.MultiGraph()
@@ -1228,7 +1223,7 @@ def compute_secondary_structure_graph(
     for u, v, d in g.edges(data=True):
         try:
             h.add_edge(
-                ss_list[u], ss_list[v], kind=d["kind"], source=f"{u}_{v}"
+                ss_list[u], ss_list[v], kind=set(d["kind"]), source=f"{u}_{v}"
             )
         except KeyError as e:
             log.debug(
@@ -1239,7 +1234,7 @@ def compute_secondary_structure_graph(
     # Remove self-loops if necessary.
     # Checks for equality between nodes in a given edge.
     if remove_self_loops:
-        edges_to_remove: List[Tuple[str]] = [
+        edges_to_remove: list[tuple[str]] = [
             (u, v) for u, v in h.edges() if u == v
         ]
         h.remove_edges_from(edges_to_remove)
@@ -1277,7 +1272,7 @@ def compute_line_graph(g: nx.Graph, repopulate_data: bool = True) -> nx.Graph:
         nx.set_node_attributes(l_g, source_edge_data)
 
         node_list = {}
-        for u, v, d in l_g.edges(data=True):
+        for u, v in l_g.edges():
             node_union = u + v
             for n in node_union:
                 if node_union.count(n) > 1:

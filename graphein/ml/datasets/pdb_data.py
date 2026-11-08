@@ -3,10 +3,14 @@ import math
 import os
 import shutil
 import subprocess
+from collections.abc import Callable, Sequence
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import (
+    Any,
+    Literal,
+)
 
 import numpy as np
 import pandas as pd
@@ -14,8 +18,9 @@ import wget
 from biopandas.pdb import PandasPdb
 from loguru import logger as log
 from pandas.core.groupby.generic import DataFrameGroupBy
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
+from graphein.ml.datasets.utils import generate_pdb_ligand_mappings
 from graphein.protein.utils import (
     cast_pdb_column_to_type,
     download_pdb_multiprocessing,
@@ -32,13 +37,12 @@ class PDBManager:
         self,
         root_dir: str = ".",
         structure_format: str = "pdb",
-        splits: Optional[List[str]] = None,
-        split_ratios: Optional[List[float]] = None,
-        split_time_frames: Optional[List[np.datetime64]] = None,
+        splits: list[str] | None = None,
+        split_ratios: list[float] | None = None,
+        split_time_frames: list[np.datetime64] | None = None,
         assign_leftover_rows_to_split_n: int = 0,
-        labels: Optional[
-            List[Literal["uniprot_id", "cath_code", "ec_number"]]
-        ] = None,
+        labels: list[Literal["uniprot_id", "cath_code", "ec_number"]]
+        | None = None,
     ):
         """Instantiate a selection of experimental PDB structures.
 
@@ -72,9 +76,6 @@ class PDBManager:
         self.pdb_sequences_url = (
             "https://files.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz"
         )
-        self.ligand_map_url = (
-            "http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd"
-        )
         self.source_map_url = (
             "https://files.wwpdb.org/pub/pdb/derived_data/index/source.idx"
         )
@@ -89,11 +90,11 @@ class PDBManager:
         )
         self.pdb_availability_url = "https://files.wwpdb.org/pub/pdb/compatible/pdb_bundle/pdb_bundle_index.txt"
 
-        self.pdb_chain_cath_uniprot_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz"
+        self.pdb_chain_cath_uniprot_url = "http://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz"
 
-        self.cath_id_cath_code_url = "http://download.cathdb.info/cath/releases/daily-release/newest/cath-b-newest-all.gz"
+        self.cath_id_cath_code_url = "ftp://orengoftp.biochem.ucl.ac.uk/cath/releases/latest-release/cath-classification-data/cath-domain-list.txt"
 
-        self.pdb_chain_ec_number_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz"
+        self.pdb_chain_ec_number_url = "http://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz"
 
         self.pdb_dir = self.root_dir / "pdb"
         if not os.path.exists(self.pdb_dir):
@@ -103,7 +104,7 @@ class PDBManager:
 
         self.pdb_seqres_archive_filename = Path(self.pdb_sequences_url).name
         self.pdb_seqres_filename = Path(self.pdb_seqres_archive_filename).stem
-        self.ligand_map_filename = Path(self.ligand_map_url).name
+        self.ligand_map_filename = "cc-to-pdb.tdd"
         self.source_map_filename = Path(self.source_map_url).name
         self.resolution_filename = Path(self.resolution_url).name
         self.pdb_entry_type_filename = Path(self.pdb_entry_type_url).name
@@ -129,37 +130,37 @@ class PDBManager:
         # Splits
         self.splits_provided = splits is not None
         if self.splits_provided:
-            assert len(set(splits)) == len(
-                splits
-            ), f"Split names must be unique: {splits}."
+            assert len(set(splits)) == len(splits), (
+                f"Split names must be unique: {splits}."
+            )
             self.splits = splits
-            self.df_splits = {split: None for split in splits}
+            self.df_splits = dict.fromkeys(splits)
             self.assign_leftover_rows_to_split_n = (
                 assign_leftover_rows_to_split_n
             )
             # Sequence-based ratio splits
             if split_ratios is not None:
-                assert len(splits) == len(
-                    split_ratios
-                ), f"Number of splits ({splits}) must match number of split ratios ({split_ratios})."
-                assert math.isclose(
-                    sum(split_ratios), 1.0
-                ), f"Split ratios must sum to 1.0: {split_ratios}."
+                assert len(splits) == len(split_ratios), (
+                    f"Number of splits ({splits}) must match number of split ratios ({split_ratios})."
+                )
+                assert math.isclose(sum(split_ratios), 1.0), (
+                    f"Split ratios must sum to 1.0: {split_ratios}."
+                )
                 self.split_ratios = split_ratios
             # Time-based splits
             if split_time_frames is not None:
-                assert len(splits) == len(
-                    split_time_frames
-                ), f"Number of splits ({splits}) must match number of split time frames ({split_time_frames})."
-                assert self._frames_are_sequential(
-                    split_time_frames
-                ), f"Split time frames must be sequential: {split_time_frames}."
+                assert len(splits) == len(split_time_frames), (
+                    f"Number of splits ({splits}) must match number of split time frames ({split_time_frames})."
+                )
+                assert self._frames_are_sequential(split_time_frames), (
+                    f"Split time frames must be sequential: {split_time_frames}."
+                )
                 self.split_time_frames = split_time_frames
 
     def download_metadata(self):
         """Download all PDB metadata."""
         self._download_pdb_sequences()
-        self._download_ligand_map()
+        self._generate_ligand_map()
         self._download_source_map()
         self._download_resolution()
         self._download_entry_metadata()
@@ -170,8 +171,8 @@ class PDBManager:
         self._download_pdb_chain_ec_number_map()
 
     def get_unavailable_pdb_files(
-        self, splits: Optional[List[str]] = None
-    ) -> List[str]:
+        self, splits: list[str] | None = None
+    ) -> list[str]:
         """Returns a list of PDB files unavailable for download.
 
         :param splits: Names of splits for which to perform the operation,
@@ -185,7 +186,7 @@ class PDBManager:
             splits_df.pdb_file_available == False, "pdb"
         ].tolist()
 
-    def get_num_unique_pdbs(self, splits: Optional[List[str]] = None) -> int:
+    def get_num_unique_pdbs(self, splits: list[str] | None = None) -> int:
         """Return the number of unique PDB IDs in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -198,7 +199,7 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return len(splits_df.pdb.unique())
 
-    def get_unique_pdbs(self, splits: Optional[List[str]] = None) -> List[str]:
+    def get_unique_pdbs(self, splits: list[str] | None = None) -> list[str]:
         """Return a list of unique PDB IDs in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -211,7 +212,7 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return splits_df.pdb.unique().tolist()
 
-    def get_num_chains(self, splits: Optional[List[str]] = None) -> int:
+    def get_num_chains(self, splits: list[str] | None = None) -> int:
         """Return the number of chains in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -224,7 +225,7 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return len(splits_df)
 
-    def get_longest_chain(self, splits: Optional[List[str]] = None) -> int:
+    def get_longest_chain(self, splits: list[str] | None = None) -> int:
         """Return the length of the longest chain in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -237,7 +238,7 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return splits_df.length.max()
 
-    def get_shortest_chain(self, splits: Optional[List[str]] = None) -> int:
+    def get_shortest_chain(self, splits: list[str] | None = None) -> int:
         """Return the length of the shortest chain in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -250,7 +251,7 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return splits_df.length.min()
 
-    def get_best_resolution(self, splits: Optional[List[str]] = None) -> float:
+    def get_best_resolution(self, splits: list[str] | None = None) -> float:
         """Return the best resolution in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -263,9 +264,7 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return splits_df.resolution.min()
 
-    def get_worst_resolution(
-        self, splits: Optional[List[str]] = None
-    ) -> float:
+    def get_worst_resolution(self, splits: list[str] | None = None) -> float:
         """Return the worst resolution in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -279,8 +278,8 @@ class PDBManager:
         return splits_df.resolution.max()
 
     def get_experiment_types(
-        self, splits: Optional[List[str]] = None
-    ) -> List[str]:
+        self, splits: list[str] | None = None
+    ) -> list[str]:
         """Return list of different experiment types in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -293,9 +292,7 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return splits_df.experiment_type.unique()
 
-    def get_molecule_types(
-        self, splits: Optional[List[str]] = None
-    ) -> List[str]:
+    def get_molecule_types(self, splits: list[str] | None = None) -> list[str]:
         """Return list of different molecule types in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -308,9 +305,7 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         return splits_df.molecule_type.unique()
 
-    def get_molecule_names(
-        self, splits: Optional[List[str]] = None
-    ) -> List[str]:
+    def get_molecule_names(self, splits: list[str] | None = None) -> list[str]:
         """Return list of molecule names in the dataset.
 
         :param splits: Names of splits for which to perform the operation,
@@ -324,7 +319,7 @@ class PDBManager:
         return splits_df.name.unique()
 
     def _frames_are_sequential(
-        self, split_time_frames: List[np.datetime64]
+        self, split_time_frames: list[np.datetime64]
     ) -> bool:
         """Check if all provided frames are sequentially ordered.
 
@@ -335,24 +330,9 @@ class PDBManager:
         :return: Whether all provided frames are sequentially ordered.
         :rtype: bool
         """
-        frames_are_sequential = True
-        last_frame_index = len(split_time_frames) - 1
-        for frame_index in range(len(split_time_frames)):
-            frame = split_time_frames[frame_index]
-            frames_are_backwards_sequential = frame_index == 0 or (
-                frame_index > 0 and frame > split_time_frames[frame_index - 1]
-            )
-            frames_are_forwards_sequential = (
-                frame_index < last_frame_index
-                and frame < split_time_frames[frame_index + 1]
-            ) or frame_index == last_frame_index
-            frames_are_sequential = all(
-                [
-                    frames_are_backwards_sequential,
-                    frames_are_forwards_sequential,
-                ]
-            )
-        return frames_are_sequential
+        return all(
+            a < b for a, b in zip(split_time_frames, split_time_frames[1:])
+        )
 
     def _download_pdb_sequences(self):
         """Download PDB sequences from
@@ -377,14 +357,17 @@ class PDBManager:
                     shutil.copyfileobj(f_in, f_out)
             log.debug("Unzipped sequences")
 
-    def _download_ligand_map(self):
-        """Download ligand map from
+    def _generate_ligand_map(self):
+        """Generate ligand map to match historical ligand map located at:
         http://ligand-expo.rcsb.org/dictionaries/cc-to-pdb.tdd.
         """
         if not os.path.exists(self.root_dir / self.ligand_map_filename):
-            log.info("Downloading ligand map...")
-            wget.download(self.ligand_map_url, out=str(self.root_dir))
-            log.debug("Downloaded ligand map")
+            log.info("Generating chemical component to PDB map...")
+            generate_pdb_ligand_mappings(
+                pdb_to_cc_output_file=None,
+                cc_to_pdb_output_file=self.root_dir / self.ligand_map_filename,
+                generate_cc_extra_file=False,
+            )
 
     def _download_source_map(self):
         """Download source map from
@@ -435,7 +418,7 @@ class PDBManager:
 
     def _download_pdb_chain_cath_uniprot_map(self):
         """Download mapping from PDB chain to uniprot accession and CATH ID from
-        https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz
+        http://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz
         """
         if not os.path.exists(
             self.root_dir / self.pdb_chain_cath_uniprot_filename
@@ -457,7 +440,7 @@ class PDBManager:
 
     def _download_pdb_chain_ec_number_map(self):
         """Download mapping from PDB chains to EC number from
-        https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz
+        http://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz
         """
         if not os.path.exists(
             self.root_dir / self.pdb_chain_ec_number_filename
@@ -466,7 +449,7 @@ class PDBManager:
             wget.download(self.pdb_chain_ec_number_url, out=str(self.root_dir))
             log.debug("Downloaded EC number map")
 
-    def _parse_ligand_map(self) -> Dict[str, List[str]]:
+    def _parse_ligand_map(self) -> dict[str, list[str]]:
         """Parse the ligand maps for all PDB records.
 
         :return: Dictionary of PDB entries with their
@@ -485,7 +468,7 @@ class PDBManager:
                 inv.setdefault(x, []).append(str(k))
         return inv
 
-    def _parse_source_map(self) -> Dict[str, str]:
+    def _parse_source_map(self) -> dict[str, str]:
         """Parse the source maps for all PDB records.
 
         :return: Dictionary of PDB entries with their
@@ -514,7 +497,7 @@ class PDBManager:
         del source_map["------"]
         return source_map
 
-    def _parse_resolution(self) -> Dict[str, float]:
+    def _parse_resolution(self) -> dict[str, float]:
         """Parse the PDB resolutions for all PDB records.
 
         :return: Dictionary of PDB resolutions with their
@@ -536,8 +519,8 @@ class PDBManager:
                     continue
         return res
 
-    def _parse_entries(self) -> Dict[str, datetime]:
-        with open(self.root_dir / self.pdb_deposition_date_filename, "r") as f:
+    def _parse_entries(self) -> dict[str, datetime]:
+        with open(self.root_dir / self.pdb_deposition_date_filename) as f:
             lines = f.readlines()
         lines = lines[2:]  # Skip header
         # Note: There's a badly formatted line we need to deal with instead of
@@ -566,7 +549,7 @@ class PDBManager:
         df.date = pd.to_datetime(df.date, format="%m/%d/%y")
         return pd.Series(df["date"].values, index=df["id"]).to_dict()
 
-    def _parse_experiment_type(self) -> Dict[str, str]:
+    def _parse_experiment_type(self) -> dict[str, str]:
         """Parse the experiment types for all PDB records.
 
         :return: Dictionary of PDB entries with their
@@ -579,19 +562,18 @@ class PDBManager:
         df.dropna(inplace=True)
         return pd.Series(df[2].values, index=df[0]).to_dict()
 
-    def _parse_pdb_availability(self) -> Dict[str, bool]:
+    def _parse_pdb_availability(self) -> dict[str, bool]:
         """Parse the PDB file availability for all PDB records.
 
         :return: List of available PDB files for download from the RCSB PDB.
         :rtype: List[str]
         """
-        with open(self.root_dir / self.pdb_availability_filename, "r") as f:
+        with open(self.root_dir / self.pdb_availability_filename) as f:
             ids = f.read().splitlines()
         log.info(f"Found {len(ids)} PDB files unavailable for download.")
-        ids = {id: False for id in ids}
-        return ids
+        return dict.fromkeys(ids, False)
 
-    def _parse_uniprot_id(self) -> Dict[str, str]:
+    def _parse_uniprot_id(self) -> dict[str, str]:
         """Parse the uniprot ID for all PDB chains.
 
         :return: Dictionary of PDB chain ID with their
@@ -604,14 +586,14 @@ class PDBManager:
         ) as f:
             for line in f:
                 try:
-                    pdb, chain, uniprot_id, cath_id = line.strip().split("\t")
+                    pdb, chain, uniprot_id, _ = line.strip().split("\t")
                     key = f"{pdb}_{chain}"
                     uniprot_mapping[key] = uniprot_id
                 except ValueError:
                     continue
         return uniprot_mapping
 
-    def _parse_cath_id(self) -> Dict[str, str]:
+    def _parse_cath_id(self) -> dict[str, str]:
         """Parse the CATH ID for all PDB chains.
 
         :return: Dictionary of PDB chain ID with their
@@ -625,38 +607,45 @@ class PDBManager:
             next(f)  # Skip header line
             for line in f:
                 try:
-                    pdb, chain, uniprot_id, cath_id = line.strip().split("\t")
+                    pdb, chain, _, cath_id = line.strip().split("\t")
                     key = f"{pdb}_{chain}"
                     cath_mapping[key] = cath_id
                 except ValueError:
                     continue
         return cath_mapping
 
-    def _parse_cath_code(self) -> Dict[str, str]:
-        """Parse the CATH code for all CATH IDs.
+    def _parse_cath_code(self) -> dict[str, str]:
+        """Parse the CATH code for all CATH IDs from the modern text format.
 
-        :return: Dictionary of CATH ID with their
-            corresponding CATH code.
+        Input file format example:
+        4ensA01      2    40   180    10      1      1 ...
+        [ID]     [Class] [Arch] [Top] [Homol] ...
+
+        :return: Dictionary of CATH ID with their corresponding CATH code (e.g. "2.40.180.10").
         :rtype: Dict[str, str]
         """
         cath_mapping = {}
-        with gzip.open(
-            self.root_dir / self.cath_id_cath_code_filename, "rt"
-        ) as f:
-            print(f)
+        with open(self.root_dir / self.cath_id_cath_code_filename) as f:
             for line in f:
-                print(line)
+                if line.startswith("#") or not line.strip():
+                    continue
+
                 try:
-                    cath_id, cath_version, cath_code, cath_segment = (
-                        line.strip().split()
-                    )
+                    parts = line.strip().split()
+                    if len(parts) < 5:
+                        continue
+                    cath_id = parts[0]
+                    cath_code_parts = parts[1:5]
+                    cath_code = ".".join(cath_code_parts)
+
                     cath_mapping[cath_id] = cath_code
-                    print(cath_id, cath_code)
+
                 except ValueError:
                     continue
+
         return cath_mapping
 
-    def _parse_ec_number(self) -> Dict[str, str]:
+    def _parse_ec_number(self) -> dict[str, str]:
         """Parse the CATH ID for all PDB chains and adds None when no EC number is present.
 
         :return: Dictionary of PDB chain ID with their
@@ -670,9 +659,7 @@ class PDBManager:
             next(f)  # Skip header line
             for line in f:
                 try:
-                    pdb, chain, uniprot_id, ec_number = line.strip().split(
-                        "\t"
-                    )
+                    pdb, chain, _, ec_number = line.strip().split("\t")
                     key = f"{pdb}_{chain}"
                     ec_number = None if ec_number == "?" else ec_number
                     ec_mapping[key] = ec_number
@@ -682,9 +669,8 @@ class PDBManager:
 
     def parse(
         self,
-        labels: Optional[
-            List[Literal["uniprot_id", "cath_code", "ec_number"]]
-        ] = None,
+        labels: list[Literal["uniprot_id", "cath_code", "ec_number"]]
+        | None = None,
     ) -> pd.DataFrame:
         """Parse all PDB sequence records.
 
@@ -704,8 +690,7 @@ class PDBManager:
             seq = v
             params = k.split()
             pdb_id = params[0]
-            pdb = params[0].split("_")[0]
-            chain = params[0].split("_")[1]
+            pdb, chain = pdb_id.split("_", 1)
             length = int(params[2].split(":")[1])
             molecule_type = params[1].split(":")[1]
             name = " ".join(params[3:])
@@ -724,7 +709,7 @@ class PDBManager:
 
         df = pd.DataFrame.from_records(records)
         df["n_chains"] = df.groupby("pdb")["pdb"].transform("count")
-        df["ligands"] = df.pdb.map(self._parse_ligand_map())
+        df["ligands"] = df.pdb.str.upper().map(self._parse_ligand_map())
         df["ligands"] = df["ligands"].fillna("").apply(list)
         df["source"] = df.pdb.map(self._parse_source_map())
         df["resolution"] = df.pdb.map(self._parse_resolution())
@@ -745,9 +730,9 @@ class PDBManager:
 
     def sample(
         self,
-        n: Optional[int] = None,
-        frac: Optional[float] = None,
-        splits: Optional[List[str]] = None,
+        n: int | None = None,
+        frac: float | None = None,
+        splits: list[str] | None = None,
         replace: bool = False,
         update: bool = False,
     ) -> pd.DataFrame:
@@ -779,8 +764,8 @@ class PDBManager:
 
     def get_splits(
         self,
-        splits: Optional[List[str]] = None,
-        df_splits: Optional[Dict[str, pd.DataFrame]] = None,
+        splits: list[str] | None = None,
+        df_splits: dict[str, pd.DataFrame] | None = None,
         source: bool = False,
     ) -> pd.DataFrame:
         """Return DataFrame entries belonging to the splits given.
@@ -799,20 +784,22 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         df = self.source if source else self.df
-        if splits is not None and len(splits) > 0:
+        if splits:
             df_splits = df_splits if df_splits is not None else self.df_splits
             all_splits_df = pd.concat([df_splits[split] for split in splits])
-            assert len(all_splits_df) > 0, "Combined splits must be non-empty."
+            assert not all_splits_df.empty, (
+                "Combined splits must be non-empty."
+            )
         splits_df = (
             all_splits_df.loc[all_splits_df.split.isin(splits)]
             if splits is not None
             else df
         )
-        assert len(splits_df) > 0, "Requested splits must be non-empty."
+        assert not splits_df.empty, "Requested splits must be non-empty."
         return splits_df
 
     def remove_unavailable_pdbs(
-        self, splits: Optional[List[str]] = None, update: bool = False
+        self, splits: list[str] | None = None, update: bool = False
     ) -> pd.DataFrame:
         """
         Removes PDB files that are not available for download from the
@@ -837,7 +824,7 @@ class PDBManager:
     def molecule_type(
         self,
         type: str = "protein",
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules by molecule type. [`protein`, `dna`, `rna`]
@@ -864,7 +851,7 @@ class PDBManager:
     def experiment_type(
         self,
         type: str = "diffraction",
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
@@ -892,8 +879,8 @@ class PDBManager:
 
     def experiment_types(
         self,
-        types: List[str] = ["diffraction"],
-        splits: Optional[List[str]] = None,
+        types: Sequence[str] = ("diffraction",),
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
@@ -921,8 +908,8 @@ class PDBManager:
 
     def name(
         self,
-        substrings: List[str],
-        splits: Optional[List[str]] = None,
+        substrings: list[str],
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
@@ -953,7 +940,7 @@ class PDBManager:
         length: int,
         comparison: str = "equal",
         compare_pdb_groups: bool = False,
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ):
         """Select molecules with a given length.
@@ -1014,7 +1001,7 @@ class PDBManager:
     def length_longer_than(
         self,
         length: int,
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules longer than a given length.
@@ -1036,7 +1023,7 @@ class PDBManager:
     def length_shorter_than(
         self,
         length: int,
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
@@ -1059,7 +1046,7 @@ class PDBManager:
     def length_equal_to(
         self,
         length: int,
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules equal to a given length.
@@ -1082,7 +1069,7 @@ class PDBManager:
         self,
         oligomer: int = 1,
         comparison: str = "equal",
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """Select molecules with a given oligmeric length.
@@ -1124,7 +1111,7 @@ class PDBManager:
     def resolution_better_than_or_equal_to(
         self,
         resolution: float,
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
@@ -1156,7 +1143,7 @@ class PDBManager:
     def resolution_worse_than_or_equal_to(
         self,
         resolution: int,
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
@@ -1188,7 +1175,7 @@ class PDBManager:
     def has_ligand(
         self,
         ligand: str,
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
@@ -1213,8 +1200,8 @@ class PDBManager:
 
     def has_ligands(
         self,
-        ligands: List[str],
-        splits: Optional[List[str]] = None,
+        ligands: list[str],
+        splits: list[str] | None = None,
         inverse: bool = False,
         update: bool = False,
     ):
@@ -1254,7 +1241,7 @@ class PDBManager:
         return df
 
     def remove_non_standard_alphabet_sequences(
-        self, splits: Optional[List[str]] = None, update: bool = False
+        self, splits: list[str] | None = None, update: bool = False
     ):
         """
         Remove sequences with non-standard characters.
@@ -1281,8 +1268,8 @@ class PDBManager:
 
     def select_complexes_with_grouped_molecule_types(
         self,
-        molecule_types_to_group: List[str],
-        splits: Optional[List[str]] = None,
+        molecule_types_to_group: list[str],
+        splits: list[str] | None = None,
         update: bool = False,
     ):
         """
@@ -1305,10 +1292,8 @@ class PDBManager:
         splits_df = self.get_splits(splits)
         df = splits_df.groupby("pdb").filter(
             lambda group: all(
-                [
-                    molecule_type_to_group in group["molecule_type"].values
-                    for molecule_type_to_group in molecule_types_to_group
-                ]
+                molecule_type_to_group in group["molecule_type"].values
+                for molecule_type_to_group in molecule_types_to_group
             )
         )
         if update:
@@ -1316,8 +1301,8 @@ class PDBManager:
 
     def has_uniprot_id(
         self,
-        select_ids: Optional[List[str]] = None,
-        splits: Optional[List[str]] = None,
+        select_ids: list[str] | None = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
@@ -1349,8 +1334,8 @@ class PDBManager:
 
     def has_cath_code(
         self,
-        select_ids: Optional[List[str]] = None,
-        splits: Optional[List[str]] = None,
+        select_ids: list[str] | None = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
@@ -1382,8 +1367,8 @@ class PDBManager:
 
     def has_ec_number(
         self,
-        select_ids: Optional[List[str]] = None,
-        splits: Optional[List[str]] = None,
+        select_ids: list[str] | None = None,
+        splits: list[str] | None = None,
         update: bool = False,
     ) -> pd.DataFrame:
         """
@@ -1416,11 +1401,11 @@ class PDBManager:
     def split_df_proportionally(
         self,
         df: pd.DataFrame,
-        splits: List[str],
-        split_ratios: List[float],
+        splits: list[str],
+        split_ratios: list[float],
         assign_leftover_rows_to_split_n: int = 0,
         random_state: int = 42,
-    ) -> Dict[str, pd.DataFrame]:
+    ) -> dict[str, pd.DataFrame]:
         """
         Split the provided DataFrame iteratively according to given proportions.
 
@@ -1440,12 +1425,12 @@ class PDBManager:
         :return: Dictionary of DataFrame splits.
         :rtype: Dict[str, pd.DataFrame]
         """
-        assert len(splits) == len(
-            split_ratios
-        ), f"Number of splits ({len(splits)}) must match number of split ratios ({len(split_ratios)})"
-        assert (
-            sum(split_ratios) == 1
-        ), f"Split ratios must sum to 1, got {sum(split_ratios)} ({split_ratios})"
+        assert len(splits) == len(split_ratios), (
+            f"Number of splits ({len(splits)}) must match number of split ratios ({len(split_ratios)})"
+        )
+        assert sum(split_ratios) == 1, (
+            f"Split ratios must sum to 1, got {sum(split_ratios)} ({split_ratios})"
+        )
 
         # Calculate the size of each split
         split_sizes = [int(len(df) * ratio) for ratio in split_ratios]
@@ -1472,9 +1457,9 @@ class PDBManager:
 
         # Ensure there are no duplicated rows between splits
         all_splits_df = pd.concat([df_splits[split] for split in splits])
-        assert len(all_splits_df) == len(
-            df
-        ), "Number of rows changed during split operations."
+        assert len(all_splits_df) == len(df), (
+            "Number of rows changed during split operations."
+        )
         assert len(
             all_splits_df.drop(self.list_columns, axis=1).drop_duplicates()
         ) == len(df), "Duplicate rows found in splits."
@@ -1538,7 +1523,7 @@ class PDBManager:
         self,
         df: pd.DataFrame,
         update: bool = False,
-    ) -> Dict[str, pd.DataFrame]:
+    ) -> dict[str, pd.DataFrame]:
         """Split clusters derived by MMseqs2.
 
         :param df: DataFrame containing the clusters derived by MMseqs2.
@@ -1555,7 +1540,7 @@ class PDBManager:
         assert split_ratios_provided, "Split ratios must be provided."
 
         # Split clusters
-        ratio_str = " ".join([str(r) for r in self.split_ratios])
+        ratio_str = " ".join(map(str, self.split_ratios))
         log.info(f"Randomly splitting clusters into ratios: {ratio_str}...")
         df_splits = self.split_df_proportionally(
             df,
@@ -1585,10 +1570,10 @@ class PDBManager:
         min_seq_id: float = 0.3,
         coverage: float = 0.8,
         update: bool = False,
-        fasta_fname: Optional[str] = None,
-        cluster_fname: Optional[str] = None,
+        fasta_fname: str | None = None,
+        cluster_fname: str | None = None,
         overwrite: bool = False,
-    ) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
+    ) -> pd.DataFrame | dict[str, pd.DataFrame]:
         """Cluster sequences in selection using MMseqs2.
 
         By default, the clusters are stored in a file named:
@@ -1669,9 +1654,9 @@ class PDBManager:
     def split_df_into_time_frames(
         self,
         df: pd.DataFrame,
-        splits: List[str],
-        split_time_frames: List[np.datetime64],
-    ) -> Dict[str, pd.DataFrame]:
+        splits: list[str],
+        split_time_frames: list[np.datetime64],
+    ) -> dict[str, pd.DataFrame]:
         """
         Split the provided DataFrame sequentially according to given
         time frames.
@@ -1687,19 +1672,17 @@ class PDBManager:
         :return: Dictionary of DataFrame splits.
         :rtype: Dict[str, pd.DataFrame]
         """
-        assert len(splits) == len(
-            split_time_frames
-        ), f"Number of splits ({len(splits)}) must match number of time frames ({len(split_time_frames)})."
-        assert self._frames_are_sequential(
-            split_time_frames
-        ), "Time frames must be sequential."
+        assert len(splits) == len(split_time_frames), (
+            f"Number of splits ({len(splits)}) must match number of time frames ({len(split_time_frames)})."
+        )
+        assert self._frames_are_sequential(split_time_frames), (
+            "Time frames must be sequential."
+        )
 
         # Split DataFrames
         start_datetime = df.deposition_date.min()
         df_splits = {}
-        for split_index in range(len(splits)):
-            split = splits[split_index]
-            end_datetime = split_time_frames[split_index]
+        for split, end_datetime in zip(splits, split_time_frames):
             df_split = df.loc[
                 (df.deposition_date >= start_datetime)
                 & (df.deposition_date < end_datetime)
@@ -1718,9 +1701,9 @@ class PDBManager:
 
         # Ensure there are no duplicated rows between splits
         all_splits_df = pd.concat([df_splits[split] for split in splits])
-        assert (
-            len(all_splits_df) == len(df) - num_remaining_rows
-        ), "Number of rows changed during split operations."
+        assert len(all_splits_df) == len(df) - num_remaining_rows, (
+            "Number of rows changed during split operations."
+        )
         assert (
             len(
                 all_splits_df.drop(self.list_columns, axis=1).drop_duplicates()
@@ -1741,7 +1724,7 @@ class PDBManager:
         self,
         df: pd.DataFrame,
         update: bool = False,
-    ) -> Dict[str, pd.DataFrame]:
+    ) -> dict[str, pd.DataFrame]:
         """Split molecules based on their deposition date.
 
         :param df: DataFrame containing the molecule sequences to split.
@@ -1755,12 +1738,12 @@ class PDBManager:
         :rtype: Dict[str, pd.DataFrame]
         """
         split_time_frames_provided = self.split_time_frames is not None
-        assert (
-            split_time_frames_provided
-        ), "Split time frames must be provided."
+        assert split_time_frames_provided, (
+            "Split time frames must be provided."
+        )
 
         # Split sequences
-        time_frames = " ".join([str(f) for f in self.split_time_frames])
+        time_frames = " ".join(map(str, self.split_time_frames))
         log.info(f"Splitting sequences into time frames: {time_frames}")
         df_splits = self.split_df_into_time_frames(
             df, self.splits, self.split_time_frames
@@ -1784,7 +1767,7 @@ class PDBManager:
 
     def filter_by_deposition_date(
         self, max_deposition_date: np.datetime64, update: bool = False
-    ) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
+    ) -> pd.DataFrame | dict[str, pd.DataFrame]:
         """
         Select molecules deposited on or before a given date.
 
@@ -1825,8 +1808,8 @@ class PDBManager:
     def download_pdbs(
         self,
         out_dir: str = ".",
-        format: str = "pdb",
-        splits: Optional[List[str]] = None,
+        format: Literal["pdb", "mmtf", "mmcif", "cif", "bcif"] = "pdb",
+        splits: list[str] | None = None,
         overwrite: bool = False,
         max_workers: int = 8,
         chunksize: int = 32,
@@ -1861,10 +1844,10 @@ class PDBManager:
 
     def write_chains(
         self,
-        splits: Optional[List[str]] = None,
-        models: List[int] = [1],
+        splits: list[str] | None = None,
+        models: Sequence[int] = (1,),
         force: bool = False,
-    ) -> List[Path]:
+    ) -> list[Path]:
         # sourcery skip: simplify-len-comparison, use-named-expression
         """Write chains in current selection to disk. e.g., we create a file
         of the form ``4hbb_A.pdb`` for chain ``A`` of PDB file ``4hhb.pdb``.
@@ -1892,17 +1875,16 @@ class PDBManager:
         df = splits_df.groupby("pdb")["chain"].agg(list).to_dict()
 
         # Check we have all source PDB files
-        downloaded = os.listdir(self.pdb_dir)
-        downloaded = [
-            f for f in downloaded if f.endswith(f".{self.structure_format}")
-        ]
+        downloaded = {
+            f
+            for f in os.listdir(self.pdb_dir)
+            if f.endswith(f".{self.structure_format}")
+        }
 
         to_download = [
-            k
-            for k in df.keys()
-            if f"{k}.{self.structure_format}" not in downloaded
+            k for k in df if f"{k}.{self.structure_format}" not in downloaded
         ]
-        if len(to_download) > 0:
+        if to_download:
             log.info(f"Downloading {len(to_download)} PDB files...")
             download_pdb_multiprocessing(
                 to_download, self.pdb_dir, overwrite=True
@@ -1916,6 +1898,11 @@ class PDBManager:
             in_file = os.path.join(
                 self.pdb_dir, f"{k}.{self.structure_format}"
             )
+            if not os.path.exists(in_file):
+                log.warning(
+                    f"Failed to load {in_file}. Perhaps it is no longer available to download from the PDB?"
+                )
+                continue
             paths.append(
                 extract_chains_to_file(
                     in_file, v, out_dir=self.pdb_dir, models=models
@@ -1927,7 +1914,7 @@ class PDBManager:
         return [Path(num) for sublist in paths for num in sublist]
 
     def from_fasta(
-        self, ids: str, filename: str, splits: Optional[List[str]] = None
+        self, ids: str, filename: str, splits: list[str] | None = None
     ) -> pd.DataFrame:
         """Create a selection from a FASTA file.
 
@@ -1948,16 +1935,13 @@ class PDBManager:
         splits_df = self.get_splits(splits, source=True)
         if ids == "chain":
             return splits_df.loc[splits_df.id.isin(seq_ids)]
-        elif ids == "pdb":
+        if ids == "pdb":
             return splits_df.loc[splits_df.pdb.isin(seq_ids)]
-        else:
-            raise ValueError(
-                "Invalid parameter ids. Must be 'chain' or 'pdb'."
-            )
+        raise ValueError("Invalid parameter ids. Must be 'chain' or 'pdb'.")
 
     def to_chain_sequence_mapping_dict(
-        self, splits: Optional[List[str]]
-    ) -> Dict[str, str]:
+        self, splits: list[str] | None
+    ) -> dict[str, str]:
         """Return a dictionary of sequences indexed by chains.
 
         :param splits: Names of splits for which to perform the operation,
@@ -1973,7 +1957,7 @@ class PDBManager:
             splits_df[["id", "sequence"]].set_index("id").to_dict()["sequence"]
         )
 
-    def to_fasta(self, filename: str, splits: Optional[List[str]] = None):
+    def to_fasta(self, filename: str, splits: list[str] | None = None):
         """Write the dataset to a FASTA file (indexed by chain id).
 
         :param filename: Name of the output FASTA file.
@@ -2011,12 +1995,11 @@ class PDBManager:
                 raise ValueError(
                     f"You are exporting a selection that contains {len(unavailable)} PDB(s) unavailable for download in PDB format: {unavailable}"
                 )
-            else:
-                log.warning(
-                    f"You are exporting a selection that contains {len(unavailable)} PDB(s) unavailable for download in PDB format: {unavailable}"
-                )
+            log.warning(
+                f"You are exporting a selection that contains {len(unavailable)} PDB(s) unavailable for download in PDB format: {unavailable}"
+            )
 
-    def to_csv(self, fname: str, splits: Optional[List[str]] = None):
+    def to_csv(self, fname: str, splits: list[str] | None = None):
         """Write the selection to a CSV file.
 
         :param fname: Path to CSV file.
@@ -2043,14 +2026,15 @@ class PDBManager:
         :rtype: pd.DataFrame
         """
         return pd.DataFrame(
-            {"pdb": [group["pdb"].iloc[0]], "chain": [group["chain"].tolist()]}
+            # pandas>=3 drops the grouping column from groups; use the key
+            {"pdb": [group.name], "chain": [group["chain"].tolist()]}
         )
 
     def select_pdb_by_criterion(
         self,
         pdb: PandasPdb,
         field: str,
-        field_values: List[Any],
+        field_values: list[Any],
         pdb_code: str,
     ) -> PandasPdb:
         """Filter a PDB using a field selection.
@@ -2089,7 +2073,7 @@ class PDBManager:
         merge_fn: Callable,
         atom_df_name: str = "ATOM",
         max_num_chains_per_pdb_code: int = -1,
-        models: List[int] = [1],
+        models: Sequence[int] = (1,),
     ):
         """Record groups of PDB codes and associated chains
         as collated PDB files.
@@ -2142,7 +2126,7 @@ class PDBManager:
                         )
                     except FileNotFoundError:
                         log.info(
-                            f"Failed to load {str(input_pdb_filepath)}. Perhaps it is not longer available to download from the PDB?"
+                            f"Failed to load {input_pdb_filepath}. Perhaps it is not longer available to download from the PDB?"
                         )
                         continue
                     # work around int-typing bug for `model_id` within version `0.5.0.dev0` of BioPandas -> appears when calling `to_pdb()`
@@ -2174,9 +2158,9 @@ class PDBManager:
         pdb_dir: str,
         df: pd.DataFrame,
         out_dir: str = "collated_pdb",
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         max_num_chains_per_pdb_code: int = -1,
-        models: List[int] = [1],
+        models: Sequence[int] = (1,),
     ):
         """Write the given selection as a collection of PDB files.
 
@@ -2227,9 +2211,9 @@ class PDBManager:
     def export_pdbs(
         self,
         pdb_dir: str,
-        splits: Optional[List[str]] = None,
+        splits: list[str] | None = None,
         max_num_chains_per_pdb_code: int = -1,
-        models: List[int] = [1],
+        models: Sequence[int] = (1,),
         force: bool = False,
     ):
         """Write the selection as a collection of PDB files.

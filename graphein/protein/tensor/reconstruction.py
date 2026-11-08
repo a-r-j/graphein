@@ -1,6 +1,7 @@
 """Utilities for reconstructing protein structures."""
 
-from typing import Iterable, List, Tuple, Union
+from collections import defaultdict
+from functools import cache
 
 import numpy as np
 import torch
@@ -45,10 +46,10 @@ def place_fourth_atom(
     bc_vec = b_coord - c_coord
     bc_vec = bc_vec / bc_vec.norm(dim=-1, keepdim=True)
 
-    n_vec = (b_coord - a_coord).expand(bc_vec.shape).cross(bc_vec)
+    n_vec = torch.linalg.cross(b_coord - a_coord, bc_vec)
     n_vec = n_vec / n_vec.norm(dim=-1, keepdim=True)
 
-    m_vec = [bc_vec, n_vec.cross(bc_vec), n_vec]
+    m_vec = [bc_vec, torch.linalg.cross(n_vec, bc_vec), n_vec]
     d_vec = [
         length * torch.cos(planar),
         length * torch.sin(planar) * torch.cos(dihedral),
@@ -119,14 +120,8 @@ def place_o_coords(coords: AtomTensor) -> AtomTensor:
         torch.tensor(1.231),
         torch.tensor(2.108),
         torch.tensor(-3.142),
-    ).unsqueeze(2)
-
-    coords = torch.cat(
-        [coords, o_coords.view(-1, 1, 3)],
-        dim=1,
     )
-
-    return coords
+    return torch.cat([coords, o_coords.unsqueeze(1)], dim=1)
 
 
 def dist_mat_to_coords(d: torch.Tensor, k: int = 3) -> CoordTensor:
@@ -155,21 +150,19 @@ def dist_mat_to_coords(d: torch.Tensor, k: int = 3) -> CoordTensor:
     #        Mij + 1e-4 * Mij.mean() * torch.rand_like(Mij)
     #    )
     X = U * torch.sqrt(S)
-    X = X[:, :k]
-    return X
+    return X[:, :k]
 
 
 def build_sidechain(
     bb: AtomTensor,
-    residue_types: List[str],
+    residue_types: list[str],
     torsion_angles: TorsionTensor,
 ) -> AtomTensor:  # sourcery skip: assign-if-exp, lift-duplicated-conditional
     if torsion_angles.shape[-1] == 8:
         torsion_angles = torsion_to_rad(torsion_angles)
-        torsion_angles = torch.stack(torsion_angles, dim=1)
     # Initialise new atom tensor [L x 37 x 3] and fill it with backbone atoms.
     # pos = torch.ones_like(x.atom_tensor) * 1e-5
-    pos = torch.ones((bb.shape[0], 37, 3), device=bb.device) * 1e-5
+    pos = torch.full((bb.shape[0], 37, 3), 1e-5, device=bb.device)
 
     if bb.shape[1] == 5:
         pos[:, :5, :] = bb
@@ -178,69 +171,59 @@ def build_sidechain(
         pos[:, :4, :] = bb
         cb_skip = False
 
-    # Get the residues in the batch (list of 3-letter AA codes)
-    # batch_seq = list(chain.from_iterable(x.node_id))
-    # nodes = [n.split(":")[1] for n in batch_seq]
-
-    # Iterate over residues
-    # for i, res in enumerate(nodes):
+    # Residues of the same type are built together, one atom at a time
+    groups = defaultdict(list)
     for i, res in enumerate(residue_types):
-        start = i == 0
-        next_res = pos[i, :] if i == len(residue_types) - 1 else None
+        groups[res].append(i)
 
-        build_vals = _get_build_params(res)
+    for res, members in groups.items():
+        rows = torch.tensor(members, device=bb.device)
         last_torsion = None
-        # Iterate over atoms
-        for j, (bond, pbond, angle, torsion, atom_name) in enumerate(
-            build_vals
+        for j, (bond, pbond, angle, torsion, atom_name, idxs) in enumerate(
+            _get_build_params(res)
         ):
             # Skip CB as we place it in BB construction
             if atom_name[-1] == "CB" and cb_skip:
                 continue
-            if start and next_res is not None:
-                a, b, c = pos[i + 1, 0], pos[i, 1], pos[i, 2]  # N+, CA, C
-            elif start:
-                a, b, c = pos[i - 1, 2], pos[i, 0], pos[i, 1]  # C-, N, CA
-            else:
-                idxs = [ATOM_NUMBERING[atom] for atom in atom_name[:-1]]
-                a, b, c = (
-                    pos[i, idxs[0]],
-                    pos[i, idxs[1]],
-                    pos[i, idxs[2]],
-                )  # N, CA, C
+            abc = pos[rows][:, list(idxs[:3])]
+            if members[0] == 0:
+                # The first residue is built from C-, N, CA
+                abc[0] = pos[[-1, 0, 0], [2, 0, 1]]
 
             # Select correct torsion angle
-            if type(torsion) is str and torsion == "p":
+            if isinstance(torsion, str) and torsion == "p":
                 if j == 5 and res == "ARG":
                     torsion = torch.tensor(0.0)
                 else:
-                    torsion = torsion_angles[i, j - 1]
+                    torsion = torsion_angles[rows, j - 1]
             elif (
-                type(torsion) is str
+                isinstance(torsion, str)
                 and torsion == "i"
                 and last_torsion is not None
             ):
                 torsion = last_torsion - np.pi
 
-            # Get coordinates of new point
-            new_pt = sn_nerf(a, b, c, bond, angle, torsion, pbond)
-            # Assign new point to atom tensor
-            pos[i, ATOM_NUMBERING[atom_name[-1]]] = new_pt
+            pos[rows, idxs[3]] = sn_nerf(
+                *abc.unbind(1), bond, angle, torsion, pbond
+            )
             last_torsion = torsion
 
     return pos
 
 
+@cache
 def _get_build_params(
     res: str,
-) -> Iterable[
-    Tuple[
+) -> tuple[
+    tuple[
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
-        Union[torch.Tensor, str],
-        List[str],
-    ]
+        torch.Tensor | str,
+        list[str],
+        tuple[int, ...],
+    ],
+    ...,
 ]:
     """
     Returns iterable of sidechain construction params for a residue.
@@ -251,7 +234,7 @@ def _get_build_params(
     :param res: Residue name (3-letter code)
     :type res: str
     :return: Iterable of sidechain construction params
-    :rtype: Iterable[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, Union[torch.Tensor, str], List[str]]]
+    :rtype: Iterable[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, Union[torch.Tensor, str], List[str], Tuple[int, ...]]]
     """
     build_params = SC_BUILD_INFO[res]
     bond_vals = [
@@ -259,21 +242,27 @@ def _get_build_params(
         for b in build_params["bonds-vals"]
     ]
     pbond_vals = [
-        torch.tensor(BB_BUILD_INFO["BONDLENS"]["n-ca"], dtype=torch.float32)
-    ] + [
-        torch.tensor(b, dtype=torch.float32)
-        for b in build_params["bonds-vals"]
-    ][
-        :-1
+        torch.tensor(BB_BUILD_INFO["BONDLENS"]["n-ca"], dtype=torch.float32),
+        *bond_vals[:-1],
     ]
     angle_vals = [
         torch.tensor(a, dtype=torch.float32)
         for a in build_params["angles-vals"]
     ]
     torsion_vals = [
-        torch.tensor(t, dtype=torch.float32) if t not in ["p", "i"] else t
+        torch.tensor(t, dtype=torch.float32) if t not in ("p", "i") else t
         for t in build_params["torsion-vals"]
     ]
     atom_names = [t.split("-") for t in build_params["torsion-names"]]
+    atom_indices = [tuple(ATOM_NUMBERING[a] for a in n) for n in atom_names]
 
-    return zip(bond_vals, pbond_vals, angle_vals, torsion_vals, atom_names)
+    return tuple(
+        zip(
+            bond_vals,
+            pbond_vals,
+            angle_vals,
+            torsion_vals,
+            atom_names,
+            atom_indices,
+        )
+    )

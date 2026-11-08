@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import re
 from itertools import count
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -25,6 +26,10 @@ from mpl_toolkits.mplot3d import Axes3D
 from graphein.protein.resi_atoms import HYDROPHOBICITY_SCALES
 from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.dependencies import import_message
+
+if TYPE_CHECKING:
+    from pytorch3d.structures import Meshes
+
 
 try:
     from pytorch3d.ops import sample_points_from_meshes
@@ -57,8 +62,8 @@ TODO: should feature `distance` actually contain the site itself i.e. in the str
 def _node_feature_func(
     g: nx.Graph,
     feature: str,
-    focal_node: Optional[str] = None,
-    focal_point: Optional[tuple] = None,
+    focal_node: str | None = None,
+    focal_point: tuple | None = None,
     no_negatives: bool = False,
 ) -> Callable:
     """
@@ -137,7 +142,7 @@ def _node_feature_func(
             match.group(1) if match.group(1) else "kd"
         )  # use 'kdhydrophobicity' as default if no scale specified
         try:
-            hydrophob: Dict[str, float] = HYDROPHOBICITY_SCALES[scale]
+            hydrophob: dict[str, float] = HYDROPHOBICITY_SCALES[scale]
         except:
             raise KeyError(f"'{scale}' not a valid hydrophobicity scale.")
         return lambda k: hydrophob[k.split(":")[1]]
@@ -193,7 +198,7 @@ def colour_nodes(
     G: nx.Graph,
     colour_by: str,
     colour_map: matplotlib.colors.ListedColormap = plt.cm.plasma,
-) -> List[Tuple[float, float, float, float]]:
+) -> list[tuple[float, float, float, float]]:
     """
     Computes node colours based on ``"degree"``, ``"seq_position"`` or node
     attributes.
@@ -226,7 +231,7 @@ def colour_nodes(
         )
         colors = [chain_colours[d["chain_id"]] for _, d in G.nodes(data=True)]
     elif colour_by == "plddt":
-        levels: List[str] = ["Very High", "Confident", "Low", "Very Low"]
+        levels: list[str] = ["Very High", "Confident", "Low", "Very Low"]
         mapping = dict(zip(sorted(levels), count()))
         colors = []
         for _, d in G.nodes(data=True):
@@ -253,10 +258,10 @@ def colour_nodes(
 def colour_edges(
     G: nx.Graph,
     colour_map: matplotlib.colors.ListedColormap,
-    colour_by: Optional[str] = "kind",
+    colour_by: str | None = "kind",
     set_alpha: float = 1.0,
     return_as_rgba: bool = False,
-) -> List[Tuple[float, float, float, float]] or List[str]:
+) -> list[tuple[float, float, float, float]] or list[str]:
     """
     Computes edge colours based on the kind of bond/interaction.
 
@@ -297,9 +302,9 @@ def colour_edges(
             for _, _, d in G.edges(data=True)
         ]
 
-    assert (
-        0.0 <= set_alpha <= 1.0
-    ), f"Alpha value {set_alpha} must be between 0.0 and 1.0"
+    assert 0.0 <= set_alpha <= 1.0, (
+        f"Alpha value {set_alpha} must be between 0.0 and 1.0"
+    )
     colors = [c[:3] + (set_alpha,) for c in colors]
     if return_as_rgba:
         return [
@@ -311,8 +316,8 @@ def colour_edges(
 
 def plotly_protein_structure_graph(
     G: nx.Graph,
-    plot_title: Optional[str] = None,
-    figsize: Tuple[int, int] = (620, 650),
+    plot_title: str | None = None,
+    figsize: tuple[int, int] = (620, 650),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
     node_size_multiplier: float = 1.0,
@@ -321,7 +326,7 @@ def plotly_protein_structure_graph(
     node_colour_map=plt.cm.plasma,
     edge_color_map=plt.cm.plasma,
     colour_nodes_by: str = "degree",
-    colour_edges_by: Optional[str] = "kind",
+    colour_edges_by: str | None = "kind",
 ) -> go.Figure:
     """
     Plots protein structure graph using plotly.
@@ -385,6 +390,7 @@ def plotly_protein_structure_graph(
     z_nodes = []
     node_sizes = []
     node_labels = []
+    node_list = list(G.nodes())
 
     # Loop on the pos dictionary to extract the x,y,z coordinates of each node
     for i, (key, value) in enumerate(pos.items()):
@@ -394,7 +400,7 @@ def plotly_protein_structure_graph(
         node_sizes.append(size_by(key))
 
         if label_node_ids:
-            node_labels.append(list(G.nodes())[i])
+            node_labels.append(node_list[i])
 
     nodes = go.Scatter3d(
         x=x_nodes,
@@ -422,19 +428,17 @@ def plotly_protein_structure_graph(
         y_edges.extend([pos[node_a][1], pos[node_b][1], None])
         z_edges.extend([pos[node_a][2], pos[node_b][2], None])
 
-    axis = dict(
-        showbackground=False,
-        showline=False,
-        zeroline=False,
-        showgrid=False,
-        showticklabels=False,
-        title="",
-    )
+    axis = {
+        "showbackground": False,
+        "showline": False,
+        "zeroline": False,
+        "showgrid": False,
+        "showticklabels": False,
+        "title": "",
+    }
 
     repeated_edge_colours = []
-    for (
-        edge_col
-    ) in (
+    for edge_col in (
         edge_colors
     ):  # Repeat as each line segment is ({x,y,z}_start, {x,y,z}_end, None)
         repeated_edge_colours.extend((edge_col, edge_col, edge_col))
@@ -466,12 +470,12 @@ def plotly_protein_structure_graph(
             width=figsize[0],
             height=figsize[1],
             showlegend=False,
-            scene=dict(
-                xaxis=dict(axis),
-                yaxis=dict(axis),
-                zaxis=dict(axis),
-            ),
-            margin=dict(t=100),
+            scene={
+                "xaxis": dict(axis),
+                "yaxis": dict(axis),
+                "zaxis": dict(axis),
+            },
+            margin={"t": 100},
         ),
     )
 
@@ -479,8 +483,8 @@ def plotly_protein_structure_graph(
 def plot_protein_structure_graph(
     G: nx.Graph,
     angle: int = 30,
-    plot_title: Optional[str] = None,
-    figsize: Tuple[int, int] = (10, 7),
+    plot_title: str | None = None,
+    figsize: tuple[int, int] = (10, 7),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
     node_size_multiplier: float = 1.0,
@@ -491,7 +495,7 @@ def plot_protein_structure_graph(
     colour_edges_by: str = "kind",
     edge_alpha: float = 0.5,
     plot_style: str = "ggplot",
-    out_path: Optional[str] = None,
+    out_path: str | None = None,
     out_format: str = ".png",
 ) -> Axes3D:
     """
@@ -557,6 +561,7 @@ def plot_protein_structure_graph(
         ax = Axes3D(fig)
         fig.add_axes(ax)
 
+        node_list = list(G.nodes())
         # Loop on the pos dictionary to extract the x,y,z coordinates of each
         # node
         for i, (key, value) in enumerate(pos.items()):
@@ -575,7 +580,7 @@ def plot_protein_structure_graph(
                 alpha=node_alpha,
             )
             if label_node_ids:
-                label = list(G.nodes())[i]
+                label = node_list[i]
                 ax.text(xi, yi, zi, label)
 
         # Loop on the list of edges to get the x,y,z, coordinates of the
@@ -651,11 +656,10 @@ def add_vector_to_plot(
         z=z_edges,
         mode="lines",
         line={"color": colour, "width": width},
-        text=3 * [f"{vector}" for _ in range(len(g))],
+        text=[vector] * (3 * len(g)),
         hoverinfo="text",
     )
     # Compute cone positions.
-    arrow_tip_ratio = 0.1
     arrow_starting_ratio = 0.98
     x = []
     y = []
@@ -691,7 +695,7 @@ def add_vector_to_plot(
         u=u,
         v=v,
         w=w,
-        text=[f"{vector}" for _ in range(len(g.nodes()))],
+        text=[vector] * len(g),
         hoverinfo="u+v+w+text",
         colorscale=colour,
         showlegend=False,
@@ -704,10 +708,10 @@ def add_vector_to_plot(
 
 
 def plot_distance_matrix(
-    g: Optional[nx.Graph],
-    dist_mat: Optional[np.ndarray] = None,
+    g: nx.Graph | None,
+    dist_mat: np.ndarray | None = None,
     use_plotly: bool = True,
-    title: Optional[str] = None,
+    title: str | None = None,
     show_residue_labels: bool = True,
 ) -> go.Figure:
     """Plots a distance matrix of the graph.
@@ -751,7 +755,7 @@ def plot_distance_matrix(
             dist_mat,
             x=x_range,
             y=y_range,
-            labels=dict(color="Distance"),
+            labels={"color": "Distance"},
             title=title,
         )
     tick_labels = x_range if show_residue_labels else []
@@ -761,10 +765,10 @@ def plot_distance_matrix(
 
 
 def plot_distance_landscape(
-    g: Optional[nx.Graph] = None,
-    dist_mat: Optional[np.ndarray] = None,
+    g: nx.Graph | None = None,
+    dist_mat: np.ndarray | None = None,
     add_contour: bool = True,
-    title: Optional[str] = None,
+    title: str | None = None,
     width: int = 500,
     height: int = 500,
     autosize: bool = False,
@@ -800,12 +804,12 @@ def plot_distance_landscape(
 
     if add_contour:
         fig.update_traces(
-            contours_z=dict(
-                show=True,
-                usecolormap=True,
-                highlightcolor="limegreen",
-                project_z=True,
-            )
+            contours_z={
+                "show": True,
+                "usecolormap": True,
+                "highlightcolor": "limegreen",
+                "project_z": True,
+            }
         )
 
     fig.update_layout(
@@ -813,21 +817,21 @@ def plot_distance_landscape(
         autosize=autosize,
         width=width,
         height=height,
-        scene=dict(
-            zaxis_title="Distance",
-            xaxis=dict(
-                ticktext=tick_labels,
-                tickvals=list(range(len(tick_labels))),
-                nticks=10,
-                showticklabels=False,
-            ),
-            yaxis=dict(
-                ticktext=tick_labels,
-                tickvals=list(range(len(tick_labels))),
-                nticks=10,
-                showticklabels=False,
-            ),
-        ),
+        scene={
+            "zaxis_title": "Distance",
+            "xaxis": {
+                "ticktext": tick_labels,
+                "tickvals": list(range(len(tick_labels))),
+                "nticks": 10,
+                "showticklabels": False,
+            },
+            "yaxis": {
+                "ticktext": tick_labels,
+                "tickvals": list(range(len(tick_labels))),
+                "nticks": 10,
+                "showticklabels": False,
+            },
+        },
     )
 
     return fig
@@ -843,7 +847,7 @@ def asteroid_plot(
     edge_colour_map: plt.cm.Colormap = plt.cm.plasma,
     edge_alpha: float = 1.0,
     show_labels: bool = True,
-    title: Optional[str] = None,
+    title: str | None = None,
     width: int = 600,
     height: int = 500,
     use_plotly: bool = True,
@@ -852,7 +856,7 @@ def asteroid_plot(
     node_size_min: float = 20,
     node_size_multiplier: float = 10,
     node_size_multiplier: float = 10.0,
-) -> Union[plotly.graph_objects.Figure, matplotlib.figure.Figure]:
+) -> go.Figure | matplotlib.figure.Figure:
     # sourcery skip: remove-unnecessary-else, swap-if-else-branches
     """Plots a k-hop subgraph around a node as concentric shells.
 
@@ -901,15 +905,15 @@ def asteroid_plot(
     """
     assert node_id in g.nodes(), f"Node {node_id} not in graph"
 
-    nodes: Dict[int, List[str]] = {0: [node_id]}
-    node_list: List[str] = [node_id]
+    nodes: dict[int, list[str]] = {0: [node_id]}
+    seen_nodes: set[str] = {node_id}
     # Iterate over the number of hops and extract nodes in each shell
     for i in range(1, k):
         subgraph = extract_k_hop_subgraph(g, node_id, k=i)
         candidate_nodes = subgraph.nodes()
         # Check we've not already found nodes in the previous shells
-        nodes[i] = [n for n in candidate_nodes if n not in node_list]
-        node_list += candidate_nodes
+        nodes[i] = [n for n in candidate_nodes if n not in seen_nodes]
+        seen_nodes.update(candidate_nodes)
     shells = [nodes[i] for i in range(k)]
     log.debug(f"Plotting shells: {shells}")
 
@@ -938,7 +942,7 @@ def asteroid_plot(
                     x=(x0, x1),
                     y=(y0, y1),
                     mode="lines",
-                    line=dict(width=1, color=edge_colors[i]),
+                    line={"width": 1, "color": edge_colors[i]},
                     hoverinfo="text",
                     text=[bond_kind],
                     name=bond_kind,
@@ -947,8 +951,8 @@ def asteroid_plot(
                 )
                 edge_trace.append(tr)
 
-        node_x: List[str] = []
-        node_y: List[str] = []
+        node_x: list[str] = []
+        node_y: list[str] = []
         for node in subgraph.nodes():
             x, y = subgraph.nodes[node]["pos"]
             node_x.append(x)
@@ -990,50 +994,56 @@ def asteroid_plot(
             hoverinfo="text",
             textposition="bottom center",
             showlegend=False,
-            marker=dict(
-                colorscale="viridis",
-                reversescale=True,
-                color=node_colours,
-                size=node_sizes,
-                colorbar=dict(
-                    thickness=15,
-                    title=str.capitalize(colour_nodes_by),
-                    tickvals=list(range(k)),
-                    xanchor="left",
-                    titleside="right",
-                ),
-                line_width=2,
-            ),
+            marker={
+                "colorscale": "viridis",
+                "reversescale": True,
+                "color": node_colours,
+                "size": node_sizes,
+                "colorbar": {
+                    "thickness": 15,
+                    "title": str.capitalize(colour_nodes_by),
+                    "tickvals": list(range(k)),
+                    "xanchor": "left",
+                },
+                "line_width": 2,
+            },
         )
 
         data = edge_trace + [node_trace] if show_edges else [node_trace]
         return go.Figure(
             data=data,
             layout=go.Layout(
-                title=title or f'Asteroid Plot - {g.graph["name"]}',
+                title=title or f"Asteroid Plot - {g.graph['name']}",
                 width=width,
                 height=height,
-                titlefont_size=16,
-                legend=dict(yanchor="top", y=1, xanchor="left", x=1.10),
+                legend={
+                    "yanchor": "top",
+                    "y": 1,
+                    "xanchor": "left",
+                    "x": 1.10,
+                },
                 showlegend=show_legend,
                 hovermode="closest",
-                margin=dict(b=20, l=5, r=5, t=40),
-                xaxis=dict(
-                    showgrid=False, zeroline=False, showticklabels=False
-                ),
-                yaxis=dict(
-                    showgrid=False, zeroline=False, showticklabels=False
-                ),
+                margin={"b": 20, "l": 5, "r": 5, "t": 40},
+                xaxis={
+                    "showgrid": False,
+                    "zeroline": False,
+                    "showticklabels": False,
+                },
+                yaxis={
+                    "showgrid": False,
+                    "zeroline": False,
+                    "showticklabels": False,
+                },
             ),
         )
-    else:
-        nx.draw_shell(subgraph, nlist=shells, with_labels=show_labels)
+    nx.draw_shell(subgraph, nlist=shells, with_labels=show_labels)
 
 
 def plot_chord_diagram(
     g: nx.Graph,
     show_names: bool = True,
-    order: Optional[List] = None,
+    order: list | None = None,
     width: float = 0.1,
     pad: float = 2.0,
     gap: float = 0.03,
@@ -1125,7 +1135,7 @@ def plot_chord_diagram(
     else:
         names = None
 
-    a = chord_diagram(
+    chord_diagram(
         mat,
         names=names,
         order=order,
