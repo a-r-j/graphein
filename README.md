@@ -214,10 +214,9 @@ uv sync --all-extras             # dev + extras + docs
 
 Run commands inside the project environment with `uv run`, e.g. `uv run pytest`.
 
-However, there are a number of (optional) utilities ([DSSP](https://anaconda.org/salilab/dssp), [PyMol](https://pymol.org/2/), [GetContacts](https://getcontacts.github.io/)) that are not available via PyPI:
+DSSP secondary structure and solvent accessibility features are computed natively (no `mkdssp` install needed). However, there are a number of (optional) utilities ([PyMol](https://pymol.org/2/), [GetContacts](https://getcontacts.github.io/)) that are not available via PyPI:
 
 ```
-conda install -c salilab dssp # Required for computing secondary structural features
 conda install -c schrodinger pymol # Required for PyMol visualisations & mesh generation
 
 # GetContacts - used as an alternative way to compute intramolecular interactions

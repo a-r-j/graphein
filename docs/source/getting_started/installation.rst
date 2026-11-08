@@ -100,11 +100,10 @@ We `provide a devcontainer <https://github.com/a-r-j/graphein/tree/master/.devco
 
 Optional Dependencies
 ---------------------
-However, there are a number of (optional) utilities `DSSP <https://anaconda.org/salilab/dssp>`_, `PyMol <https://pymol.org/2/>`_, `GetContacts <https://getcontacts.github.io/>`_ that are not available via PyPI:
+DSSP secondary structure and solvent accessibility features are computed natively (no ``mkdssp`` install needed). However, there are a number of (optional) utilities `PyMol <https://pymol.org/2/>`_, `GetContacts <https://getcontacts.github.io/>`_ that are not available via PyPI:
 
 .. code-block:: bash
 
-    conda install -c salilab dssp # Required for computing secondary structural features
     conda install -c schrodinger pymol # Required for PyMol visualisations & mesh generation
 
 .. note::
