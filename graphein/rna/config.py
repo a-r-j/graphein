@@ -7,9 +7,10 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel
@@ -59,16 +60,14 @@ class RNAGraphConfig(BaseModel):
     granularity: str = "rna_atom"
     verbose: bool = False
     insertions: bool = False
-    keep_hets: List[str] = []
+    keep_hets: list[str] = []
 
     # Graph construction functions
-    edge_construction_functions: List[Union[Callable, str]] = [
-        add_atomic_edges
-    ]
-    rna_df_processing_functions: Optional[List[Callable]] = None
-    node_metadata_functions: Optional[List[Union[Callable, str]]] = None
-    edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
-    graph_metadata_functions: Optional[List[Callable]] = None
+    edge_construction_functions: list[Callable | str] = [add_atomic_edges]
+    rna_df_processing_functions: list[Callable] | None = None
+    node_metadata_functions: list[Callable | str] | None = None
+    edge_metadata_functions: list[Callable | str] | None = None
+    graph_metadata_functions: list[Callable] | None = None
 
     def __eq__(self, other: Any) -> bool:
         """

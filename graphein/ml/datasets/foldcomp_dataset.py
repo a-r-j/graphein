@@ -9,17 +9,11 @@
 import asyncio
 import os
 import random
-import shutil
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import (
     Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
     Literal,
-    Optional,
-    Union,
 )
 
 import numpy as np
@@ -29,7 +23,7 @@ from sklearn.model_selection import train_test_split
 from torch_geometric import transforms as T
 from torch_geometric.data import Data, Dataset
 from torch_geometric.loader import DataLoader
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from graphein.protein.resi_atoms import (
     ATOM_NUMBERING,
@@ -47,13 +41,16 @@ except ImportError:
     )
     log.warning(message)
 
+LIGHTNING_MESSAGE = import_message(
+    "graphein.ml.datasets.foldcomp", "lightning", "conda-forge", True
+)
 try:
-    import lightning as L
+    from lightning import LightningDataModule
 except ImportError:
-    message = import_message(
-        "graphein.ml.datasets.foldcomp", "lightning", "conda-forge", True
-    )
-    log.warning(message)
+    log.warning(LIGHTNING_MESSAGE)
+    # Lets the module import without lightning; only
+    # FoldCompLightningDataModule needs it, and raises when created.
+    LightningDataModule = object
 
 try:
     import nest_asyncio
@@ -61,12 +58,16 @@ try:
     nest_asyncio.apply()
 except ImportError:
     message = import_message(
-        "graphein.ml.datasets.foldcomp", "nest_asyncio", None, True
+        "graphein.ml.datasets.foldcomp",
+        "nest_asyncio",
+        None,
+        True,
+        extras=True,
     )
-    message += "You can safely ignore this message if you are not working in a Jupyter Notebook."
+    message += "\nYou can safely ignore this message if you are not working in a Jupyter Notebook."
     log.warning(message)
 
-FOLDCOMP_DATABASE_TYPES: List[str] = [
+FOLDCOMP_DATABASE_TYPES: list[str] = [
     "afdb_swissprot_v4",  # AlphaFoldDB Swiss-Prot
     "afdb_uniprot_v4",  # AlphaFoldDB Uniprot
     "afdb_rep_v4",  # AlphaFoldDB Cluster Representatives
@@ -81,7 +82,7 @@ https://github.com/steineggerlab/foldcomp
 """
 
 
-GraphTransform = Callable[[Union[Data, Protein]], Union[Data, Protein]]
+GraphTransform = Callable[[Data | Protein], Data | Protein]
 
 
 ATOM_MAP = {
@@ -149,11 +150,11 @@ class FoldCompDataset(Dataset):
             "esmatlas_v2023_02",
             "highquality_clust30",
         ],
-        ids: Optional[List[str]] = None,
-        exclude_ids: Optional[List[str]] = None,
+        ids: list[str] | None = None,
+        exclude_ids: list[str] | None = None,
         fraction: float = 1.0,
         use_graphein: bool = True,
-        transform: Optional[T.BaseTransform] = None,
+        transform: T.BaseTransform | None = None,
     ):
         """Dataset class for FoldComp databases.
 
@@ -205,7 +206,7 @@ class FoldCompDataset(Dataset):
         )
 
     @property
-    def raw_file_names(self) -> List[str]:
+    def raw_file_names(self) -> list[str]:
         """Return a list of raw file names expected to be found in the database.
 
         Returns empty string as we don't expect any raw files.
@@ -249,7 +250,7 @@ class FoldCompDataset(Dataset):
         LOOKUP_FILE = Path(self.root) / f"{self.database}.lookup"
         if not os.path.exists(LOOKUP_FILE):
             self.download()
-        with open(LOOKUP_FILE, "r") as f:
+        with open(LOOKUP_FILE) as f:
             accessions = f.readlines()
         # Extract accessions
         accessions = [x.strip().split("\t")[1] for x in tqdm(accessions)]
@@ -285,10 +286,12 @@ class FoldCompDataset(Dataset):
                 self.root / self.database, ids=self.ids, decompress=False
             )  # type: ignore
         else:
-            self.db = foldcomp.open(self.root / self.database, decompress=False)  # type: ignore
+            self.db = foldcomp.open(
+                self.root / self.database, decompress=False
+            )  # type: ignore
 
     @staticmethod
-    def fc_to_pyg(data: Dict[str, Any], name: Optional[str] = None) -> Protein:
+    def fc_to_pyg(data: dict[str, Any], name: str | None = None) -> Protein:
         # Map sequence to 3-letter codes
         res = [STANDARD_AMINO_ACID_MAPPING_1_TO_3[r] for r in data["residues"]]
         residue_type = torch.tensor(
@@ -321,7 +324,7 @@ class FoldCompDataset(Dataset):
         return Protein(
             coords=torch.from_numpy(coords).float(),
             residues=res,
-            residue_id=[f"A:{m}:{str(n)}" for m, n in zip(res, res_num)],
+            residue_id=[f"A:{m}:{n}" for m, n in zip(res, res_num)],
             chains=torch.zeros(n_res),
             residue_type=residue_type.long(),
             b_factor=torch.from_numpy(b_factor).float(),
@@ -334,7 +337,7 @@ class FoldCompDataset(Dataset):
         """Returns length of the dataset"""
         return len(self.protein_to_idx)
 
-    def get(self, idx) -> Union[Data, Protein]:
+    def get(self, idx) -> Data | Protein:
         """Retrieves a protein from the dataset. Can idx on either the protein
         ID or its index."""
         if isinstance(idx, str):
@@ -345,17 +348,17 @@ class FoldCompDataset(Dataset):
         return self.fc_to_pyg(data, name)
 
 
-class FoldCompLightningDataModule(L.LightningDataModule):
+class FoldCompLightningDataModule(LightningDataModule):
     def __init__(
         self,
         data_dir,
         database: str,
         batch_size: int,
         use_graphein: bool = True,
-        train_split: Optional[Union[List[str], float]] = None,
-        val_split: Optional[Union[List[str], float]] = None,
-        test_split: Optional[Union[List[str], float]] = None,
-        transform: Optional[Iterable[Callable]] = None,
+        train_split: list[str] | float | None = None,
+        val_split: list[str] | float | None = None,
+        test_split: list[str] | float | None = None,
+        transform: Iterable[Callable] | None = None,
         num_workers: int = 4,
         pin_memory: bool = True,
     ) -> None:
@@ -392,6 +395,8 @@ class FoldCompLightningDataModule(L.LightningDataModule):
             ``True``
         :type pin_memory: bool, optional
         """
+        if LightningDataModule is object:
+            raise ImportError(LIGHTNING_MESSAGE)
         super().__init__()
         self.data_dir = data_dir
         self.database = database
@@ -425,7 +430,7 @@ class FoldCompLightningDataModule(L.LightningDataModule):
         except Exception:
             return T.Compose(transforms)
 
-    def setup(self, stage: Optional[str] = None):
+    def setup(self, stage: str | None = None):
         if stage == "fit" or stage is None:
             self.train_dataset()
         elif stage == "validate":

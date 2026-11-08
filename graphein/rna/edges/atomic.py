@@ -7,11 +7,8 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-from typing import Any, Dict
-
 import networkx as nx
 import numpy as np
-from loguru import logger as log
 from scipy.spatial import distance_matrix
 
 import graphein.protein.edges.atomic as protein
@@ -49,7 +46,7 @@ def add_atomic_edges(G: nx.Graph, tolerance: float = 0.56) -> nx.Graph:
 
     # Add atomic radii if not present
     for n, d in G.nodes(data=True):
-        if "atomic_radius" not in d.keys():
+        if "atomic_radius" not in d:
             add_atomic_radii(n, d)
 
     radii = np.array(list(nx.get_node_attributes(G, "atomic_radius").values()))
@@ -75,19 +72,21 @@ def add_atomic_edges(G: nx.Graph, tolerance: float = 0.56) -> nx.Graph:
     # Get node IDs from non NaN entries in the thresholded distance matrix
     # and add the edge to the graph
     inds = zip(*np.where(~np.isnan(dist_mat)))
+    node_ids = G.graph["pdb_df"]["node_id"].to_numpy()
+    chain_ids = G.graph["pdb_df"]["chain_id"].to_numpy()
     for i in inds:
         length = dist_mat[i[0]][i[1]]
-        node_1 = G.graph["pdb_df"]["node_id"][i[0]]
-        node_2 = G.graph["pdb_df"]["node_id"][i[1]]
-        chain_1 = G.graph["pdb_df"]["chain_id"][i[0]]
-        chain_2 = G.graph["pdb_df"]["chain_id"][i[1]]
+        node_1 = node_ids[i[0]]
+        node_2 = node_ids[i[1]]
+        chain_1 = chain_ids[i[0]]
+        chain_2 = chain_ids[i[1]]
 
         # Check nodes are in graph
         if not (G.has_node(node_1) and G.has_node(node_2)):
             continue
 
         # Check atoms are in the same chain
-        if not (chain_1 and chain_2):
+        if chain_1 != chain_2:
             continue
 
         if G.has_edge(node_1, node_2):

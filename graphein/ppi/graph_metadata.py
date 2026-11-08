@@ -6,7 +6,6 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from typing import Dict, Union
 
 import networkx as nx
 import pandas as pd
@@ -16,9 +15,7 @@ from graphein.ppi.parse_biogrid import BIOGRID_df
 from graphein.ppi.parse_stringdb import STRING_df
 
 
-def add_string_metadata(
-    G: nx.Graph, kwargs: Dict[str, Union[str, int]]
-) -> nx.Graph:
+def add_string_metadata(G: nx.Graph, kwargs: dict[str, str | int]) -> nx.Graph:
     """
     Adds interaction dataframe from STRING to graph.
 
@@ -37,7 +34,7 @@ def add_string_metadata(
 
 
 def add_biogrid_metadata(
-    G: nx.Graph, kwargs: Dict[str, Union[str, int]]
+    G: nx.Graph, kwargs: dict[str, str | int]
 ) -> nx.Graph:
     """
     Adds interaction dataframe from BIOGRID to graph.
@@ -57,7 +54,7 @@ def add_biogrid_metadata(
 
 
 def add_string_biogrid_metadata(
-    G: nx.Graph, kwargs: Dict[str, Union[str, int]]
+    G: nx.Graph, kwargs: dict[str, str | int]
 ) -> nx.Graph:
     """
     Adds interaction dataframe from STRING and BIOGRID to graph.

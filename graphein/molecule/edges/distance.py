@@ -8,11 +8,9 @@
 from __future__ import annotations
 
 import itertools
-from typing import Union
 
 import networkx as nx
 import numpy as np
-import pandas as pd
 from loguru import logger as log
 from sklearn.metrics import pairwise_distances
 from sklearn.neighbors import kneighbors_graph
@@ -61,8 +59,9 @@ def add_distance_threshold(G: nx.Graph, threshold: float = 5.0):
 
     dist_mat = compute_distmat(G.graph["coords"])
     interacting_nodes = get_interacting_atoms(threshold, distmat=dist_mat)
-    outgoing = [list(G.nodes())[i] for i in interacting_nodes[0]]
-    incoming = [list(G.nodes())[i] for i in interacting_nodes[1]]
+    nodes = list(G.nodes())
+    outgoing = [nodes[i] for i in interacting_nodes[0]]
+    incoming = [nodes[i] for i in interacting_nodes[1]]
     interacting_nodes = list(zip(outgoing, incoming))
 
     log.info(
@@ -84,8 +83,6 @@ def add_fully_connected_edges(
     :param G: Molecule structure graph to add distance edges to.
     :type G: nx.Graph
     """
-    length = len(G.graph["coords"])
-
     for n1, n2 in itertools.product(G.nodes(), G.nodes()):
         if G.has_edge(n1, n2):
             G.edges[n1, n2]["kind"].add("fully_connected")
@@ -99,7 +96,7 @@ def add_k_nn_edges(
     mode: str = "connectivity",
     metric: str = "minkowski",
     p: int = 2,
-    include_self: Union[bool, str] = False,
+    include_self: bool | str = False,
 ):
     """
     Adds edges to nodes based on K nearest neighbours.
@@ -142,9 +139,10 @@ def add_k_nn_edges(
     )
 
     # Create iterable of node indices
-    outgoing = np.repeat(np.array(range(len(G.graph["coords"]))), k)
-    outgoing = [list(G.nodes())[i] for i in outgoing]
-    incoming = [list(G.nodes())[i] for i in nn.indices]
+    nodes = list(G.nodes())
+    outgoing = np.repeat(np.arange(len(G.graph["coords"])), k)
+    outgoing = [nodes[i] for i in outgoing]
+    incoming = [nodes[i] for i in nn.indices]
     interacting_nodes = list(zip(outgoing, incoming))
     log.info(f"Found: {len(interacting_nodes)} KNN edges")
     for n1, n2 in interacting_nodes:

@@ -8,7 +8,7 @@
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -23,7 +23,7 @@ from graphein.protein.resi_atoms import (
 from graphein.utils.utils import onek_encoding_unk
 
 
-@lru_cache()
+@lru_cache
 def load_expasy_scales() -> pd.DataFrame:
     """
     Load pre-downloaded EXPASY scales.
@@ -41,7 +41,7 @@ def load_expasy_scales() -> pd.DataFrame:
     return pd.read_csv(fpath, index_col=0)
 
 
-@lru_cache()
+@lru_cache
 def load_meiler_embeddings() -> pd.DataFrame:
     """
     Load pre-downloaded Meiler embeddings.
@@ -61,11 +61,11 @@ def load_meiler_embeddings() -> pd.DataFrame:
 
 def expasy_protein_scale(
     n: str,
-    d: Dict[str, Any],
-    selection: Optional[List[str]] = None,
+    d: dict[str, Any],
+    selection: list[str] | None = None,
     add_separate: bool = False,
     return_array: bool = False,
-) -> Union[pd.Series, np.ndarray]:
+) -> pd.Series | np.ndarray:
     """
     Return amino acid features that come from the EXPASY protein scale.
 
@@ -92,15 +92,14 @@ def expasy_protein_scale(
         features = df[amino_acid]
         if selection is not None:
             features = features.filter(selection)
-    except:
+    except KeyError:
         features = pd.Series(np.zeros(len(df)))
 
     if return_array:
         features = np.array(features)
 
     if add_separate:
-        for k, v in features.to_dict().items():
-            d[k] = v
+        d.update(features.to_dict())
     else:
         d["expasy"] = features
 
@@ -108,8 +107,8 @@ def expasy_protein_scale(
 
 
 def meiler_embedding(
-    n: str, d: Dict[str, Any], return_array: bool = False
-) -> Union[pd.Series, np.ndarray]:
+    n: str, d: dict[str, Any], return_array: bool = False
+) -> pd.Series | np.ndarray:
     """
     Return amino acid features from reduced dimensional embeddings of amino
     acid physicochemical properties.
@@ -143,10 +142,10 @@ def meiler_embedding(
 
 def amino_acid_one_hot(
     n,
-    d: Dict[str, Any],
+    d: dict[str, Any],
     return_array: bool = True,
-    allowable_set: Optional[List[str]] = None,
-) -> Union[pd.Series, np.ndarray]:
+    allowable_set: list[str] | None = None,
+) -> pd.Series | np.ndarray:
     """Adds a one-hot encoding of amino acid types as a node attribute.
 
     :param n: node name, this is unused and only included for compatibility
@@ -183,7 +182,7 @@ def amino_acid_one_hot(
 
 def hydrogen_bond_donor(
     n: str,
-    d: Dict[str, Any],
+    d: dict[str, Any],
     sum_features: bool = True,
     return_array: bool = False,
 ):
@@ -205,10 +204,7 @@ def hydrogen_bond_donor(
 
     # Hack to determine graph type
     # If last ID component is atom type, assume graph is atomic
-    if n.split(":")[-1] == d["atom_type"]:
-        granularity = "atom"
-    else:
-        granularity = "residue"
+    granularity = "atom" if n.split(":")[-1] == d["atom_type"] else "residue"
 
     if granularity == "atom":  # Atomic graph
         atom = d["atom_type"]
@@ -217,7 +213,7 @@ def hydrogen_bond_donor(
         except KeyError:
             features = 0
     else:  # Residue graph
-        if res not in HYDROGEN_BOND_DONORS.keys():
+        if res not in HYDROGEN_BOND_DONORS:
             features = 0
         else:
             features = sum(HYDROGEN_BOND_DONORS[res].values())
@@ -253,10 +249,7 @@ def hydrogen_bond_acceptor(
     res = d["residue_name"]
     # Hack to determine graph type
     # If last ID component is atom type, assume graph is atomic
-    if n.split(":")[-1] == d["atom_type"]:
-        granularity = "atom"
-    else:
-        granularity = "residue"
+    granularity = "atom" if n.split(":")[-1] == d["atom_type"] else "residue"
 
     if granularity == "atom":  # Atomic graph
         atom = d["atom_type"]
@@ -265,7 +258,7 @@ def hydrogen_bond_acceptor(
         except KeyError:
             features = 0
     else:  # Residue graph
-        if res not in HYDROGEN_BOND_ACCEPTORS.keys():
+        if res not in HYDROGEN_BOND_ACCEPTORS:
             features = 0
         else:
             features = sum(HYDROGEN_BOND_ACCEPTORS[res].values())

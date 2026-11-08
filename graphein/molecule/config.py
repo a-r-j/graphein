@@ -7,9 +7,10 @@
 # Code Repository: https://github.com/a-r-j/graphein
 from __future__ import annotations
 
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel
@@ -26,7 +27,7 @@ from graphein.utils.config import PartialMatchOperator, PathMatchOperator
 try:
     from typing import Literal
 except ImportError:
-    from typing_extensions import Literal
+    from typing import Literal
 
 
 GraphAtoms = Literal[
@@ -72,17 +73,15 @@ class MoleculeGraphConfig(BaseModel):
     add_hs: bool = False
     generate_conformer: bool = False
     # Graph construction functions
-    edge_construction_functions: List[Union[Callable, str]] = [
+    edge_construction_functions: list[Callable | str] = [
         add_fully_connected_edges,
         add_k_nn_edges,
         add_distance_threshold,
         add_atom_bonds,
     ]
-    node_metadata_functions: Optional[List[Union[Callable, str]]] = [
-        atom_type_one_hot
-    ]
-    edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
-    graph_metadata_functions: Optional[List[Callable]] = None
+    node_metadata_functions: list[Callable | str] | None = [atom_type_one_hot]
+    edge_metadata_functions: list[Callable | str] | None = None
+    graph_metadata_functions: list[Callable] | None = None
 
     def __eq__(self, other: Any) -> bool:
         """Overwrites the BaseModel __eq__ function in order to check more specific cases (like partial functions)."""

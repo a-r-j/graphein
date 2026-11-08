@@ -5,6 +5,7 @@ import pytest
 
 from graphein.protein import meshes
 from graphein.protein.config import ProteinMeshConfig
+from graphein.protein.meshes import convert_verts_and_face_to_mesh, create_mesh
 from graphein.utils.pymol import core
 
 
@@ -57,3 +58,18 @@ def test_molviewer_start_raises_if_pymol_exits(monkeypatch):
 def test_mesh_config_rejects_non_positive_wait():
     with pytest.raises(pydantic.ValidationError):
         ProteinMeshConfig(max_wait_seconds=0)
+
+
+def test_create_mesh():
+    pytest.importorskip("pymol")
+    pytest.importorskip("pytorch3d")
+    config = ProteinMeshConfig(
+        pymol_commands=[
+            "show surface",
+            "set surface_solvent, on",
+            "set solvent_radius, 10000",
+        ]
+    )
+    verts, faces, _ = create_mesh(pdb_code="3eiy", config=config)
+    mesh = convert_verts_and_face_to_mesh(verts, faces)
+    assert mesh.verts_packed().shape[0] == verts.shape[0]

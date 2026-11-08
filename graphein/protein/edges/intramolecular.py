@@ -10,13 +10,17 @@ from __future__ import annotations
 import os
 import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING
 
 import networkx as nx
 import pandas as pd
 from loguru import logger as log
 
-from graphein.protein.utils import download_pdb
+from graphein.protein.utils import download_pdb, sequence_positions
+
+if TYPE_CHECKING:
+    from graphein.protein.config import GetContactsConfig
+
 
 CONTACTS_FILE_SUFFIX = "_contacts.tsv"
 
@@ -31,6 +35,8 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
     :rtype: nx.Graph
     """
     log.debug("Adding peptide bonds to graph")
+    pdb_df = G.graph["pdb_df"]
+    positions = dict(zip(pdb_df["node_id"], sequence_positions(pdb_df)))
     # Iterate over every chain
     for chain_id in G.graph["chain_ids"]:
         # Find chain residues
@@ -47,11 +53,10 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             cond_1 = (
                 residue[1]["chain_id"] == chain_residues[i + 1][1]["chain_id"]
             )
-            # Asserts residue numbers are adjacent
+            # Asserts residues are adjacent in sequence
             cond_2 = (
                 abs(
-                    residue[1]["residue_number"]
-                    - chain_residues[i + 1][1]["residue_number"]
+                    positions[residue[0]] - positions[chain_residues[i + 1][0]]
                 )
                 == 1
             )
@@ -59,14 +64,11 @@ def peptide_bonds(G: nx.Graph) -> nx.Graph:
             # If this checks out, we add a peptide bond
             if cond_1 and cond_2:
                 # Adds "peptide_bond" between current residue and the next
-                if G.has_edge(i, i + 1):
-                    G.edges[i, i + 1]["kind"].add("peptide_bond")
+                u, v = residue[0], chain_residues[i + 1][0]
+                if G.has_edge(u, v):
+                    G.edges[u, v]["kind"].add("peptide_bond")
                 else:
-                    G.add_edge(
-                        residue[0],
-                        chain_residues[i + 1][0],
-                        kind={"peptide_bond"},
-                    )
+                    G.add_edge(u, v, kind={"peptide_bond"})
             else:
                 continue
     return G
@@ -125,7 +127,7 @@ def _validate_get_contacts_installation(config: GetContactsConfig) -> None:
 
 
 def _get_or_download_pdb(
-    config: GetContactsConfig, pdb_id: Optional[str], file_name: Optional[str]
+    config: GetContactsConfig, pdb_id: str | None, file_name: str | None
 ) -> Path:
     """Get PDB file path, downloading if necessary."""
     if file_name and Path(file_name).exists():
@@ -142,8 +144,8 @@ def _get_or_download_pdb(
 
 def run_get_contacts(
     config: GetContactsConfig,
-    pdb_id: Optional[str] = None,
-    file_name: Optional[str] = None,
+    pdb_id: str | None = None,
+    file_name: str | None = None,
 ):
     """
     Runs GetContacts on a protein structure. If no file_name is provided, a
@@ -167,8 +169,8 @@ def run_get_contacts(
     output_path = config.contacts_dir / (pdb_path.stem + CONTACTS_FILE_SUFFIX)
 
     command = f"{config.get_contacts_path}/get_static_contacts.py "
-    command += f"--structure {str(pdb_path)} "
-    command += f"--output {str(output_path)} "
+    command += f"--structure {pdb_path} "
+    command += f"--output {output_path} "
     command += "--itypes all"  # --sele "protein"'
 
     log.info(f"Running GetContacts: {command}")
@@ -204,7 +206,7 @@ def read_contacts_file(
     contacts = []
 
     # Extract every contact and residue types
-    with open(contacts_file, "r") as f:
+    with open(contacts_file) as f:
         # Skip header lines
         for _ in range(2):
             next(f)
@@ -272,7 +274,7 @@ def add_contacts_edge(G: nx.Graph, interaction_type: str) -> nx.Graph:
     # Select specific interaction type
     interactions = contacts[contacts["interaction_type"] == interaction_type]
 
-    for _, [res1, res2, interaction_type] in interactions.iterrows():
+    for res1, res2, interaction_type in interactions.itertuples(index=False):
         # Check residues are actually in graph
         if not (G.has_node(res1) and G.has_node(res2)):
             continue

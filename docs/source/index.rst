@@ -75,20 +75,6 @@ The repository can be found at `a-r-j/graphein <https://www.github.com/a-r-j/gra
    contributing/contributors
 
 
-If Graphein proves useful to your work, please consider citing:
-
-.. code-block:: latex
-
-   @inproceedings{jamasb2022graphein,
-      title={Graphein - a Python Library for Geometric Deep Learning and Network Analysis on Biomolecular Structures and Interaction Networks},
-      author={Arian Rokkum Jamasb and Ramon Vi{\~n}as Torn{\'e} and Eric J Ma and Yuanqi Du and Charles Harris and Kexin Huang and Dominic Hall and Pietro Lio and Tom Leon Blundell},
-      booktitle={Advances in Neural Information Processing Systems},
-      editor={Alice H. Oh and Alekh Agarwal and Danielle Belgrave and Kyunghyun Cho},
-      year={2022},
-      url={https://openreview.net/forum?id=9xRZlV6GfOX}
-   }
-
-
 Indices and tables
 ==================
 

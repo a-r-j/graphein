@@ -7,16 +7,11 @@ repos:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
+        args: [--unsafe]  # custom tags in graphein config ymls
     -   id: check-added-large-files
--   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.3.1
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
     hooks:
-    - id: black
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v1.2.3
-    hooks:
-    - id: flake8
--   repo: https://github.com/pycqa/isort
-    rev: 9.0.0a3
-    hooks:
-    - id: isort
+    - id: ruff-check
+      args: [--fix]
+    - id: ruff-format

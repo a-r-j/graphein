@@ -8,9 +8,10 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any
 
 from deepdiff import DeepDiff
 from pydantic import BaseModel, PositiveFloat, validator
@@ -22,10 +23,15 @@ from graphein.utils.config import PartialMatchOperator, PathMatchOperator
 try:
     from typing import Literal
 except ImportError:
-    from typing_extensions import Literal
+    from typing import Literal
 
 
 class DSSPConfig(BaseModel):
+    """Deprecated and ignored: DSSP is computed natively (see
+    :func:`graphein.protein.features.nodes.dssp.compute_dssp_df`), so the
+    ``mkdssp`` executable is no longer needed. Kept so existing configs
+    still load."""
+
     executable: str = "mkdssp"
 
 
@@ -108,12 +114,12 @@ GraphAtoms = Literal[
 GranularityOpts = Literal["atom", "centroids"]
 """Allowable granularity options for nodes in the graph."""
 
-AltLocsOpts = Union[
-    bool,
-    Literal[
+AltLocsOpts = (
+    bool
+    | Literal[
         "max_occupancy", "min_occupancy", "first", "last", "exclude", "include"
-    ],
-]
+    ]
+)
 """Allowable altlocs options for alternative locations handling."""
 
 
@@ -183,45 +189,38 @@ class ProteinGraphConfig(BaseModel):
         ``GetContacts`` for computing intramolecular contact-based edges.
         Defaults to ``None``.
     :type get_contacts_config: GetContactsConfig, optional
-    :param dssp_config: Config Object containing reference to ``DSSP``
-        executable. Defaults to ``None``. **NB** DSSP must be installed. See
-        installation instructions:
-        https://graphein.ai/getting_started/installation.html#optional-dependencies
+    :param dssp_config: Deprecated and ignored; DSSP features are computed
+        natively. Defaults to ``None``.
     :type dssp_config: DSSPConfig, optional
     """
 
-    granularity: Union[GraphAtoms, GranularityOpts] = "CA"
-    keep_hets: List[str] = []
+    granularity: GraphAtoms | GranularityOpts = "CA"
+    keep_hets: list[str] = []
     insertions: bool = True
     alt_locs: AltLocsOpts = "max_occupancy"
-    pdb_dir: Optional[Path] = None
+    pdb_dir: Path | None = None
     verbose: bool = False
     exclude_waters: bool = True
     deprotonate: bool = False
 
     # Graph construction functions
-    protein_df_processing_functions: Optional[List[Callable]] = None
-    edge_construction_functions: List[Union[Callable, str]] = [
-        add_peptide_bonds
-    ]
-    node_metadata_functions: Optional[List[Union[Callable, str]]] = [
-        meiler_embedding
-    ]
-    edge_metadata_functions: Optional[List[Union[Callable, str]]] = None
-    graph_metadata_functions: Optional[List[Callable]] = None
+    protein_df_processing_functions: list[Callable] | None = None
+    edge_construction_functions: list[Callable | str] = [add_peptide_bonds]
+    node_metadata_functions: list[Callable | str] | None = [meiler_embedding]
+    edge_metadata_functions: list[Callable | str] | None = None
+    graph_metadata_functions: list[Callable] | None = None
 
     # External Dependency configs
-    get_contacts_config: Optional[GetContactsConfig] = None
-    dssp_config: Optional[DSSPConfig] = None
+    get_contacts_config: GetContactsConfig | None = None
+    dssp_config: DSSPConfig | None = None
 
     @validator("alt_locs")
     def convert_alt_locs_aliases(cls, v):
         if v is True:
             return "include"
-        elif v is False:
+        if v is False:
             return "exclude"
-        else:
-            return v
+        return v
 
     def __eq__(self, other: Any) -> bool:
         """
@@ -260,9 +259,9 @@ class ProteinMeshConfig(BaseModel):
     :type pymol_commands: List[str], optional
     :param max_wait_seconds: Maximum time to wait for the PyMOL server to start
         and for ``.obj`` mesh generation. ``None`` waits indefinitely.
-    :type max_wait_seconds: Optional[float]
+    :type max_wait_seconds: float | None
     """
 
-    pymol_command_line_options: Optional[str] = "-cKq"
-    pymol_commands: Optional[List[str]] = ["show surface"]
-    max_wait_seconds: Optional[PositiveFloat] = 600.0
+    pymol_command_line_options: str | None = "-cKq"
+    pymol_commands: list[str] | None = ["show surface"]
+    max_wait_seconds: PositiveFloat | None = 600.0

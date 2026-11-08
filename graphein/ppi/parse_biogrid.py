@@ -6,17 +6,15 @@
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-
-from typing import Dict, List, Union
+import io
 
 import pandas as pd
 import requests
-from loguru import logger as log
 
 
 def params_BIOGRID(
-    params: Dict[str, Union[str, int, List[str], List[int]]], **kwargs
-) -> Dict[str, Union[str, int]]:
+    params: dict[str, str | int | list[str] | list[int]], **kwargs
+) -> dict[str, str | int]:
     """
     Updates default parameters with user parameters for the method
     "interactions" of the BIOGRID API REST.
@@ -45,8 +43,6 @@ def params_BIOGRID(
         # Experimental System in the evidenceList will be included in the result
         "searchIds",  # If ‘true’, the interactor ENTREZ_GENE, ORDERED LOCUS and
         # SYSTEMATIC_NAME (orf) will be examined for a match with the geneList.
-        "searchNames",  # If ‘true’, the interactor OFFICIAL_SYMBOL will be
-        # examined for a match with the geneList.
         "searchSynonyms",  # If ‘true’, the interactor SYNONYMS will be examined
         # for a match with the geneList.
         "searchBiogridIds",  # If ‘true’, the entries in 'GENELIST' will be
@@ -77,15 +73,15 @@ def params_BIOGRID(
         kwarg_name = "BIOGRID_" + p
         if kwarg_name in kwargs:
             value = kwargs[kwarg_name]
-            if type(value) is list:
+            if isinstance(value, list):
                 value = "|".join(value)
             params[p] = value
     return params
 
 
 def parse_BIOGRID(
-    protein_list: List[str],
-    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    protein_list: list[str],
+    ncbi_taxon_id: int | str | list[int] | list[str],
     paginate: bool = True,
     **kwargs,
 ) -> pd.DataFrame:
@@ -114,7 +110,7 @@ def parse_BIOGRID(
     biogrid_api_url = "https://webservice.thebiogrid.org"
     method = "interactions"
     request_url = "/".join([biogrid_api_url, method])
-    if type(ncbi_taxon_id) is list:
+    if isinstance(ncbi_taxon_id, list):
         ncbi_taxon_id = "|".join(str(t) for t in ncbi_taxon_id)
     params = {  # Default parameters
         "geneList": "|".join(protein_list),
@@ -133,7 +129,7 @@ def parse_BIOGRID(
     # Call BIOGRID
     def make_call(
         request_url: str,
-        params: Dict[str, Union[str, int]],
+        params: dict[str, str | int],
         start: int = 0,
         max: int = 10000,
         paginate: bool = paginate,
@@ -158,7 +154,7 @@ def parse_BIOGRID(
         """
         params["start"] = start
         response = requests.post(request_url, data=params)
-        df = pd.read_json(response.text.strip()).transpose()
+        df = pd.read_json(io.StringIO(response.text.strip())).transpose()
 
         # Maximum number of results is limited to 10k. Paginate to
         # retrieve everything
@@ -221,8 +217,8 @@ def standardise_BIOGRID(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def BIOGRID_df(
-    protein_list: List[str],
-    ncbi_taxon_id: Union[int, str, List[int], List[str]],
+    protein_list: list[str],
+    ncbi_taxon_id: int | str | list[int] | list[str],
     **kwargs,
 ) -> pd.DataFrame:
     """
@@ -244,5 +240,4 @@ def BIOGRID_df(
         protein_list=protein_list, ncbi_taxon_id=ncbi_taxon_id, **kwargs
     )
     df = filter_BIOGRID(df, **kwargs)
-    df = standardise_BIOGRID(df)
-    return df
+    return standardise_BIOGRID(df)

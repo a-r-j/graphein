@@ -7,7 +7,6 @@
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 import math
-from typing import Union
 
 import networkx as nx
 import numpy as np
@@ -32,7 +31,7 @@ def add_radius_of_gyration(G: nx.Graph, round: bool = False) -> nx.Graph:
     return G
 
 
-def radius_of_gyration(G: nx.Graph, round: bool = False) -> Union[float, int]:
+def radius_of_gyration(G: nx.Graph, round: bool = False) -> float | int:
     """Calculates the radius of gyration of a structure graph in angstroms.
 
     Atomic masses are defined in :ref:`graphein.protein.resi_atoms.ATOMIC_MASSES`.

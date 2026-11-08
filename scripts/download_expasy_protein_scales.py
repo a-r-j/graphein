@@ -17,7 +17,6 @@ import re
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from tqdm.autonotebook import tqdm
 
 urls = requests.get("https://web.expasy.org/protscale/")
 urls_list = urls.text.split("<PRE>")[1].split("</PRE>")[0]
@@ -53,7 +52,7 @@ def generate_mapping(url):
 
 
 mappings = []
-for i, (url, name) in enumerate(zip(urls, property_names)):
+for url, name in zip(urls, property_names):
     print(name)
     mapping = generate_mapping(url)
     mapping = pd.Series(mapping, name=name)

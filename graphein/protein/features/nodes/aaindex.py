@@ -1,7 +1,5 @@
 """Functions for adding node features from AAIndex."""
 
-from typing import Dict, Tuple
-
 import networkx as nx
 from loguru import logger as log
 
@@ -20,7 +18,7 @@ except ImportError:
     log.warning(message)
 
 
-def fetch_AAIndex(accession: str) -> Tuple[str, Dict[str, float]]:
+def fetch_AAIndex(accession: str) -> tuple[str, dict[str, float]]:
     """
     Fetches AAindex1 dictionary from an accession code. The dictionary maps one-letter AA codes to float values
 

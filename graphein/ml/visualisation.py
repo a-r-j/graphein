@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import Iterable, Optional, Tuple
+from collections.abc import Iterable
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -39,10 +39,10 @@ except ImportError:
 
 def plot_pyg_data(
     x: Data,
-    node_colour_tensor: Optional[torch.Tensor] = None,
-    edge_colour_tensor: Optional[torch.Tensor] = None,
-    plot_title: Optional[str] = None,
-    figsize: Tuple[int, int] = (620, 650),
+    node_colour_tensor: torch.Tensor | None = None,
+    edge_colour_tensor: torch.Tensor | None = None,
+    plot_title: str | None = None,
+    figsize: tuple[int, int] = (620, 650),
     node_alpha: float = 0.7,
     node_size_min: float = 20.0,
     node_size_multiplier: float = 20.0,
@@ -51,7 +51,7 @@ def plot_pyg_data(
     node_colour_map=plt.cm.plasma,
     edge_colour_map=plt.cm.plasma,
     colour_nodes_by: str = "residue_name",
-    colour_edges_by: Optional[str] = None,
+    colour_edges_by: str | None = None,
     node_vector_features: Iterable[str] = tuple(VECTOR_FEATURE_NAMES),
     node_vector_feature_colours: Iterable[str] = ("red", "green", "blue"),
 ) -> go.Figure:

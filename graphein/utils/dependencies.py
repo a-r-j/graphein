@@ -2,7 +2,6 @@ import os
 import sys
 from functools import wraps
 from shutil import which
-from typing import Optional
 
 
 class MissingDependencyError(Exception):
@@ -16,7 +15,7 @@ class MissingDependencyError(Exception):
 def import_message(
     submodule: str,
     package: str,
-    conda_channel: Optional[str] = None,
+    conda_channel: str | None = None,
     pip_install: bool = False,
     extras: bool = False,
 ) -> str:

@@ -18,7 +18,9 @@ import sys
 import plotly.io as pio
 import sphinx.ext.autodoc
 
-sphinx.ext.autodoc.NewTypeDataDocumenter.directivetype = "class"
+# Sphinx < 9 documents NewTypes as data; Sphinx 9 removed this documenter.
+if hasattr(sphinx.ext.autodoc, "NewTypeDataDocumenter"):
+    sphinx.ext.autodoc.NewTypeDataDocumenter.directivetype = "class"
 
 os.environ["PLOTLY_RENDERER"] = "sphinx_gallery"
 
@@ -79,15 +81,11 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "networkx": ("https://networkx.github.io/documentation/stable/", None),
-    "nx": ("https://networkx.github.io/documentation/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "np": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
-    "pd": ("https://pandas.pydata.org/docs/", None),
     "plotly": ("https://plotly.com/python-api-reference/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
-    "sklearn": ("https://scikit-learn.org/stable/", None),
     "Sphinx": ("https://www.sphinx-doc.org/en/stable/", None),
     "torch": ("https://pytorch.org/docs/master/", None),
     "xarray": ("https://xarray.pydata.org/en/stable/", None),
