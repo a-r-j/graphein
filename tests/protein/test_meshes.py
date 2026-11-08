@@ -1,5 +1,6 @@
 """Tests for graphein.protein.meshes."""
 
+import contextlib
 import os
 import socket
 import subprocess
@@ -96,6 +97,11 @@ class FakeViewer:
 
     def do(self, command):
         self.commands.append(("do", command))
+
+    @contextlib.contextmanager
+    def call_timeout(self, timeout):
+        self.commands.append(("call_timeout", timeout))
+        yield
 
 
 def test_obj_file_name_replaces_whole_extension(tmp_path, monkeypatch):
@@ -234,40 +240,78 @@ def free_port():
         return s.getsockname()[1]
 
 
-def test_start_applies_new_timeout_to_running_pymol(monkeypatch):
-    # Different args mustn't restart PyMOL and lose the user's session
+def test_start_leaves_running_pymol_alone(monkeypatch):
+    # A session the user started keeps its options and timeout
     v = core.MolViewer(port=free_port())
-    v._process, v._start_args, v._timeout = AliveProcess(), ["-cKQ"], 600.0
+    v._process, v._start_args, v._timeout = AliveProcess(), ["-xiQ"], None
+    monkeypatch.setattr(v, "_connect", lambda timeout: pytest.fail())
+    core.MolViewer.start.__wrapped__(v, ["-cKq"], timeout=600.0)
+    assert v._timeout is None
+    assert not v._process.terminated
+
+
+def test_call_timeout_is_restored(monkeypatch):
+    v = core.MolViewer(port=free_port())
+    v._process, v._timeout = AliveProcess(), None
     timeouts = []
     monkeypatch.setattr(
         v, "_connect", lambda timeout: timeouts.append(timeout)
     )
-    core.MolViewer.start.__wrapped__(v, ["-cKq"], timeout=None)
+    with v.call_timeout(600.0):
+        assert v._timeout == 600.0
     assert v._timeout is None
-    assert timeouts == [None]
-    assert not v._process.terminated
+    assert timeouts == [600.0, None]
+
+
+def test_get_obj_file_bounds_pymol_calls(tmp_path, monkeypatch):
+    fake = FakeViewer()
+    monkeypatch.setattr(meshes, "viewer", fake)
+    monkeypatch.setattr(meshes, "configure_pymol_session", lambda _: None)
+    monkeypatch.setattr(meshes, "run_pymol_commands", lambda _: None)
+    meshes.get_obj_file.__wrapped__(
+        pdb_code="3eiy",
+        out_dir=str(tmp_path),
+        config=ProteinMeshConfig(max_wait_seconds=5.0),
+    )
+    assert fake.commands[0] == ("call_timeout", 5.0)
+
+
+def test_dotted_rpc_names_still_resolve(monkeypatch):
+    class Server:
+        class system:
+            @staticmethod
+            def listMethods():
+                return ["do"]
+
+    v = core.MolViewer()
+    v._process, v._server = AliveProcess(), Server()
+    assert v.system.listMethods() == ["do"]
 
 
 def test_start_timeout_includes_slow_probes(monkeypatch):
-    # The server isn't up for 0.3 s, then accepts but never answers.
+    # The server isn't up for 0.5 s, then accepts but never answers. A
+    # probe given the full timeout would take until ~1.5 s.
     port = free_port()
     listener = socket.socket()
 
     def come_up_hung():
-        time.sleep(0.3)
+        time.sleep(0.5)
         listener.bind(("localhost", port))
         listener.listen()
 
     v = core.MolViewer(port=port)
     monkeypatch.setattr(core.subprocess, "Popen", lambda cmd: AliveProcess())
-    threading.Thread(target=come_up_hung).start()
+    thread = threading.Thread(target=come_up_hung)
+    thread.start()
     start = time.monotonic()
     try:
         with pytest.raises(TimeoutError):
-            core.MolViewer.start.__wrapped__(v, timeout=0.6)
+            core.MolViewer.start.__wrapped__(v, timeout=1.0)
+        elapsed = time.monotonic() - start
     finally:
+        thread.join()
         listener.close()
-    assert time.monotonic() - start < 0.85
+    assert elapsed < 1.4
 
 
 def test_del_does_not_wait_for_pymol():

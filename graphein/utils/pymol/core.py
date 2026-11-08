@@ -25,6 +25,27 @@ class _TimeoutTransport(Transport):
         return conn
 
 
+class _StopOnTimeout:
+    """Wraps an XML-RPC method so a timed-out call stops PyMOL. Dotted
+    names (e.g. ``system.listMethods``) resolve as with ``ServerProxy``.
+    """
+
+    def __init__(self, viewer, method):
+        self._viewer = viewer
+        self._method = method
+
+    def __getattr__(self, name):
+        return _StopOnTimeout(self._viewer, getattr(self._method, name))
+
+    def __call__(self, *args):
+        try:
+            return self._method(*args)
+        except TimeoutError:
+            # Don't leave a hung PyMOL to be reused by the next call
+            self._viewer.stop()
+            raise
+
+
 class MolViewer:
     def __init__(self, host=HOST, port=PORT):
         self.host = host
@@ -46,17 +67,22 @@ class MolViewer:
         if not self._process_is_running():
             self.start(self._start_args, timeout=self._timeout)
 
-        method = getattr(self._server, key)
+        return _StopOnTimeout(self, getattr(self._server, key))
 
-        def call(*args):
-            try:
-                return method(*args)
-            except TimeoutError:
-                # Don't leave a hung PyMOL to be reused by the next call
-                self.stop()
-                raise
-
-        return call
+    @contextlib.contextmanager
+    def call_timeout(self, timeout):
+        """Time out calls after ``timeout`` seconds (``None`` waits
+        indefinitely) inside this block, then restore the previous timeout.
+        """
+        previous, self._timeout = self._timeout, timeout
+        if self._process_is_running():
+            self._connect(timeout)
+        try:
+            yield
+        finally:
+            self._timeout = previous
+            if self._process_is_running():
+                self._connect(previous)
 
     def _connect(self, timeout=None):
         """Create the XML-RPC client. Calls raise ``TimeoutError`` after
@@ -84,7 +110,8 @@ class MolViewer:
         :type exe: str
         :param timeout: Seconds to wait for the server to start, and for
             each later call to it. ``None`` waits indefinitely. If PyMOL is
-            already running, only this is applied; ``args`` are ignored.
+            already running, nothing changes: use :meth:`call_timeout` to
+            bound calls to it.
         :type timeout: float | None
         :raises RuntimeError: if PyMOL exits before the server is up.
         :raises TimeoutError: if the server is not up after ``timeout``
@@ -93,8 +120,6 @@ class MolViewer:
         assert isinstance(args, (list, tuple))
 
         if self._process_is_running():
-            self._timeout = timeout
-            self._connect(timeout)
             return
 
         # Used to restart PyMOL the same way if it dies

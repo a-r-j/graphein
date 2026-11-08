@@ -109,27 +109,30 @@ def get_obj_file(
     if config is None:
         config = ProteinMeshConfig()
 
-    configure_pymol_session(config)
+    # The mesh timeout applies only while making this mesh, so a session
+    # the user started keeps its own
+    with pymol.call_timeout(config.max_wait_seconds):
+        configure_pymol_session(config)
 
-    # Load structure
-    pymol.load(pdb_file) if pdb_file else pymol.fetch(pdb_code)
-    # Create file_name
-    # Absolute, as PyMOL resolves relative paths against its own cwd
-    file_name = os.path.abspath(
-        os.path.splitext(pdb_file)[0] + ".obj"
-        if pdb_file
-        else os.path.join(out_dir, pdb_code + ".obj")
-    )
+        # Load structure
+        pymol.load(pdb_file) if pdb_file else pymol.fetch(pdb_code)
+        # Create file_name
+        # Absolute, as PyMOL resolves relative paths against its own cwd
+        file_name = os.path.abspath(
+            os.path.splitext(pdb_file)[0] + ".obj"
+            if pdb_file
+            else os.path.join(out_dir, pdb_code + ".obj")
+        )
 
-    commands = parse_pymol_commands(config)
-    run_pymol_commands(commands)
+        commands = parse_pymol_commands(config)
+        run_pymol_commands(commands)
 
-    # Remove stale output so it can't be mistaken for this run's mesh
-    if os.path.isfile(file_name):
-        os.remove(file_name)
+        # Remove stale output so it can't be mistaken for this run's mesh
+        if os.path.isfile(file_name):
+            os.remove(file_name)
 
-    # Save surface object as .obj
-    pymol.do(f"save {file_name}")
+        # Save surface object as .obj
+        pymol.do(f"save {file_name}")
     log.debug(f"Saved {file_name}")
     return file_name
 
