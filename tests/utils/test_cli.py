@@ -36,3 +36,34 @@ def test_cli():
     ]
     assert len(peptide_bond_edges) == 570
     temp_dir.cleanup()
+
+
+PDB = DATA_PATH.parent / "protein/test_data/4hhb.pdb"
+
+
+def test_cli_accepts_builtin_config_name(tmp_path):
+    """-c accepts a built-in name, and its config is applied."""
+    result = CliRunner().invoke(
+        main, ["-c", "ca_distance_10", "-p", str(PDB), "-o", str(tmp_path)]
+    )
+    assert result.exit_code == 0, result.output
+    with open(tmp_path / "4hhb.gpickle", "rb") as f:
+        G = pickle.load(f)
+    assert any(
+        "distance_threshold" in d["kind"] for _, _, d in G.edges(data=True)
+    )
+
+
+def test_cli_requires_path_and_output(tmp_path):
+    """Missing -p or -o is a usage error, not a traceback."""
+    for args in (["-o", str(tmp_path)], ["-p", str(PDB)]):
+        result = CliRunner().invoke(main, ["-c", "ca_distance_10", *args])
+        assert result.exit_code == 2, result.output
+
+
+def test_cli_rejects_empty_config(tmp_path):
+    """An empty -c (e.g. an unset shell variable) fails, not defaults."""
+    result = CliRunner().invoke(
+        main, ["-c", "", "-p", str(PDB), "-o", str(tmp_path)]
+    )
+    assert result.exit_code == 2, result.output

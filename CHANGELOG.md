@@ -3,7 +3,7 @@
 #### New Features
 
 * Add `add_bond_type_one_hot` edge feature for molecules. Fixes [#430](https://github.com/a-r-j/graphein/issues/430)
-* `graphein -c` previously required every user to write their own YAML config, because the package shipped no defaults. Built-in configs can now be referenced by name (`graphein -c default`), listed with `--list-configs`, and still overridden by an explicit file path; a packaged C-alpha + 10 Å distance-threshold config is included and can be built offline. Fixes [#123](https://github.com/a-r-j/graphein/issues/123)
+* The `graphein` CLI could only build graphs from the `ProteinGraphConfig()` defaults (peptide bonds only) or a YAML config the user wrote themselves, because the package shipped no configs. Built-in configs can now be passed to `-c` by name and listed with `--list-configs`; an existing file path still takes precedence. Includes `ca_distance_10`, a C-alpha graph with peptide bonds and 10 Å distance-threshold edges (`graphein -c ca_distance_10 -p path/to/pdbs -o path/to/output`). Running without `-c` is unchanged. Fixes [#123](https://github.com/a-r-j/graphein/issues/123) [#521](https://github.com/a-r-j/graphein/pull/521)
 
 #### Breaking Changes
 

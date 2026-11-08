@@ -1,4 +1,4 @@
-"""Built-in default graph construction configs for the CLI.
+"""Built-in graph construction configs for the CLI.
 
 Configs are YAML files parsed by
 :func:`graphein.utils.config_parser.parse_config`. Pass their name to
@@ -11,13 +11,21 @@ from pathlib import Path
 CONFIG_DIR = Path(__file__).resolve().parent
 
 
+def _builtin_configs() -> dict[str, Path]:
+    return {
+        p.stem: p
+        for p in CONFIG_DIR.iterdir()
+        if p.suffix in {".yml", ".yaml"}
+    }
+
+
 def available_configs() -> list[str]:
     """Return the names of built-in configs, sorted alphabetically.
 
-    :return: Config names without the ``.yml`` suffix.
+    :return: Config names without the ``.yml``/``.yaml`` suffix.
     :rtype: list[str]
     """
-    return sorted(p.stem for p in CONFIG_DIR.glob("*.yml"))
+    return sorted(_builtin_configs())
 
 
 def resolve_config_path(name_or_path: str | Path) -> Path:
@@ -29,16 +37,20 @@ def resolve_config_path(name_or_path: str | Path) -> Path:
     :type name_or_path: str | pathlib.Path
     :return: Path to the YAML config file.
     :rtype: pathlib.Path
-    :raises ValueError: If neither an existing file nor a built-in name
-        matches.
+    :raises ValueError: If the argument is a directory, looks like a file
+        path that doesn't exist, or is not a built-in name.
     """
     path = Path(name_or_path)
     if path.is_file():
         return path
-    builtin = CONFIG_DIR / f"{name_or_path}.yml"
-    if builtin.is_file():
-        return builtin
+    if str(name_or_path) and path.is_dir():
+        raise ValueError(f"Config path is a directory: {name_or_path}")
+    builtins = _builtin_configs()
+    if str(name_or_path) in builtins:
+        return builtins[str(name_or_path)]
+    if path.suffix in {".yml", ".yaml"} or len(path.parts) > 1:
+        raise ValueError(f"Config file not found: {name_or_path}")
     raise ValueError(
         f"Unknown config {name_or_path!r}. "
-        f"Available built-in configs: {', '.join(available_configs())}"
+        f"Available built-in configs: {', '.join(sorted(builtins))}"
     )
