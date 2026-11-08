@@ -649,6 +649,34 @@ def test_centroids_match_their_residue(path):
     )
 
 
+def test_remove_alt_locs_keeps_row_order():
+    """Rows keep their order, rather than being left sorted by occupancy."""
+    df = read_pdb_to_dataframe(PDB_DATA_PATH)
+    df["occupancy"] = np.random.default_rng(0).random(len(df))
+    pd.testing.assert_frame_equal(remove_alt_locs(df), df)
+
+
+def test_insertions_false_keeps_residue_with_inserted_duplicate():
+    """Moving chain A residue 3 to insertion 16A keeps residue 16 (#509).
+
+    ``remove_alt_locs`` left rows sorted by occupancy, so
+    ``remove_insertions`` could keep 16A's atoms over 16's and drop 16.
+    """
+    df = read_pdb_to_dataframe(PDB_DATA_PATH)
+    res_3 = (df["chain_id"] == "A") & (df["residue_number"] == 3)
+    res_16 = (df["chain_id"] == "A") & (df["residue_number"] == 16)
+    df.loc[res_3, "atom_number"] = df.loc[res_16, "atom_number"].max() + 1
+    df.loc[res_3, ["residue_number", "residue_name", "insertion"]] = [
+        16,
+        "LYS",
+        "A",
+    ]
+    g = construct_graph(
+        config=ProteinGraphConfig(insertions=False), df=df, name="4hhb"
+    )
+    assert "A:LYS:16" in g
+
+
 def test_add_nodes_to_graph_verbose():
     g = construct_graph(path=str(PDB_DATA_PATH))
     h = nx.Graph(**g.graph)

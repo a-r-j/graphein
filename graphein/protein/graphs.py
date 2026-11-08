@@ -264,6 +264,7 @@ def remove_alt_locs(
     This function removes alternatively located atoms from PDB DataFrames
     (see https://proteopedia.org/wiki/index.php/Alternate_locations). Among the
     alternative locations the ones with the highest occupancies are left.
+    Rows keep their order, and ties in occupancy keep the first in the file.
 
     :param df: Protein Structure dataframe to remove alternative located atoms
         from.
@@ -273,13 +274,16 @@ def remove_alt_locs(
     :return: Protein structure dataframe with alternative located atoms removed
     :rtype: pd.DataFrame
     """
-    # Sort accordingly (stable, so ties keep the first in file order)
-    sort = keep in ["max_occupancy", "min_occupancy"]
-    if sort:
-        df = df.sort_values(
-            "occupancy", ascending=keep == "min_occupancy", kind="stable"
-        )
-    keep = "first" if sort else False if keep == "exclude" else keep
+    # Sort accordingly. The sort is stable, so ties keep the first in the file
+    df = df.reset_index(drop=True)
+    if keep == "max_occupancy":
+        df = df.sort_values("occupancy", ascending=False, kind="stable")
+        keep = "first"
+    elif keep == "min_occupancy":
+        df = df.sort_values("occupancy", kind="stable")
+        keep = "first"
+    elif keep == "exclude":
+        keep = False
 
     # Filter
     duplicates = df.duplicated(
@@ -289,9 +293,7 @@ def remove_alt_locs(
     df = df[~duplicates]
 
     # Unsort
-    if sort:
-        df = df.sort_index(kind="stable")
-    return df.reset_index(drop=True)
+    return df.sort_index().reset_index(drop=True)
 
 
 def remove_insertions(
