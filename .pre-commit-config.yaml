@@ -10,7 +10,7 @@ repos:
         args: [--unsafe]  # custom tags in graphein config ymls
     -   id: check-added-large-files
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.3
+    rev: v0.17.4
     hooks:
     - id: ruff-check
       args: [--fix]
