@@ -358,6 +358,40 @@ def ping(host: str) -> bool:
     return subprocess.call(command) == 0
 
 
+def get_node_attribute_names(g: nx.Graph) -> list[str]:
+    """Returns a list of node attribute names present within a graph.
+
+    :param g: Networkx Graph.
+    :type g: nx.Graph
+    :returns: List of node attribute names
+    :rtype: List[str]
+    """
+
+    return list(set().union(*(d.keys() for _, d in g.nodes(data=True))))
+
+
+def get_edge_attribute_names(g: nx.Graph) -> list[str]:
+    """Returns a list of edge attribute names present within a graph.
+
+    :param g: Networkx Graph.
+    :type g: nx.Graph
+    :returns: List of edge attribute names
+    :rtype: List[str]
+    """
+    return list(set().union(*(d.keys() for _, _, d in g.edges(data=True))))
+
+
+def get_graph_attribute_names(g: nx.Graph) -> list[str]:
+    """Returns a list of graph attribute names present within a graph.
+
+    :param g: Networkx Graph.
+    :type g: nx.Graph
+    :returns: List of graph attribute names
+    :rtype: List[str]
+    """
+    return list(g.graph.keys())
+
+
 def parse_aggregation_type(
     aggregation_type: Literal["sum", "mean", "max", "min", "median"],
 ) -> Callable:
