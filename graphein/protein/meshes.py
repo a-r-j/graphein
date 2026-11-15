@@ -20,7 +20,7 @@ from graphein.utils.dependencies import (
     requires_external_dependencies,
     requires_python_libs,
 )
-from graphein.utils.pymol import MolViewer
+from graphein.utils.pymol import viewer
 
 if TYPE_CHECKING:
     import torch
@@ -58,15 +58,17 @@ def configure_pymol_session(
     :param config: :class:`~graphein.protein.config.ProteinMeshConfig` to use. Defaults to ``None`` which uses default config.
     :type config: graphein.protein.config.ProteinMeshConfig
     """
-    pymol = MolViewer()
-    pymol.delete("all")  # delete all objects from other sessions if necessary.
+    pymol = viewer
 
     # If no config is provided, use default
     if config is None:
         config = ProteinMeshConfig()
 
     # Start PyMol session
-    pymol.start([config.pymol_command_line_options])
+    pymol.start(
+        [config.pymol_command_line_options], timeout=config.max_wait_seconds
+    )
+    pymol.delete("all")  # delete all objects from other sessions if necessary.
 
 
 @requires_external_dependencies("pymol")
@@ -91,7 +93,7 @@ def get_obj_file(
     :return: returns path to ``.obj`` file (str)
     :rtype: str
     """
-    pymol = MolViewer()
+    pymol = viewer
 
     # Check inputs
     if not pdb_code and not pdb_file:
@@ -104,23 +106,33 @@ def get_obj_file(
     if out_dir is None:
         out_dir = "/tmp/"
 
-    configure_pymol_session()
-
-    # Load structure
-    pymol.load(pdb_file) if pdb_file else pymol.fetch(pdb_code)
-    # Create file_name
-    file_name = (
-        f"{pdb_file[:-3]}obj" if pdb_file else out_dir + pdb_code + ".obj"
-    )
-
     if config is None:
         config = ProteinMeshConfig()
 
-    commands = parse_pymol_commands(config)
-    run_pymol_commands(commands)
+    # The mesh timeout applies only while making this mesh, so a session
+    # the user started keeps its own
+    with pymol.call_timeout(config.max_wait_seconds):
+        configure_pymol_session(config)
 
-    # Save surface object as .obj
-    pymol.do(f"save {file_name}")
+        # Load structure
+        pymol.load(pdb_file) if pdb_file else pymol.fetch(pdb_code)
+        # Create file_name
+        # Absolute, as PyMOL resolves relative paths against its own cwd
+        file_name = os.path.abspath(
+            os.path.splitext(pdb_file)[0] + ".obj"
+            if pdb_file
+            else os.path.join(out_dir, pdb_code + ".obj")
+        )
+
+        commands = parse_pymol_commands(config)
+        run_pymol_commands(commands)
+
+        # Remove stale output so it can't be mistaken for this run's mesh
+        if os.path.isfile(file_name):
+            os.remove(file_name)
+
+        # Save surface object as .obj
+        pymol.do(f"save {file_name}")
     log.debug(f"Saved {file_name}")
     return file_name
 
@@ -149,7 +161,7 @@ def run_pymol_commands(commands: list[str]) -> None:
     :param commands: List of commands to pass to PyMol.
     :type commands: List[str]
     """
-    pymol = MolViewer()
+    pymol = viewer
 
     for c in commands:
         log.debug(c)
@@ -185,12 +197,54 @@ def create_mesh(
     obj_file = get_obj_file(
         pdb_code=pdb_code, pdb_file=pdb_file, out_dir=out_dir, config=config
     )
-    # Wait for PyMol to finish
-    while os.path.isfile(obj_file) is False:
-        time.sleep(0.1)
+    wait_for_obj_file(obj_file, max_wait_seconds=config.max_wait_seconds)
 
     verts, faces, aux = load_obj(obj_file)
     return verts, faces, aux
+
+
+def wait_for_obj_file(
+    obj_file: str, max_wait_seconds: float | None = None
+) -> None:
+    """Waits for PyMOL to finish writing an ``.obj`` mesh file.
+
+    The file is taken as written once it is non-empty and its size is
+    unchanged between two checks 0.1 s apart. If the wait times out, the PyMOL process is stopped so that a hung
+    session isn't reused.
+
+    :param obj_file: Path PyMOL is saving the mesh to.
+    :type obj_file: str
+    :param max_wait_seconds: Seconds to wait. ``None`` waits indefinitely.
+    :type max_wait_seconds: float | None
+    :raises RuntimeError: if the PyMOL process exits before writing the file.
+    :raises TimeoutError: if the file is not written after
+        ``max_wait_seconds``.
+    """
+
+    def size():
+        return os.path.getsize(obj_file) if os.path.isfile(obj_file) else 0
+
+    # ponytail: size-stable heuristic, a write stalled >0.1 s mid-file
+    # passes. Unverified against real PyMOL whether `do("save ...")` returns
+    # only after the save (then this wait is unneeded) or is queued.
+    start_time = time.monotonic()
+    last_size = 0
+    while True:
+        current_size = size()
+        if current_size and current_size == last_size:
+            return
+        last_size = current_size
+        if not viewer._process_is_running():
+            raise RuntimeError(f"PyMOL exited before writing {obj_file}")
+        if (
+            max_wait_seconds is not None
+            and time.monotonic() - start_time >= max_wait_seconds
+        ):
+            viewer.stop()
+            raise TimeoutError(
+                f"{obj_file} not written after {max_wait_seconds} seconds"
+            )
+        time.sleep(0.1)
 
 
 @requires_python_libs("torch")
