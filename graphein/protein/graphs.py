@@ -262,24 +262,66 @@ def remove_alt_locs(
 ) -> pd.DataFrame:
     """
     This function removes alternatively located atoms from PDB DataFrames
-    (see https://proteopedia.org/wiki/index.php/Alternate_locations). Among the
-    alternative locations the ones with the highest occupancies are left.
+    (see https://proteopedia.org/wiki/index.php/Alternate_locations).
+
+    One alternate location (conformer) is kept per residue, with all of its
+    atoms, so a residue never mixes atoms from different conformers. Atoms
+    without an ``alt_loc`` are always kept. ``"max_occupancy"`` and
+    ``"min_occupancy"`` keep the conformer with the highest / lowest mean
+    occupancy, ties going to the one listed first in the file. ``"first"`` and
+    ``"last"`` keep the first / last conformer in the file. ``"exclude"``
+    removes every atom with an ``alt_loc``. Rows are returned in their original
+    order.
 
     :param df: Protein Structure dataframe to remove alternative located atoms
         from.
     :type df: pd.DataFrame
     :param keep: Controls how to remove altlocs. Default is ``"max_occupancy"``.
-    :type keep: Literal["max_occupancy", "min_occupancy", "first", "last"]
+    :type keep: Literal["max_occupancy", "min_occupancy", "first", "last",
+        "exclude"]
     :return: Protein structure dataframe with alternative located atoms removed
     :rtype: pd.DataFrame
     """
-    # Sort accordingly (stable, so ties keep the first in file order)
-    sort = keep in ["max_occupancy", "min_occupancy"]
-    if sort:
+    # Row position, not the index or atom_number, which need not be unique.
+    df = df.assign(_row=np.arange(len(df)))
+
+    # Keep one conformer per residue. Choosing per atom mixes conformers when
+    # occupancies are tied, differ between atoms, or a conformer is a
+    # different residue (microheterogeneity) with atoms the other lacks.
+    keys = ["chain_id", "residue_number", "insertion"]
+    alt = df["alt_loc"].fillna("").astype(str).str.strip() != ""
+    if keep == "exclude":
+        df = df[~alt]
+    elif alt.any():
+        conformers = (
+            df[alt]
+            .groupby(keys + ["alt_loc"], sort=False, dropna=False)
+            .agg(occupancy=("occupancy", "mean"), row=("_row", "min"))
+            .reset_index()
+        )
+        if keep in ("max_occupancy", "min_occupancy"):
+            conformers = conformers.sort_values(
+                ["occupancy", "row"],
+                ascending=[keep == "min_occupancy", True],
+                kind="stable",
+            )
+        else:
+            conformers = conformers.sort_values(
+                "row", ascending=keep == "first", kind="stable"
+            )
+        chosen = conformers.drop_duplicates(keys)[keys + ["alt_loc"]]
+        kept = df[alt].merge(chosen, on=keys + ["alt_loc"])["_row"]
+        df = df[~alt | df["_row"].isin(kept)]
+
+    # Remove any remaining duplicate atoms. The sort must be stable so that,
+    # among atoms with equal occupancy, the first in the file is kept.
+    if keep in ("max_occupancy", "min_occupancy"):
         df = df.sort_values(
             "occupancy", ascending=keep == "min_occupancy", kind="stable"
         )
-    keep = "first" if sort else False if keep == "exclude" else keep
+        keep = "first"
+    elif keep == "exclude":
+        keep = False
 
     # Filter
     duplicates = df.duplicated(
@@ -289,9 +331,9 @@ def remove_alt_locs(
     df = df[~duplicates]
 
     # Unsort
-    if sort:
-        df = df.sort_index(kind="stable")
-    return df.reset_index(drop=True)
+    df = df.sort_values("_row").drop(columns="_row")
+    df = df.reset_index(drop=True)
+    return df
 
 
 def remove_insertions(
