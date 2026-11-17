@@ -8,7 +8,7 @@
 
 import pytest
 
-from graphein.protein.resi_atoms import BB_BUILD_INFO
+from graphein.protein.resi_atoms import ATOM_NUMBERING, BB_BUILD_INFO
 from graphein.protein.tensor.geometry import kabsch
 from graphein.protein.tensor.reconstruction import (
     _get_build_params,
@@ -57,9 +57,12 @@ def test_build_sidechain_accepts_sin_cos_torsions():
 @pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
 def test_get_build_params():
     assert _get_build_params("ARG") is _get_build_params("ARG")
-    bonds, pbonds, _, _, _ = zip(*_get_build_params("ARG"))
+    bonds, pbonds, _, _, names, idxs = zip(*_get_build_params("ARG"))
     assert pbonds[0].item() == pytest.approx(BB_BUILD_INFO["BONDLENS"]["n-ca"])
     assert pbonds[1:] == bonds[:-1]
+    assert idxs == tuple(
+        tuple(ATOM_NUMBERING[a] for a in atoms) for atoms in names
+    )
 
 
 @pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")

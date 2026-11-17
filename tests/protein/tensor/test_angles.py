@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import pytest
 
+from graphein.protein.resi_atoms import ATOM_NUMBERING
 from graphein.protein.tensor.angles import (
     _dihedral_angle,
     angle_to_unit_circle,
@@ -188,3 +189,38 @@ def test_sidechain_torsion_pads_trailing_residues(embed):
     assert angles[1:].tolist() == [pad] * 3
     assert not mask[1:].any()
     assert mask[0, : 2 if embed else 1].all()
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+def test_sidechain_torsion_selenocysteine():
+    # With 38 atom types (SE at index 37), SEC has a chi1 angle
+    torch.manual_seed(0)
+    coords = torch.rand(2, 38, 3)
+    angles, mask = sidechain_torsion(coords, ["SEC", "CYS"], return_mask=True)
+    assert mask[:, 0].all() and not mask[:, 1:].any()
+    # SEC's chi1 (N-CA-CB-SE) matches CYS's (N-CA-CB-SG) on the same coords
+    n, ca, cb, sg = (ATOM_NUMBERING[a] for a in ("N", "CA", "CB", "SG"))
+    coords[1, [n, ca, cb, sg]] = coords[0, [n, ca, cb, 37]]
+    angles = sidechain_torsion(coords, ["SEC", "CYS"])
+    assert angles[0, 0] == pytest.approx(angles[1, 0].item())
+
+
+@pytest.mark.skipif(not TORCH_AVAIL, reason="PyTorch not available")
+@pytest.mark.parametrize("last", ["PYL", "MSE"])
+def test_sidechain_torsion_one_row_per_residue(last):
+    # Residues without chi angles at the end must still get a (masked) row
+    torch.manual_seed(0)
+    coords = torch.rand(3, 37, 3, requires_grad=True)
+    angles, mask = sidechain_torsion(
+        coords, ["SER", "LYS", last], return_mask=True
+    )
+    assert angles.shape == mask.shape == (3, 4)
+    assert mask.tolist() == [
+        [True, False, False, False],
+        [True, True, True, True],
+        [False] * 4,
+    ]
+    assert not angles[2].any()
+    # Masked chi angles don't give NaN gradients
+    angles.sum().backward()
+    assert not coords.grad.isnan().any()

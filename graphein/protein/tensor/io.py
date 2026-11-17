@@ -56,6 +56,7 @@ except ImportError:
 
 try:
     import torch
+    import torch.nn.functional as F
 except ImportError:
     message = import_message(
         submodule="graphein.protein.tensor.io",
@@ -286,14 +287,11 @@ def protein_df_to_chain_tensor(
     else:
         chains = df.chain_id
 
-    # One-hot encode chain IDs
-    chains = pd.get_dummies(chains)
-    chains = torch.tensor(chains.values, dtype=dtype, device=device)
-
-    # Integers instead of one-hot
-    if not one_hot:
-        chains = torch.argmax(chains, dim=1)
-
+    # Integer chain IDs in sorted chain order
+    codes, uniques = pd.factorize(chains, sort=True)
+    chains = torch.as_tensor(codes, device=device)
+    if one_hot:
+        chains = F.one_hot(chains, num_classes=len(uniques)).to(dtype)
     return chains
 
 
@@ -407,13 +405,14 @@ def to_dataframe(
     :return: ``DataFrame`` or ``PandasPdb object``.
     :rtype: Union[pd.DataFrame, PandasPdb]
     """
-    nz = (x - fill_value).nonzero()
-    nz = nz[torch.where(nz[:, 2] == 0)]
-    res_nums = nz[:, 0] + 1
+    coords, residue_index, atom_index = get_full_atom_coords(
+        x, fill_value=fill_value
+    )
+    res_nums = residue_index + 1
 
     atom_number = np.arange(1, len(res_nums) + 1)
     numbering_map = {v: k for k, v in ATOM_NUMBERING.items()}
-    atom_indices = nz[:, 1].tolist()
+    atom_indices = atom_index.tolist()
     atom_type = [numbering_map[a] for a in atom_indices]
 
     if residue_types is None:
@@ -455,33 +454,29 @@ def to_dataframe(
     if alt_loc is None:
         alt_loc = [""] * len(res_nums)
 
-    blank_1 = [""] * len(res_nums)
-    blank_2 = [""] * len(res_nums)
-    blank_3 = [""] * len(res_nums)
-    blank_4 = [""] * len(res_nums)
+    blank = [""] * len(res_nums)
 
     # NB brittle, bad assumption; may break
     record_names = ["ATOM" if i < 37 else "HETATM" for i in atom_indices]
-    coords = get_full_atom_coords(x)[0]
 
     out = {
         "record_name": record_names,
         "atom_number": atom_number,
-        "blank_1": blank_1,
+        "blank_1": blank,
         "atom_name": atom_type,
         "alt_loc": alt_loc,
         "residue_name": residue_types,
-        "blank_2": blank_2,
+        "blank_2": blank,
         "chain_id": chains,
         "residue_number": res_nums,
         "insertion": insertions,
-        "blank_3": blank_3,
+        "blank_3": blank,
         "x_coord": coords[:, 0],
         "y_coord": coords[:, 1],
         "z_coord": coords[:, 2],
         "occupancy": occupancy,
         "b_factor": b_factors,
-        "blank_4": blank_4,
+        "blank_4": blank,
         "segment_id": segment_id,
         "element_symbol": element_symbols,
         "charge": charge,

@@ -59,6 +59,8 @@ Graphein configs can be specified as `.yaml` files to batch process graphs from 
 
 ```bash
 graphein -c config.yaml -p path/to/pdbs -o path/to/output
+# or use a built-in config by name (list them with `graphein --list-configs`)
+graphein -c ca_distance_10 -p path/to/pdbs -o path/to/output
 ```
 
 ### Creating a Protein Graph
