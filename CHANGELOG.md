@@ -11,6 +11,9 @@
 
 * `add_hydrogen_bond_interactions` no longer adds `hbond` edges between sulphur atoms (Cys `SG`, Met `SD`), which are weak hydrogen bond donors/acceptors at best, or involving atoms of non-amino acid residues, such as ligands kept with `keep_hets`. Edges are added between donor-acceptor pairs only, so many existing `hbond` edges change. With `alt_locs=False` (`"exclude"`), atoms with alternate locations are now left out on residue graphs too, as they are when building nodes, so a residue whose side chain has alternate locations no longer gets hydrogen bonds from those atoms. [#437](https://github.com/a-r-j/graphein/issues/437) [#458](https://github.com/a-r-j/graphein/pull/458)
 
+#### New Features
+* Adds RFAM Manager [#324](https://github.com/a-r-j/graphein/pull/324)
+
 #### Bugfixes
 
 * Mesh creation no longer hangs forever if PyMOL fails to start, stops responding or doesn't write the `.obj` file. `ProteinMeshConfig.max_wait_seconds` (default `600`, `None` to wait indefinitely) limits each step: PyMOL starting, each call to it, and writing the `.obj` file. On a timeout `create_mesh` raises `TimeoutError` and stops the hung PyMOL, so the next call starts a fresh one; it raises `RuntimeError` if PyMOL exits. The limit applies only while `create_mesh` runs, so a PyMOL session you started yourself keeps its own (no) timeout. Also, `create_mesh` waits for the `.obj` file to finish writing before reading it, and saves it to an absolute path, so `os.chdir` no longer makes it wait in the wrong directory. The `.obj` path for a structure file replaces its whole extension (`model.mmtf` gave `model.mobj`), and `out_dir` no longer needs a trailing slash (`out_dir="meshes"` gave `meshes3eiy.obj`). Fixes [#431](https://github.com/a-r-j/graphein/issues/431) [#449](https://github.com/a-r-j/graphein/pull/449)
