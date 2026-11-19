@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from itertools import count
 from typing import TYPE_CHECKING
 
@@ -22,6 +23,8 @@ import seaborn as sns
 from loguru import logger as log
 from mpl_toolkits.mplot3d import Axes3D
 
+from graphein.protein.features.nodes.amino_acid import residue_hydrophobicity
+from graphein.protein.resi_atoms import HYDROPHOBICITY_SCALES
 from graphein.protein.subgraphs import extract_k_hop_subgraph
 from graphein.utils.dependencies import import_message
 
@@ -49,6 +52,110 @@ except ImportError:
         extras=True,
     )
     log.debug(message)
+
+
+def _node_feature_func(
+    g: nx.Graph,
+    feature: str,
+    focal_node: str | None = None,
+    focal_point: tuple | None = None,
+    no_negatives: bool = False,
+) -> Callable:
+    """
+    Maps a feature as described by a string to a function that can be applied on nodes from a graph.
+
+    :param g: Protein graph.
+    :type g: nx.Graph
+    :param feature: Name of feature to extract.
+    :type feature: str
+    :param focal_node: A specific node within ``g`` to use in feature calculation; e.g. when calculating ``distance`` to a given site.
+    :type focal_node: str, optional
+    :param focal_point: Use specific coordinates instead of a node within the graph.
+    :type focal_point: tuple
+    :param no_negatives: Take the max of ``0`` and the feature's value. Defaults to ``False``.
+    :type no_negatives: bool
+    :return: Function that returns a value for a given node ID.
+    :rtype: Callable
+
+    Features: ``"degree"``, ``"seq_position"``, ``"rsa"``, ``"b_factor"``,
+    ``"distance"`` (to ``focal_node`` or ``focal_point``), ``"meiler-<1-7>"``,
+    hydrophobicity (``"hydrophobicity"``, ``"<scale>-hydrophobicity"`` or
+    ``"hydrophobicity_<scale>"``; see
+    :const:`~graphein.protein.resi_atoms.HYDROPHOBICITY_SCALES`), or any
+    numeric feature stored on every node.
+    """
+    nodes = g.nodes
+    if feature == "degree":
+        f = g.degree.__getitem__
+    elif feature in {"seq-position", "seq_position"}:
+        f = lambda k: nodes[k]["residue_number"]
+    elif feature == "rsa":
+        f = lambda k: nodes[k]["rsa"]
+    elif feature in {"bfac", "bfactor", "b_factor", "b-factor"}:
+        f = lambda k: nodes[k]["b_factor"]
+    elif feature == "distance":
+        # Euclidean distance to a specific node / coordinate
+        if focal_node is not None:
+            if focal_node not in g:
+                raise ValueError(f"Focal node {focal_node} not in graph.")
+            focus = np.asarray(nodes[focal_node]["coords"])
+        elif focal_point is not None:
+            if len(focal_point) != 3:
+                raise ValueError("focal_point must have 3 coordinates.")
+            focus = np.asarray(focal_point)
+        else:
+            raise ValueError(
+                "Node feature 'distance' requires one of `focal_node` or "
+                "`focal_point`."
+            )
+        f = lambda k: np.linalg.norm(np.asarray(nodes[k]["coords"]) - focus)
+    elif g.number_of_nodes() and all(
+        feature in d for _, d in nodes(data=True)
+    ):
+        # A numeric feature stored on every node, e.g. "hydrophobicity_kd"
+        # as added by the ``hydrophobicity`` node feature.
+        f = lambda k: float(np.squeeze(nodes[k][feature]))
+    elif match := re.fullmatch(r"meiler-?(\d+)", feature):
+        dim = int(match[1])
+        if not 1 <= dim <= 7:
+            raise ValueError(
+                f"Meiler embeddings have dimensions 1-7, received {dim}."
+            )
+        f = lambda k: nodes[k]["meiler"][f"dim_{dim}"]
+    elif match := re.fullmatch(
+        r"(?:([a-z]{2})-?)?hydrophobicity(?:[_-]([a-z]{2}))?", feature
+    ):
+        # e.g. "kd-hydrophobicity", "tthydrophobicity", "hydrophobicity_ww"
+        # or "hydrophobicity" (Kyte-Doolittle).
+        scale = match[1] or match[2] or "kd"
+        if scale not in HYDROPHOBICITY_SCALES:
+            raise KeyError(f"'{scale}' not a valid hydrophobicity scale.")
+        f = lambda k: residue_hydrophobicity(nodes[k]["residue_name"], scale)
+    else:
+        raise NotImplementedError(f"Feature '{feature}' not implemented.")
+
+    if no_negatives:
+        return lambda k: max(0, f(k))
+    return f
+
+
+def _node_size_func(
+    g: nx.Graph, feature: str, min: float, multiplier: float
+) -> Callable:
+    """
+    Returns a function that can be use to generate node sizes for plotting.
+
+    :param g: Protein graph
+    :type g: nx.Graph
+    :param feature: Name of feature to scale node sizes by.
+    :type feature: str
+    :param min: Number to offset size with.
+    :type min: float
+    :param multiplier: Number to scale feature values by.
+    :type multiplier: float
+    """
+    get_feature = _node_feature_func(g=g, feature=feature, no_negatives=True)
+    return lambda k: min + multiplier * get_feature(k)
 
 
 def plot_pointcloud(mesh: Meshes, title: str = "") -> Axes3D:
@@ -259,28 +366,12 @@ def plotly_protein_structure_graph(
         G, colour_map=edge_color_map, colour_by=colour_edges_by
     )
 
-    # Get node size
-    def node_scale_by(G: nx.Graph, feature: str):
-        if feature == "degree":
-            return lambda k: node_size_min + node_size_multiplier * G.degree[k]
-        if feature == "rsa":
-            return lambda k: (
-                node_size_min
-                + node_size_multiplier * G.nodes(data=True)[k]["rsa"]
-            )
-
-        # Meiler embedding dimension
-        p = re.compile("meiler-([1-7])")
-        dim = p.search(feature)[1]
-        if dim:
-            return lambda k: (
-                node_size_min
-                + node_size_multiplier
-                * max(0, G.nodes(data=True)[k]["meiler"][f"dim_{dim}"])
-            )  # Meiler values may be negative
-        raise ValueError(f"Cannot size nodes by feature '{feature}'")
-
-    get_node_size = node_scale_by(G, node_size_feature)
+    size_by = _node_size_func(
+        G,
+        node_size_feature,
+        min=node_size_min,
+        multiplier=node_size_multiplier,
+    )
 
     # 3D network plot
     x_nodes = []
@@ -295,7 +386,7 @@ def plotly_protein_structure_graph(
         x_nodes.append(value[0])
         y_nodes.append(value[1])
         z_nodes.append(value[2])
-        node_sizes.append(get_node_size(key))
+        node_sizes.append(size_by(key))
 
         if label_node_ids:
             node_labels.append(node_list[i])
@@ -740,6 +831,7 @@ def asteroid_plot(
     node_id: str,
     k: int = 2,
     colour_nodes_by: str = "shell",  # residue_name
+    size_nodes_by: str = "degree",
     colour_edges_by: str = "kind",
     edge_colour_map: plt.cm.Colormap = plt.cm.plasma,
     edge_alpha: float = 1.0,
@@ -750,6 +842,7 @@ def asteroid_plot(
     use_plotly: bool = True,
     show_edges: bool = False,
     show_legend: bool = True,
+    node_size_min: float = 20.0,
     node_size_multiplier: float = 10.0,
 ) -> go.Figure | matplotlib.figure.Figure:
     # sourcery skip: remove-unnecessary-else, swap-if-else-branches
@@ -767,6 +860,8 @@ def asteroid_plot(
     :param colour_nodes_by: Colour the nodes by this attribute. Currently only
         ``"shell"`` is supported.
     :type colour_nodes_by: str
+    :param size_nodes_by: Size the nodes by an attribute.
+    :type size_nodes_by: str
     :param colour_edges_by: Colour the edges by this attribute. Currently only
         ``"kind"`` is supported.
     :type colour_edges_by: str
@@ -788,6 +883,8 @@ def asteroid_plot(
     :param show_legend: Whether to show the legend of the edges. Defaults to
         `True``.
     :type show_legend: bool
+    :param node_size_min: Specifies node minimum size. Defaults to ``20.0``.
+    :type node_size_min: float
     :param node_size_multiplier: Multiplier for the size of the nodes. Defaults
         to ``10.0``.
     :type node_size_multiplier: float
@@ -849,21 +946,30 @@ def asteroid_plot(
             node_x.append(x)
             node_y.append(y)
 
-        degrees = [
-            subgraph.degree(n) * node_size_multiplier for n in subgraph.nodes()
-        ]
+        size_by = _node_size_func(
+            subgraph,
+            size_nodes_by,
+            min=node_size_min,
+            multiplier=node_size_multiplier,
+        )
+        node_sizes = [size_by(n) for n in subgraph.nodes()]
 
+        colour_nodes_by = colour_nodes_by.lower()
+        colorbar = {
+            "thickness": 15,
+            "title": str.capitalize(colour_nodes_by),
+            "xanchor": "left",
+        }
         if colour_nodes_by == "shell":
-            node_colours = []
-            for n in subgraph.nodes():
-                for k, v in nodes.items():
-                    if n in v:
-                        node_colours.append(k)
+            shell_of = {n: i for i, ns in nodes.items() for n in ns}
+            node_colours = [shell_of[n] for n in subgraph.nodes()]
+            colorbar["tickvals"] = list(range(k))
         else:
-            raise NotImplementedError(
-                f"Colour by {colour_nodes_by} not implemented."
+            get_feature = _node_feature_func(
+                g=subgraph, feature=colour_nodes_by, focal_node=node_id
             )
-            # TODO colour by AA type
+            node_colours = [get_feature(n) for n in subgraph.nodes()]
+
         node_trace = go.Scatter(
             x=node_x,
             y=node_y,
@@ -873,16 +979,11 @@ def asteroid_plot(
             textposition="bottom center",
             showlegend=False,
             marker={
-                "colorscale": "YlGnBu",
+                "colorscale": "viridis",
                 "reversescale": True,
                 "color": node_colours,
-                "size": degrees,
-                "colorbar": {
-                    "thickness": 15,
-                    "title": "Shell",
-                    "tickvals": list(range(k)),
-                    "xanchor": "left",
-                },
+                "size": node_sizes,
+                "colorbar": colorbar,
                 "line_width": 2,
             },
         )
