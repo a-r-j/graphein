@@ -19,7 +19,7 @@ Graphein has a simple command line interface to get started and convert PDB file
 
 YAML Config
 ---------------------
-A ``.yaml`` config file can be specified to specify any of the config objects. To specify functions, use the ``!func:`` tag. To specify one of the config objects defined in graphein use the format ``!<config_name>`` (e.g. ``!ProteinGraphConfig``).
+A ``.yaml`` config file can be specified to specify any of the config objects. To specify functions, use the ``!func:`` tag with the function's full import path (e.g. ``!func:graphein.protein.edges.distance.add_peptide_bonds``). For security, only functions in ``graphein`` can be named, so a config file can't run arbitrary code. To specify one of the config objects defined in graphein use the format ``!<config_name>`` (e.g. ``!ProteinGraphConfig``).
 
 .. code-block:: yaml
 
