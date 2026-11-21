@@ -11,6 +11,7 @@ N.B. ESMFold functionality require torch & ESMFold to be installed.
 """
 
 import os
+import shlex
 import subprocess
 from collections.abc import Sequence
 from functools import lru_cache
@@ -129,19 +130,18 @@ def esmfold_fasta(
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    command = f"esm-fold --fasta {fasta} "
-    command += f"-o {out_dir} "
-    command += f"--num-recycles {num_recycles} "
+    command = ["esm-fold", "--fasta", fasta, "-o", out_dir]
+    command += ["--num-recycles", str(num_recycles)]
     if max_tokens is not None:
-        command += f"--max-tokens-per-batch {max_tokens} "
+        command += ["--max-tokens-per-batch", str(max_tokens)]
     if chunk_size is not None:
-        command += f"--chunk-size {chunk_size} "
+        command += ["--chunk-size", str(chunk_size)]
     if cpu_only:
-        command += "--cpu-only"
+        command.append("--cpu-only")
     if cpu_offload:
-        command += "--cpu-offload"
-    log.info(f"Running command: {command}")
-    subprocess.run(command, shell=True)
+        command.append("--cpu-offload")
+    log.info(f"Running command: {shlex.join(command)}")
+    subprocess.run(command)
 
 
 def esm_embed_fasta(
@@ -189,17 +189,17 @@ def esm_embed_fasta(
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    cmd = f"esm-extract {model} {fasta} {out_dir} "
+    cmd = ["esm-extract", model, fasta, out_dir]
     if repr_layers is not None:
-        cmd += f"--repr_layers {' '.join(map(str, repr_layers))} "
+        cmd += ["--repr_layers", *map(str, repr_layers)]
     if include is not None:
-        cmd += f"--include {' '.join(include)} "
+        cmd += ["--include", *include]
     if truncation_seq_length is not None:
-        cmd += f"--truncation_seq_length {truncation_seq_length} "
+        cmd += ["--truncation_seq_length", str(truncation_seq_length)]
     if max_tokens is not None:
-        cmd += f"--toks_per_batch {max_tokens} "
-    log.info(f"Running command: {cmd}")
-    subprocess.run(cmd, shell=True)
+        cmd += ["--toks_per_batch", str(max_tokens)]
+    log.info(f"Running command: {shlex.join(cmd)}")
+    subprocess.run(cmd)
 
 
 def foldcompress_file(fname: str, anchor_residue_threshold: int = 25):
@@ -234,9 +234,9 @@ def foldcompress_database(
     Compress all PDB files in the database using the FoldCompress algorithm.
     """
     is_tool("foldcomp", error=True)
-    cmd = f"foldcomp compress {dir_path} {db_name} --db"
-    log.info(f"Compressing {dir_path}. Running command: {cmd}")
-    subprocess.run(cmd, shell=True)
+    cmd = ["foldcomp", "compress", dir_path, db_name, "--db"]
+    log.info(f"Compressing {dir_path}. Running command: {shlex.join(cmd)}")
+    subprocess.run(cmd)
 
     if fnames is not None:
         is_tool("mmseqs", error=True)
@@ -245,9 +245,13 @@ def foldcompress_database(
         with open(id_path, "w") as f:
             f.write("\n".join(fnames))
 
-        cmd = f"mmseqs createsubdb --subdb-mode 0 --id-mode 1 {id_path} {db_name} {db_name}_selection"
-        log.info(f"Extracing {len(fnames)} selections. Running command: {cmd}")
-        subprocess.run(cmd, shell=True)
+        cmd = ["mmseqs", "createsubdb", "--subdb-mode", "0", "--id-mode", "1"]
+        cmd += [id_path, db_name, f"{db_name}_selection"]
+        log.info(
+            f"Extracting {len(fnames)} selections. Running command: "
+            f"{shlex.join(cmd)}"
+        )
+        subprocess.run(cmd)
 
 
 def esmfold_web(sequence: str, out_path: str | None = None, version: int = 1):

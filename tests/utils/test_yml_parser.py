@@ -3,6 +3,9 @@
 from functools import partial
 from pathlib import Path
 
+import pytest
+import yaml
+
 from graphein.protein.config import (
     DSSPConfig,
     GetContactsConfig,
@@ -47,3 +50,21 @@ def test_protein_graph_config():
     config = ProteinGraphConfig(**protein_graph_config)
     yml_config = parse_config(DATA_PATH / "test_protein_graph_config.yml")
     assert config == yml_config
+
+
+def test_func_tag_rejects_non_graphein_functions(tmp_path):
+    """``!func:`` must not resolve arbitrary callables such as os.system."""
+    path = tmp_path / "evil.yml"
+    path.write_text(
+        "!ProteinGraphConfig\nedge_construction_functions:\n"
+        "  - !func:os.system\n"
+    )
+    with pytest.raises(yaml.constructor.ConstructorError):
+        parse_config(path)
+
+
+def test_config_tags_not_registered_globally():
+    """Parsing a config must not add graphein's tags to yaml.FullLoader."""
+    parse_config(DATA_PATH / "test_protein_graph_config.yml")
+    with pytest.raises(yaml.constructor.ConstructorError):
+        yaml.full_load("!func:os.system")

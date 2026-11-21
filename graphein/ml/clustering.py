@@ -10,7 +10,10 @@ Otherwise, please see: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYP
 
 import os
 import random
+import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
 import networkx as nx
 import numpy as np
@@ -194,7 +197,8 @@ def create_pairs_for_clustering(
             out.write(f"{ff[0]}\t{ff[1]}\t{identity:f}\n")
             done[p] = identity
     if delete_blast_databases_when_done:
-        os.system(f"rm -f {fasta_file}.phr {fasta_file}.pin {fasta_file}.psq")
+        for ext in (".phr", ".pin", ".psq"):
+            Path(fasta_file + ext).unlink(missing_ok=True)
     return done
 
 
@@ -276,11 +280,13 @@ def blast(
     :param ungapped:
     :param add_sseq: append to the returned list the keywords sseq (aligned part of subject sequence)
     :param add_qseq: append to the returned list the keywords qseq (aligned part of query sequence)
-    :param tmp_folder: temporary folder
+    :param tmp_folder: directory in which to make a private temporary
+        directory for the query and results. ``None`` or ``""`` uses the
+        system default.
     :param blast_path: path to blast installation folder
     :param sequence_name: name of the sequence
-    :param blast_filename: filename for the blast file, defaults to
-        ``blast<pid>.txt``
+    :param blast_filename: filename to keep the blast results in when
+        ``delete_blast_file=False``, defaults to ``blast<pid>.txt``
     :param max_target_seqs: maximum number of target sequences
     :param n_cpu: number of cpus
     :param delete_blast_file: if True deletes the blast file at the end
@@ -298,17 +304,6 @@ def blast(
     Check that NCBI blast is correctly installed in the folder blast_path
     """
 
-    # Per-process names so parallel workers don't overwrite each other's files.
-    # ponytail: threads in one process still share them; use tempfile if needed
-    if blast_filename is None:
-        blast_filename = f"blast{os.getpid()}.txt"
-    if tmp_folder is None:
-        tmp_folder = ""
-    elif tmp_folder != "":
-        if tmp_folder[-1] != "/":
-            tmp_folder += "/"
-        if delete_blast_file and tmp_folder not in blast_filename:
-            blast_filename = tmp_folder + blast_filename
     if not isinstance(sequence, str):  # we assume is a Seq object
         sequence_name = sequence.id
         sequence = str(sequence.seq)
@@ -319,69 +314,45 @@ def blast(
             f"***ERROR*** in run_blast path {blast_path} doesnt lead to blast directory "
             "where makeblastdb should be located"
         )
-    seq_filename = f"{tmp_folder}sequence_temp{os.getpid()}.txt"
-    with open(seq_filename, "w") as seq_file:
-        seq_file.write(">" + sequence_name + "\n" + sequence + "\n")
 
     # check if the blast database has already been built, if not build it
-    if not (
-        os.path.isfile(database + ".phr")
-        and os.path.isfile(database + ".pin")
-        and os.path.isfile(database + ".psq")
+    if not all(
+        os.path.isfile(database + ext) for ext in (".phr", ".pin", ".psq")
     ):
-        try:
-            os.system(blast_path + "makeblastdb -dbtype prot -in " + database)
-        except Exception:
-            print(
-                "***ERROR*** in run_blast() cannot build blast database maybe you wish to "
-                "set BLAST_PATH to correct directory"
-            )
-            raise
-    ungapped = " -comp_based_stats F  -ungapped" if ungapped else ""
+        subprocess.run(
+            [blast_path + "makeblastdb", "-dbtype", "prot", "-in", database],
+            check=True,
+        )
     table_k = "6 sseqid pident length mismatch gapopen qstart qend sstart send evalue nident slen"
     if add_sseq:
         table_k += " sseq"
     if add_qseq:
         table_k += " qseq"
 
-    # SHORT SEQUENCES: -task 'blastp-short' -word_size 2 -seg 'no' -evalue 20000
-    if len(sequence) <= 15:
-        os.system(
-            blast_path
-            + "blastp -query "
-            + seq_filename
-            + " -db "
-            + database
-            + " -matrix PAM30 -task 'blastp-short' -word_size 2 -seg 'no' -evalue 20000 -out "
-            + blast_filename
-            + f" -outfmt '{table_k}'"
-            + ungapped
-            + " -max_target_seqs "
-            + str(max_target_seqs)
-            + " -num_threads "
-            + str(n_cpu)
-        )
-    else:
-        os.system(
-            blast_path
-            + "blastp -query "
-            + seq_filename
-            + " -db "
-            + database
-            + " -out "
-            + blast_filename
-            + f" -outfmt '{table_k}'"
-            + ungapped
-            + " -max_target_seqs "
-            + str(max_target_seqs)
-            + " -num_threads "
-            + str(n_cpu)
-        )
-    with open(blast_filename) as f:
-        resultf = f.read().splitlines()
-    if delete_blast_file:
-        os.remove(blast_filename)
-    os.remove(seq_filename)
+    # Private directory: parallel calls can't clash and other users can't
+    # plant files (e.g. symlinks) in a shared /tmp
+    with tempfile.TemporaryDirectory(dir=tmp_folder or None) as tmp_dir:
+        seq_filename = os.path.join(tmp_dir, "query.fasta")
+        with open(seq_filename, "w") as seq_file:
+            seq_file.write(">" + sequence_name + "\n" + sequence + "\n")
+        if delete_blast_file:
+            blast_filename = os.path.join(tmp_dir, "blast.txt")
+        elif blast_filename is None:
+            blast_filename = f"blast{os.getpid()}.txt"
+
+        cmd = [blast_path + "blastp", "-query", seq_filename, "-db", database]
+        if len(sequence) <= 15:  # short sequences
+            cmd += ["-matrix", "PAM30", "-task", "blastp-short"]
+            cmd += ["-word_size", "2", "-seg", "no", "-evalue", "20000"]
+        cmd += ["-out", blast_filename, "-outfmt", table_k]
+        if ungapped:
+            cmd += ["-comp_based_stats", "F", "-ungapped"]
+        cmd += ["-max_target_seqs", str(max_target_seqs)]
+        cmd += ["-num_threads", str(n_cpu)]
+        subprocess.run(cmd, check=True)
+
+        with open(blast_filename) as f:
+            resultf = f.read().splitlines()
 
     if not resultf:
         return None
