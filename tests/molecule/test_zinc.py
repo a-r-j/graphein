@@ -1,6 +1,10 @@
+import ssl
+from urllib.error import URLError
+
 import pytest
 
 import graphein.molecule as gm
+import graphein.molecule.zinc as zinc
 
 TEST_SMILE = "CCC[S@](=O)c1ccc2[nH]/c(=N\\C(=O)OC)[nH]c2c1"
 
@@ -45,3 +49,27 @@ def test_batch_get_zinc_id_from_smile():
             "ZINC000004095934",
         ]
     }
+
+
+@pytest.mark.parametrize(
+    "func, smilite_func",
+    [
+        (zinc.get_smiles_from_zinc, "get_zinc_smile"),
+        (zinc.get_zinc_id_from_smile, "get_zincid_from_smile"),
+    ],
+)
+def test_url_error_keeps_tls_verification(monkeypatch, func, smilite_func):
+    """A failed request must not turn off certificate checks process-wide."""
+    pytest.importorskip("smilite")
+
+    def fail(*args, **kwargs):
+        raise URLError("certificate verify failed")
+
+    monkeypatch.setattr(zinc.smilite, smilite_func, fail)
+    default = ssl._create_default_https_context
+    try:
+        with pytest.raises(URLError):
+            func("ZINC00029323")
+        assert ssl._create_default_https_context is default
+    finally:
+        ssl._create_default_https_context = default

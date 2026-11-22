@@ -9,7 +9,6 @@
 
 import functools
 import os
-import ssl
 import zipfile
 from collections.abc import Callable
 from pathlib import Path
@@ -77,12 +76,7 @@ def _download_RegNetwork(
     # Download data and unzip
     if not os.path.exists(file):
         log.info("Downloading RegNetwork ...")
-        # switch ssl context for unverified download
-        default_https_context = ssl._create_default_https_context
-        ssl._create_default_https_context = ssl._create_unverified_context
         wget.download(url, compressed_file)
-        # switch ssl context back to default
-        ssl._create_default_https_context = default_https_context
         with zipfile.ZipFile(compressed_file, "r") as zip_ref:
             zip_ref.extractall(out_dir)
 
@@ -117,12 +111,7 @@ def _download_RegNetwork_regtypes(root_dir: Path | None = None) -> str:
     # Download data and unzip
     if not os.path.exists(file):
         log.info("Downloading RegNetwork reg types ...")
-        # switch ssl context for unverified download
-        default_https_context = ssl._create_default_https_context
-        ssl._create_default_https_context = ssl._create_unverified_context
         wget.download(url, compressed_file)
-        # switch ssl context back to default
-        ssl._create_default_https_context = default_https_context
 
         with zipfile.ZipFile(compressed_file, "r") as zip_ref:
             zip_ref.extractall(out_dir)

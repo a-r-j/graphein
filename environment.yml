@@ -41,7 +41,7 @@ dependencies:
 - deepdiff
 - click
 - pip:
-  - bioservices
-  - propy3
+  - requests
+  - propy3>=2
   - pyaaisc
   - git+https://github.com/a-r-j/graphein

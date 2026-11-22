@@ -748,6 +748,8 @@ def test_centroids_match_their_residue(path):
     np.testing.assert_allclose(
         np.stack([g.nodes[n]["coords"] for n in nodes["node_id"]]),
         expected.loc[nodes.index].to_numpy(),
+        # node coords are float32; PDB coords are only precise to 1e-3 Å
+        atol=1e-4,
     )
 
 

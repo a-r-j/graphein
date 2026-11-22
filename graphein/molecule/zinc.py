@@ -10,9 +10,6 @@ Adapted from smilite (https://github.com/rasbt/smilite) by Sebastian Raschka.
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
 
-import ssl
-from urllib.error import URLError
-
 from tqdm.rich import tqdm
 
 from graphein.utils.dependencies import import_message
@@ -38,11 +35,7 @@ def get_smiles_from_zinc(zinc_id: str, backend="zinc15") -> str:
         E.g., ``'COc1cccc(c1)NC(=O)c2cccnc2'``
     :rtype: str
     """
-    try:
-        return smilite.get_zinc_smile(zinc_id, backend=backend)
-    except URLError:
-        ssl._create_default_https_context = ssl._create_unverified_context
-        return smilite.get_zinc_smile(zinc_id, backend=backend)
+    return smilite.get_zinc_smile(zinc_id, backend=backend)
 
 
 def get_zinc_id_from_smile(smile: str, backend: str = "zinc15") -> list[str]:
@@ -59,11 +52,7 @@ def get_zinc_id_from_smile(smile: str, backend: str = "zinc15") -> list[str]:
         E.g., ``['ZINC01234567', 'ZINC01234568', 'ZINC01242053', 'ZINC01242055']``
     :rtype: List[str]
     """
-    try:
-        return smilite.get_zincid_from_smile(smile, backend=backend)
-    except URLError:
-        ssl._create_default_https_context = ssl._create_unverified_context
-        return smilite.get_zincid_from_smile(smile, backend=backend)
+    return smilite.get_zincid_from_smile(smile, backend=backend)
 
 
 def batch_get_smiles_from_zinc(
