@@ -1462,3 +1462,98 @@ def test_get_interacting_atom_pairs_matches_distance_matrix(angstroms):
 
     i, j = get_interacting_atom_pairs(angstroms, df.iloc[:0])
     assert len(i) == len(j) == 0
+
+
+RING_STACKING_FUNCTIONS = [
+    distance.add_pi_stacking_interactions,
+    distance.add_t_stacking,
+]
+
+
+def _stacking_graph(df: pd.DataFrame, granularity: str = "CA") -> nx.Graph:
+    config = ProteinGraphConfig(
+        granularity=granularity,
+        edge_construction_functions=RING_STACKING_FUNCTIONS,
+    )
+    return construct_graph(config=config, df=df, name="test")
+
+
+def _stacked_phe(flip: bool) -> tuple[pd.DataFrame, str, str]:
+    """4hhb with a copy of A:PHE:33 (as Z:PHE:1) stacked 3.8A along its ring
+    normal. With ``flip``, the copy's CD1/CD2 and CE1/CE2 swap coordinates
+    (the same ring), so its normal from the first three normal atoms in file
+    order points the other way.
+    """
+    df = read_pdb_to_dataframe(DATA_PATH)
+    u = "A:PHE:33"
+    residue = df.loc[_residue_atoms(df, u)]
+    ring = distance.get_ring_atoms(residue, "PHE")
+    normal = distance.compute_ring_normal(ring)
+    copy = residue.assign(chain_id="Z", residue_number=1)
+    copy[["x_coord", "y_coord", "z_coord"]] += (
+        3.8 * normal / np.linalg.norm(normal)
+    )
+    if flip:
+        xyz = ["x_coord", "y_coord", "z_coord"]
+        copy = copy.set_index("atom_name", drop=False)
+        swapped = ["CD2", "CD1", "CE2", "CE1"]
+        copy.loc[["CD1", "CD2", "CE1", "CE2"], xyz] = copy.loc[
+            swapped, xyz
+        ].to_numpy()
+        copy = copy.reset_index(drop=True)
+    return pd.concat([df, copy], ignore_index=True), u, "Z:PHE:1"
+
+
+@pytest.mark.parametrize("flip", [False, True], ids=["same", "flipped"])
+def test_pi_stacking_parallel_rings(flip):
+    """Parallel stacked rings get a pi-stacking (and no T-stacking) edge,
+    whichever way their ring normals point."""
+    df, u, v = _stacked_phe(flip)
+    g = _stacking_graph(df)
+    assert g.edges[u, v]["kind"] == {"pi_stacking"}
+
+
+@pytest.mark.parametrize("chain", ["A", "C"])
+def test_t_stacking_4hhb(chain):
+    """4hhb PHE33-PHE43 are T-shaped (#518): centroids 5.2A apart, normals
+    75-77 degrees apart, one normal 29 degrees from the centroid vector."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    g = _stacking_graph(df)
+    u, v = f"{chain}:PHE:33", f"{chain}:PHE:43"
+    assert g.edges[u, v]["kind"] == {"t_stacking"}
+
+
+def test_t_stacking_centroid_distance():
+    df = read_pdb_to_dataframe(DATA_PATH)
+    g = _interaction_graph(
+        partial(distance.add_t_stacking, centroid_distance=5.0), df
+    )
+    assert not g.has_edge("A:PHE:33", "A:PHE:43")
+
+
+@pytest.mark.parametrize(
+    "func", RING_STACKING_FUNCTIONS, ids=lambda f: f.__name__
+)
+def test_ring_stacking_truncated_ring(func):
+    """A ring with missing atoms (truncated side chain) is skipped."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    df = df.loc[
+        ~(_residue_atoms(df, "A:PHE:33") & df["atom_name"].isin(["CE2", "CZ"]))
+    ]
+    g = _interaction_graph(func, df)
+    assert all("A:PHE:33" not in e for e in g.edges())
+
+
+def test_ring_stacking_atom_graph():
+    """On atom graphs, every ring atom of one ring is joined to every ring
+    atom of the other."""
+    df, u, v = _stacked_phe(flip=True)
+    g = _stacking_graph(df, granularity="atom")
+    ring = ["CG", "CD1", "CD2", "CE1", "CE2", "CZ"]
+    pi = set(get_edges_by_bond_type(g, "pi_stacking"))
+    expected = {(f"{u}:{a}", f"{v}:{b}") for a in ring for b in ring}
+    assert {tuple(sorted(e)) for e in expected} <= {
+        tuple(sorted(e)) for e in pi
+    }
+    t = {tuple(sorted(e)) for e in get_edges_by_bond_type(g, "t_stacking")}
+    assert ("A:PHE:33:CG", "A:PHE:43:CG") in t

@@ -691,9 +691,9 @@ def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame | None = None):
 
 
 def _ring_centroids(
-    G: nx.Graph, pdb_df: pd.DataFrame, resis: list[str], normals: bool = False
+    G: nx.Graph, pdb_df: pd.DataFrame, resis: list[str]
 ) -> pd.DataFrame:
-    """Ring centroids (and optionally normals) of the graph's nodes.
+    """Ring centroids of the graph's nodes.
 
     :param G: Protein graph.
     :type G: nx.Graph
@@ -702,8 +702,6 @@ def _ring_centroids(
     :param resis: Residue names with rings (keys of
         :const:`~graphein.protein.resi_atoms.AA_RING_ATOMS`).
     :type resis: list[str]
-    :param normals: Whether to add each ring's normal vector (column ``0``).
-    :type normals: bool
     :return: One row per node, sorted by node ID, with the centroid in
         ``x_coord``, ``y_coord`` and ``z_coord`` and the node's chain, residue
         number and insertion code (for :func:`same_residue`).
@@ -712,8 +710,6 @@ def _ring_centroids(
     rings = pd.concat([get_ring_atoms(pdb_df, resi) for resi in resis])
     rings = assign_atoms_to_nodes(G, rings)
     df = get_ring_centroids(rings)
-    if normals and not rings.empty:
-        df = df.merge(get_ring_normals(rings), on="node_id")
     residues = rings.drop_duplicates("node_id")[
         ["node_id", "chain_id", "residue_number", "insertion"]
     ]
@@ -936,102 +932,170 @@ def add_vdw_clashes(
     )
 
 
+def _ring_stacking(
+    G: nx.Graph,
+    pdb_df: pd.DataFrame | None,
+    centroid_distance: float,
+    normal_angles: tuple[float, float],
+    kind: str,
+):
+    """Add edges between the aromatic rings (``PHE``, ``TYR``, ``TRP``) of
+    :const:`~graphein.protein.resi_atoms.PI_RESIS` that stack.
+
+    Two rings stack if their centroids are within ``centroid_distance``, the
+    angle between their normals is within ``normal_angles`` and either
+    normal is within 45° of the vector between the centroids, as in
+    GetContacts. A ring normal can point to either face of its ring, so
+    angles are folded to [0°, 90°] (``min(θ, 180° - θ)``).
+
+    Rings are the ring atoms of each node on residue graphs and of each
+    residue conformer (chain, residue number, insertion code and alt_loc) on
+    atom graphs, where every ring atom of one ring is joined to every ring
+    atom of the other. Rings missing any of their
+    :const:`~graphein.protein.resi_atoms.RING_NORMAL_ATOMS` (e.g. truncated
+    side chains) are skipped.
+
+    :param G: Protein graph.
+    :type G: nx.Graph
+    :param pdb_df: Atomic dataframe. If ``None``, ``G.graph["raw_pdb_df"]``.
+    :type pdb_df: pd.DataFrame, optional
+    :param centroid_distance: Maximum distance between ring centroids
+        (Angstroms).
+    :type centroid_distance: float
+    :param normal_angles: Minimum and maximum angle between ring normals
+        (degrees, folded to [0°, 90°]).
+    :type normal_angles: tuple[float, float]
+    :param kind: Edge kind to add.
+    :type kind: str
+    """
+    if pdb_df is None:
+        pdb_df = G.graph["raw_pdb_df"]
+    atoms = pd.concat([get_ring_atoms(pdb_df, resi) for resi in PI_RESIS])
+    atoms = assign_atoms_to_nodes(G, atoms)
+    if G.graph.get("node_type") in ATOM_NODE_TYPES:
+        # ponytail: a ring whose atoms mix blank and set alt_locs splits
+        # into parts that are each skipped below
+        ring_key = ["chain_id", "residue_number", "insertion", "alt_loc"]
+    else:
+        ring_key = ["node_id"]
+    xyz = ["x_coord", "y_coord", "z_coord"]
+    rings = []
+    for _, ring in atoms.groupby(ring_key, sort=False):
+        first = ring.iloc[0]
+        normal_atoms = (
+            ring.drop_duplicates("atom_name")
+            .set_index("atom_name")
+            .reindex(RING_NORMAL_ATOMS[first["residue_name"]])[xyz]
+            .to_numpy(dtype=float)
+        )
+        if np.isnan(normal_atoms).any():
+            continue
+        p1, p2, p3 = normal_atoms
+        centroid = ring[xyz].to_numpy(dtype=float).mean(axis=0)
+        rings.append(
+            {
+                "nodes": ring["node_id"].unique(),
+                "chain_id": first["chain_id"],
+                "residue_number": first["residue_number"],
+                "insertion": first["insertion"],
+                **dict(zip(xyz, centroid)),
+                "normal": np.cross(p2 - p1, p3 - p1),
+            }
+        )
+    if not rings:
+        return
+    rings = pd.DataFrame(rings)
+    i, j = get_interacting_atom_pairs(centroid_distance, rings)
+    # A residue's conformers are alternatives and can't interact
+    keep = ~same_residue(rings, i, j)
+    i, j = i[keep], j[keep]
+
+    def folded_angle(u: np.ndarray, v: np.ndarray) -> np.ndarray:
+        cos = np.abs(np.sum(u * v, axis=1)) / (
+            np.linalg.norm(u, axis=1) * np.linalg.norm(v, axis=1)
+        )
+        return np.degrees(np.arccos(np.clip(cos, 0, 1)))
+
+    normals = np.stack(rings["normal"].to_numpy())
+    centroids = rings[xyz].to_numpy(dtype=float)
+    centroid_vector = centroids[j] - centroids[i]
+    normal_angle = folded_angle(normals[i], normals[j])
+    psi = np.minimum(
+        folded_angle(normals[i], centroid_vector),
+        folded_angle(normals[j], centroid_vector),
+    )
+    stacked = (
+        (normal_angle >= normal_angles[0])
+        & (normal_angle <= normal_angles[1])
+        & (psi <= 45)
+    )
+    nodes = rings["nodes"].to_numpy()
+    for a, b in zip(i[stacked], j[stacked]):
+        for n1, n2 in product(nodes[a], nodes[b]):
+            add_edge(G, n1, n2, kind)
+
+
 def add_pi_stacking_interactions(
     G: nx.Graph,
     pdb_df: pd.DataFrame | None = None,
     centroid_distance: float = 7.0,
 ):
-    """Adds Pi-stacking interactions to graph.
+    """Adds parallel pi-stacking interactions between ``PHE``, ``TYR`` and
+    ``TRP`` rings, with the criteria of GetContacts:
 
-    Criteria:
-        - aromatic ring centroids within 7.0 (default) Angstroms. (|A1A2| < 7.0)
-        - Angle between ring normal vectors < 30° (∠(n1, n2) < 30°)
-        - Angle between ring normal vectors and centroid vector < 45°
-            (∠(n1, A1A2) < 45°), (∠(n2, A1A2) < 45°)
+    - Ring centroids within ``centroid_distance`` (|A1A2| <= 7.0 Å by
+      default).
+    - Angle between the ring normals <= 30° (∠(n1, n2) <= 30°).
+    - Angle between either ring normal and the centroid vector <= 45°
+      (min(∠(n1, A1A2), ∠(n2, A1A2)) <= 45°).
 
-    :param G: _description_
+    Angles are folded to [0°, 90°], since a ring normal can point to either
+    face of its ring. On atom graphs, every ring atom of one ring is joined
+    to every ring atom of the other. Rings with missing atoms are skipped.
+
+    :param G: Protein graph to add edges to.
     :type G: nx.Graph
-    :param pdb_df: _description_, defaults to None
-    :type pdb_df: Optional[pd.DataFrame], optional
+    :param pdb_df: Atomic dataframe to take the ring atoms from. If ``None``
+        (default), ``G.graph["raw_pdb_df"]``.
+    :type pdb_df: pd.DataFrame, optional
+    :param centroid_distance: Maximum distance between ring centroids
+        (Angstroms). Defaults to ``7.0``.
+    :type centroid_distance: float
     """
-    if pdb_df is None:
-        pdb_df = G.graph["raw_pdb_df"]
-    # Compute centroids and normal for each ring
-    aromatic_df = _ring_centroids(G, pdb_df, PI_RESIS, normals=True)
-
-    if aromatic_df.shape[0] > 0:
-        interacting_resis = _ring_pairs(aromatic_df, 0, centroid_distance)
-        # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
-        centroids = dict(
-            zip(
-                aromatic_df["node_id"],
-                aromatic_df[["x_coord", "y_coord", "z_coord"]].to_numpy(),
-            )
-        )
-        normals = dict(zip(aromatic_df["node_id"], aromatic_df[0]))
-        for n1, n2 in interacting_resis:
-            assert G.nodes[n1]["residue_name"] in PI_RESIS
-            assert G.nodes[n2]["residue_name"] in PI_RESIS
-            n1_centroid = centroids[n1]
-            n2_centroid = centroids[n2]
-
-            n1_normal = normals[n1]
-            n2_normal = normals[n2]
-
-            centroid_vector = n2_centroid - n1_centroid
-
-            norm_angle = compute_angle(n1_normal, n2_normal)
-            n1_centroid_angle = compute_angle(n1_normal, centroid_vector)
-            n2_centroid_angle = compute_angle(n2_normal, centroid_vector)
-
-            if (
-                norm_angle >= 30
-                or n1_centroid_angle >= 45
-                or n2_centroid_angle >= 45
-            ):
-                continue
-            add_edge(G, n1, n2, "pi_stacking")
+    _ring_stacking(G, pdb_df, centroid_distance, (0, 30), "pi_stacking")
 
 
-def add_t_stacking(G: nx.Graph, pdb_df: pd.DataFrame | None = None):
-    if pdb_df is None:
-        pdb_df = G.graph["raw_pdb_df"]
-    # Compute centroids and normal for each ring
-    aromatic_df = _ring_centroids(G, pdb_df, PI_RESIS, normals=True)
+def add_t_stacking(
+    G: nx.Graph,
+    pdb_df: pd.DataFrame | None = None,
+    centroid_distance: float = 7.0,
+):
+    """Adds T-shaped (edge-to-face) pi-stacking interactions between
+    ``PHE``, ``TYR`` and ``TRP`` rings, with the angle criteria of
+    GetContacts:
 
-    if aromatic_df.shape[0] > 0:
-        interacting_resis = _ring_pairs(aromatic_df, 0, 7)
-        # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
-        centroids = dict(
-            zip(
-                aromatic_df["node_id"],
-                aromatic_df[["x_coord", "y_coord", "z_coord"]].to_numpy(),
-            )
-        )
-        normals = dict(zip(aromatic_df["node_id"], aromatic_df[0]))
-        for n1, n2 in interacting_resis:
-            assert G.nodes[n1]["residue_name"] in PI_RESIS
-            assert G.nodes[n2]["residue_name"] in PI_RESIS
-            n1_centroid = centroids[n1]
-            n2_centroid = centroids[n2]
+    - Ring centroids within ``centroid_distance`` (|A1A2| <= 7.0 Å by
+      default; GetContacts uses 5.0 Å).
+    - Angle between the ring normals of 60° to 90° (60° <= ∠(n1, n2) <=
+      90°).
+    - Angle between either ring normal and the centroid vector <= 45°
+      (min(∠(n1, A1A2), ∠(n2, A1A2)) <= 45°), i.e. one ring points at the
+      other's face.
 
-            n1_normal = normals[n1]
-            n2_normal = normals[n2]
+    Angles are folded to [0°, 90°], since a ring normal can point to either
+    face of its ring. On atom graphs, every ring atom of one ring is joined
+    to every ring atom of the other. Rings with missing atoms are skipped.
 
-            centroid_vector = n2_centroid - n1_centroid
-
-            norm_angle = compute_angle(n1_normal, n2_normal)
-            n1_centroid_angle = compute_angle(n1_normal, centroid_vector)
-            n2_centroid_angle = compute_angle(n2_normal, centroid_vector)
-
-            if (
-                norm_angle >= 90
-                or norm_angle <= 60
-                or n1_centroid_angle >= 45
-                or n2_centroid_angle >= 45
-            ):
-                continue
-            add_edge(G, n1, n2, "t_stacking")
+    :param G: Protein graph to add edges to.
+    :type G: nx.Graph
+    :param pdb_df: Atomic dataframe to take the ring atoms from. If ``None``
+        (default), ``G.graph["raw_pdb_df"]``.
+    :type pdb_df: pd.DataFrame, optional
+    :param centroid_distance: Maximum distance between ring centroids
+        (Angstroms). Defaults to ``7.0``.
+    :type centroid_distance: float
+    """
+    _ring_stacking(G, pdb_df, centroid_distance, (60, 90), "t_stacking")
 
 
 def add_backbone_carbonyl_carbonyl_interactions(
