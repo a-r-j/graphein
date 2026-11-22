@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import shlex
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -95,7 +96,12 @@ def get_contacts_df(config: GetContactsConfig, pdb_path: str) -> pd.DataFrame:
     :rtype: pd.DataFrame
     """
     if not config.contacts_dir:
-        config.contacts_dir = Path("/tmp/")
+        # Use a private directory, removed with the contacts file afterwards
+        with tempfile.TemporaryDirectory() as tmp:
+            return get_contacts_df(
+                config.model_copy(update={"contacts_dir": Path(tmp)}),
+                pdb_path,
+            )
 
     contacts_file = (
         config.contacts_dir / f"{Path(pdb_path).stem}{CONTACTS_FILE_SUFFIX}"
@@ -106,13 +112,7 @@ def get_contacts_df(config: GetContactsConfig, pdb_path: str) -> pd.DataFrame:
         log.info("GetContacts file not found. Running GetContacts...")
         run_get_contacts(config, file_name=pdb_path)
 
-    contacts_df = read_contacts_file(config, contacts_file)
-
-    # remove temp GetContacts file
-    if config.contacts_dir == "/tmp/":
-        os.remove(contacts_file)
-
-    return contacts_df
+    return read_contacts_file(config, contacts_file)
 
 
 def _validate_get_contacts_installation(config: GetContactsConfig) -> None:

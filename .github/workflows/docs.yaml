@@ -37,9 +37,9 @@ jobs:
       # autodoc imports every module: graphein.ml and graphein.protein.tensor
       # need torch and PyG, and foldcomp_dataset needs lightning
       - name: Install PyTorch
-        run: uv pip install torch==2.8.0 -f https://download.pytorch.org/whl/cpu
+        run: uv pip install --no-build torch==2.8.0 -f https://download.pytorch.org/whl/cpu
       - name: Install PyG and Lightning
-        run: uv pip install --no-build torch_geometric==2.7.0 lightning
+        run: uv pip install --no-build torch_geometric==2.7.0 lightning==2.6.6
       # Notebooks are rendered from their saved outputs rather than re-run
       - name: Build docs
         run: >-
