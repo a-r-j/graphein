@@ -44,6 +44,7 @@ from graphein.protein.edges.distance import (
 from graphein.protein.edges.intramolecular import peptide_bonds
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 from graphein.protein.resi_atoms import (
+    AA_RING_ATOMS,
     AROMATIC_RESIS,
     CATION_RESIS,
     HYDROGEN_BOND_ACCEPTORS,
@@ -1248,6 +1249,101 @@ def test_assign_atoms_to_nodes_uses_node_conformer():
         (assigned["node_id"] == node) & (assigned["atom_name"] == "OG")
     ]
     assert og["alt_loc"].tolist() == ["A"]
+
+
+def _split_conformers(
+    df: pd.DataFrame, rows: pd.Series, shift: float, occupancy: float = 0.6
+) -> pd.DataFrame:
+    """Give ``rows`` of ``df`` a conformer B, ``shift`` A away in x, with
+    occupancy ``1 - occupancy``. The original rows become conformer A."""
+    copy = df.loc[rows].assign(alt_loc="B", occupancy=1 - occupancy)
+    copy["x_coord"] += shift
+    df = df.copy()
+    df.loc[rows, ["alt_loc", "occupancy"]] = ["A", occupancy]
+    return pd.concat([df, copy], ignore_index=True)
+
+
+def test_assign_atoms_to_nodes_conformer_from_whole_residue():
+    """A node without an alt_loc gets the conformer chosen from all of its
+    residue's atoms, whichever atoms are passed in, so every edge function
+    uses the same conformer.
+
+    A LYS side chain is split into conformers A and B. A has the higher mean
+    occupancy, but NZ alone favours B.
+    """
+    df = read_pdb_to_dataframe(DATA_PATH)
+    lys = df.loc[df["residue_name"] == "LYS"].iloc[0]
+    residue = f"{lys['chain_id']}:LYS:{lys['residue_number']}"
+    side_chain = _residue_atoms(df, residue) & ~df["atom_name"].isin(
+        ["N", "CA", "C", "O"]
+    )
+    df = _split_conformers(df, side_chain, 0.5, occupancy=0.7)
+    nz = _residue_atoms(df, residue) & (df["atom_name"] == "NZ")
+    df.loc[nz, "occupancy"] = np.where(df.loc[nz, "alt_loc"] == "A", 0.3, 0.7)
+
+    g = construct_graph(
+        config=ProteinGraphConfig(granularity="CA"), df=df, name="test"
+    )
+    assert residue in g
+    assigned = distance.assign_atoms_to_nodes(g, df.loc[nz])
+    assert assigned["alt_loc"].tolist() == ["A"]
+
+
+def test_assign_atoms_to_nodes_one_ring_with_include():
+    """With ``alt_locs="include"``, a node whose CA has no alt_loc gets one
+    conformer of its ring (the higher occupancy), not both, which would put
+    its ring centroid between the two rings."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    phe = df.loc[df["residue_name"] == "PHE"].iloc[0]
+    residue = f"{phe['chain_id']}:PHE:{phe['residue_number']}"
+    ring = _residue_atoms(df, residue) & df["atom_name"].isin(
+        AA_RING_ATOMS["PHE"]
+    )
+    df = _split_conformers(df, ring, 100.0)
+
+    g = construct_graph(
+        config=ProteinGraphConfig(granularity="CA", alt_locs="include"),
+        df=df,
+        name="test",
+    )
+    assert residue in g
+    assigned = distance.assign_atoms_to_nodes(
+        g, distance.get_ring_atoms(df, "PHE")
+    )
+    assert set(assigned.loc[assigned["node_id"] == residue, "alt_loc"]) == {
+        "A"
+    }
+
+
+@pytest.mark.parametrize("column", ["alt_loc", "insertion"])
+def test_assign_atoms_to_nodes_missing_column(column):
+    """Graphs whose dataframes lack ``alt_loc`` or ``insertion`` columns
+    treat them as blank."""
+    g = construct_graph(
+        config=ProteinGraphConfig(granularity="CA"), path=str(DATA_PATH)
+    )
+    expected = distance.assign_atoms_to_nodes(g, g.graph["raw_pdb_df"])
+    for key in ("pdb_df", "raw_pdb_df"):
+        g.graph[key] = g.graph[key].drop(columns=column)
+    assigned = distance.assign_atoms_to_nodes(g, g.graph["raw_pdb_df"])
+    assert len(assigned) == len(expected)
+
+
+@pytest.mark.parametrize(
+    "edge_fn",
+    [
+        partial(add_distance_threshold, threshold=5.0),
+        partial(add_distance_window, min=0.0, max=5.0),
+    ],
+    ids=["threshold", "window"],
+)
+def test_distance_edges_no_self_loops(edge_fn):
+    """A node is never within distance of itself, even with
+    ``long_interaction_threshold=0``."""
+    fn = partial(edge_fn, long_interaction_threshold=0)
+    config = ProteinGraphConfig(edge_construction_functions=[fn])
+    g = construct_graph(config=config, path=str(DATA_PATH))
+    assert nx.number_of_selfloops(g) == 0
 
 
 def test_hbond_peptide_check_uses_conformer_coordinates():

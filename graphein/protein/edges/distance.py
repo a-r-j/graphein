@@ -263,20 +263,22 @@ def assign_atoms_to_nodes(G: nx.Graph, df: pd.DataFrame) -> pd.DataFrame:
 
     Atoms are matched to nodes by chain, residue name and number and insertion
     code (and atom name and alt_loc on graphs with one node per atom, see
-    :const:`ATOM_NODE_TYPES`) rather than by
-    ``node_id``, which is ignored if present: residue node IDs carry the CA's
+    :const:`ATOM_NODE_TYPES`) rather than by ``node_id``, which is ignored if present: residue node IDs carry the CA's
     alt_loc, which the residue's other atoms may not share, and without
     insertions inserted residues share their parent's node ID.
 
     On residue graphs, a node whose CA has an alt_loc (e.g. ``A:LYS:16:A``)
     gets the residue's atoms of that conformer and those without an alt_loc.
-    A node without an alt_loc gets one conformer of each atom, chosen by the
-    graph's ``config.alt_locs`` (see
-    :func:`~graphein.protein.graphs.remove_alt_locs`), or every conformer if
-    it is ``"include"``.
+    A node without an alt_loc gets one conformer of its residue, chosen by
+    the graph's ``config.alt_locs`` (see
+    :func:`~graphein.protein.graphs.remove_alt_locs`; the highest occupancy
+    for ``"include"``) from all of the residue's atoms in
+    ``G.graph["raw_pdb_df"]``, so the choice doesn't depend on which atoms
+    are in ``df``.
 
-    Missing ``insertion`` and ``alt_loc`` columns are treated as blank, and a
-    missing ``occupancy`` column as equal occupancies.
+    Missing ``insertion`` and ``alt_loc`` values or columns (in ``df`` or the
+    graph's dataframes) are treated as blank, and a missing ``occupancy``
+    column as equal occupancies.
 
     :param G: Protein graph.
     :type G: nx.Graph
@@ -288,13 +290,9 @@ def assign_atoms_to_nodes(G: nx.Graph, df: pd.DataFrame) -> pd.DataFrame:
     :rtype: pd.DataFrame
     """
     nodes = G.graph["pdb_df"]
-    nodes = nodes.loc[nodes["node_id"].isin(list(G.nodes()))]
-    nodes = nodes.fillna({"insertion": "", "alt_loc": ""})
+    nodes = _blank_columns(nodes.loc[nodes["node_id"].isin(list(G.nodes()))])
     df = df.drop(columns="node_id", errors="ignore").reset_index(drop=True)
-    for col in ("insertion", "alt_loc"):
-        df[col] = df[col].fillna("") if col in df else ""
-    if "occupancy" not in df:
-        df["occupancy"] = 1.0
+    df = _blank_columns(df)
 
     key = ["chain_id", "residue_name", "residue_number", "insertion"]
     if G.graph.get("node_type") in ATOM_NODE_TYPES:
@@ -309,17 +307,48 @@ def assign_atoms_to_nodes(G: nx.Graph, df: pd.DataFrame) -> pd.DataFrame:
     keep = has_conformer & (
         (df["alt_loc"] == "") | (df["alt_loc"] == df["node_alt_loc"])
     )
+    # Nodes without an alt_loc get one conformer per residue, chosen from all
+    # of the residue's atoms so that every edge function uses the same one
+    # whichever atoms it passes in. With "include", that is the conformer
+    # with the highest occupancy.
     alt_locs = getattr(G.graph.get("config"), "alt_locs", "max_occupancy")
     if alt_locs == "include":
-        keep |= ~has_conformer
-    else:
-        # Avoid a circular import (graphs imports this module)
-        from graphein.protein.graphs import remove_alt_locs
+        alt_locs = "max_occupancy"
+    # Avoid a circular import (graphs imports this module)
+    from graphein.protein.graphs import remove_alt_locs
 
-        shared = df.loc[~has_conformer]
-        shared = remove_alt_locs(shared.assign(row=shared.index), alt_locs)
-        keep[shared["row"].to_numpy()] = True
+    residue = ["chain_id", "residue_number", "insertion", "alt_loc"]
+    chosen = remove_alt_locs(
+        _blank_columns(G.graph.get("raw_pdb_df", df)), alt_locs
+    )
+    chosen = chosen.loc[chosen["alt_loc"] != "", residue].drop_duplicates()
+    is_chosen = (
+        df[residue]
+        .merge(chosen.assign(chosen=True), on=residue, how="left")["chosen"]
+        .notna()
+    )
+    keep |= ~has_conformer & ((df["alt_loc"] == "") | is_chosen.to_numpy())
     return df.loc[keep].drop(columns="node_alt_loc").reset_index(drop=True)
+
+
+def _blank_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Fill missing ``insertion`` and ``alt_loc`` values (or columns) with
+    ``""``, and a missing ``occupancy`` column with ``1.0``.
+
+    :param df: Atomic dataframe.
+    :type df: pd.DataFrame
+    :return: Copy of ``df`` with the columns filled.
+    :rtype: pd.DataFrame
+    """
+    df = df.assign(
+        **{
+            col: df[col].fillna("") if col in df else ""
+            for col in ("insertion", "alt_loc")
+        }
+    )
+    if "occupancy" not in df:
+        df["occupancy"] = 1.0
+    return df
 
 
 def add_hydrophobic_interactions(
