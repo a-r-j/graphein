@@ -24,7 +24,6 @@ dependencies = [
     "pandas",
     "biopandas>=0.5.1",
     "biopython",
-    "bioservices>=1.10.0",
     "cpdb-protein>=0.3.1",
     "cython",
     "deepdiff",
@@ -37,15 +36,13 @@ dependencies = [
     "plotly",
     "pydantic",
     "rcsb-api>=1.4.0",
+    "requests",
     "rich",
     "rich-click",
     "seaborn",
     "pyyaml!=6.0.0,!=5.4.0,!=5.4.1",
     "scikit-learn",
     "scipy>=1.8",
-    # bioservices<1.15 imports pkg_resources, removed in setuptools 81. bioservices>=1.15
-    # drops it but pins lxml<6, which reintroduces CVE-2026-41066.
-    "setuptools>=78.1.1,<81",
     "tqdm",
     "wget",
     "xarray",
@@ -54,7 +51,7 @@ dependencies = [
 
 [project.optional-dependencies]
 extras = [
-    "propy3",
+    "propy3>=2",  # propy3<2 imports pkg_resources, removed in setuptools 81
     "pyaaisc",
     "mpl_chord_diagram==0.3.2",
     "rdkit",
@@ -94,7 +91,7 @@ docs = [
     "sphinx_codeautolink",
 ]
 all = [
-    "propy3",
+    "propy3>=2",  # propy3<2 imports pkg_resources, removed in setuptools 81
     "pyaaisc",
     "mpl_chord_diagram==0.3.2",
     "rdkit",

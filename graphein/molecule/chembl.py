@@ -1,8 +1,10 @@
 """Functions for retrieving molecular data from ChEMBL."""
 
 from typing import Any
+from urllib.parse import quote
 
 import networkx as nx
+import requests
 
 # %%
 # Graphein
@@ -10,12 +12,10 @@ import networkx as nx
 # License: MIT
 # Project Website: https://github.com/a-r-j/graphein
 # Code Repository: https://github.com/a-r-j/graphein
-from bioservices import ChEMBL
 
-from graphein.utils.dependencies import requires_python_libs
+CHEMBL_MOLECULE_URL = "https://www.ebi.ac.uk/chembl/api/data/molecule/"
 
 
-@requires_python_libs("bioservices")
 def get_smiles_from_chembl(chembl_id: str) -> str:
     """Retrieves a SMILE string from a ChEMBL ID.
 
@@ -25,12 +25,10 @@ def get_smiles_from_chembl(chembl_id: str) -> str:
         ``'COc1cccc(c1)NC(=O)c2cccnc2'``
     :rtype: str
     """
-    chembl = ChEMBL()
-    data = chembl.get_molecule(chembl_id)
+    data = get_chembl_metadata(chembl_id)
     return data["molecule_structures"]["canonical_smiles"]
 
 
-@requires_python_libs("bioservices")
 def get_chembl_id_from_smiles(smiles: str) -> str:
     """Retrieves a ChEMBL ID from a SMILE string.
 
@@ -40,9 +38,7 @@ def get_chembl_id_from_smiles(smiles: str) -> str:
     :return: ChEMBL ID, e.g., ``'CHEMBL1234'``
     :rtype: str
     """
-    chembl = ChEMBL()
-    data = chembl.get_molecule(smiles)
-    return data["molecule_chembl_id"]
+    return get_chembl_metadata(smiles)["molecule_chembl_id"]
 
 
 def get_chembl_metadata(query: str) -> dict[str, Any]:
@@ -51,11 +47,18 @@ def get_chembl_metadata(query: str) -> dict[str, Any]:
     :param query: A valid SMILE string or ChEMBL ID, e.g.
         ``'CHEMBL1234'`` or ``'COc1cccc(c1)NC(=O)c2cccnc2'``
     :type query: str
+    :raises requests.HTTPError: If ChEMBL has no molecule for the query.
     :return: A dictionary of metadata.
     :rtype: Dict[str, Any]
     """
-    chembl = ChEMBL()
-    return chembl.get_molecule(query)
+    # Encode the query: SMILES contain URL characters such as # (C#N)
+    response = requests.get(
+        CHEMBL_MOLECULE_URL + quote(query, safe=""),
+        params={"format": "json"},
+        timeout=60,
+    )
+    response.raise_for_status()
+    return response.json()
 
 
 def add_chembl_metadata(g: nx.Graph) -> nx.Graph:
