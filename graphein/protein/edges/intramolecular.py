@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import os
+import shlex
 import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -168,13 +169,18 @@ def run_get_contacts(
     pdb_path = _get_or_download_pdb(config, pdb_id, file_name)
     output_path = config.contacts_dir / (pdb_path.stem + CONTACTS_FILE_SUFFIX)
 
-    command = f"{config.get_contacts_path}/get_static_contacts.py "
-    command += f"--structure {pdb_path} "
-    command += f"--output {output_path} "
-    command += "--itypes all"  # --sele "protein"'
+    command = [
+        f"{config.get_contacts_path}/get_static_contacts.py",
+        "--structure",
+        str(pdb_path),
+        "--output",
+        str(output_path),
+        "--itypes",
+        "all",
+    ]
 
-    log.info(f"Running GetContacts: {command}")
-    subprocess.run(command, shell=True, check=True)
+    log.info(f"Running GetContacts: {shlex.join(command)}")
+    subprocess.run(command, check=True)
 
     if not output_path.exists():
         raise FileNotFoundError(

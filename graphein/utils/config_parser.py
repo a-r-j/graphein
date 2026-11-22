@@ -1,5 +1,6 @@
 """Yaml parser for config objects"""
 
+import importlib
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
@@ -18,70 +19,98 @@ from graphein.protein.config import (
 )
 
 
+class ConfigLoader(yaml.SafeLoader):
+    """``yaml.SafeLoader`` with graphein's config (``!ProteinGraphConfig``)
+    and function (``!func:graphein.module.function``) tags. Subclassing keeps
+    the tags off PyYAML's own loaders."""
+
+
+CONFIGS = {
+    config.__name__: config
+    for config in (
+        ProteinGraphConfig,
+        DSSPConfig,
+        ProteinMeshConfig,
+        GetContactsConfig,
+        TRRUSTConfig,
+        RegNetworkConfig,
+        GRNGraphConfig,
+        STRINGConfig,
+        BioGridConfig,
+        PPIGraphConfig,
+        MoleculeGraphConfig,
+    )
+}
+
+
 def config_constructor(
-    loader: yaml.FullLoader, node: yaml.nodes.MappingNode
+    loader: yaml.SafeLoader, node: yaml.nodes.MappingNode
 ) -> BaseModel:
     """Construct a BaseModel config.
 
     :param loader: Given yaml loader
-    :param type: yaml.FullLoader
+    :type loader: yaml.SafeLoader
     :param node: A mapping node
-    :param type: yaml.nodes.MappingNode
+    :type node: yaml.nodes.MappingNode
+    :return: The config named by the node's tag
+    :rtype: BaseModel
     """
     arg_map = loader.construct_mapping(node, deep=True) if node.value else {}
-    return eval(node.tag[1:])(**arg_map)
+    return CONFIGS[node.tag[1:]](**arg_map)
 
 
 def function_constructor(
-    loader: yaml.FullLoader,
+    loader: yaml.SafeLoader,
     tag_suffix: str,
     node: yaml.nodes.MappingNode | yaml.nodes.ScalarNode,
 ) -> Callable:
-    """Construct a Callable. If function parameters are given, this returns a partial function.
+    """Construct a Callable. If function parameters are given, this returns a
+    partial function. Only functions in ``graphein`` can be named, so a config
+    file can't run arbitrary code (e.g. ``!func:os.system``).
 
     :param loader: Given yaml loader
-    :param type: yaml.FullLoader
+    :type loader: yaml.SafeLoader
     :param tag_suffix: The name after the !func: tag
-    :param type: str
-    :param node: A mapping node if function parameters are given, a scalar node if not
-    :param type: Union[yaml.nodes.MappingNode, yaml.nodes.ScalarNode]
+    :type tag_suffix: str
+    :param node: A mapping node if function parameters are given, a scalar
+        node if not
+    :type node: yaml.nodes.MappingNode | yaml.nodes.ScalarNode
+    :raises yaml.constructor.ConstructorError: If the function is not in
+        ``graphein`` or can't be found.
+    :return: The function, or a partial of it with the given parameters
+    :rtype: Callable
     """
-    arg_map = None
-    if isinstance(node, yaml.nodes.MappingNode):
-        arg_map = (
-            loader.construct_mapping(node, deep=True) if node.value else {}
+    module, _, name = tag_suffix.rpartition(".")
+    if module != "graphein" and not module.startswith("graphein."):
+        raise yaml.constructor.ConstructorError(
+            None,
+            None,
+            f"!func: only accepts graphein functions, got {tag_suffix!r}",
+            node.start_mark,
         )
-        node = yaml.nodes.ScalarNode(
-            node.tag, "", node.start_mark, node.end_mark
-        )
-    func = loader.construct_python_name(tag_suffix, node)
-    if arg_map:
-        func = partial(func, **arg_map)
+    try:
+        func = getattr(importlib.import_module(module), name)
+    except (ImportError, AttributeError) as e:
+        raise yaml.constructor.ConstructorError(
+            None, None, f"Cannot find {tag_suffix!r}: {e}", node.start_mark
+        ) from e
+    if isinstance(node, yaml.nodes.MappingNode) and node.value:
+        func = partial(func, **loader.construct_mapping(node, deep=True))
     return func
 
 
-def get_loader() -> yaml.Loader:
-    """Add constructors to PyYAML loader."""
-    # For Python-specific tags, you can use full_load(), which resolves all tags except those known to be unsafe;
-    # this includes all the tags listed here: https://pyyaml.org/wiki/PyYAMLDocumentation#yaml-tags-and-python-types
-    loader = yaml.FullLoader
-    configs = [
-        ProteinGraphConfig.__name__,
-        DSSPConfig.__name__,
-        ProteinMeshConfig.__name__,
-        GetContactsConfig.__name__,
-        TRRUSTConfig.__name__,
-        RegNetworkConfig.__name__,
-        GRNGraphConfig.__name__,
-        STRINGConfig.__name__,
-        BioGridConfig.__name__,
-        PPIGraphConfig.__name__,
-        MoleculeGraphConfig.__name__,
-    ]
-    for config in configs:
-        loader.add_constructor(f"!{config}", config_constructor)
-    loader.add_multi_constructor("!func:", function_constructor)
-    return loader
+for _name in CONFIGS:
+    ConfigLoader.add_constructor(f"!{_name}", config_constructor)
+ConfigLoader.add_multi_constructor("!func:", function_constructor)
+
+
+def get_loader() -> type[ConfigLoader]:
+    """Return the PyYAML loader for graphein configs.
+
+    :return: :class:`ConfigLoader`
+    :rtype: type[ConfigLoader]
+    """
+    return ConfigLoader
 
 
 def parse_config(path: Path) -> BaseModel:
@@ -92,4 +121,4 @@ def parse_config(path: Path) -> BaseModel:
     :type path: pathlib.Path
     """
     with open(path, "rb") as f:
-        return yaml.load(f, Loader=get_loader())
+        return yaml.load(f, Loader=ConfigLoader)

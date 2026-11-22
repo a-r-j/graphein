@@ -15,9 +15,9 @@ import wget
 from loguru import logger as log
 
 BP_RNA_1M_DB_URL: str = (
-    "http://bprna.cgrb.oregonstate.edu/bpRNA_1m/dbnFiles.zip"
+    "https://bprna.cgrb.oregonstate.edu/bpRNA_1m/dbnFiles.zip"
 )
-BP_RNA_1M_90_DB_URL: str = "http://bprna.cgrb.oregonstate.edu/bpRNA_1m_90.zip"
+BP_RNA_1M_90_DB_URL: str = "https://bprna.cgrb.oregonstate.edu/bpRNA_1m_90.zip"
 
 
 def download_bp_rna_1m(out_path: str = "/tmp/"):
