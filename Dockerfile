@@ -26,14 +26,14 @@ COPY pyproject.toml uv.lock ./
 # installed editable from the mounted repo by the docker test workflow)
 RUN pip install --only-binary :all: uv==0.11.23 \
     && uv export --frozen --extra dev --extra extras --no-emit-project -o /tmp/requirements.txt \
-    && uv pip install --system -r /tmp/requirements.txt
+    && uv pip install --system --require-hashes -r /tmp/requirements.txt
 
-RUN pip install notebook==6.*
+RUN pip install --only-binary :all: notebook==6.5.7
 
 RUN conda install conda-forge::pluggy
 RUN conda install -c conda-forge libgcc-ng
 RUN conda install scipy scikit-learn matplotlib pandas cython ipykernel
-RUN pip install ticc==0.1.4 --no-cache-dir
+RUN pip install --only-binary :all: ticc==0.1.4 --no-cache-dir
 
 # # Set up vmd-python library
 RUN conda install -c conda-forge vmd-python
@@ -48,11 +48,10 @@ RUN conda install -c conda-forge ipywidgets
 
 RUN export CUDA=$(python -c "import torch; print('cu'+torch.version.cuda.replace('.',''))") \
     && export TORCH=$(python -c "import torch; print(torch.__version__.split('+')[0])") \
-    && pip install torch-scatter torch-sparse torch-cluster torch-spline-conv \
+    && pip install --only-binary :all: torch-scatter torch-sparse torch-cluster torch-spline-conv \
         -f "https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html" --no-cache-dir \
-    && pip install torch-geometric==2.7.0 --no-cache-dir
+    && pip install --only-binary :all: torch-geometric==2.7.0 --no-cache-dir
 
-RUN pip install jupyter_contrib_nbextensions
 RUN jupyter nbextension enable --py widgetsnbextension
 
 # Testing

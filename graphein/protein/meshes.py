@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import tempfile
 import time
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -85,7 +86,8 @@ def get_obj_file(
     :type pdb_file: str, optional
     :param pdb_code: 4-letter pdb accession code. Defaults to ``None``.
     :type pdb_code: str, optional
-    :param out_dir: path to output. Defaults to ``None``.
+    :param out_dir: path to output. Defaults to ``None``, which saves
+        meshes of ``pdb_code`` to a new private temporary directory.
     :type out_dir: str, optional
     :param config: :class:`~graphein.protein.config.ProteinMeshConfig` containing pymol commands to run. Default is ``None`` (``"show surface"``).
     :type config: graphein.protein.config.ProteinMeshConfig
@@ -104,7 +106,7 @@ def get_obj_file(
         )
 
     if out_dir is None:
-        out_dir = "/tmp/"
+        out_dir = tempfile.mkdtemp(prefix="graphein_mesh_")
 
     if config is None:
         config = ProteinMeshConfig()
