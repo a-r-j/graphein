@@ -948,12 +948,13 @@ def _ring_stacking(
     GetContacts. A ring normal can point to either face of its ring, so
     angles are folded to [0°, 90°] (``min(θ, 180° - θ)``).
 
-    Rings are the ring atoms of each node on residue graphs and of each
-    residue conformer (chain, residue number, insertion code and alt_loc) on
-    atom graphs, where every ring atom of one ring is joined to every ring
-    atom of the other. Rings missing any of their
+    Rings are the ring atoms of each node on residue graphs. On atom graphs,
+    each conformer of a residue has a ring of its atoms with that alt_loc
+    and those without one, and every ring atom of one ring is joined to
+    every ring atom of the other. Rings missing any of their
     :const:`~graphein.protein.resi_atoms.RING_NORMAL_ATOMS` (e.g. truncated
-    side chains) are skipped.
+    side chains) or whose normal atoms are collinear are skipped, as are
+    pairs of rings with the same centroid.
 
     :param G: Protein graph.
     :type G: nx.Graph
@@ -973,9 +974,21 @@ def _ring_stacking(
     atoms = pd.concat([get_ring_atoms(pdb_df, resi) for resi in PI_RESIS])
     atoms = assign_atoms_to_nodes(G, atoms)
     if G.graph.get("node_type") in ATOM_NODE_TYPES:
-        # ponytail: a ring whose atoms mix blank and set alt_locs splits
-        # into parts that are each skipped below
-        ring_key = ["chain_id", "residue_number", "insertion", "alt_loc"]
+        # One ring per conformer of each residue: its atoms with that alt_loc
+        # and those without one, as on residue graphs
+        residue = ["chain_id", "residue_number", "insertion"]
+        conformers = (
+            atoms.loc[atoms["alt_loc"] != "", residue + ["alt_loc"]]
+            .drop_duplicates()
+            .rename(columns={"alt_loc": "ring_alt_loc"})
+        )
+        atoms = atoms.merge(conformers, on=residue, how="left")
+        atoms["ring_alt_loc"] = atoms["ring_alt_loc"].fillna("")
+        atoms = atoms.loc[
+            (atoms["alt_loc"] == "")
+            | (atoms["alt_loc"] == atoms["ring_alt_loc"])
+        ]
+        ring_key = residue + ["ring_alt_loc"]
     else:
         ring_key = ["node_id"]
     xyz = ["x_coord", "y_coord", "z_coord"]
@@ -991,6 +1004,9 @@ def _ring_stacking(
         if np.isnan(normal_atoms).any():
             continue
         p1, p2, p3 = normal_atoms
+        normal = np.cross(p2 - p1, p3 - p1)
+        if not np.linalg.norm(normal) > 0:  # collinear normal atoms
+            continue
         centroid = ring[xyz].to_numpy(dtype=float).mean(axis=0)
         rings.append(
             {
@@ -999,16 +1015,21 @@ def _ring_stacking(
                 "residue_number": first["residue_number"],
                 "insertion": first["insertion"],
                 **dict(zip(xyz, centroid)),
-                "normal": np.cross(p2 - p1, p3 - p1),
+                "normal": normal,
             }
         )
     if not rings:
         return
     rings = pd.DataFrame(rings)
     i, j = get_interacting_atom_pairs(centroid_distance, rings)
-    # A residue's conformers are alternatives and can't interact
-    keep = ~same_residue(rings, i, j)
-    i, j = i[keep], j[keep]
+    centroids = rings[xyz].to_numpy(dtype=float)
+    centroid_vector = centroids[j] - centroids[i]
+    # A residue's conformers are alternatives and can't interact. Rings with
+    # the same centroid have no centroid vector to measure angles to.
+    keep = ~same_residue(rings, i, j) & (
+        np.linalg.norm(centroid_vector, axis=1) > 0
+    )
+    i, j, centroid_vector = i[keep], j[keep], centroid_vector[keep]
 
     def folded_angle(u: np.ndarray, v: np.ndarray) -> np.ndarray:
         cos = np.abs(np.sum(u * v, axis=1)) / (
@@ -1017,8 +1038,6 @@ def _ring_stacking(
         return np.degrees(np.arccos(np.clip(cos, 0, 1)))
 
     normals = np.stack(rings["normal"].to_numpy())
-    centroids = rings[xyz].to_numpy(dtype=float)
-    centroid_vector = centroids[j] - centroids[i]
     normal_angle = folded_angle(normals[i], normals[j])
     psi = np.minimum(
         folded_angle(normals[i], centroid_vector),

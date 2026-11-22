@@ -1,6 +1,7 @@
 """Functions for working with Protein Structure Graphs. Based on tests written by Eric Ma in PIN Library"""
 
 import copy
+import warnings
 from functools import partial
 
 # %%
@@ -1557,3 +1558,37 @@ def test_ring_stacking_atom_graph():
     }
     t = {tuple(sorted(e)) for e in get_edges_by_bond_type(g, "t_stacking")}
     assert ("A:PHE:33:CG", "A:PHE:43:CG") in t
+
+
+@pytest.mark.parametrize("atom", ["CZ", "CG"])
+def test_ring_stacking_atom_graph_partial_alt_loc(atom):
+    """On atom graphs, a ring with an alt_loc on one atom is one ring: the
+    atoms without an alt_loc join the chosen conformer's."""
+    df, u, v = _stacked_phe(flip=False)
+    split = _residue_atoms(df, v) & (df["atom_name"] == atom)
+    copy = df.loc[split].assign(alt_loc="B", occupancy=0.4)
+    copy["x_coord"] += 0.5
+    df.loc[split, ["alt_loc", "occupancy"]] = ["A", 0.6]
+    df = pd.concat([df, copy], ignore_index=True)
+
+    g = _stacking_graph(df, granularity="atom")
+    pi = get_edges_by_bond_type(g, "pi_stacking")
+    between = [
+        (a, b)
+        for a, b in pi
+        if {a.split(":")[0], b.split(":")[0]} == {"A", "Z"}
+    ]
+    assert len(between) == 36
+
+
+def test_ring_stacking_coincident_rings_no_warning():
+    """Rings with the same centroid (here a copy of A:PHE:33 as Z:PHE:1)
+    give no divide-by-zero warnings."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    copy = df.loc[_residue_atoms(df, "A:PHE:33")].assign(
+        chain_id="Z", residue_number=1
+    )
+    df = pd.concat([df, copy], ignore_index=True)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        _stacking_graph(df)
