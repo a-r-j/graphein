@@ -1090,6 +1090,60 @@ def test_interactions_no_edge_between_conformers(func, path):
     assert not g_alt.has_edge(f"{u}:A", f"{u}:B")
 
 
+@pytest.mark.parametrize(
+    "func,along_normal",
+    [
+        (distance.add_aromatic_interactions, False),
+        (distance.add_pi_stacking_interactions, True),
+    ],
+    ids=["aromatic", "pi_stacking"],
+)
+def test_ring_interactions_no_edge_between_conformers(func, along_normal):
+    """A residue's ring conformers don't interact with each other.
+
+    The CA and ring of a PHE get a conformer B 5A away (along the ring normal
+    for pi-stacking), which the ring functions would otherwise pair up.
+    """
+    df = read_pdb_to_dataframe(DATA_PATH)
+    phe = df.loc[(df["residue_name"] == "PHE") & (df["atom_name"] == "CA")]
+    chain, res_num = phe.iloc[0][["chain_id", "residue_number"]]
+    u = f"{chain}:PHE:{res_num}"
+    ring = distance.get_ring_atoms(df, "PHE")
+    ring = ring.loc[_residue_atoms(ring, u)]
+    split = _residue_atoms(df, u) & df["atom_name"].isin(
+        ["CA", *ring["atom_name"]]
+    )
+    shift = np.array([5.0, 0.0, 0.0])
+    if along_normal:
+        normal = distance.compute_ring_normal(ring)
+        shift = 5.0 * normal / np.linalg.norm(normal)
+    copy = df.loc[split].assign(alt_loc="B", occupancy=0.5)
+    copy[["x_coord", "y_coord", "z_coord"]] += shift
+    df.loc[split, ["alt_loc", "occupancy"]] = ["A", 0.5]
+    df = pd.concat([df, copy], ignore_index=True)
+
+    g_alt = _interaction_graph(func, df, alt_locs="include")
+    assert {f"{u}:A", f"{u}:B"} <= set(g_alt)
+    assert not g_alt.has_edge(f"{u}:A", f"{u}:B")
+
+
+def test_interactions_rna_atom_graph():
+    """On ``rna_atom`` graphs (one node per atom), atoms are matched to their
+    own node, not to every atom node of their nucleotide."""
+    from graphein.rna.config import RNAGraphConfig
+    from graphein.rna.graphs import construct_graph as construct_rna_graph
+
+    path = Path(__file__).parents[2] / "rna" / "test_data" / "2jyf.pdb"
+    config = RNAGraphConfig(edge_construction_functions=[add_vdw_interactions])
+    g = construct_rna_graph(config=config, path=str(path))
+    assert g.graph["node_type"] == "rna_atom"
+    assert g.number_of_edges() > 0
+    for u, v in g.edges():
+        radii = sum(VDW_RADII[g.nodes[n]["element_symbol"]] for n in (u, v))
+        dist = np.linalg.norm(g.nodes[u]["coords"] - g.nodes[v]["coords"])
+        assert dist <= radii + 0.5, (u, v, dist)
+
+
 @pytest.mark.parametrize("granularity", ["CA", "atom"])
 def test_vdw_remove_intraresidue_keeps_interresidue_edges(granularity):
     """Only edges within one residue are removed, not edges between

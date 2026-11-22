@@ -254,11 +254,16 @@ def add_peptide_bonds(G: nx.Graph) -> nx.Graph:
     return add_sequence_distance_edges(G, d=1, name="peptide_bond")
 
 
+ATOM_NODE_TYPES = {"atom", "rna_atom"}
+"""Graph ``node_type`` values (granularities) with one node per atom."""
+
+
 def assign_atoms_to_nodes(G: nx.Graph, df: pd.DataFrame) -> pd.DataFrame:
     """Assign the atoms in an atomic dataframe to the nodes of a graph.
 
     Atoms are matched to nodes by chain, residue name and number and insertion
-    code (and atom name and alt_loc for atom graphs) rather than by
+    code (and atom name and alt_loc on graphs with one node per atom, see
+    :const:`ATOM_NODE_TYPES`) rather than by
     ``node_id``, which is ignored if present: residue node IDs carry the CA's
     alt_loc, which the residue's other atoms may not share, and without
     insertions inserted residues share their parent's node ID.
@@ -292,7 +297,7 @@ def assign_atoms_to_nodes(G: nx.Graph, df: pd.DataFrame) -> pd.DataFrame:
         df["occupancy"] = 1.0
 
     key = ["chain_id", "residue_name", "residue_number", "insertion"]
-    if G.graph.get("node_type") == "atom":
+    if G.graph.get("node_type") in ATOM_NODE_TYPES:
         key += ["atom_name", "alt_loc"]
         return df.merge(nodes[key + ["node_id"]], on=key)
 
@@ -655,6 +660,63 @@ def add_ionic_interactions(G: nx.Graph, rgroup_df: pd.DataFrame | None = None):
                     G.remove_edge(r1, r2)
 
 
+def _ring_centroids(
+    G: nx.Graph, pdb_df: pd.DataFrame, resis: list[str], normals: bool = False
+) -> pd.DataFrame:
+    """Ring centroids (and optionally normals) of the graph's nodes.
+
+    :param G: Protein graph.
+    :type G: nx.Graph
+    :param pdb_df: Atomic dataframe to take the ring atoms from.
+    :type pdb_df: pd.DataFrame
+    :param resis: Residue names with rings (keys of
+        :const:`~graphein.protein.resi_atoms.AA_RING_ATOMS`).
+    :type resis: list[str]
+    :param normals: Whether to add each ring's normal vector (column ``0``).
+    :type normals: bool
+    :return: One row per node, sorted by node ID, with the centroid in
+        ``x_coord``, ``y_coord`` and ``z_coord`` and the node's chain, residue
+        number and insertion code (for :func:`same_residue`).
+    :rtype: pd.DataFrame
+    """
+    rings = pd.concat([get_ring_atoms(pdb_df, resi) for resi in resis])
+    rings = assign_atoms_to_nodes(G, rings)
+    df = get_ring_centroids(rings)
+    if normals and not rings.empty:
+        df = df.merge(get_ring_normals(rings), on="node_id")
+    residues = rings.drop_duplicates("node_id")[
+        ["node_id", "chain_id", "residue_number", "insertion"]
+    ]
+    df = df.merge(residues, on="node_id")
+    return df.sort_values(by="node_id").reset_index(drop=True)
+
+
+def _ring_pairs(
+    df: pd.DataFrame, min_dist: float, max_dist: float
+) -> list[tuple[str, str]]:
+    """Pairs of nodes in ``df`` (from :func:`_ring_centroids`) whose ring
+    centroids are ``min_dist`` to ``max_dist`` Angstroms apart, leaving out a
+    residue's alt_loc conformers, which are alternatives and can't interact.
+
+    :param df: Ring centroids from :func:`_ring_centroids`.
+    :type df: pd.DataFrame
+    :param min_dist: Minimum centroid distance. Pairs 0A apart (a ring
+        and itself) are always left out.
+    :type min_dist: float
+    :param max_dist: Maximum centroid distance.
+    :type max_dist: float
+    :return: Pairs of node IDs, each pair in both orders.
+    :rtype: list[tuple[str, str]]
+    """
+    distmat = compute_distmat(df).to_numpy()
+    i, j = np.where(
+        (distmat >= min_dist) & (distmat <= max_dist) & (distmat > 0)
+    )
+    keep = ~same_residue(df, i, j)
+    node_ids = df["node_id"].to_numpy()
+    return list(zip(node_ids[i[keep]], node_ids[j[keep]]))
+
+
 def add_aromatic_interactions(G: nx.Graph, pdb_df: pd.DataFrame | None = None):
     """
     Find all aromatic-aromatic interaction.
@@ -679,26 +741,9 @@ def add_aromatic_interactions(G: nx.Graph, pdb_df: pd.DataFrame | None = None):
     """
     if pdb_df is None:
         pdb_df = G.graph["raw_pdb_df"]
-    dfs = []
-    for resi in AROMATIC_RESIS:
-        resi_rings_df = get_ring_atoms(pdb_df, resi)
-        resi_rings_df = assign_atoms_to_nodes(G, resi_rings_df)
-        resi_centroid_df = get_ring_centroids(resi_rings_df)
-        dfs.append(resi_centroid_df)
-    aromatic_df = (
-        pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
-    )
+    aromatic_df = _ring_centroids(G, pdb_df, AROMATIC_RESIS)
     if aromatic_df.shape[0] > 0:
-        distmat = compute_distmat(aromatic_df)
-        distmat.set_index(aromatic_df["node_id"], inplace=True)
-        distmat.columns = aromatic_df["node_id"]
-        distmat = distmat[(distmat >= 4.5) & (distmat <= 7)].fillna(0)
-        indices = np.where(distmat > 0)
-
-        interacting_resis = [
-            (distmat.index[r], distmat.index[c])
-            for r, c in zip(indices[0], indices[1])
-        ]
+        interacting_resis = _ring_pairs(aromatic_df, 4.5, 7)
         log.info(
             f"Found: {len(interacting_resis)} aromatic-aromatic interactions"
         )
@@ -807,7 +852,10 @@ def add_vdw_interactions(
     :param threshold: Threshold distance for van der Waals interactions.
         Default: ``0.5`` Angstroms.
     :type threshold: float
-    :param remove_intraresidue: Whether to remove intra-residue interactions.
+    :param remove_intraresidue: Whether to remove interactions between atoms
+        of the same residue (chain, residue number and insertion code). Only
+        affects graphs with one node per atom: on residue graphs these pairs
+        are always left out (see :func:`add_interacting_resis`).
     :type remove_intraresidue: bool
     """
     df = g.graph["raw_pdb_df"]
@@ -840,7 +888,8 @@ def add_vdw_clashes(
     :param threshold: Threshold, defaults to ``0.0``.
     :type threshold: float
     :param remove_intraresidue: Whether to remove clashes within a residue,
-        defaults to ``False``.
+        defaults to ``False``. Only affects graphs with one node per atom (see
+        :func:`add_vdw_interactions`).
     :type remove_intraresidue: bool
     """
     add_vdw_interactions(
@@ -871,31 +920,11 @@ def add_pi_stacking_interactions(
     """
     if pdb_df is None:
         pdb_df = G.graph["raw_pdb_df"]
-    dfs = []
     # Compute centroids and normal for each ring
-    for resi in PI_RESIS:
-        resi_rings_df = get_ring_atoms(pdb_df, resi)
-        resi_rings_df = assign_atoms_to_nodes(G, resi_rings_df)
-        resi_centroid_df = get_ring_centroids(resi_rings_df)
-        resi_normals = get_ring_normals(resi_rings_df)
-        resi_centroid_df = pd.merge(
-            resi_centroid_df, resi_normals, on="node_id"
-        )
-        dfs.append(resi_centroid_df)
-    aromatic_df = (
-        pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
-    )
+    aromatic_df = _ring_centroids(G, pdb_df, PI_RESIS, normals=True)
 
     if aromatic_df.shape[0] > 0:
-        distmat = compute_distmat(aromatic_df)
-        distmat.set_index(aromatic_df["node_id"], inplace=True)
-        distmat.columns = aromatic_df["node_id"]
-        distmat = distmat[distmat <= centroid_distance].fillna(0)
-        indices = np.where(distmat > 0)
-        interacting_resis = [
-            (distmat.index[r], distmat.index[c])
-            for r, c in zip(indices[0], indices[1])
-        ]
+        interacting_resis = _ring_pairs(aromatic_df, 0, centroid_distance)
         # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
         centroids = dict(
             zip(
@@ -931,31 +960,11 @@ def add_pi_stacking_interactions(
 def add_t_stacking(G: nx.Graph, pdb_df: pd.DataFrame | None = None):
     if pdb_df is None:
         pdb_df = G.graph["raw_pdb_df"]
-    dfs = []
     # Compute centroids and normal for each ring
-    for resi in PI_RESIS:
-        resi_rings_df = get_ring_atoms(pdb_df, resi)
-        resi_rings_df = assign_atoms_to_nodes(G, resi_rings_df)
-        resi_centroid_df = get_ring_centroids(resi_rings_df)
-        resi_normals = get_ring_normals(resi_rings_df)
-        resi_centroid_df = pd.merge(
-            resi_centroid_df, resi_normals, on="node_id"
-        )
-        dfs.append(resi_centroid_df)
-    aromatic_df = (
-        pd.concat(dfs).sort_values(by="node_id").reset_index(drop=True)
-    )
+    aromatic_df = _ring_centroids(G, pdb_df, PI_RESIS, normals=True)
 
     if aromatic_df.shape[0] > 0:
-        distmat = compute_distmat(aromatic_df)
-        distmat.set_index(aromatic_df["node_id"], inplace=True)
-        distmat.columns = aromatic_df["node_id"]
-        distmat = distmat[distmat <= 7].fillna(0)
-        indices = np.where(distmat > 0)
-        interacting_resis = [
-            (distmat.index[r], distmat.index[c])
-            for r, c in zip(indices[0], indices[1])
-        ]
+        interacting_resis = _ring_pairs(aromatic_df, 0, 7)
         # log.info(f"Found: {len(interacting_resis)} aromatic-aromatic interactions")
         centroids = dict(
             zip(
@@ -1023,14 +1032,7 @@ def add_backbone_carbonyl_carbonyl_interactions(
     )
 
     # Filter out O-C edges on the same residue (in any conformer)
-    residue = (
-        df["chain_id"].astype(str)
-        + ":"
-        + df["residue_number"].astype(str)
-        + ":"
-        + df["insertion"]
-    ).to_numpy()
-    diff_atoms = residue[interacting_atoms[0]] != residue[interacting_atoms[1]]
+    diff_atoms = ~same_residue(df, *interacting_atoms)
     interacting_atoms = (
         interacting_atoms[0][diff_atoms],
         interacting_atoms[1][diff_atoms],
@@ -1596,7 +1598,7 @@ def add_interacting_resis(
         assert k in BOND_TYPES
 
     i, j = (np.asarray(a) for a in interacting_atoms)
-    if G.graph.get("node_type") != "atom":
+    if G.graph.get("node_type") not in ATOM_NODE_TYPES:
         # Different nodes of one residue are its alt_loc conformers, which
         # are alternatives and can't interact (they share atoms 0A apart)
         keep = ~same_residue(dataframe, i, j)
