@@ -92,7 +92,7 @@ class PDBManager:
 
         self.pdb_chain_cath_uniprot_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_cath_uniprot.tsv.gz"
 
-        self.cath_id_cath_code_url = "ftp://orengoftp.biochem.ucl.ac.uk/cath/releases/latest-release/cath-classification-data/cath-domain-list.txt"
+        self.cath_id_cath_code_url = "https://download.cathdb.info/cath/releases/latest-release/cath-classification-data/cath-domain-list.txt"
 
         self.pdb_chain_ec_number_url = "https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/pdb_chain_enzyme.tsv.gz"
 
@@ -431,7 +431,7 @@ class PDBManager:
 
     def _download_cath_id_cath_code_map(self):
         """Download mapping from CATH IDs to CATH code from
-        http://download.cathdb.info/cath/releases/daily-release/newest/cath-b-newest-all.gz
+        https://download.cathdb.info/cath/releases/daily-release/newest/cath-b-newest-all.gz
         """
         if not os.path.exists(self.root_dir / self.cath_id_cath_code_filename):
             log.info("Downloading CATH ID to CATH code map...")

@@ -40,7 +40,7 @@ jobs:
       - name: Install Graphein and dependencies
         run: uv sync --locked --extra dev --extra extras --extra docs
       - name: Install PyTorch
-        run: uv pip install torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
+        run: uv pip install --no-build torch==${{matrix.torch}} -f https://download.pytorch.org/whl/cpu
       - name: Install PyG
         run: uv pip install --no-build torch_geometric==2.7.0
       - name: Install torch-cluster
