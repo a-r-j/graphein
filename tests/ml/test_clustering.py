@@ -6,7 +6,10 @@ import sys
 
 import pytest
 
-from graphein.ml.clustering import blast
+# graphein.ml imports torch in its package __init__
+pytest.importorskip("torch")
+
+from graphein.ml.clustering import blast  # noqa: E402
 
 FAKE_MAKEBLASTDB = """#!/bin/sh
 touch "$4.phr" "$4.pin" "$4.psq"
