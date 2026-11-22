@@ -802,6 +802,7 @@ NON_STANDARD_RESIS_PARENT: dict[str, str] = {
     "ABA": "ALA",
     "ACE": "-",
     "AIB": "ALA",
+    "ASH": "ASP",
     "AYA": "ALA",
     "BMT": "THR",
     "BOC": "-",
@@ -818,6 +819,7 @@ NON_STANDARD_RESIS_PARENT: dict[str, str] = {
     "CXM": "MET",
     "DAL": "ALA",
     "DAR": "ARG",
+    "DAS": "ASP",
     "DCY": "CYS",
     "DGL": "GLU",
     "DGN": "GLN",
@@ -832,15 +834,23 @@ NON_STANDARD_RESIS_PARENT: dict[str, str] = {
     "DSN": "SER",
     "DSP": "ASP",
     "DTH": "THR",
-    "DTR": "DTR",
+    "DTR": "TRP",
     "DTY": "TYR",
     "DVA": "VAL",
     "FME": "MET",
     "FOR": "-",
+    "GLH": "GLU",
+    "HID": "HIS",
+    "HIE": "HIS",
+    "HIP": "HIS",
+    "HSD": "HIS",
+    "HSE": "HIS",
+    "HSP": "HIS",
     "HYP": "PRO",
     "IVA": "-",
     "KCX": "LYS",
     "LLP": "LYS",
+    "LYN": "LYS",
     "MLE": "LEU",
     "MVA": "VAL",
     "NH2": "-",
@@ -863,6 +873,13 @@ NON_STANDARD_RESIS_PARENT: dict[str, str] = {
 }
 """
 Mapping of 3-letter non-standard/modified residues to their 3-letter parent residue names.
+Includes Amber/CHARMM protonation state names (e.g. ``HIE``, ``HSD``, ``ASH``).
+
+Entries also give hydrogen bonding residues their parent's side chain donors
+and acceptors (:const:`~graphein.protein.edges.distance.HBOND_RESIDUE_VARIANTS`).
+When adding a residue whose side chain is chemically modified (e.g.
+phosphorylated, methylated), also add it to
+:const:`~graphein.protein.edges.distance.MODIFIED_SIDE_CHAIN_RESIS`.
 """
 
 HYDROGEN_BOND_DONORS: dict[str, dict[str, int]] = {

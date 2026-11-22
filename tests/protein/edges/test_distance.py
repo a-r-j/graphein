@@ -33,14 +33,18 @@ from graphein.protein.edges.distance import (
     add_sequence_distance_edges,
     add_vdw_clashes,
     add_vdw_interactions,
+    compute_distmat,
     filter_distmat,
     get_edges_by_bond_type,
+    get_interacting_atom_pairs,
+    get_interacting_atoms,
     get_ring_atoms,
     get_ring_centroids,
 )
 from graphein.protein.edges.intramolecular import peptide_bonds
 from graphein.protein.graphs import construct_graph, read_pdb_to_dataframe
 from graphein.protein.resi_atoms import (
+    AA_RING_ATOMS,
     AROMATIC_RESIS,
     CATION_RESIS,
     HYDROGEN_BOND_ACCEPTORS,
@@ -295,13 +299,7 @@ def test_add_hydrogen_bond_interactions_removed_insertions():
     df.loc[mask, "residue_name"] = r["residue_name"]
     df.loc[mask, "insertion"] = "A"
 
-    # alt_locs="include": remove_alt_locs leaves rows sorted by occupancy, so
-    # remove_insertions may then keep ``rA`` over ``r``.
-    g = _hbond_graph(
-        "CA",
-        df=df,
-        config_kwargs={"insertions": False, "alt_locs": "include"},
-    )
+    g = _hbond_graph("CA", df=df, config_kwargs={"insertions": False})
     r_node = f"{chain}:{r['residue_name']}:{r['residue_number']}"
     n_node = _residue(n)
     assert r_node in g and n_node in g
@@ -990,3 +988,477 @@ def test_insertion_codes_one_residue_apart(edge_fn, excluded_at, included_at):
         config = ProteinGraphConfig(edge_construction_functions=[fn])
         G = construct_graph(path=str(INSERTION_PDB), config=config)
         assert G.has_edge("H:TRP:52", "H:TYR:52:A") is connected
+
+
+# Interaction functions with an edge to perturb in each structure (4hhb has
+# no disulfides).
+INTERACTION_FUNCTIONS = [
+    (distance.add_hydrophobic_interactions, DATA_PATH),
+    (distance.add_disulfide_interactions, INSERTION_PDB),
+    (distance.add_hydrogen_bond_interactions, DATA_PATH),
+    (distance.add_ionic_interactions, DATA_PATH),
+    (distance.add_aromatic_interactions, DATA_PATH),
+    (distance.add_aromatic_sulphur_interactions, DATA_PATH),
+    (distance.add_cation_pi_interactions, DATA_PATH),
+    (distance.add_vdw_interactions, DATA_PATH),
+    (distance.add_backbone_carbonyl_carbonyl_interactions, DATA_PATH),
+    (distance.add_salt_bridges, DATA_PATH),
+]
+INTERACTION_IDS = [f.__name__ for f, _ in INTERACTION_FUNCTIONS]
+
+
+def _interaction_graph(func, df: pd.DataFrame, **config_kwargs) -> nx.Graph:
+    config = ProteinGraphConfig(
+        granularity="CA", edge_construction_functions=[func], **config_kwargs
+    )
+    return construct_graph(config=config, df=df, name="test")
+
+
+def _residue_atoms(df: pd.DataFrame, node_id: str) -> pd.Series:
+    """Rows of ``df`` in the residue of a residue node ID."""
+    chain, _, res_num, *insertion = node_id.split(":")
+    return (
+        (df["chain_id"] == chain)
+        & (df["residue_number"] == int(res_num))
+        & (df["insertion"].fillna("") == (insertion[0] if insertion else ""))
+    )
+
+
+def _interaction_edge(func, path) -> tuple[pd.DataFrame, nx.Graph, str, str]:
+    df = read_pdb_to_dataframe(path)
+    g = _interaction_graph(func, df)
+    u, v = sorted(g.edges())[0]
+    return df, g, u, v
+
+
+@pytest.mark.parametrize(
+    "func,path", INTERACTION_FUNCTIONS, ids=INTERACTION_IDS
+)
+def test_interactions_partial_alt_loc(func, path):
+    """Atoms of a residue whose CA alone has an alt_loc are used.
+
+    The residue's node ID carries the CA's alt_loc (``A:LYS:16:A``) but its
+    other atoms have none, so matching atoms to nodes by node ID dropped them.
+    """
+    df, _, u, v = _interaction_edge(func, path)
+    df.loc[_residue_atoms(df, u) & (df["atom_name"] == "CA"), "alt_loc"] = "A"
+
+    g = _interaction_graph(func, df)
+    assert g.has_edge(f"{u}:A", v)
+
+
+@pytest.mark.parametrize(
+    "func,path", INTERACTION_FUNCTIONS, ids=INTERACTION_IDS
+)
+def test_interactions_alt_loc_conformers(func, path):
+    """Each conformer's atoms are assigned to its own alt-loc node.
+
+    Residue ``u`` is split into conformer A (unchanged) and conformer B, a
+    copy 100A away listed first in the file. ``u:A`` keeps exactly ``u``'s
+    edges and ``u:B`` gets none.
+    """
+    df, g, u, _ = _interaction_edge(func, path)
+    atoms = _residue_atoms(df, u)
+    copy = df.loc[atoms].assign(alt_loc="B", occupancy=0.5)
+    copy["x_coord"] += 100
+    df.loc[atoms, ["alt_loc", "occupancy"]] = ["A", 0.5]
+    df = pd.concat([copy, df], ignore_index=True)
+
+    g_alt = _interaction_graph(func, df, alt_locs="include")
+    assert set(g_alt[f"{u}:A"]) == set(g[u])
+    assert g_alt.degree(f"{u}:B") == 0
+
+
+@pytest.mark.parametrize(
+    "func,path", INTERACTION_FUNCTIONS, ids=INTERACTION_IDS
+)
+def test_interactions_no_edge_between_conformers(func, path):
+    """A residue's conformer nodes don't interact with each other.
+
+    Only ``u``'s CA gets a conformer B (0.3A away), so with
+    ``alt_locs="include"`` its other atoms belong to both ``u:A`` and
+    ``u:B``, 0A apart.
+    """
+    df, _, u, _ = _interaction_edge(func, path)
+    ca = _residue_atoms(df, u) & (df["atom_name"] == "CA")
+    copy = df.loc[ca].assign(alt_loc="B", occupancy=0.5)
+    copy["x_coord"] += 0.3
+    df.loc[ca, ["alt_loc", "occupancy"]] = ["A", 0.5]
+    df = pd.concat([df, copy], ignore_index=True)
+
+    g_alt = _interaction_graph(func, df, alt_locs="include")
+    assert {f"{u}:A", f"{u}:B"} <= set(g_alt)
+    assert not g_alt.has_edge(f"{u}:A", f"{u}:B")
+
+
+@pytest.mark.parametrize(
+    "func,along_normal",
+    [
+        (distance.add_aromatic_interactions, False),
+        (distance.add_pi_stacking_interactions, True),
+    ],
+    ids=["aromatic", "pi_stacking"],
+)
+def test_ring_interactions_no_edge_between_conformers(func, along_normal):
+    """A residue's ring conformers don't interact with each other.
+
+    The CA and ring of a PHE get a conformer B 5A away (along the ring normal
+    for pi-stacking), which the ring functions would otherwise pair up.
+    """
+    df = read_pdb_to_dataframe(DATA_PATH)
+    phe = df.loc[(df["residue_name"] == "PHE") & (df["atom_name"] == "CA")]
+    chain, res_num = phe.iloc[0][["chain_id", "residue_number"]]
+    u = f"{chain}:PHE:{res_num}"
+    ring = distance.get_ring_atoms(df, "PHE")
+    ring = ring.loc[_residue_atoms(ring, u)]
+    split = _residue_atoms(df, u) & df["atom_name"].isin(
+        ["CA", *ring["atom_name"]]
+    )
+    shift = np.array([5.0, 0.0, 0.0])
+    if along_normal:
+        normal = distance.compute_ring_normal(ring)
+        shift = 5.0 * normal / np.linalg.norm(normal)
+    copy = df.loc[split].assign(alt_loc="B", occupancy=0.5)
+    copy[["x_coord", "y_coord", "z_coord"]] += shift
+    df.loc[split, ["alt_loc", "occupancy"]] = ["A", 0.5]
+    df = pd.concat([df, copy], ignore_index=True)
+
+    g_alt = _interaction_graph(func, df, alt_locs="include")
+    assert {f"{u}:A", f"{u}:B"} <= set(g_alt)
+    assert not g_alt.has_edge(f"{u}:A", f"{u}:B")
+
+
+def test_interactions_rna_atom_graph():
+    """On ``rna_atom`` graphs (one node per atom), atoms are matched to their
+    own node, not to every atom node of their nucleotide."""
+    from graphein.rna.config import RNAGraphConfig
+    from graphein.rna.graphs import construct_graph as construct_rna_graph
+
+    path = Path(__file__).parents[2] / "rna" / "test_data" / "2jyf.pdb"
+    config = RNAGraphConfig(edge_construction_functions=[add_vdw_interactions])
+    g = construct_rna_graph(config=config, path=str(path))
+    assert g.graph["node_type"] == "rna_atom"
+    assert g.number_of_edges() > 0
+    for u, v in g.edges():
+        radii = sum(VDW_RADII[g.nodes[n]["element_symbol"]] for n in (u, v))
+        dist = np.linalg.norm(g.nodes[u]["coords"] - g.nodes[v]["coords"])
+        assert dist <= radii + 0.5, (u, v, dist)
+
+
+@pytest.mark.parametrize("granularity", ["CA", "atom"])
+def test_vdw_remove_intraresidue_keeps_interresidue_edges(granularity):
+    """Only edges within one residue are removed, not edges between
+    residues of the same type (e.g. two LEUs on one chain)."""
+
+    def build(remove_intraresidue):
+        func = partial(
+            add_vdw_interactions, remove_intraresidue=remove_intraresidue
+        )
+        config = ProteinGraphConfig(
+            granularity=granularity, edge_construction_functions=[func]
+        )
+        return construct_graph(config=config, path=str(DATA_PATH))
+
+    def residue(g, n):
+        return g.nodes[n]["chain_id"], g.nodes[n]["residue_number"]
+
+    g, g_all = build(True), build(False)
+    inter = {
+        frozenset(e)
+        for e in g_all.edges()
+        if residue(g_all, e[0]) != residue(g_all, e[1])
+    }
+    assert any(
+        g_all.nodes[u]["residue_name"] == g_all.nodes[v]["residue_name"]
+        for u, v in map(tuple, inter)
+    )
+    assert {frozenset(e) for e in g.edges()} == inter
+
+
+@pytest.mark.parametrize(
+    "func,path", INTERACTION_FUNCTIONS, ids=INTERACTION_IDS
+)
+def test_interactions_removed_insertions(func, path):
+    """With ``insertions=False``, removed inserted residues add no edges.
+
+    Moves residue ``u`` to insertion ``rA`` of a distant residue ``r`` of the
+    same type. ``rA`` is removed from the graph but shared ``r``'s node ID, so
+    its edges were given to ``r``.
+    """
+    df, g, u, v = _interaction_edge(func, path)
+    res_name = g.nodes[u]["residue_name"]
+    ca = df.loc[(df["atom_name"] == "CA") & (df["insertion"] == "")]
+    coords = ["x_coord", "y_coord", "z_coord"]
+    dist = np.min(
+        [
+            np.linalg.norm(
+                ca[coords].to_numpy() - g.nodes[n]["coords"], axis=1
+            )
+            for n in (u, v)
+        ],
+        axis=0,
+    )
+    r = ca.loc[(ca["residue_name"] == res_name) & (dist > 30)].iloc[0]
+    r_atoms = (df["chain_id"] == r["chain_id"]) & (
+        df["residue_number"] == r["residue_number"]
+    )
+    atoms = _residue_atoms(df, u)
+    # Inserted residues follow their parent in the file
+    df.loc[atoms, "atom_number"] = df.loc[r_atoms, "atom_number"].max() + 1
+    df.loc[atoms, "chain_id"] = r["chain_id"]
+    df.loc[atoms, "residue_number"] = r["residue_number"]
+    df.loc[atoms, "insertion"] = "A"
+
+    g = _interaction_graph(func, df, insertions=False)
+    r_node = f"{r['chain_id']}:{res_name}:{r['residue_number']}"
+    assert r_node in g and v in g
+    assert not g.has_edge(r_node, v)
+
+
+def test_assign_atoms_to_nodes_uses_node_conformer():
+    """A residue's atoms come from the conformer of its node's CA.
+
+    Ser CA alt_loc A has the higher occupancy, so the node is ``:A``. OG
+    alt_loc B has the higher occupancy, but OG A is the atom of conformer A.
+    """
+    df = read_pdb_to_dataframe(DATA_PATH)
+    ser = df.loc[df["residue_name"] == "SER"].iloc[0]
+    residue = f"{ser['chain_id']}:SER:{ser['residue_number']}"
+    node = f"{residue}:A"
+    split = _residue_atoms(df, residue) & df["atom_name"].isin(["CA", "OG"])
+    copy = df.loc[split].assign(alt_loc="B")
+    copy["x_coord"] += 0.5
+    df.loc[split, "alt_loc"] = "A"
+    df = pd.concat([df, copy], ignore_index=True)
+    atoms = _residue_atoms(df, residue)
+    for atom, alt, occupancy in [
+        ("CA", "A", 0.6),
+        ("CA", "B", 0.4),
+        ("OG", "A", 0.4),
+        ("OG", "B", 0.6),
+    ]:
+        rows = atoms & (df["atom_name"] == atom) & (df["alt_loc"] == alt)
+        df.loc[rows, "occupancy"] = occupancy
+
+    g = construct_graph(
+        config=ProteinGraphConfig(granularity="CA"), df=df, name="test"
+    )
+    assert node in g
+    assigned = distance.assign_atoms_to_nodes(g, g.graph["raw_pdb_df"])
+    og = assigned.loc[
+        (assigned["node_id"] == node) & (assigned["atom_name"] == "OG")
+    ]
+    assert og["alt_loc"].tolist() == ["A"]
+
+
+def _split_conformers(
+    df: pd.DataFrame, rows: pd.Series, shift: float, occupancy: float = 0.6
+) -> pd.DataFrame:
+    """Give ``rows`` of ``df`` a conformer B, ``shift`` A away in x, with
+    occupancy ``1 - occupancy``. The original rows become conformer A."""
+    copy = df.loc[rows].assign(alt_loc="B", occupancy=1 - occupancy)
+    copy["x_coord"] += shift
+    df = df.copy()
+    df.loc[rows, ["alt_loc", "occupancy"]] = ["A", occupancy]
+    return pd.concat([df, copy], ignore_index=True)
+
+
+def test_assign_atoms_to_nodes_conformer_from_whole_residue():
+    """A node without an alt_loc gets the conformer chosen from all of its
+    residue's atoms, whichever atoms are passed in, so every edge function
+    uses the same conformer.
+
+    A LYS side chain is split into conformers A and B. A has the higher mean
+    occupancy, but NZ alone favours B.
+    """
+    df = read_pdb_to_dataframe(DATA_PATH)
+    lys = df.loc[df["residue_name"] == "LYS"].iloc[0]
+    residue = f"{lys['chain_id']}:LYS:{lys['residue_number']}"
+    side_chain = _residue_atoms(df, residue) & ~df["atom_name"].isin(
+        ["N", "CA", "C", "O"]
+    )
+    df = _split_conformers(df, side_chain, 0.5, occupancy=0.7)
+    nz = _residue_atoms(df, residue) & (df["atom_name"] == "NZ")
+    df.loc[nz, "occupancy"] = np.where(df.loc[nz, "alt_loc"] == "A", 0.3, 0.7)
+
+    g = construct_graph(
+        config=ProteinGraphConfig(granularity="CA"), df=df, name="test"
+    )
+    assert residue in g
+    assigned = distance.assign_atoms_to_nodes(g, df.loc[nz])
+    assert assigned["alt_loc"].tolist() == ["A"]
+
+
+def test_assign_atoms_to_nodes_one_ring_with_include():
+    """With ``alt_locs="include"``, a node whose CA has no alt_loc gets one
+    conformer of its ring (the higher occupancy), not both, which would put
+    its ring centroid between the two rings."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    phe = df.loc[df["residue_name"] == "PHE"].iloc[0]
+    residue = f"{phe['chain_id']}:PHE:{phe['residue_number']}"
+    ring = _residue_atoms(df, residue) & df["atom_name"].isin(
+        AA_RING_ATOMS["PHE"]
+    )
+    df = _split_conformers(df, ring, 100.0)
+
+    g = construct_graph(
+        config=ProteinGraphConfig(granularity="CA", alt_locs="include"),
+        df=df,
+        name="test",
+    )
+    assert residue in g
+    assigned = distance.assign_atoms_to_nodes(
+        g, distance.get_ring_atoms(df, "PHE")
+    )
+    assert set(assigned.loc[assigned["node_id"] == residue, "alt_loc"]) == {
+        "A"
+    }
+
+
+@pytest.mark.parametrize("column", ["alt_loc", "insertion"])
+def test_assign_atoms_to_nodes_missing_column(column):
+    """Graphs whose dataframes lack ``alt_loc`` or ``insertion`` columns
+    treat them as blank."""
+    g = construct_graph(
+        config=ProteinGraphConfig(granularity="CA"), path=str(DATA_PATH)
+    )
+    expected = distance.assign_atoms_to_nodes(g, g.graph["raw_pdb_df"])
+    for key in ("pdb_df", "raw_pdb_df"):
+        g.graph[key] = g.graph[key].drop(columns=column)
+    assigned = distance.assign_atoms_to_nodes(g, g.graph["raw_pdb_df"])
+    assert len(assigned) == len(expected)
+
+
+@pytest.mark.parametrize(
+    "func,residue",
+    [
+        (distance.add_aromatic_sulphur_interactions, "MET"),
+        (distance.add_cation_pi_interactions, "LYS"),
+    ],
+    ids=["aromatic_sulphur", "cation_pi"],
+)
+def test_microheterogeneity_no_edge_between_conformers(func, residue):
+    """Conformers that are different residues (e.g. MET in A, PHE in B)
+    are still alternatives of one residue, so they don't interact."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    ca = df.loc[(df["residue_name"] == residue) & (df["atom_name"] == "CA")]
+    chain, res_num = ca.iloc[0][["chain_id", "residue_number"]]
+    rows = _residue_atoms(df, f"{chain}:{residue}:{res_num}")
+    df = _split_conformers(df, rows, 1.0, occupancy=0.5)
+    df.loc[df["alt_loc"] == "B", "residue_name"] = "PHE"
+
+    g = _interaction_graph(func, df, alt_locs="include")
+    u, v = f"{chain}:{residue}:{res_num}:A", f"{chain}:PHE:{res_num}:B"
+    assert {u, v} <= set(g)
+    assert not g.has_edge(u, v)
+
+
+def test_get_interacting_atom_pairs_skips_non_finite():
+    """Atoms with NaN coordinates have no pairs (as with a distance
+    matrix) rather than raising, and indices stay positions in ``df``."""
+    df = pd.DataFrame(
+        {
+            "x_coord": [0.0, np.nan, 1.0, 0.5],
+            "y_coord": [0.0, 0.0, 0.0, np.inf],
+            "z_coord": [0.0, 0.0, 0.0, 0.0],
+        }
+    )
+    i, j = get_interacting_atom_pairs(2.0, df)
+    assert list(zip(i, j)) == [(0, 2)]
+
+
+@pytest.mark.parametrize(
+    "func",
+    [
+        distance.add_hydrophobic_interactions,
+        distance.add_vdw_interactions,
+        partial(add_distance_threshold, long_interaction_threshold=0),
+    ],
+    ids=["hydrophobic", "vdw", "distance_threshold"],
+)
+def test_interactions_nan_coordinates(func):
+    """A structure with a NaN coordinate still gets its other edges."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    expected = _interaction_graph(func, df)
+    leu = df.loc[df["residue_name"] == "LEU"].iloc[0]
+    rows = _residue_atoms(df, f"{leu['chain_id']}:LEU:{leu['residue_number']}")
+    df.loc[rows & df["atom_name"].isin(["CA", "CB"]), "x_coord"] = np.nan
+    g = _interaction_graph(func, df)
+    assert g.number_of_edges() > 0
+    assert set(g.edges()) <= set(expected.edges())
+
+
+@pytest.mark.parametrize(
+    "edge_fn",
+    [
+        partial(add_distance_threshold, threshold=5.0),
+        partial(add_distance_window, min=0.0, max=5.0),
+    ],
+    ids=["threshold", "window"],
+)
+def test_distance_edges_no_self_loops(edge_fn):
+    """A node is never within distance of itself, even with
+    ``long_interaction_threshold=0``."""
+    fn = partial(edge_fn, long_interaction_threshold=0)
+    config = ProteinGraphConfig(edge_construction_functions=[fn])
+    g = construct_graph(config=config, path=str(DATA_PATH))
+    assert nx.number_of_selfloops(g) == 0
+
+
+def test_hbond_peptide_check_uses_conformer_coordinates():
+    """O(i)-N(i+1) is not an hbond when residue i has a distant conformer.
+
+    The peptide bond check took the C of whichever copy came first, so a
+    conformer B 100A away made the covalent O(i, A)-N(i+1) pair (~2.3A) look
+    unbonded.
+    """
+    df = read_pdb_to_dataframe(DATA_PATH)
+    g = _interaction_graph(add_hydrogen_bond_interactions, df)
+    ca = df.loc[(df["atom_name"] == "CA") & (df["chain_id"] == "A")]
+    for i, j in zip(ca.itertuples(), ca.iloc[1:].itertuples()):
+        u = f"A:{i.residue_name}:{i.residue_number}"
+        v = f"A:{j.residue_name}:{j.residue_number}"
+        if not g.has_edge(u, v):
+            break
+    atoms = _residue_atoms(df, u)
+    copy = df.loc[atoms].assign(alt_loc="B", occupancy=0.5)
+    copy["x_coord"] += 100
+    df.loc[atoms, ["alt_loc", "occupancy"]] = ["A", 0.5]
+    df = pd.concat([copy, df], ignore_index=True)
+
+    g = _interaction_graph(
+        add_hydrogen_bond_interactions, df, alt_locs="include"
+    )
+    assert not g.has_edge(f"{u}:A", v)
+
+
+def test_hbond_residue_variants_derived_from_parent_table():
+    """The hbond residue variants are the parent-residue table's entries."""
+    from graphein.protein.resi_atoms import NON_STANDARD_RESIS_PARENT
+
+    assert distance.HBOND_RESIDUE_VARIANTS
+    assert (
+        distance.HBOND_RESIDUE_VARIANTS.items()
+        <= NON_STANDARD_RESIS_PARENT.items()
+    )
+    for name in ("HSD", "HSE", "HSP", "HID", "HIE", "HIP", "ASH", "GLH"):
+        assert name in NON_STANDARD_RESIS_PARENT
+    assert NON_STANDARD_RESIS_PARENT["DTR"] == "TRP"
+    for modified in ("SEP", "TPO", "PTR", "TYS", "STY"):
+        assert modified not in distance.HBOND_RESIDUE_VARIANTS
+
+
+@pytest.mark.parametrize("angstroms", [0.0, 2.2, 5.0])
+def test_get_interacting_atom_pairs_matches_distance_matrix(angstroms):
+    df = read_pdb_to_dataframe(
+        path=str(Path(__file__).parent.parent / "test_data" / "4hhb.pdb")
+    ).head(1000)
+    rows, cols = get_interacting_atoms(angstroms, compute_distmat(df))
+    expected = {(i, j) for i, j in zip(rows, cols) if i < j}
+
+    i, j = get_interacting_atom_pairs(angstroms, df)
+    assert set(zip(i, j)) == expected
+    assert len(i) == len(expected)
+
+    i, j = get_interacting_atom_pairs(angstroms, df.iloc[:0])
+    assert len(i) == len(j) == 0
