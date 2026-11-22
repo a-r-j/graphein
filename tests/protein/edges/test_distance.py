@@ -1330,6 +1330,65 @@ def test_assign_atoms_to_nodes_missing_column(column):
 
 
 @pytest.mark.parametrize(
+    "func,residue",
+    [
+        (distance.add_aromatic_sulphur_interactions, "MET"),
+        (distance.add_cation_pi_interactions, "LYS"),
+    ],
+    ids=["aromatic_sulphur", "cation_pi"],
+)
+def test_microheterogeneity_no_edge_between_conformers(func, residue):
+    """Conformers that are different residues (e.g. MET in A, PHE in B)
+    are still alternatives of one residue, so they don't interact."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    ca = df.loc[(df["residue_name"] == residue) & (df["atom_name"] == "CA")]
+    chain, res_num = ca.iloc[0][["chain_id", "residue_number"]]
+    rows = _residue_atoms(df, f"{chain}:{residue}:{res_num}")
+    df = _split_conformers(df, rows, 1.0, occupancy=0.5)
+    df.loc[df["alt_loc"] == "B", "residue_name"] = "PHE"
+
+    g = _interaction_graph(func, df, alt_locs="include")
+    u, v = f"{chain}:{residue}:{res_num}:A", f"{chain}:PHE:{res_num}:B"
+    assert {u, v} <= set(g)
+    assert not g.has_edge(u, v)
+
+
+def test_get_interacting_atom_pairs_skips_non_finite():
+    """Atoms with NaN coordinates have no pairs (as with a distance
+    matrix) rather than raising, and indices stay positions in ``df``."""
+    df = pd.DataFrame(
+        {
+            "x_coord": [0.0, np.nan, 1.0, 0.5],
+            "y_coord": [0.0, 0.0, 0.0, np.inf],
+            "z_coord": [0.0, 0.0, 0.0, 0.0],
+        }
+    )
+    i, j = get_interacting_atom_pairs(2.0, df)
+    assert list(zip(i, j)) == [(0, 2)]
+
+
+@pytest.mark.parametrize(
+    "func",
+    [
+        distance.add_hydrophobic_interactions,
+        distance.add_vdw_interactions,
+        partial(add_distance_threshold, long_interaction_threshold=0),
+    ],
+    ids=["hydrophobic", "vdw", "distance_threshold"],
+)
+def test_interactions_nan_coordinates(func):
+    """A structure with a NaN coordinate still gets its other edges."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    expected = _interaction_graph(func, df)
+    leu = df.loc[df["residue_name"] == "LEU"].iloc[0]
+    rows = _residue_atoms(df, f"{leu['chain_id']}:LEU:{leu['residue_number']}")
+    df.loc[rows & df["atom_name"].isin(["CA", "CB"]), "x_coord"] = np.nan
+    g = _interaction_graph(func, df)
+    assert g.number_of_edges() > 0
+    assert set(g.edges()) <= set(expected.edges())
+
+
+@pytest.mark.parametrize(
     "edge_fn",
     [
         partial(add_distance_threshold, threshold=5.0),
