@@ -1,7 +1,7 @@
 """Tests for graphein.ppi.graphs"""
 
-import bioservices
 import pytest
+import requests
 
 from graphein.ppi.config import PPIGraphConfig
 from graphein.ppi.edges import add_biogrid_edges, add_string_edges
@@ -23,9 +23,12 @@ PROTEIN_LIST = [
 @pytest.mark.skip("not a test")
 def hgnc_available():
     try:
-        bioservices.HGNC()
-        return True
-    except TypeError:
+        return requests.get(
+            "https://rest.genenames.org/info",
+            headers={"Accept": "application/json"},
+            timeout=10,
+        ).ok
+    except requests.RequestException:
         return False
 
 

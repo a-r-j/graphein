@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from bioservices import HGNC, UniProt
+from graphein.ppi.features.node_features import add_uniprot_sequences
 
 
 def add_sequence_to_nodes(n: str, d: dict[str, Any]):
@@ -15,16 +15,4 @@ def add_sequence_to_nodes(n: str, d: dict[str, Any]):
     :param d: Graph attribute dictionary.
     :type d: Dict[str, Any]
     """
-
-    h = HGNC(verbose=False)
-    u = UniProt(verbose=False)
-
-    d["uniprot_ids"] = h.fetch("symbol", d["gene_id"])["response"]["docs"][0][
-        "uniprot_ids"
-    ]
-
-    # Todo these API calls should probably be batched
-    # Todo mapping with bioservices to support other protein IDs?
-
-    for id in d["uniprot_ids"]:
-        d[f"sequence_{id}"] = u.search(id, columns="sequence").split("\n")[1]
+    add_uniprot_sequences(d, d["gene_id"])
