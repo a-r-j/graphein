@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from loguru import logger as log
 
+from graphein.protein.edges.distance import HBOND_RESIDUE_VARIANTS
 from graphein.protein.resi_atoms import (
     BASE_AMINO_ACIDS,
     HYDROGEN_BOND_ACCEPTORS,
@@ -188,6 +189,10 @@ def hydrogen_bond_donor(
 ):
     """Adds Hydrogen Bond Donor status to nodes as a feature.
 
+    Residue variants in
+    :const:`~graphein.protein.edges.distance.HBOND_RESIDUE_VARIANTS` (e.g.
+    ``HID``, ``DSN``) count their parent residue's side chain donors.
+
     :param n: Node id
     :type n: str
     :param d: Dict of node attributes
@@ -200,7 +205,7 @@ def hydrogen_bond_donor(
         returns a ``pd.Series``. Default is ``True``.
     :type return_array: bool
     """
-    res = d["residue_name"]
+    res = HBOND_RESIDUE_VARIANTS.get(d["residue_name"], d["residue_name"])
 
     # Hack to determine graph type
     # If last ID component is atom type, assume graph is atomic
@@ -233,6 +238,10 @@ def hydrogen_bond_acceptor(
 ) -> pd.Series:
     """Adds Hydrogen Bond Acceptor status to nodes as a feature.
 
+    Residue variants in
+    :const:`~graphein.protein.edges.distance.HBOND_RESIDUE_VARIANTS` (e.g.
+    ``HID``, ``DSN``) count their parent residue's side chain acceptors.
+
     :param n: Node id
     :type n: str
     :param d: Dict of node attributes.
@@ -246,7 +255,7 @@ def hydrogen_bond_acceptor(
         returns a ``pd.Series``. Default is ``True``.
     :type return_array: bool
     """
-    res = d["residue_name"]
+    res = HBOND_RESIDUE_VARIANTS.get(d["residue_name"], d["residue_name"])
     # Hack to determine graph type
     # If last ID component is atom type, assume graph is atomic
     granularity = "atom" if n.split(":")[-1] == d["atom_type"] else "residue"

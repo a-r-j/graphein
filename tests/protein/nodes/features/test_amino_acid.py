@@ -222,3 +222,30 @@ def test_hydrogen_bond_donor():
 #     d = {"residue_name": "LEU"}
 #     n = "DUMMY"
 #     aaindex_1_feat(n, d, feature_name="KRIW790103")
+
+
+def test_hydrogen_bond_features_residue_variants():
+    """Residue variants (D-amino acids, protonation states) get their parent's
+    side chain donors and acceptors; modified side chains don't."""
+    for fn, key in [
+        (hydrogen_bond_donor, "hbond_donors"),
+        (hydrogen_bond_acceptor, "hbond_acceptors"),
+    ]:
+
+        def feat(res, atom):
+            d = {"residue_name": res, "atom_type": atom}
+            fn(f"A:{res}:1:{atom}", d, return_array=True)
+            atom_feat = int(d[key])
+            d = {"residue_name": res, "atom_type": "CA"}
+            fn(f"A:{res}:1", d, return_array=True)
+            return atom_feat, int(d[key])
+
+        for variant, parent, atom in [
+            ("HID", "HIS", "ND1"),
+            ("HSE", "HIS", "NE2"),
+            ("DSN", "SER", "OG"),
+            ("DTY", "TYR", "OH"),
+        ]:
+            assert feat(variant, atom) == feat(parent, atom) != (0, 0)
+        # Phosphoserine's OG is not the hydroxyl of serine
+        assert feat("SEP", "OG") == (0, 0)
