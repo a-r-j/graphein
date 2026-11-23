@@ -12,6 +12,9 @@
 * YAML configs (`parse_config` and `graphein -c path.yml`) could run arbitrary code: `!func:` imported any Python callable named in the file (e.g. `!func:os.system`), and the loader added graphein's tags to PyYAML's global `yaml.FullLoader`, so every `yaml.full_load` in the process accepted them. `!func:` now only accepts functions in `graphein`, and configs are read with `ConfigLoader`, a `yaml.SafeLoader` subclass, so other loaders are untouched and `!!python/...` tags are rejected. Configs that name your own functions with `!func:` now raise a `yaml.constructor.ConstructorError`; build those configs in Python instead. [#527](https://github.com/a-r-j/graphein/pull/527)
 * `add_hydrogen_bond_interactions` no longer adds `hbond` edges between sulphur atoms (Cys `SG`, Met `SD`), which are weak hydrogen bond donors/acceptors at best, or involving atoms of non-amino acid residues, such as ligands kept with `keep_hets`. Edges are added between donor-acceptor pairs only, so many existing `hbond` edges change. With `alt_locs=False` (`"exclude"`), atoms with alternate locations are now left out on residue graphs too, as they are when building nodes, so a residue whose side chain has alternate locations no longer gets hydrogen bonds from those atoms. [#437](https://github.com/a-r-j/graphein/issues/437) [#458](https://github.com/a-r-j/graphein/pull/458)
 
+#### New Features
+* Adds RFAM Manager [#324](https://github.com/a-r-j/graphein/pull/324)
+
 #### Bugfixes
 
 * Fix `add_vdw_interactions` and `add_vdw_clashes` with `remove_intraresidue=True` removing edges between different residues of the same type on a chain (e.g. `A:LEU:5` and `A:LEU:30`) on residue graphs. They compared node IDs with their last field dropped, which for residue nodes is the residue number. Pairs of atoms in the same residue (chain, residue number and insertion code) are now left out before edges are added. [#513](https://github.com/a-r-j/graphein/pull/513)
