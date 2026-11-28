@@ -1,7 +1,9 @@
 """Functions for working with Protein Structure Graphs. Based on tests written by Eric Ma in PIN Library"""
 
 import copy
+import warnings
 from functools import partial
+from itertools import product
 
 # %%
 # Graphein
@@ -1059,10 +1061,10 @@ def test_interactions_alt_loc_conformers(func, path):
     """
     df, g, u, _ = _interaction_edge(func, path)
     atoms = _residue_atoms(df, u)
-    copy = df.loc[atoms].assign(alt_loc="B", occupancy=0.5)
-    copy["x_coord"] += 100
+    copied = df.loc[atoms].assign(alt_loc="B", occupancy=0.5)
+    copied["x_coord"] += 100
     df.loc[atoms, ["alt_loc", "occupancy"]] = ["A", 0.5]
-    df = pd.concat([copy, df], ignore_index=True)
+    df = pd.concat([copied, df], ignore_index=True)
 
     g_alt = _interaction_graph(func, df, alt_locs="include")
     assert set(g_alt[f"{u}:A"]) == set(g[u])
@@ -1081,10 +1083,10 @@ def test_interactions_no_edge_between_conformers(func, path):
     """
     df, _, u, _ = _interaction_edge(func, path)
     ca = _residue_atoms(df, u) & (df["atom_name"] == "CA")
-    copy = df.loc[ca].assign(alt_loc="B", occupancy=0.5)
-    copy["x_coord"] += 0.3
+    copied = df.loc[ca].assign(alt_loc="B", occupancy=0.5)
+    copied["x_coord"] += 0.3
     df.loc[ca, ["alt_loc", "occupancy"]] = ["A", 0.5]
-    df = pd.concat([df, copy], ignore_index=True)
+    df = pd.concat([df, copied], ignore_index=True)
 
     g_alt = _interaction_graph(func, df, alt_locs="include")
     assert {f"{u}:A", f"{u}:B"} <= set(g_alt)
@@ -1118,10 +1120,10 @@ def test_ring_interactions_no_edge_between_conformers(func, along_normal):
     if along_normal:
         normal = distance.compute_ring_normal(ring)
         shift = 5.0 * normal / np.linalg.norm(normal)
-    copy = df.loc[split].assign(alt_loc="B", occupancy=0.5)
-    copy[["x_coord", "y_coord", "z_coord"]] += shift
+    copied = df.loc[split].assign(alt_loc="B", occupancy=0.5)
+    copied[["x_coord", "y_coord", "z_coord"]] += shift
     df.loc[split, ["alt_loc", "occupancy"]] = ["A", 0.5]
-    df = pd.concat([df, copy], ignore_index=True)
+    df = pd.concat([df, copied], ignore_index=True)
 
     g_alt = _interaction_graph(func, df, alt_locs="include")
     assert {f"{u}:A", f"{u}:B"} <= set(g_alt)
@@ -1226,10 +1228,10 @@ def test_assign_atoms_to_nodes_uses_node_conformer():
     residue = f"{ser['chain_id']}:SER:{ser['residue_number']}"
     node = f"{residue}:A"
     split = _residue_atoms(df, residue) & df["atom_name"].isin(["CA", "OG"])
-    copy = df.loc[split].assign(alt_loc="B")
-    copy["x_coord"] += 0.5
+    copied = df.loc[split].assign(alt_loc="B")
+    copied["x_coord"] += 0.5
     df.loc[split, "alt_loc"] = "A"
-    df = pd.concat([df, copy], ignore_index=True)
+    df = pd.concat([df, copied], ignore_index=True)
     atoms = _residue_atoms(df, residue)
     for atom, alt, occupancy in [
         ("CA", "A", 0.6),
@@ -1256,11 +1258,11 @@ def _split_conformers(
 ) -> pd.DataFrame:
     """Give ``rows`` of ``df`` a conformer B, ``shift`` A away in x, with
     occupancy ``1 - occupancy``. The original rows become conformer A."""
-    copy = df.loc[rows].assign(alt_loc="B", occupancy=1 - occupancy)
-    copy["x_coord"] += shift
+    copied = df.loc[rows].assign(alt_loc="B", occupancy=1 - occupancy)
+    copied["x_coord"] += shift
     df = df.copy()
     df.loc[rows, ["alt_loc", "occupancy"]] = ["A", occupancy]
-    return pd.concat([df, copy], ignore_index=True)
+    return pd.concat([df, copied], ignore_index=True)
 
 
 def test_assign_atoms_to_nodes_conformer_from_whole_residue():
@@ -1421,10 +1423,10 @@ def test_hbond_peptide_check_uses_conformer_coordinates():
         if not g.has_edge(u, v):
             break
     atoms = _residue_atoms(df, u)
-    copy = df.loc[atoms].assign(alt_loc="B", occupancy=0.5)
-    copy["x_coord"] += 100
+    copied = df.loc[atoms].assign(alt_loc="B", occupancy=0.5)
+    copied["x_coord"] += 100
     df.loc[atoms, ["alt_loc", "occupancy"]] = ["A", 0.5]
-    df = pd.concat([copy, df], ignore_index=True)
+    df = pd.concat([copied, df], ignore_index=True)
 
     g = _interaction_graph(
         add_hydrogen_bond_interactions, df, alt_locs="include"
@@ -1462,3 +1464,190 @@ def test_get_interacting_atom_pairs_matches_distance_matrix(angstroms):
 
     i, j = get_interacting_atom_pairs(angstroms, df.iloc[:0])
     assert len(i) == len(j) == 0
+
+
+RING_STACKING_FUNCTIONS = [
+    distance.add_pi_stacking_interactions,
+    distance.add_t_stacking,
+]
+
+
+def _stacking_graph(df: pd.DataFrame, granularity: str = "CA") -> nx.Graph:
+    config = ProteinGraphConfig(
+        granularity=granularity,
+        edge_construction_functions=RING_STACKING_FUNCTIONS,
+    )
+    return construct_graph(config=config, df=df, name="test")
+
+
+def _stacked_phe(flip: bool) -> tuple[pd.DataFrame, str, str]:
+    """4hhb with a copy of A:PHE:33 (as Z:PHE:1) stacked 3.8A along its ring
+    normal. With ``flip``, the copy's CD1/CD2 and CE1/CE2 swap coordinates
+    (the same ring), so its normal from the first three normal atoms in file
+    order points the other way.
+    """
+    df = read_pdb_to_dataframe(DATA_PATH)
+    u = "A:PHE:33"
+    residue = df.loc[_residue_atoms(df, u)]
+    ring = distance.get_ring_atoms(residue, "PHE")
+    normal = distance.compute_ring_normal(ring)
+    copied = residue.assign(chain_id="Z", residue_number=1)
+    copied[["x_coord", "y_coord", "z_coord"]] += (
+        3.8 * normal / np.linalg.norm(normal)
+    )
+    if flip:
+        xyz = ["x_coord", "y_coord", "z_coord"]
+        copied = copied.set_index("atom_name", drop=False)
+        swapped = ["CD2", "CD1", "CE2", "CE1"]
+        copied.loc[["CD1", "CD2", "CE1", "CE2"], xyz] = copied.loc[
+            swapped, xyz
+        ].to_numpy()
+        copied = copied.reset_index(drop=True)
+    return pd.concat([df, copied], ignore_index=True), u, "Z:PHE:1"
+
+
+@pytest.mark.parametrize("flip", [False, True], ids=["same", "flipped"])
+def test_pi_stacking_parallel_rings(flip):
+    """Parallel stacked rings get a pi-stacking (and no T-stacking) edge,
+    whichever way their ring normals point."""
+    df, u, v = _stacked_phe(flip)
+    g = _stacking_graph(df)
+    assert g.edges[u, v]["kind"] == {"pi_stacking"}
+
+
+@pytest.mark.parametrize("chain", ["A", "C"])
+def test_t_stacking_4hhb(chain):
+    """4hhb PHE33-PHE43 are T-shaped (#518): centroids 5.2A apart, normals
+    75-77 degrees apart, one normal 29 degrees from the centroid vector."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    g = _stacking_graph(df)
+    u, v = f"{chain}:PHE:33", f"{chain}:PHE:43"
+    assert g.edges[u, v]["kind"] == {"t_stacking"}
+
+
+def test_t_stacking_centroid_distance():
+    df = read_pdb_to_dataframe(DATA_PATH)
+    g = _interaction_graph(
+        partial(distance.add_t_stacking, centroid_distance=5.0), df
+    )
+    assert not g.has_edge("A:PHE:33", "A:PHE:43")
+
+
+@pytest.mark.parametrize("atom", ["CE2", "CZ", "CD1"])
+@pytest.mark.parametrize(
+    "func", RING_STACKING_FUNCTIONS, ids=lambda f: f.__name__
+)
+def test_ring_stacking_truncated_ring(func, atom):
+    """A ring missing any ring atom (truncated side chain) is skipped, not
+    only one missing a normal atom (CE2): without CZ or CD1 its centroid
+    would be off-centre."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    df = df.loc[~(_residue_atoms(df, "A:PHE:33") & (df["atom_name"] == atom))]
+    g = _interaction_graph(func, df)
+    assert all("A:PHE:33" not in e for e in g.edges())
+
+
+def test_ring_stacking_atom_graph():
+    """On atom graphs, every ring atom of one ring is joined to every ring
+    atom of the other."""
+    df, u, v = _stacked_phe(flip=True)
+    g = _stacking_graph(df, granularity="atom")
+    ring = ["CG", "CD1", "CD2", "CE1", "CE2", "CZ"]
+    pi = set(get_edges_by_bond_type(g, "pi_stacking"))
+    expected = {(f"{u}:{a}", f"{v}:{b}") for a in ring for b in ring}
+    assert {tuple(sorted(e)) for e in expected} <= {
+        tuple(sorted(e)) for e in pi
+    }
+    t = {tuple(sorted(e)) for e in get_edges_by_bond_type(g, "t_stacking")}
+    assert ("A:PHE:33:CG", "A:PHE:43:CG") in t
+
+
+@pytest.mark.parametrize("atom", ["CZ", "CG"])
+def test_ring_stacking_atom_graph_partial_alt_loc(atom):
+    """On atom graphs, a ring with an alt_loc on one atom is one ring: the
+    atoms without an alt_loc join the chosen conformer's."""
+    df, u, v = _stacked_phe(flip=False)
+    split = _residue_atoms(df, v) & (df["atom_name"] == atom)
+    copied = df.loc[split].assign(alt_loc="B", occupancy=0.4)
+    copied["x_coord"] += 0.5
+    df.loc[split, ["alt_loc", "occupancy"]] = ["A", 0.6]
+    df = pd.concat([df, copied], ignore_index=True)
+
+    g = _stacking_graph(df, granularity="atom")
+    pi = get_edges_by_bond_type(g, "pi_stacking")
+    between = [
+        (a, b)
+        for a, b in pi
+        if {a.split(":")[0], b.split(":")[0]} == {"A", "Z"}
+    ]
+    assert len(between) == 36
+
+
+def test_ring_stacking_coincident_rings_no_warning():
+    """Rings with the same centroid (here a copy of A:PHE:33 as Z:PHE:1)
+    give no divide-by-zero warnings."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    copied = df.loc[_residue_atoms(df, "A:PHE:33")].assign(
+        chain_id="Z", residue_number=1
+    )
+    df = pd.concat([df, copied], ignore_index=True)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        g = _stacking_graph(df)
+    assert not g.has_edge("A:PHE:33", "Z:PHE:1")
+
+
+def test_aromatic_interactions_atom_graph():
+    """On atom graphs, aromatic edges join every ring atom of one ring to
+    every ring atom of the other, for the residue pairs of residue graphs
+    (#517: each ring atom was its own ring, so atoms 4.5-7A apart were
+    joined whatever their rings' centroids)."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    func = distance.add_aromatic_interactions
+    residue_edges = get_edges_by_bond_type(
+        _interaction_graph(func, df), "aromatic"
+    )
+    config = ProteinGraphConfig(
+        granularity="atom", edge_construction_functions=[func]
+    )
+    g = construct_graph(config=config, df=df, name="test")
+    ring_atoms = {}
+    for n in g:
+        residue = n.rsplit(":", 1)[0]
+        resname = n.split(":")[1]
+        if (
+            resname in AROMATIC_RESIS
+            and n.rsplit(":", 1)[1] in (distance.AA_RING_ATOMS[resname])
+        ):
+            ring_atoms.setdefault(residue, []).append(n)
+    expected = {
+        frozenset((a, b))
+        for u, v in residue_edges
+        for a, b in product(ring_atoms[u], ring_atoms[v])
+    }
+    assert residue_edges
+    assert {frozenset(e) for e in get_edges_by_bond_type(g, "aromatic")} == (
+        expected
+    )
+
+
+def test_compute_ring_normal_atom_order():
+    """The normal is taken from the normal atoms in RING_NORMAL_ATOMS order,
+    whatever the order of the ring's rows."""
+    df = read_pdb_to_dataframe(DATA_PATH)
+    ring = distance.get_ring_atoms(
+        df.loc[_residue_atoms(df, "A:PHE:33")], "PHE"
+    )
+    np.testing.assert_allclose(
+        distance.compute_ring_normal(ring.iloc[::-1]),
+        distance.compute_ring_normal(ring),
+    )
+
+
+def test_compute_ring_normal_missing_atom():
+    df = read_pdb_to_dataframe(DATA_PATH)
+    ring = distance.get_ring_atoms(
+        df.loc[_residue_atoms(df, "A:PHE:33")], "PHE"
+    )
+    with pytest.raises(ValueError, match="normal atoms"):
+        distance.compute_ring_normal(ring.loc[ring["atom_name"] != "CE2"])
